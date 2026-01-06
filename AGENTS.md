@@ -14,3 +14,13 @@
 ## Asset Management
 *   **JavaScript Pages**: Place page-specific JavaScript files in `src/js/pages/`. The build process (configured in `webpack.mix.js`) automatically detects `.js` files in this directory and compiles them to `assets/js/pages/`.
 *   **Building**: Run `npm run dev` for development or `npm run prod` for production builds.
+
+## Architecture & Project Structure
+*   **Documentation**: Refer to `ARCHITECTURE.md` for the detailed project specification, user roles, and module responsibilities.
+*   **Apps**:
+    *   `apps/users`: Authentication & Hierarchy.
+    *   `apps/products`: MF Schemes.
+    *   `apps/investments`: Orders & Portfolios.
+    *   `apps/payouts`: Brokerage & Commissions.
+    *   `apps/integration`: BSE & RTA Interfaces.
+    *   `apps/analytics`: Reports & Dashboards.
