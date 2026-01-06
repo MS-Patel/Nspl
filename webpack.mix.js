@@ -1,4 +1,6 @@
 const mix = require("laravel-mix");
+const fs = require("fs");
+const path = require("path");
 
 mix
   .js("src/js/app.js", "js")
@@ -30,9 +32,13 @@ mix
   .setPublicPath("assets")
   .disableNotifications();
 
-mix
-    .js("src/js/pages/investor.js", "js/pages")
-
-
-  .setPublicPath("assets")
-  .disableNotifications();
+// Automatically find and compile all files in src/js/pages
+const pagesPath = 'src/js/pages';
+if (fs.existsSync(pagesPath)) {
+    const pageFiles = fs.readdirSync(pagesPath);
+    pageFiles.forEach(file => {
+        if (path.extname(file) === '.js') {
+            mix.js(`${pagesPath}/${file}`, 'js/pages');
+        }
+    });
+}
