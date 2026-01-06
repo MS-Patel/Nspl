@@ -1,0 +1,1 @@
+document.addEventListener("DOMContentLoaded",function(){var e=document.getElementById("whatsappBtn");e.addEventListener("click",function(e){e.preventDefault();var t=encodeURIComponent("Hello, I would like to know more about your services."),n="https://wa.me/".concat("917265098822","?text=").concat(t);window.open(n,"_blank")})});

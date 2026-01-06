@@ -1,0 +1,498 @@
+{% load static %}
+<style>
+  .sidebar {
+    position: relative;
+    width: 250px;
+  }
+  .nav-item {
+    position: relative;
+  }
+  .submenu {
+    position: absolute;
+    background: white;
+    border: 1px solid #ccc;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    display: none;
+    min-width: 200px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .submenu.show {
+    display: block;
+  }
+  .nav-item.active > .submenu {
+    display: block;
+  }
+</style>
+<aside class="sidebar h-100">
+  <div class="sidebar-header">
+   {% if company and company.logo %}
+  <a href="{% url 'investor:dashboard' %}">
+    <figure class="brand-logo-wrapper p-1">
+      <img class="brand-logo" src="{{ company.logo.url }}" alt="{{ company.name }} Logo" />
+    </figure>
+  </a>
+{% endif %}
+
+
+
+
+  </div>
+  <div class="sidebar-content">
+    <nav>
+      <ul class="nav">
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'investor:dashboard' %}">
+            <span class="nav-icon bi bi-grid-1x2"></span>
+            <span class="nav-text">Dashboard</span>
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#"><span class="nav-icon bi bi-grid"></span> <span class="nav-text">Master</span></a>
+          <ul class="submenu">
+            {% if perms.corporate.view_branchmaster %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'corporate:company' %}">
+                <span class="nav-icon bi bi-window-stack"></span>
+                <span class="nav-text">Company</span>
+              </a>
+            </li>
+            {% endif %}
+            {% if perms.corporate.view_branchmaster %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'corporate:branches' %}">
+                <span class="nav-icon bi bi-window-stack"></span>
+                <span class="nav-text">Branch</span>
+              </a>
+            </li>
+            {% endif %}
+            {% if perms.corporate.view_employeemaster %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'corporate:rms' %}">
+                <span class="nav-icon bi bi-person-check"></span>
+                <span class="nav-text">Employee</span>
+              </a>
+            </li>
+            {% endif %}
+            {% if perms.corporate.view_distributor %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'corporate:distributors' %}">
+                <span class="nav-icon bi bi-ui-checks-grid"></span>
+                <span class="nav-text">Distributor</span>
+              </a>
+            </li>
+            {% endif %}
+          </ul>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link"><span class="nav-icon bi bi-person-check"></span> <span class="nav-text">Investor</span></a>
+          <ul class="submenu">
+            {% if perms.investor.view_kycrequest %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'investor:kyc_requests' %}">
+                <span class="nav-icon bi bi-person-check"></span>
+                <span class="nav-text">KYC Request</span>
+              </a>
+            </li>
+            {% endif %}
+            {% if perms.investor.view_investor %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'investor:investors' %}">
+                <span class="nav-icon bi bi-people"></span>
+                <span class="nav-text">Investor</span>
+              </a>
+            </li>
+            {% endif %}
+          </ul>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link"><span class="nav-icon bi bi-currency-rupee"></span> <span class="nav-text">Mutual Fund</span></a>
+          <ul class="submenu">
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'mutualfund:mf_explorer' %}">
+                <span class="nav-icon bi bi-credit-card"></span>
+                <span class="nav-text">MF Explorer</span>
+              </a>
+            </li>
+            {% if perms.mutualfund.add_mfpurchase %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'mutualfund:create_mf_purchase' %}">
+                <span class="nav-icon bi bi-credit-card"></span>
+                <span class="nav-text">Purchase</span>
+              </a>
+            </li>
+            {% endif %}
+            {% if perms.mutualfund.view_mfpurchase %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'mutualfund:mf_purchases' %}">
+                <span class="nav-icon bi bi-file-earmark-text"></span>
+                <span class="nav-text">Lumpsum Orders</span>
+              </a>
+            </li>
+            {% endif %}
+            {% if perms.mutualfund.view_mfpurchase %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'mutualfund:mf_sips' %}">
+                <span class="nav-icon bi bi-file-earmark-text"></span>
+                <span class="nav-text">SIP Orders</span>
+              </a>
+            </li>
+            {% endif %}
+            {% if perms.mutualfund.view_mfpurchase %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'mutualfund:mf_holdings' %}">
+                <span class="nav-icon bi bi-piggy-bank"></span>
+                <span class="nav-text">Holdings</span>
+              </a>
+            </li>
+            {% endif %}
+            {% if perms.mutualfund.view_mfredemption %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'mutualfund:redemption_order' %}">
+                <span class="nav-icon bi bi-box-arrow-down"></span>
+                <span class="nav-text">Redemption Orders</span>
+              </a>
+            </li>
+            {% endif %}
+            {% if perms.mutualfund.view_mfpurchase %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'mutualfund:payments' %}">
+                <span class="nav-icon bi bi-box-arrow-down"></span>
+                <span class="nav-text">Payments</span>
+              </a>
+            </li>
+            {% endif %}
+          </ul>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#">
+            <span class="nav-icon bi bi-bar-chart-steps"></span>
+            <span class="nav-text">Unlisted Shares</span>
+          </a>
+          <ul class="submenu">
+            {% if perms.unlisted.view_vendor %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'unlisted:list_vendor' %}">
+                <span class="nav-icon bi bi-truck"></span>
+                <span class="nav-text">Vendor</span>
+              </a>
+            </li>
+            {% endif %}
+            {% if perms.unlisted.view_share %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'unlisted:list_company' %}">
+                <span class="nav-icon bi bi-building"></span>
+                <span class="nav-text">Company</span>
+              </a>
+            </li>
+            {% endif %}
+            {% if perms.unlisted.view_client %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'unlisted:list_client' %}">
+                <span class="nav-icon bi bi-person-lines-fill"></span>
+                <span class="nav-text">Client</span>
+              </a>
+            </li>
+            {% endif %}
+            {% if perms.unlisted.view_shareprice %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'unlisted:create_share_price' %}">
+                <span class="nav-icon bi bi-graph-up-arrow"></span>
+                <span class="nav-text">Share Price</span>
+              </a>
+            </li>
+            {% endif %}
+            {% if perms.unlisted.view_purchaseorder %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'unlisted:list_purchase' %}">
+                <span class="nav-icon bi bi-cart-check"></span>
+                <span class="nav-text">Purchase</span>
+              </a>
+            </li>
+            {% endif %}
+            {% if perms.unlisted.view_salesorder %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'unlisted:list_sale' %}">
+                <span class="nav-icon bi bi-currency-exchange"></span>
+                <span class="nav-text">Sale</span>
+              </a>
+            </li>
+            {% endif %}
+            {% if perms.unlisted.view_lead %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'unlisted:list_lead' %}">
+                <span class="nav-icon bi bi-person-plus"></span>
+                <span class="nav-text">Lead</span>
+              </a>
+            </li>
+            {% endif %}
+          </ul>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link"><span class="nav-icon bi bi-cash-stack"></span> <span class="nav-text">Payout</span></a>
+          <ul class="submenu">
+            {% if perms.mutualfund.view_payout %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'payout:payout' %}">
+                <span class="nav-icon bi bi-bank"></span>
+                <span class="nav-text">Payout</span>
+              </a>
+            </li>
+            {% endif %}
+          </ul>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link"><span class="nav-icon bi bi-cash-stack"></span> <span class="nav-text">Reports</span></a>
+          <ul class="submenu">
+            {% comment %} <li class="nav-item">
+              <a class="nav-link" href="{% url 'report:report' %}">
+                <span class="nav-icon bi bi-journal-text"></span>
+                <span class="nav-text">Reports</span>
+              </a>
+            </li> {% endcomment %}
+            {% if perms.investor.view_kycrequest %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'report:kyc_request' %}">
+                <span class="nav-icon bi bi-person-badge"></span>
+                <span class="nav-text">KYC Request Report</span>
+              </a>
+            </li>
+            {% endif %}
+            {% if perms.investor.view_investor %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'report:investors' %}">
+                <span class="nav-icon bi bi-people"></span>
+                <span class="nav-text">Investors Report</span>
+              </a>
+            </li>
+            {% endif %}
+            {% if perms.corporate.view_distributor %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'report:distributor' %}">
+                <span class="nav-icon bi bi-truck"></span>
+                <span class="nav-text">Distributors Report</span>
+              </a>
+            </li>
+            {% endif %}
+            {% if perms.mutualfund.view_mfpurchase %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'report:purchase_orders' %}">
+                <span class="nav-icon bi bi-cart-plus"></span>
+                <span class="nav-text">Purchase Orders Report</span>
+              </a>
+            </li>
+            {% endif %}
+            {% if perms.mutualfund.view_mfpurchase %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'report:holdings' %}">
+                <span class="nav-icon bi bi-box-seam"></span>
+                <span class="nav-text">Holdings Report</span>
+              </a>
+            </li>
+            {% endif %}
+            {% if perms.mutualfund.view_mfredemption %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'report:redemption_orders' %}">
+                <span class="nav-icon bi bi-arrow-repeat"></span>
+                <span class="nav-text">Redemption Orders Report</span>
+              </a>
+            </li>
+            {% endif %}
+            {% if perms.mutualfund.view_mfpurchase %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'report:payments' %}">
+                <span class="nav-icon bi bi-wallet2"></span>
+                <span class="nav-text">Payments Report</span>
+              </a>
+            </li>
+            {% endif %}
+            {% if perms.mutualfund.view_mfpurchase %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'report:generate_holdings' %}">
+                <span class="nav-icon bi bi-cpu"></span>
+                <span class="nav-text">Generate Holdings Report</span>
+              </a>
+            </li>
+            {% endif %}
+            {% if perms.mutualfund.view_mfpurchase %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'report:capital_gains' %}">
+                <span class="nav-icon bi bi-graph-up-arrow"></span>
+                <span class="nav-text">Capital Gains Report</span>
+              </a>
+            </li>
+            {% endif %}
+            {% if perms.mutualfund.view_mfpurchase %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'report:scheme_wise_returns' %}">
+                <span class="nav-icon bi bi-bar-chart-line"></span>
+                <span class="nav-text">Scheme Wise Returns Report</span>
+              </a>
+            </li>
+            {% endif %}
+            {% if perms.mutualfund.view_mfpurchase %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'report:investment_account_wise_returns' %}">
+                <span class="nav-icon bi bi-pie-chart"></span>
+                <span class="nav-text">Investment Account Wise Returns Report</span>
+              </a>
+            </li>
+            {% endif %}
+            {% if perms.mutualfund.view_mfpurchase %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'report:transactions' %}">
+                <span class="nav-icon bi bi-receipt-cutoff"></span>
+                <span class="nav-text">Transactions Report</span>
+              </a>
+            </li>
+            {% endif %}
+          </ul>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href=""><span class="nav-icon bi bi-box-arrow-right"></span> <span class="nav-text">Unlisted Reports</span></a>
+          <ul class="submenu">
+            {% if perms.unlisted.view_shareprice %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'unlisted:stock_master' %}">
+                <span class="nav-icon bi bi-archive"></span>
+                <span class="nav-text">Stock Master Report</span>
+              </a>
+            </li>
+            {% endif %}
+            {% if perms.unlisted.view_vendor %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'unlisted:vendor_report' %}">
+                <span class="nav-icon bi bi-truck"></span>
+                <span class="nav-text">Vendor Report</span>
+              </a>
+            </li>
+            {% endif %}
+            {% if perms.unlisted.view_share %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'unlisted:company_report' %}">
+                <span class="nav-icon bi bi-building"></span>
+                <span class="nav-text">Company Report</span>
+              </a>
+            </li>
+            {% endif %}
+            {% if perms.unlisted.view_client %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'unlisted:client_report' %}">
+                <span class="nav-icon bi bi-person-check"></span>
+                <span class="nav-text">Client Report</span>
+              </a>
+            </li>
+            {% endif %}
+            {% if perms.unlisted.view_lead %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'unlisted:lead_report' %}">
+                <span class="nav-icon bi bi-person-lines-fill"></span>
+                <span class="nav-text">Lead Report</span>
+              </a>
+            </li>
+            {% endif %}
+            {% if perms.unlisted.view_purchaseorder %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'unlisted:purchase_report' %}">
+                <span class="nav-icon bi bi-cart-check"></span>
+                <span class="nav-text">Purchase Report</span>
+              </a>
+            </li>
+            {% endif %}
+            {% if perms.unlisted.view_salesorder %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'unlisted:sale_report' %}">
+                <span class="nav-icon bi bi-currency-dollar"></span>
+                <span class="nav-text">Sale Report</span>
+              </a>
+            </li>
+            {% endif %}
+            {% if perms.unlisted.view_purchaseorder %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'unlisted:share_price_report' %}">
+                <span class="nav-icon bi bi-graph-up"></span>
+                <span class="nav-text">Share Price Report</span>
+              </a>
+            </li>
+            {% endif %}
+          </ul>
+        </li>
+      </ul>
+    </nav>
+  </div>
+</aside>
+{% block custom_js %}
+  <script>
+    ;(function () {
+      let currentOpenSubmenu = null
+      function closeSubmenu() {
+        if (currentOpenSubmenu) {
+          currentOpenSubmenu.classList.remove('show')
+          currentOpenSubmenu.style.top = ''
+          currentOpenSubmenu.style.left = ''
+          currentOpenSubmenu = null
+        }
+      }
+      function positionSubmenu(submenu, parentNavItem) {
+        const parentRect = parentNavItem.getBoundingClientRect()
+        const submenuRect = submenu.getBoundingClientRect()
+        const viewportWidth = window.innerWidth
+        const viewportHeight = window.innerHeight
+        let top = parentRect.top
+        let left = parentRect.right
+        if (left + submenuRect.width > viewportWidth) {
+          left = parentRect.left - submenuRect.width
+        }
+        if (top + submenuRect.height > viewportHeight) {
+          top = Math.max(0, viewportHeight - submenuRect.height)
+        }
+        submenu.style.top = `${top}px`
+        submenu.style.left = `${left}px`
+      }
+      function initializeMenu() {
+        const sidebar = document.querySelector('.sidebar')
+        if (!sidebar) return
+        sidebar.querySelectorAll('.nav-item').forEach((item) => {
+          const submenu = item.querySelector('.submenu')
+          if (submenu) {
+            item.addEventListener('mouseenter', function () {
+              closeSubmenu()
+              submenu.classList.add('show')
+              positionSubmenu(submenu, this)
+              currentOpenSubmenu = submenu
+            })
+            item.addEventListener('mouseleave', function () {
+              submenu.classList.remove('show')
+              submenu.style.top = ''
+              submenu.style.left = ''
+              currentOpenSubmenu = null
+            })
+          }
+        })
+      }
+      document.addEventListener('click', function (event) {
+        const sidebar = document.querySelector('.sidebar')
+        if (currentOpenSubmenu && !currentOpenSubmenu.contains(event.target) && (!sidebar || !sidebar.contains(event.target))) {
+          closeSubmenu()
+        }
+      })
+      function setActiveState() {
+        const currentUrl = window.location.pathname
+        document.querySelectorAll('.nav-link').forEach(function (navLink) {
+          if (navLink.getAttribute('href') === currentUrl) {
+            navLink.closest('.nav-item').classList.add('active')
+            let parentNavItem = navLink.closest('.nav-item').parentElement.closest('.nav-item')
+            if (parentNavItem) {
+              parentNavItem.classList.add('active')
+            }
+          }
+        })
+      }
+      document.addEventListener('DOMContentLoaded', () => {
+        initializeMenu()
+        setActiveState()
+      })
+    })()
+  </script>
+{% endblock %}
