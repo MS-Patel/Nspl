@@ -282,50 +282,51 @@
 
       <!-- Masters / Corporate (Admin & RM) -->
       {% if user.is_staff or user.user_type == 'ADMIN' or user.user_type == 'RM' %}
-      <div class="inline-flex" x-data="{expanded:false}">
+      <div id="master-menu-dropdown" class="inline-flex">
         <button
-          @click="expanded = !expanded"
-          @click.outside="expanded = false"
-          class="btn space-x-2 px-2 py-1.5 text-xs-plus font-medium leading-none text-slate-600 hover:bg-slate-300/20 hover:text-slate-800 active:bg-slate-300/25 dark:text-navy-200 dark:hover:bg-navy-300/20 dark:hover:text-navy-100 dark:active:bg-navy-300/25"
+          class="btn popper-ref space-x-2 px-2 py-1.5 text-xs-plus font-medium leading-none text-slate-600 hover:bg-slate-300/20 hover:text-slate-800 active:bg-slate-300/25 dark:text-navy-200 dark:hover:bg-navy-300/20 dark:hover:text-navy-100 dark:active:bg-navy-300/25"
         >
           <svg xmlns="http://www.w3.org/2000/svg" class="size-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
           </svg>
           <span>Masters</span>
-          <svg xmlns="http://www.w3.org/2000/svg" class="size-4 transition-transform duration-200" :class="expanded && 'rotate-180'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
           </svg>
         </button>
-        <div
-            x-show="expanded"
-            x-transition:enter="transition ease-out duration-100"
-            x-transition:enter-start="opacity-0 scale-90"
-            x-transition:enter-end="opacity-100 scale-100"
-            x-transition:leave="transition ease-in duration-100"
-            x-transition:leave-start="opacity-100 scale-100"
-            x-transition:leave-end="opacity-0 scale-90"
-            class="absolute top-12 z-50 w-48 rounded-lg border border-slate-150 bg-white py-1.5 shadow-lg dark:border-navy-500 dark:bg-navy-700"
-        >
-          <ul>
-            {% if user.is_staff or user.user_type == 'ADMIN' %}
-            <li>
-              <a
-                href="{% url 'rm_list' %}"
-                class="flex h-8 items-center px-3 pr-8 font-medium tracking-wide outline-hidden transition-all hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100"
-              >
-                Employee (RM)
-              </a>
-            </li>
-            {% endif %}
-            <li>
-              <a
-                href="{% url 'distributor_list' %}"
-                class="flex h-8 items-center px-3 pr-8 font-medium tracking-wide outline-hidden transition-all hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100"
-              >
-                Distributor
-              </a>
-            </li>
-          </ul>
+        <div class="popper-root">
+          <div
+            class="popper-box max-h-[calc(100vh-120px)] overflow-y-auto rounded-md border border-slate-150 bg-white py-1.5 font-inter dark:border-navy-500 dark:bg-navy-700"
+          >
+            <ul>
+              {% if user.is_staff or user.user_type == 'ADMIN' %}
+              <li>
+                <a
+                  href="{% url 'rm_list' %}"
+                  class="flex h-8 items-center px-3 pr-8 font-medium tracking-wide outline-hidden transition-all hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100"
+                >
+                  Employee (RM)
+                </a>
+              </li>
+              {% endif %}
+              <li>
+                <a
+                  href="{% url 'distributor_list' %}"
+                  class="flex h-8 items-center px-3 pr-8 font-medium tracking-wide outline-hidden transition-all hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100"
+                >
+                  Distributor
+                </a>
+              </li>
+              <li>
+                <a
+                  href="{% url 'scheme_list' %}"
+                  class="flex h-8 items-center px-3 pr-8 font-medium tracking-wide outline-hidden transition-all hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100"
+                >
+                  Scheme Master
+                </a>
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
       {% endif %}

@@ -80,17 +80,24 @@ function setupFormValidation({
   document.addEventListener("DOMContentLoaded", function () {
     const whatsappBtn = document.getElementById("whatsappBtn");
 
-    // 🔹 Your WhatsApp details
-    const phoneNumber = "917265098822"; // Include country code without +
-    const message = "Hello, I would like to know more about your services.";
+    if (whatsappBtn) {
+        // 🔹 Your WhatsApp details
+        const phoneNumber = "917265098822"; // Include country code without +
+        const message = "Hello, I would like to know more about your services.";
 
-    whatsappBtn.addEventListener("click", function (e) {
-      e.preventDefault();
+        whatsappBtn.addEventListener("click", function (e) {
+        e.preventDefault();
 
-      const encodedMessage = encodeURIComponent(message);
-      const whatsappURL = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
+        const encodedMessage = encodeURIComponent(message);
+        const whatsappURL = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
 
-      // Open in new tab
-      window.open(whatsappURL, "_blank");
-    });
+        // Open in new tab
+        window.open(whatsappURL, "_blank");
+        });
+    }
+  });
+
+  window.addEventListener("app:mounted", function () {
+    var o = { placement: "bottom-start", modifiers: [{ name: "offset", options: { offset: [0, 4] } }] };
+    new Popper("#master-menu-dropdown", ".popper-ref", ".popper-root", o);
   });
