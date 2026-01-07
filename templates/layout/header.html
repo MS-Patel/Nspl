@@ -343,7 +343,15 @@
     >
       <!-- Dashboard -->
       <div class="inline-flex">
-        <a href="{% url 'administration:index' %}" class="btn space-x-2 px-2 py-1.5 text-xs-plus font-medium leading-none text-slate-600 hover:bg-slate-300/20 hover:text-slate-800 active:bg-slate-300/25 dark:text-navy-200 dark:hover:bg-navy-300/20 dark:hover:text-navy-100 dark:active:bg-navy-300/25">
+        {% if user.user_type == 'RM' %}
+          <a href="{% url 'rm_dashboard' %}" class="btn space-x-2 px-2 py-1.5 text-xs-plus font-medium leading-none text-slate-600 hover:bg-slate-300/20 hover:text-slate-800 active:bg-slate-300/25 dark:text-navy-200 dark:hover:bg-navy-300/20 dark:hover:text-navy-100 dark:active:bg-navy-300/25">
+        {% elif user.user_type == 'DISTRIBUTOR' %}
+          <a href="{% url 'distributor_dashboard' %}" class="btn space-x-2 px-2 py-1.5 text-xs-plus font-medium leading-none text-slate-600 hover:bg-slate-300/20 hover:text-slate-800 active:bg-slate-300/25 dark:text-navy-200 dark:hover:bg-navy-300/20 dark:hover:text-navy-100 dark:active:bg-navy-300/25">
+        {% elif user.user_type == 'INVESTOR' %}
+          <a href="{% url 'investor_dashboard' %}" class="btn space-x-2 px-2 py-1.5 text-xs-plus font-medium leading-none text-slate-600 hover:bg-slate-300/20 hover:text-slate-800 active:bg-slate-300/25 dark:text-navy-200 dark:hover:bg-navy-300/20 dark:hover:text-navy-100 dark:active:bg-navy-300/25">
+        {% else %}
+          <a href="{% url 'admin_dashboard' %}" class="btn space-x-2 px-2 py-1.5 text-xs-plus font-medium leading-none text-slate-600 hover:bg-slate-300/20 hover:text-slate-800 active:bg-slate-300/25 dark:text-navy-200 dark:hover:bg-navy-300/20 dark:hover:text-navy-100 dark:active:bg-navy-300/25">
+        {% endif %}
           <svg class="size-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
             <path fill="currentColor" fill-opacity=".3" d="M5 14.059c0-1.01 0-1.514.222-1.945.221-.43.632-.724 1.453-1.31l4.163-2.974c.56-.4.842-.601 1.162-.601.32 0 .601.2 1.162.601l4.163 2.974c.821.586 1.232.88 1.453 1.31.222.43.222.935.222 1.945V19c0 .943 0 1.414-.293 1.707C18.414 21 17.943 21 17 21H7c-.943 0-1.414 0-1.707-.293C5 20.414 5 19.943 5 19v-4.94Z"></path>
             <path fill="currentColor" d="M3 12.387c0 .267 0 .4.084.441.084.041.19-.04.4-.204l7.288-5.669c.59-.459.885-.688 1.228-.688.343 0 .638.23 1.228.688l7.288 5.669c.21.163.316.245.4.204.084-.04.084-.174.084-.441v-.409c0-.48 0-.72-.102-.928-.101-.208-.291-.355-.67-.65l-7-5.445c-.59-.459-.885-.688-1.228-.688-.343 0-.638.23-1.228.688l-7 5.445c-.379.295-.569.442-.67.65-.102.208-.102.448-.102.928v.409Z"></path>
@@ -353,6 +361,41 @@
           <span>Dashboard</span>
         </a>
       </div>
+
+      <!-- Master / Employee (Admin Only) -->
+      {% if user.is_staff or user.user_type == 'ADMIN' %}
+      <div class="inline-flex">
+        <a href="{% url 'rm_list' %}" class="btn space-x-2 px-2 py-1.5 text-xs-plus font-medium leading-none text-slate-600 hover:bg-slate-300/20 hover:text-slate-800 active:bg-slate-300/25 dark:text-navy-200 dark:hover:bg-navy-300/20 dark:hover:text-navy-100 dark:active:bg-navy-300/25">
+          <svg xmlns="http://www.w3.org/2000/svg" class="size-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
+          <span>Employee</span>
+        </a>
+      </div>
+      {% endif %}
+
+      <!-- Distributor (Admin & RM) -->
+      {% if user.is_staff or user.user_type == 'ADMIN' or user.user_type == 'RM' %}
+      <div class="inline-flex">
+        <a href="{% url 'distributor_list' %}" class="btn space-x-2 px-2 py-1.5 text-xs-plus font-medium leading-none text-slate-600 hover:bg-slate-300/20 hover:text-slate-800 active:bg-slate-300/25 dark:text-navy-200 dark:hover:bg-navy-300/20 dark:hover:text-navy-100 dark:active:bg-navy-300/25">
+          <svg xmlns="http://www.w3.org/2000/svg" class="size-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+          </svg>
+          <span>Distributor</span>
+        </a>
+      </div>
+      {% endif %}
+
+      <!-- Investor -->
+      <div class="inline-flex">
+        <a href="{% url 'investor_list' %}" class="btn space-x-2 px-2 py-1.5 text-xs-plus font-medium leading-none text-slate-600 hover:bg-slate-300/20 hover:text-slate-800 active:bg-slate-300/25 dark:text-navy-200 dark:hover:bg-navy-300/20 dark:hover:text-navy-100 dark:active:bg-navy-300/25">
+          <svg xmlns="http://www.w3.org/2000/svg" class="size-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
+          <span>Investor</span>
+        </a>
+      </div>
+
     </div>
   </div>
 </nav>
