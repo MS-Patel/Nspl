@@ -11,8 +11,15 @@
     />
 
     <title>Sign In - Mutual Fund Portal</title>
+    <link rel="icon" type="image/png" href="{% static 'images/favicon.png' %}" />
+
     <!-- CSS Assets -->
     <link rel="stylesheet" href="{% static 'css/app.css' %}" />
+
+    <!-- Javascript Assets -->
+    <script src="{% static 'js/app.js' %}" defer></script>
+    <script src="{% static 'js/pages/pages-sign-in-2.js' %}" defer></script>
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -44,7 +51,7 @@
     >
       <div class="fixed top-0 hidden p-6 lg:block lg:px-12">
         <a href="#" class="flex items-center space-x-2">
-          <!-- Logo can be added here -->
+          <img class="size-12" src="{% static 'images/app-logo.svg' %}" alt="logo" />
           <p
             class="text-xl font-semibold uppercase text-slate-700 dark:text-navy-100"
           >
@@ -54,7 +61,7 @@
       </div>
       <div class="hidden w-full place-items-center lg:grid">
         <div class="w-full max-w-lg p-6">
-           <img
+          <img
             class="w-full"
             id="hero-image-light"
             src="{% static 'images/illustrations/dashboard-check.svg' %}"
@@ -73,7 +80,11 @@
       >
         <div class="flex w-full max-w-sm grow flex-col justify-center p-5">
           <div class="text-center">
-
+            <img
+              class="mx-auto size-16 lg:hidden"
+              src="{% static 'images/app-logo.svg' %}"
+              alt="logo"
+            />
             <div class="mt-4">
               <h2
                 class="text-2xl font-semibold text-slate-600 dark:text-navy-100"
@@ -89,7 +100,7 @@
             <form method="post" action="{% url 'login' %}">
                 {% csrf_token %}
                 {% if form.non_field_errors %}
-                <div class="mb-4 text-error text-center text-red-500">
+                <div class="mb-4 text-center text-error text-red-500">
                     {% for error in form.non_field_errors %}
                         <p>{{ error }}</p>
                     {% endfor %}
@@ -151,6 +162,21 @@
                 </span>
                 </label>
 
+                <div class="mt-4 flex items-center justify-between space-x-2">
+                    <label class="inline-flex items-center space-x-2">
+                      <input
+                        class="form-checkbox is-outline size-5 rounded-sm border-slate-400/70 bg-slate-100 before:bg-primary checked:border-primary hover:border-primary focus:border-primary dark:border-navy-500 dark:bg-navy-900 dark:before:bg-accent dark:checked:border-accent dark:hover:border-accent dark:focus:border-accent"
+                        type="checkbox"
+                      />
+                      <span class="line-clamp-1">Remember me</span>
+                    </label>
+                    <a
+                      href="#"
+                      class="text-xs text-slate-400 transition-colors line-clamp-1 hover:text-slate-800 focus:text-slate-800 dark:text-navy-300 dark:hover:text-navy-100 dark:focus:text-navy-100"
+                      >Forgot Password?</a
+                    >
+                  </div>
+
                 <button
                 type="submit"
                 class="btn mt-10 h-10 w-full bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90"
@@ -158,12 +184,9 @@
                 Sign In
                 </button>
             </form>
-
           </div>
         </div>
       </main>
     </div>
-    <!-- Javascript Assets -->
-    <script src="{% static 'js/app.js' %}" defer></script>
   </body>
 </html>

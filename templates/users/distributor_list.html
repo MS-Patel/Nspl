@@ -1,38 +1,54 @@
-{% extends 'layouts/base.html' %}
+{% extends 'base.html' %}
+
+{% block page_title %}Distributors{% endblock %}
 
 {% block content %}
-<div class="flex items-center justify-between py-5 lg:py-6">
-    <h2 class="text-xl font-medium text-slate-800 dark:text-navy-50 lg:text-2xl">
-      Distributors
-    </h2>
-    <a href="{% url 'distributor_create' %}" class="btn bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90">
-        Add New Distributor
-    </a>
+<div class="grid grid-cols-12 gap-4 sm:gap-5 lg:gap-6">
+    <div class="col-span-12">
+        <div class="flex items-center justify-between">
+            <h2 class="text-base font-medium tracking-wide text-slate-700 line-clamp-1 dark:text-navy-100">
+                Distributors List
+            </h2>
+            <div class="flex">
+                <a href="{% url 'distributor_create' %}" class="btn bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90">
+                    Add Distributor
+                </a>
+            </div>
+        </div>
+        <div class="card mt-3">
+            <div class="is-scrollbar-hidden min-w-full overflow-x-auto">
+                <table class="is-hoverable w-full text-left">
+                    <thead>
+                        <tr>
+                            <th class="whitespace-nowrap rounded-tl-lg bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">Name</th>
+                            <th class="whitespace-nowrap bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">ARN</th>
+                            <th class="whitespace-nowrap bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">RM</th>
+                            <th class="whitespace-nowrap rounded-tr-lg bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for distributor in distributors %}
+                        <tr class="border-y border-transparent border-b-slate-200 dark:border-b-navy-500">
+                            <td class="whitespace-nowrap px-4 py-3 sm:px-5">{{ distributor.user.name }}</td>
+                            <td class="whitespace-nowrap px-4 py-3 sm:px-5">{{ distributor.arn_number }}</td>
+                            <td class="whitespace-nowrap px-4 py-3 sm:px-5">{{ distributor.rm.user.name|default:"-" }}</td>
+                            <td class="whitespace-nowrap px-4 py-3 sm:px-5">
+                                <a href="#" class="btn h-8 w-8 rounded-full p-0 hover:bg-slate-300/20 focus:bg-slate-300/20 active:bg-slate-300/25">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                    </svg>
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="px-4 py-3 text-center">No Distributors found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>
-
-<div class="card p-4">
-    <div id="distributor-table"></div>
-</div>
-{% endblock %}
-
-{% block extra_scripts %}
-<script src="https://unpkg.com/gridjs/dist/gridjs.umd.js"></script>
-<link href="https://unpkg.com/gridjs/dist/theme/mermaid.min.css" rel="stylesheet" />
-<script>
-    new gridjs.Grid({
-        columns: ["Name", "ARN", "Mobile", "RM", "Parent", "Actions"],
-        data: [
-            {% for dist in distributors %}
-            ["{{ dist.user.name|default:dist.user.username }}", "{{ dist.arn_number }}", "{{ dist.mobile }}",
-             "{{ dist.rm.user.username|default:'-' }}", "{{ dist.parent.user.username|default:'-' }}",
-             gridjs.html(`<a href='#' class='text-primary'>Edit</a>`)],
-            {% endfor %}
-        ],
-        search: true,
-        pagination: {
-            limit: 10
-        },
-        sort: true,
-    }).render(document.getElementById("distributor-table"));
-</script>
 {% endblock %}
