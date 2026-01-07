@@ -1,0 +1,38 @@
+{% extends 'layouts/base.html' %}
+
+{% block content %}
+<div class="flex items-center justify-between py-5 lg:py-6">
+    <h2 class="text-xl font-medium text-slate-800 dark:text-navy-50 lg:text-2xl">
+      Distributors
+    </h2>
+    <a href="{% url 'distributor_create' %}" class="btn bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90">
+        Add New Distributor
+    </a>
+</div>
+
+<div class="card p-4">
+    <div id="distributor-table"></div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://unpkg.com/gridjs/dist/gridjs.umd.js"></script>
+<link href="https://unpkg.com/gridjs/dist/theme/mermaid.min.css" rel="stylesheet" />
+<script>
+    new gridjs.Grid({
+        columns: ["Name", "ARN", "Mobile", "RM", "Parent", "Actions"],
+        data: [
+            {% for dist in distributors %}
+            ["{{ dist.user.name|default:dist.user.username }}", "{{ dist.arn_number }}", "{{ dist.mobile }}",
+             "{{ dist.rm.user.username|default:'-' }}", "{{ dist.parent.user.username|default:'-' }}",
+             gridjs.html(`<a href='#' class='text-primary'>Edit</a>`)],
+            {% endfor %}
+        ],
+        search: true,
+        pagination: {
+            limit: 10
+        },
+        sort: true,
+    }).render(document.getElementById("distributor-table"));
+</script>
+{% endblock %}

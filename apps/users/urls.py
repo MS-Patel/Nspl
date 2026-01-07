@@ -1,0 +1,23 @@
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('login/', views.CustomLoginView.as_view(), name='login'),
+    path('logout/', views.CustomLogoutView.as_view(), name='logout'),
+
+    # Dashboards
+    path('dashboard/admin/', views.AdminDashboardView.as_view(), name='admin_dashboard'),
+    path('dashboard/rm/', views.RMDashboardView.as_view(), name='rm_dashboard'),
+    path('dashboard/distributor/', views.DistributorDashboardView.as_view(), name='distributor_dashboard'),
+    path('dashboard/investor/', views.InvestorDashboardView.as_view(), name='investor_dashboard'),
+
+    # User Management
+    path('users/rm/', views.RMListView.as_view(), name='rm_list'),
+    path('users/rm/create/', views.RMCreateView.as_view(), name='rm_create'),
+
+    path('users/distributor/', views.DistributorListView.as_view(), name='distributor_list'),
+    path('users/distributor/create/', views.DistributorCreateView.as_view(), name='distributor_create'),
+
+    path('users/investor/', views.InvestorListView.as_view(), name='investor_list'),
+    path('users/investor/create/', views.InvestorCreateView.as_view(), name='investor_create'),
+]

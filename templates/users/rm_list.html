@@ -1,0 +1,37 @@
+{% extends 'layouts/base.html' %}
+
+{% block content %}
+<div class="flex items-center justify-between py-5 lg:py-6">
+    <h2 class="text-xl font-medium text-slate-800 dark:text-navy-50 lg:text-2xl">
+      Relationship Managers
+    </h2>
+    <a href="{% url 'rm_create' %}" class="btn bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90">
+        Add New RM
+    </a>
+</div>
+
+<div class="card p-4">
+    <div id="rm-table"></div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://unpkg.com/gridjs/dist/gridjs.umd.js"></script>
+<link href="https://unpkg.com/gridjs/dist/theme/mermaid.min.css" rel="stylesheet" />
+<script>
+    new gridjs.Grid({
+        columns: ["Name", "Username", "Email", "Employee Code", "Actions"],
+        data: [
+            {% for rm in rms %}
+            ["{{ rm.user.name|default:'-' }}", "{{ rm.user.username }}", "{{ rm.user.email }}", "{{ rm.employee_code }}",
+             gridjs.html(`<a href='#' class='text-primary'>Edit</a>`)],
+            {% endfor %}
+        ],
+        search: true,
+        pagination: {
+            limit: 10
+        },
+        sort: true,
+    }).render(document.getElementById("rm-table"));
+</script>
+{% endblock %}
