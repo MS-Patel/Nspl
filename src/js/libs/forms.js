@@ -5,6 +5,7 @@ import Quill from "quill"; // @see https://quilljs.com/
 import flatpickr from "flatpickr"; // @see https://flatpickr.js.org/
 import Tom from "tom-select/dist/js/tom-select.complete.min"; // @see https://tom-select.js.org/
 import Cleave from "cleave.js/dist/cleave.min"; // @see https://github.com/nosir/cleave.js
+import JustValidate from "just-validate"; // @see https://just-validate.dev/
 
 // Register plugin image preview for filepond
 FilePond.registerPlugin(FilePondPluginImagePreview);
@@ -14,3 +15,4 @@ window.flatpickr = flatpickr;
 window.Quill = Quill;
 window.Tom = Tom;
 window.Cleave = Cleave;
+window.JustValidate = JustValidate;
