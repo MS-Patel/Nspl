@@ -17,13 +17,13 @@
   ],
   "author": "PiniaStudio",
   "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.15",
     "autoprefixer": "^10.4.21",
     "laravel-mix": "^6.0.49",
     "prettier": "^3.6.2",
     "prettier-plugin-tailwindcss": "^0.7.1",
     "source-map-loader": "^5.0.0",
-    "tailwindcss": "^4.1.15",
-    "@tailwindcss/postcss": "^4.1.15"
+    "tailwindcss": "^4.1.15"
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^7.1.0",
@@ -37,6 +37,7 @@
     "flatpickr": "^4.6.13",
     "gridjs": "^6.2.0",
     "highlight.js": "^11.11.1",
+    "just-validate": "^4.3.0",
     "quill": "^2.0.3",
     "simplebar": "^6.3.2",
     "sortablejs": "^1.15.6",
