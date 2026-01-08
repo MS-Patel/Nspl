@@ -2,9 +2,18 @@ import os
 import random
 import string
 import requests
+import logging
 from django.conf import settings
 from zeep import Client, Settings
 import datetime
+
+# Configure logging
+logging.basicConfig(
+    filename='bse_api.log',
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 class BSEStarMFClient:
     def __init__(self):
@@ -75,10 +84,16 @@ class BSEStarMFClient:
         }
 
         try:
+            # Mask sensitive data for logging
+            log_body = request_body.copy()
+            log_body['Password'] = '********'
+            logger.info(f"BSE Client Registration Request: {log_body}")
+
             response = requests.post(self.common_api_url, json=request_body, verify=False) # verify=False for UAT often needed
             response.raise_for_status()
 
             result = response.json()
+            logger.info(f"BSE Client Registration Response: {result}")
 
             if result.get("Status") == "0":
                 return {
@@ -94,6 +109,7 @@ class BSEStarMFClient:
                 }
 
         except Exception as e:
+            logger.error(f"BSE Client Registration Error: {str(e)}")
             return {
                 "status": "error",
                 "remarks": f"HTTP/Network Error: {str(e)}"

@@ -14,7 +14,7 @@
         {% csrf_token %}
 
         <div class="grid grid-cols-12 gap-4 sm:gap-5 lg:gap-6">
-            <div class="col-span-12 grid lg:col-span-3 lg:place-items-center">
+            <div class="col-span-12 grid lg:col-span-3">
                 <div>
                     <ol class="steps is-vertical line-space [--size:2.75rem] [--line:.5rem]">
                         <li class="step space-x-4 pb-12 before:bg-slate-200 dark:before:bg-navy-500" id="step-indicator-1">
@@ -281,8 +281,21 @@
     }
 
     function nextStep(current) {
-        // Simple validation could go here
-        showStep(current + 1);
+        const currentStepDiv = document.getElementById('step-' + current);
+        const inputs = currentStepDiv.querySelectorAll('input, select, textarea');
+        let isValid = true;
+
+        inputs.forEach(input => {
+            if (!input.checkValidity()) {
+                input.reportValidity();
+                isValid = false;
+                return;
+            }
+        });
+
+        if (isValid) {
+            showStep(current + 1);
+        }
     }
 
     function prevStep(current) {

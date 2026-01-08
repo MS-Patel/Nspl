@@ -135,7 +135,7 @@
         {
           id: "name",
           name: "Name",
-          formatter: (cell) => Gridjs.html(`<span class="font-medium text-slate-700 dark:text-navy-100">${cell}</span>`)
+          formatter: (cell, row) => Gridjs.html(`<a href="${row.cells[7].data}" class="font-medium text-primary hover:underline dark:text-accent-light">${cell}</a>`)
         },
         { id: "pan", name: "PAN" },
         { id: "mobile", name: "Mobile" },
@@ -165,7 +165,8 @@
                   <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                 </svg>
             </a>`)
-        }
+        },
+        { id: "detail_url", hidden: true }
       ],
       data: tableData,
       sort: true,

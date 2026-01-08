@@ -180,10 +180,13 @@ class InvestorListView(LoginRequiredMixin, ListView):
                 'mobile': inv.mobile,
                 'distributor_name': inv.distributor.user.name if inv.distributor and inv.distributor.user.name else (inv.distributor.user.username if inv.distributor else ''),
                 'status': 'Active' if inv.user.is_active else 'Inactive',
-                'action_url': '#' # Placeholder
+                'detail_url': reverse('investor_detail', args=[inv.pk]),
+                'action_url': reverse('investor_update', args=[inv.pk])
             })
         context['grid_data_json'] = json.dumps(data)
         return context
+
+from django.views.generic import UpdateView
 
 class InvestorCreateView(LoginRequiredMixin, CreateView):
     model = InvestorProfile
@@ -242,6 +245,51 @@ class InvestorCreateView(LoginRequiredMixin, CreateView):
                 nominees.instance = self.object
                 nominees.save()
             else:
+                return self.form_invalid(form)
+
+        return super().form_valid(form)
+
+class InvestorUpdateView(LoginRequiredMixin, UpdateView):
+    model = InvestorProfile
+    form_class = InvestorProfileForm
+    template_name = 'users/investor_onboarding.html'
+    success_url = reverse_lazy('investor_list')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = "Update Investor"
+        if self.request.POST:
+            context['bank_accounts'] = BankAccountFormSet(self.request.POST, instance=self.object)
+            context['nominees'] = NomineeFormSet(self.request.POST, instance=self.object)
+        else:
+            context['bank_accounts'] = BankAccountFormSet(instance=self.object)
+            context['nominees'] = NomineeFormSet(instance=self.object)
+        return context
+
+    def form_valid(self, form):
+        context = self.get_context_data()
+        bank_accounts = context['bank_accounts']
+        nominees = context['nominees']
+
+        with transaction.atomic():
+            # 1. Update User (Name/Email)
+            name = form.cleaned_data.get('name')
+            email = form.cleaned_data.get('email')
+            if name or email:
+                user = self.object.user
+                if name: user.name = name
+                if email: user.email = email
+                user.save()
+
+            # 2. Save Investor Profile
+            self.object = form.save()
+
+            # 3. Save Formsets
+            if bank_accounts.is_valid() and nominees.is_valid():
+                bank_accounts.save()
+                nominees.save()
+            else:
+                # If formsets are invalid, render the form again with errors
                 return self.form_invalid(form)
 
         return super().form_valid(form)
