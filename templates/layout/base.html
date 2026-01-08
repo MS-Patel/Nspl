@@ -30,7 +30,7 @@
     <link rel="stylesheet" href="{% static 'css/app.css' %}" />
     <link rel="stylesheet" href="{% static 'css/style.css' %}" />
     <script>
-      localStorage.getItem("_x_darkMode_on") === "true" &&
+      localStorage.getItem("dark-mode") === "dark" &&
       document.documentElement.classList.add("dark");
   </script>
   <script src="{% static 'js/pages/navigation-horizontal.js' %}" defer></script>
@@ -40,7 +40,7 @@
   </head>
   <body class="is-header-blur navigation:horizontal">
     <!-- App preloader -->
-    <div class="app-preloader fixed z-50 grid h-full w-full place-content-center">
+    <div class="app-preloader fixed z-50 grid h-full w-full place-content-center bg-slate-50 dark:bg-navy-900">
       <div class="app-preloader-inner relative inline-block size-48"></div>
     </div>
     <!-- Page Wrapper -->
