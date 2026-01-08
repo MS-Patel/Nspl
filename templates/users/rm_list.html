@@ -1,54 +1,255 @@
 {% extends 'layout/base.html' %}
-
-{% block page_title %}Relationship Managers{% endblock %}
-
+{% load static %}
+{% block css %}
+<!-- Add custom CSS here if needed -->
+{% endblock %}
 {% block content %}
-<div class="grid grid-cols-12 gap-4 sm:gap-5 lg:gap-6">
-    <div class="col-span-12">
-        <div class="flex items-center justify-between">
-            <h2 class="text-base font-medium tracking-wide text-slate-700 line-clamp-1 dark:text-navy-100">
-                Relationship Managers List
-            </h2>
-            <div class="flex">
-                <a href="{% url 'rm_create' %}" class="btn bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90">
-                    Add RM
-                </a>
-            </div>
+<div class="my-5 flex h-8 items-center justify-between px-4 sm:px-5">
+  <div class="flex items-center space-x-4">
+        <h2
+          class="text-xl font-medium text-slate-800 dark:text-navy-50 lg:text-2xl"
+        >
+         Relationship Managers
+        </h2>
+        <div class="hidden h-full py-1 sm:flex">
+          <div class="h-full w-px bg-slate-300 dark:bg-navy-600"></div>
         </div>
-        <div class="card mt-3">
-            <div class="is-scrollbar-hidden min-w-full overflow-x-auto">
-                <table class="is-hoverable w-full text-left">
-                    <thead>
-                        <tr>
-                            <th class="whitespace-nowrap rounded-tl-lg bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">Name</th>
-                            <th class="whitespace-nowrap bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">Employee Code</th>
-                            <th class="whitespace-nowrap bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">Email</th>
-                            <th class="whitespace-nowrap rounded-tr-lg bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for rm in rms %}
-                        <tr class="border-y border-transparent border-b-slate-200 dark:border-b-navy-500">
-                            <td class="whitespace-nowrap px-4 py-3 sm:px-5">{{ rm.user.name }}</td>
-                            <td class="whitespace-nowrap px-4 py-3 sm:px-5">{{ rm.employee_code }}</td>
-                            <td class="whitespace-nowrap px-4 py-3 sm:px-5">{{ rm.user.email }}</td>
-                            <td class="whitespace-nowrap px-4 py-3 sm:px-5">
-                                <a href="#" class="btn h-8 w-8 rounded-full p-0 hover:bg-slate-300/20 focus:bg-slate-300/20 active:bg-slate-300/25">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                    </svg>
-                                </a>
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="4" class="px-4 py-3 text-center">No Relationship Managers found.</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
+        <ul class="hidden flex-wrap items-center space-x-2 sm:flex">
+          <li class="flex items-center space-x-2">
+            <a
+              class="text-primary transition-colors hover:text-primary-focus dark:text-accent-light dark:hover:text-accent"
+              href="#"
+              >Users</a
+            >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="size-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+          </li>
+          <li>Relationship Managers</li>
+        </ul>
+      </div>
+  <div class="flex items-center space-x-2">
+     <a href="{% url 'rm_create' %}" class="btn bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90">
+      Add New RM
+    </a>
+  </div>
 </div>
+<div class="card p-4">
+  <div>
+    <div class="flex items-end justify-between">
+      <input id="filter-input" type="search" placeholder="Search RMs..." class="mb-4 p-2 border rounded form-control" />
+      <div class="flex items-end justify-end mb-4 flex-wrap ">
+        <div id="dropdown-wrapper6" class="inline-flex">
+          <button
+            class="popper-ref btn space-x-2 bg-slate-150 font-medium text-slate-800 hover:bg-slate-200 focus:bg-slate-200 active:bg-slate-200/80 dark:bg-navy-500 dark:text-navy-50 dark:hover:bg-navy-450 dark:focus:bg-navy-450 dark:active:bg-navy-450/90 [&.is-active_svg]:rotate-180">
+            <span>Export</span>
+            <svg xmlns="http://www.w3.org/2000/svg" class="size-4 transition-transform duration-200" fill="none"
+              viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          <div class="popper-root">
+            <div
+              class="popper-box rounded-md border border-slate-150 bg-white py-1.5 font-inter dark:border-navy-500 dark:bg-navy-700">
+              <ul>
+                <li>
+                  <a href="#" id="btn-export-csv"
+                    class="flex h-8 items-center space-x-3 px-3 pr-8 font-medium tracking-wide outline-hidden transition-all hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="mt-px size-4.5" fill="none" viewBox="0 0 24 24"
+                      stroke="currentColor" stroke-width="1.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                    <span> CSV</span></a>
+                </li>
+                <li>
+                  <a href="#" id="btn-export-excel"
+                    class="flex h-8 items-center space-x-3 px-3 pr-8 font-medium tracking-wide outline-hidden transition-all hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-4.5" fill="none" viewBox="0 0 24 24"
+                      stroke="currentColor" stroke-width="1.5">
+                      <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                    <span> Excel</span></a>
+                </li>
+                <li>
+                  <a href="#" id="btn-export-pdf"
+                    class="flex h-8 items-center space-x-3 px-3 pr-8 font-medium tracking-wide outline-hidden transition-all hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-4.5" fill="none" viewBox="0 0 24 24"
+                      stroke="currentColor" stroke-width="1.5">
+                      <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    <span> PDF</span></a>
+                </li>
+                <li>
+                  <a href="#" id="btn-copy-clipboard"
+                    class="flex h-8 items-center space-x-3 px-3 pr-8 font-medium tracking-wide text-error outline-hidden transition-all hover:bg-error/20 focus:bg-error/20">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-4.5" fill="none" viewBox="0 0 24 24"
+                      stroke="currentColor" stroke-width="1.5">
+                      <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    <span> Copy to clipboard</span></a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <label class="block ml-4 flex items-center">
+          <select id="status-filter" class="mt-1.5 w-full">
+            <option value="">All Statuses</option>
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
+          </select>
+        </label>
+      </div>
+    </div>
+    <div id="rm_list"></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block javascript %}
+{% include 'includes/gridjs_export_scripts.html' %}
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const tableData = {{ grid_data_json|safe }};
+    const gridContainer = document.querySelector("#rm_list");
+
+    const gridConfig = {
+      columns: [
+        { id: "id", hidden: true },
+        {
+          id: "name",
+          name: "Name",
+          formatter: (cell) => Gridjs.html(`<span class="font-medium text-slate-700 dark:text-navy-100">${cell}</span>`)
+        },
+        { id: "email", name: "Email" },
+        { id: "employee_code", name: "Emp Code" },
+        {
+            id: "status",
+            name: "Status",
+            formatter: (cell) => {
+                if(cell === 'Active') {
+                     return Gridjs.html(`<div class="badge space-x-2.5 rounded-full bg-success/10 text-success dark:bg-success/15">
+                        <div class="h-2 w-2 rounded-full bg-current"></div>
+                        <span>Active</span>
+                     </div>`);
+                } else {
+                     return Gridjs.html(`<div class="badge space-x-2.5 rounded-full bg-error/10 text-error dark:bg-error/15">
+                        <div class="h-2 w-2 rounded-full bg-current"></div>
+                        <span>Inactive</span>
+                     </div>`);
+                }
+            }
+        },
+        {
+            id: "action_url",
+            name: "Actions",
+            formatter: (cell) => Gridjs.html(`<a href="${cell}" class="btn h-8 w-8 rounded-full p-0 hover:bg-slate-300/20 focus:bg-slate-300/20 active:bg-slate-300/25 dark:hover:bg-navy-300/20 dark:focus:bg-navy-300/20 dark:active:bg-navy-300/25">
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                </svg>
+            </a>`)
+        }
+      ],
+      data: tableData,
+      sort: true,
+      search: false, // Custom search below
+      pagination: {
+        limit: 10
+      },
+      className: {
+        table: 'is-hoverable w-full text-left',
+        tbody: 'text-slate-600 dark:text-navy-200',
+        thead: 'bg-slate-200 text-slate-800 dark:bg-navy-800 dark:text-navy-100',
+      }
+    };
+
+    const grid = new Gridjs.Grid(gridConfig).render(gridContainer);
+
+    // Export Columns definition
+    const columns = [
+      { id: 'name', name: 'Name' },
+      { id: 'email', name: 'Email' },
+      { id: 'employee_code', name: 'Employee Code' },
+      { id: 'status', name: 'Status' },
+    ];
+
+    // Popper setup
+    const config = {
+      placement: "bottom-start",
+      modifiers: [
+        {
+          name: "offset",
+          options: {
+            offset: [0, 4],
+          },
+        },
+      ],
+    };
+    new Popper("#dropdown-wrapper6", ".popper-ref", ".popper-root", config);
+
+    // Tom Select setup
+    const statusFilter = document.querySelector("#status-filter");
+    const tomConfig = {
+      create: false,
+      sortField: { field: "text", direction: "asc" },
+    };
+    var filterSelect = new Tom(statusFilter, tomConfig);
+
+    // Filter Logic
+    filterSelect.on('change', () => {
+      const selectedStatus = statusFilter.value;
+      let filteredData = tableData;
+      if (selectedStatus) {
+        filteredData = tableData.filter(item => item.status === selectedStatus);
+      }
+      grid.updateConfig({ data: filteredData }).forceRender();
+    });
+
+    // Search Logic
+    const filterInput = document.getElementById('filter-input');
+    filterInput.addEventListener('input', (e) => {
+      const keyword = e.target.value.toLowerCase();
+      if (!keyword) {
+          grid.updateConfig({ data: tableData }).forceRender();
+          return;
+      }
+      const filteredData = tableData.filter(item =>
+          item.name.toLowerCase().includes(keyword) ||
+          item.email.toLowerCase().includes(keyword) ||
+          item.employee_code.toLowerCase().includes(keyword)
+      );
+      grid.updateConfig({ data: filteredData }).forceRender();
+    });
+
+    // Exports
+    document.getElementById('btn-export-csv').addEventListener('click', () => {
+      GridJSExportUtils.exportCsv(tableData, columns, { filename: 'rm_list' });
+    });
+    document.getElementById('btn-export-excel').addEventListener('click', () => {
+      GridJSExportUtils.exportExcel(tableData, columns, { filename: 'rm_list', sheetName: 'RMs' });
+    });
+    document.getElementById('btn-export-pdf').addEventListener('click', () => {
+      GridJSExportUtils.exportPdf(tableData, columns, { filename: 'rm_list', title: 'Relationship Managers' });
+    });
+    document.getElementById('btn-copy-clipboard').addEventListener('click', () => {
+      GridJSExportUtils.copyToClipboard(tableData, columns);
+    });
+  });
+</script>
 {% endblock %}

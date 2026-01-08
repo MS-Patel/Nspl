@@ -6,6 +6,7 @@ from django.views.generic import TemplateView, ListView, CreateView
 from django.contrib.auth import get_user_model
 from .models import RMProfile, DistributorProfile, InvestorProfile
 from .forms import RMCreationForm, DistributorCreationForm, InvestorCreationForm
+import json
 
 User = get_user_model()
 
@@ -71,6 +72,21 @@ class RMListView(LoginRequiredMixin, IsAdminMixin, ListView):
     template_name = 'users/rm_list.html'
     context_object_name = 'rms'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        data = []
+        for rm in self.get_queryset():
+            data.append({
+                'id': rm.id,
+                'name': rm.user.name if rm.user.name else rm.user.username,
+                'email': rm.user.email,
+                'employee_code': rm.employee_code,
+                'status': 'Active' if rm.user.is_active else 'Inactive',
+                'action_url': '#' # Placeholder for edit/detail view
+            })
+        context['grid_data_json'] = json.dumps(data)
+        return context
+
 class RMCreateView(LoginRequiredMixin, IsAdminMixin, CreateView):
     model = User # Form handles User + Profile
     form_class = RMCreationForm
@@ -95,6 +111,22 @@ class DistributorListView(LoginRequiredMixin, IsAdminOrRMMixin, ListView):
             # RM sees only their assigned distributors
             return qs.filter(rm__user=user)
         return qs # Admin sees all
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        data = []
+        for dist in self.get_queryset():
+            data.append({
+                'id': dist.id,
+                'name': dist.user.name if dist.user.name else dist.user.username,
+                'arn': dist.arn_number,
+                'mobile': dist.mobile,
+                'rm_name': dist.rm.user.name if dist.rm and dist.rm.user.name else (dist.rm.user.username if dist.rm else ''),
+                'status': 'Active' if dist.user.is_active else 'Inactive',
+                'action_url': '#' # Placeholder
+            })
+        context['grid_data_json'] = json.dumps(data)
+        return context
 
 class DistributorCreateView(LoginRequiredMixin, IsAdminOrRMMixin, CreateView):
     form_class = DistributorCreationForm
@@ -129,6 +161,22 @@ class InvestorListView(LoginRequiredMixin, ListView):
         elif user.user_type == User.Types.ADMIN:
             return qs
         return qs.none() # Investors can't see list of investors
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        data = []
+        for inv in self.get_queryset():
+            data.append({
+                'id': inv.id,
+                'name': inv.user.name if inv.user.name else inv.user.username,
+                'pan': inv.pan,
+                'mobile': inv.mobile,
+                'distributor_name': inv.distributor.user.name if inv.distributor and inv.distributor.user.name else (inv.distributor.user.username if inv.distributor else ''),
+                'status': 'Active' if inv.user.is_active else 'Inactive',
+                'action_url': '#' # Placeholder
+            })
+        context['grid_data_json'] = json.dumps(data)
+        return context
 
 class InvestorCreateView(LoginRequiredMixin, IsDistributorMixin, CreateView):
     # Currently restricting creation to Distributors only as per typical workflow
