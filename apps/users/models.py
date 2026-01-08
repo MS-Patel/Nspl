@@ -46,17 +46,120 @@ class DistributorProfile(models.Model):
         return f"{self.user.username} (ARN-{self.arn_number})"
 
 class InvestorProfile(models.Model):
+    # Tax Status Choices
+    INDIVIDUAL = '01'
+    MINOR = '02'
+    HUF = '03'
+    COMPANY = '04'
+    NRI_REPATRIABLE = '21'
+    NRI_NON_REPATRIABLE = '24'
+
+    TAX_STATUS_CHOICES = [
+        (INDIVIDUAL, 'Individual'),
+        (MINOR, 'On Behalf of Minor'),
+        (HUF, 'HUF'),
+        (COMPANY, 'Company'),
+        (NRI_REPATRIABLE, 'NRI (Repatriable)'),
+        (NRI_NON_REPATRIABLE, 'NRI (Non-Repatriable)'),
+    ]
+
+    # Occupation Choices
+    BUSINESS = '01'
+    SERVICE = '02'
+    PROFESSIONAL = '03'
+    AGRICULTURIST = '04'
+    RETIRED = '05'
+    HOUSEWIFE = '06'
+    STUDENT = '07'
+    OTHERS = '08'
+
+    OCCUPATION_CHOICES = [
+        (BUSINESS, 'Business'),
+        (SERVICE, 'Service'),
+        (PROFESSIONAL, 'Professional'),
+        (AGRICULTURIST, 'Agriculturist'),
+        (RETIRED, 'Retired'),
+        (HOUSEWIFE, 'Housewife'),
+        (STUDENT, 'Student'),
+        (OTHERS, 'Others'),
+    ]
+
+    # Holding Nature
+    SINGLE = 'SI'
+    JOINT = 'JO'
+    ANYONE_SURVIVOR = 'AS'
+
+    HOLDING_CHOICES = [
+        (SINGLE, 'Single'),
+        (JOINT, 'Joint'),
+        (ANYONE_SURVIVOR, 'Anyone or Survivor'),
+    ]
+
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='investor_profile')
     distributor = models.ForeignKey(DistributorProfile, on_delete=models.SET_NULL, null=True, blank=True, related_name='investors')
 
+    # Basic Info
     pan = models.CharField(max_length=10, unique=True)
     dob = models.DateField(null=True, blank=True, verbose_name="Date of Birth")
-    gender = models.CharField(max_length=10, choices=[('M', 'Male'), ('F', 'Female'), ('O', 'Other')], blank=True)
+    gender = models.CharField(max_length=1, choices=[('M', 'Male'), ('F', 'Female'), ('O', 'Other')], blank=True)
     mobile = models.CharField(max_length=15, blank=True)
-    address = models.TextField(blank=True)
+    email = models.EmailField(blank=True)
 
-    # Placeholder for future KYC/BSE fields
+    # Address Details
+    address_1 = models.CharField(max_length=40, blank=True)
+    address_2 = models.CharField(max_length=40, blank=True)
+    address_3 = models.CharField(max_length=40, blank=True)
+    city = models.CharField(max_length=35, blank=True)
+    state = models.CharField(max_length=30, blank=True) # Could be a ChoiceField later
+    pincode = models.CharField(max_length=6, blank=True)
+    country = models.CharField(max_length=35, default='India', blank=True)
+
+    # BSE Specific Fields
+    tax_status = models.CharField(max_length=2, choices=TAX_STATUS_CHOICES, default=INDIVIDUAL)
+    occupation = models.CharField(max_length=2, choices=OCCUPATION_CHOICES, default=SERVICE)
+    holding_nature = models.CharField(max_length=2, choices=HOLDING_CHOICES, default=SINGLE)
+
+    # Optional/Conditional Fields
+    second_applicant_name = models.CharField(max_length=70, blank=True)
+    second_applicant_pan = models.CharField(max_length=10, blank=True)
+    third_applicant_name = models.CharField(max_length=70, blank=True)
+    third_applicant_pan = models.CharField(max_length=10, blank=True)
+
+    guardian_name = models.CharField(max_length=70, blank=True, help_text="Required if Tax Status is Minor")
+    guardian_pan = models.CharField(max_length=10, blank=True, help_text="Required if Tax Status is Minor")
+
+    # Status Flags
     kyc_status = models.BooleanField(default=False)
+    ucc_code = models.CharField(max_length=20, blank=True, null=True, help_text="Unique Client Code from BSE")
 
     def __str__(self):
         return f"{self.user.username} (PAN-{self.pan})"
+
+class BankAccount(models.Model):
+    ACCOUNT_TYPES = [
+        ('SB', 'Savings'),
+        ('CB', 'Current'),
+        ('NE', 'NRE'),
+        ('NO', 'NRO'),
+    ]
+
+    investor = models.ForeignKey(InvestorProfile, on_delete=models.CASCADE, related_name='bank_accounts')
+    ifsc_code = models.CharField(max_length=11)
+    account_number = models.CharField(max_length=20)
+    account_type = models.CharField(max_length=2, choices=ACCOUNT_TYPES, default='SB')
+    bank_name = models.CharField(max_length=100, blank=True)
+    branch_name = models.CharField(max_length=100, blank=True)
+    is_default = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.bank_name} - {self.account_number}"
+
+class Nominee(models.Model):
+    investor = models.ForeignKey(InvestorProfile, on_delete=models.CASCADE, related_name='nominees')
+    name = models.CharField(max_length=100)
+    relationship = models.CharField(max_length=50)
+    percentage = models.DecimalField(max_digits=5, decimal_places=2, help_text="Percentage of allocation")
+    guardian_name = models.CharField(max_length=100, blank=True, help_text="If nominee is a minor")
+
+    def __str__(self):
+        return f"{self.name} ({self.percentage}%)"

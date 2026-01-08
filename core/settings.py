@@ -136,3 +136,8 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, 'assets'),]
 
 MEDIA_ROOT =  os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
+
+# BSE StarMF API Configuration
+BSE_MEMBER_ID = "24637"
+BSE_USER_ID = "2463702"
+BSE_PASSWORD = "Abc@1234"
