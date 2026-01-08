@@ -178,9 +178,8 @@ class InvestorListView(LoginRequiredMixin, ListView):
         context['grid_data_json'] = json.dumps(data)
         return context
 
-class InvestorCreateView(LoginRequiredMixin, IsDistributorMixin, CreateView):
-    # Currently restricting creation to Distributors only as per typical workflow
-    # Admin/RM creation can be added if needed
+class InvestorCreateView(LoginRequiredMixin, CreateView):
+
     form_class = InvestorCreationForm
     template_name = 'users/user_form.html'
     success_url = reverse_lazy('investor_list')
