@@ -2,10 +2,17 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.views import LoginView, LogoutView
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
-from django.views.generic import TemplateView, ListView, CreateView
+from django.views.generic import TemplateView, ListView, CreateView, DetailView
 from django.contrib.auth import get_user_model
-from .models import RMProfile, DistributorProfile, InvestorProfile
-from .forms import RMCreationForm, DistributorCreationForm, InvestorCreationForm
+from django.db import transaction
+from django.contrib import messages
+from django.urls import reverse
+from django.views import View
+from django.shortcuts import get_object_or_404
+from .models import RMProfile, DistributorProfile, InvestorProfile, BankAccount, Nominee
+from .forms import RMCreationForm, DistributorCreationForm, InvestorCreationForm, InvestorProfileForm, BankAccountFormSet, NomineeFormSet
+from apps.integration.bse_client import BSEStarMFClient
+from apps.integration.utils import map_investor_to_bse_param_string
 import json
 
 User = get_user_model()
@@ -179,17 +186,99 @@ class InvestorListView(LoginRequiredMixin, ListView):
         return context
 
 class InvestorCreateView(LoginRequiredMixin, CreateView):
-
-    form_class = InvestorCreationForm
-    template_name = 'users/user_form.html'
+    model = InvestorProfile
+    form_class = InvestorProfileForm
+    template_name = 'users/investor_onboarding.html'
     success_url = reverse_lazy('investor_list')
-
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        kwargs['distributor_user'] = self.request.user
-        return kwargs
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = "Onboard Investor"
+        if self.request.POST:
+            context['bank_accounts'] = BankAccountFormSet(self.request.POST)
+            context['nominees'] = NomineeFormSet(self.request.POST)
+        else:
+            context['bank_accounts'] = BankAccountFormSet()
+            context['nominees'] = NomineeFormSet()
         return context
+
+    def form_valid(self, form):
+        context = self.get_context_data()
+        bank_accounts = context['bank_accounts']
+        nominees = context['nominees']
+
+        with transaction.atomic():
+            # 1. Create User
+            pan = form.cleaned_data['pan']
+            name = form.cleaned_data['name']
+            email = form.cleaned_data['email']
+
+            if User.objects.filter(username=pan).exists():
+                messages.error(self.request, f"User with PAN {pan} already exists.")
+                return self.form_invalid(form)
+
+            user = User.objects.create_user(
+                username=pan,
+                email=email,
+                password=pan,
+                name=name,
+                user_type=User.Types.INVESTOR
+            )
+
+            # 2. Save Investor Profile
+            self.object = form.save(commit=False)
+            self.object.user = user
+
+            if self.request.user.user_type == User.Types.DISTRIBUTOR:
+                self.object.distributor = self.request.user.distributor_profile
+
+            self.object.kyc_status = True  # Mock KYC
+            self.object.save()
+
+            # 3. Save Formsets
+            if bank_accounts.is_valid() and nominees.is_valid():
+                bank_accounts.instance = self.object
+                bank_accounts.save()
+                nominees.instance = self.object
+                nominees.save()
+            else:
+                return self.form_invalid(form)
+
+        return super().form_valid(form)
+
+class InvestorDetailView(LoginRequiredMixin, DetailView):
+    model = InvestorProfile
+    template_name = 'users/investor_detail.html'
+    context_object_name = 'investor'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['bank_accounts'] = self.object.bank_accounts.all()
+        context['nominees'] = self.object.nominees.all()
+        return context
+
+class PushToBSEView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        investor = get_object_or_404(InvestorProfile, pk=pk)
+
+        if request.user.user_type not in [User.Types.RM, User.Types.DISTRIBUTOR, User.Types.ADMIN]:
+             messages.error(request, "Permission denied.")
+             return redirect('investor_detail', pk=pk)
+
+        try:
+            param_string = map_investor_to_bse_param_string(investor)
+        except Exception as e:
+            messages.error(request, f"Data Mapping Error: {str(e)}")
+            return redirect('investor_detail', pk=pk)
+
+        client = BSEStarMFClient()
+        try:
+            response = client.register_client({'Param': param_string})
+            if response['status'] == 'success':
+                messages.success(request, f"BSE Registration Successful: {response.get('remarks')}")
+            else:
+                messages.error(request, f"BSE Error: {response.get('remarks')}")
+        except Exception as e:
+             messages.error(request, f"API Call Failed: {str(e)}")
+
+        return redirect('investor_detail', pk=pk)

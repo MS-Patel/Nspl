@@ -20,4 +20,7 @@ urlpatterns = [
 
     path('users/investor/', views.InvestorListView.as_view(), name='investor_list'),
     path('users/investor/create/', views.InvestorCreateView.as_view(), name='investor_create'),
+    path('users/investor/onboard/', views.InvestorCreateView.as_view(), name='investor_onboard'), # New Wizard
+    path('users/investor/<int:pk>/', views.InvestorDetailView.as_view(), name='investor_detail'),
+    path('users/investor/<int:pk>/push-bse/', views.PushToBSEView.as_view(), name='push_to_bse'),
 ]

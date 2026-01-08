@@ -1,7 +1,8 @@
 from django import forms
 from django.contrib.auth import get_user_model
 from django.db import transaction
-from .models import RMProfile, DistributorProfile, InvestorProfile
+from django.forms import inlineformset_factory
+from .models import RMProfile, DistributorProfile, InvestorProfile, BankAccount, Nominee
 
 User = get_user_model()
 
@@ -85,6 +86,9 @@ class DistributorCreationForm(UserCreationForm):
         return user
 
 class InvestorCreationForm(UserCreationForm):
+    """
+    Simple form for basic investor creation. Kept for backward compatibility or simple adds.
+    """
     pan = forms.CharField(max_length=10)
     dob = forms.DateField(required=False, widget=forms.DateInput(attrs={'type': 'date'}))
     gender = forms.ChoiceField(choices=[('M', 'Male'), ('F', 'Female'), ('O', 'Other')], required=False)
@@ -113,6 +117,63 @@ class InvestorCreationForm(UserCreationForm):
                     dob=self.cleaned_data.get('dob'),
                     gender=self.cleaned_data.get('gender', ''),
                     mobile=self.cleaned_data.get('mobile', ''),
-                    address=self.cleaned_data.get('address', '')
+                    address_1=self.cleaned_data.get('address', '')
                 )
         return user
+
+class InvestorProfileForm(forms.ModelForm):
+    """
+    Comprehensive form for Investor Profile, used in the Onboarding Wizard.
+    Includes User fields (name, email) managed manually or via a mixin.
+    """
+    # User fields
+    name = forms.CharField(max_length=255, label="Full Name")
+    email = forms.EmailField(label="Email Address")
+
+    # Date widget override
+    dob = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), required=True)
+
+    class Meta:
+        model = InvestorProfile
+        fields = [
+            'pan', 'dob', 'gender', 'mobile',
+            'tax_status', 'occupation', 'holding_nature',
+            'address_1', 'address_2', 'address_3', 'city', 'state', 'pincode', 'country',
+            'guardian_name', 'guardian_pan',
+            'second_applicant_name', 'second_applicant_pan',
+            'third_applicant_name', 'third_applicant_pan',
+        ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Populate initial user data if instance exists
+        if self.instance and self.instance.pk and self.instance.user:
+            self.fields['name'].initial = self.instance.user.name
+            self.fields['email'].initial = self.instance.user.email
+
+class BankAccountForm(forms.ModelForm):
+    class Meta:
+        model = BankAccount
+        fields = ['ifsc_code', 'account_number', 'account_type', 'bank_name', 'branch_name', 'is_default']
+
+class NomineeForm(forms.ModelForm):
+    class Meta:
+        model = Nominee
+        fields = ['name', 'relationship', 'percentage', 'guardian_name']
+
+# Formsets
+BankAccountFormSet = inlineformset_factory(
+    InvestorProfile,
+    BankAccount,
+    form=BankAccountForm,
+    extra=1,
+    can_delete=True
+)
+
+NomineeFormSet = inlineformset_factory(
+    InvestorProfile,
+    Nominee,
+    form=NomineeForm,
+    extra=1,
+    can_delete=True
+)

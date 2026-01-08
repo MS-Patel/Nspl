@@ -1,0 +1,161 @@
+{% extends 'layout/base.html' %}
+{% load static %}
+
+{% block content %}
+<main class="main-content w-full px-[var(--margin-x)] pb-8">
+    <div class="flex items-center space-x-4 py-5 lg:py-6">
+        <h2 class="text-xl font-medium text-slate-800 dark:text-navy-50 lg:text-2xl">
+            Investor Details
+        </h2>
+        <div class="hidden h-full py-1 sm:flex">
+            <div class="h-full w-px bg-slate-300 dark:bg-navy-600"></div>
+        </div>
+        <ul class="hidden flex-wrap items-center space-x-2 sm:flex">
+            <li class="flex items-center space-x-2">
+                <a class="text-primary transition-colors hover:text-primary-focus dark:text-accent-light dark:hover:text-accent" href="{% url 'investor_list' %}">Investors</a>
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+            </li>
+            <li>{{ investor.user.name }}</li>
+        </ul>
+    </div>
+
+    {% if messages %}
+    <div class="mb-4">
+        {% for message in messages %}
+        <div class="alert flex rounded-lg border border-primary/10 bg-primary/10 py-4 px-4 text-primary dark:border-accent-light/15 dark:bg-accent-light/15 dark:text-accent-light sm:px-5">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="grid grid-cols-12 gap-4 sm:gap-5 lg:gap-6">
+        <!-- Profile Card -->
+        <div class="col-span-12 lg:col-span-4">
+            <div class="card p-4 sm:p-5">
+                <div class="flex items-center space-x-4">
+                    <div class="avatar size-20">
+                        <img class="rounded-full" src="{% static 'images/avatar.png' %}" alt="avatar">
+                    </div>
+                    <div>
+                        <h3 class="text-base font-medium text-slate-700 dark:text-navy-100">{{ investor.user.name }}</h3>
+                        <p class="text-xs+ text-slate-400 dark:text-navy-300">{{ investor.email }}</p>
+                        <div class="mt-2 flex space-x-2">
+                            <span class="tag rounded-full bg-success/10 text-success hover:bg-success/20 focus:bg-success/20 active:bg-success/25">
+                                KYC: {% if investor.kyc_status %}Verified{% else %}Pending{% endif %}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="my-4 h-px bg-slate-200 dark:bg-navy-500"></div>
+
+                <div class="flex flex-col space-y-3">
+                    <div class="flex justify-between">
+                        <span>PAN</span>
+                        <span class="font-medium text-slate-700 dark:text-navy-100">{{ investor.pan }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Mobile</span>
+                        <span class="font-medium text-slate-700 dark:text-navy-100">{{ investor.mobile }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>DOB</span>
+                        <span class="font-medium text-slate-700 dark:text-navy-100">{{ investor.dob }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Tax Status</span>
+                        <span class="font-medium text-slate-700 dark:text-navy-100">{{ investor.get_tax_status_display }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>UCC</span>
+                        <span class="font-medium text-slate-700 dark:text-navy-100">{{ investor.ucc_code|default:"Not Generated" }}</span>
+                    </div>
+                </div>
+
+                <div class="mt-6">
+                    {% if user.user_type == 'RM' or user.user_type == 'DISTRIBUTOR' or user.user_type == 'ADMIN' %}
+                    <form action="{% url 'push_to_bse' investor.pk %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn w-full bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90">
+                            Approve & Push to BSE
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Details Tabs -->
+        <div class="col-span-12 lg:col-span-8">
+            <div class="card">
+                <div class="border-b border-slate-200 dark:border-navy-500">
+                    <div class="flex">
+                        <button class="btn h-14 w-full rounded-none border-b-2 border-primary text-primary dark:border-accent dark:text-accent-light focus:bg-slate-100 dark:focus:bg-navy-600">
+                            Details
+                        </button>
+                    </div>
+                </div>
+                <div class="p-4 sm:p-5">
+                    <h4 class="text-lg font-medium text-slate-700 dark:text-navy-100 mb-4">Address</h4>
+                    <p>{{ investor.address_1 }}</p>
+                    <p>{{ investor.address_2 }}</p>
+                    <p>{{ investor.city }}, {{ investor.state }} - {{ investor.pincode }}</p>
+
+                    <div class="my-4 h-px bg-slate-200 dark:bg-navy-500"></div>
+
+                    <h4 class="text-lg font-medium text-slate-700 dark:text-navy-100 mb-4">Bank Accounts</h4>
+                    <div class="is-scrollbar-hidden min-w-full overflow-x-auto">
+                        <table class="is-hoverable w-full text-left">
+                            <thead>
+                                <tr>
+                                    <th class="whitespace-nowrap rounded-tl-lg bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">Bank</th>
+                                    <th class="whitespace-nowrap bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">Account No</th>
+                                    <th class="whitespace-nowrap bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">IFSC</th>
+                                    <th class="whitespace-nowrap rounded-tr-lg bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">Type</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for bank in bank_accounts %}
+                                <tr class="border-y border-transparent border-b-slate-200 dark:border-b-navy-500">
+                                    <td class="whitespace-nowrap px-4 py-3 sm:px-5">{{ bank.bank_name }}</td>
+                                    <td class="whitespace-nowrap px-4 py-3 sm:px-5">{{ bank.account_number }}</td>
+                                    <td class="whitespace-nowrap px-4 py-3 sm:px-5">{{ bank.ifsc_code }}</td>
+                                    <td class="whitespace-nowrap px-4 py-3 sm:px-5">{{ bank.get_account_type_display }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="my-4 h-px bg-slate-200 dark:bg-navy-500"></div>
+
+                    <h4 class="text-lg font-medium text-slate-700 dark:text-navy-100 mb-4">Nominees</h4>
+                    <div class="is-scrollbar-hidden min-w-full overflow-x-auto">
+                        <table class="is-hoverable w-full text-left">
+                            <thead>
+                                <tr>
+                                    <th class="whitespace-nowrap rounded-tl-lg bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">Name</th>
+                                    <th class="whitespace-nowrap bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">Relationship</th>
+                                    <th class="whitespace-nowrap rounded-tr-lg bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">Percentage</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for nominee in nominees %}
+                                <tr class="border-y border-transparent border-b-slate-200 dark:border-b-navy-500">
+                                    <td class="whitespace-nowrap px-4 py-3 sm:px-5">{{ nominee.name }}</td>
+                                    <td class="whitespace-nowrap px-4 py-3 sm:px-5">{{ nominee.relationship }}</td>
+                                    <td class="whitespace-nowrap px-4 py-3 sm:px-5">{{ nominee.percentage }}%</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}

@@ -59,21 +59,61 @@ class UserCreationTests(TestCase):
 
         self.client.force_login(dist_user)
         url = reverse('investor_create')
+
+        # New Wizard Form Data requires formset management forms
         data = {
-            'username': 'inv1',
-            'email': 'inv1@example.com',
             'name': 'Investor One',
-            'password': 'password',
-            'confirm_password': 'password',
+            'email': 'inv1@example.com',
             'pan': 'ABCDE1234F',
-            'mobile': '8888888888'
+            'dob': '1990-01-01',
+            'gender': 'M',
+            'mobile': '8888888888',
+            'tax_status': '01',
+            'occupation': '02',
+            'holding_nature': 'SI',
+            'address_1': 'Test Address',
+            'city': 'Mumbai',
+            'state': 'Maharashtra',
+            'pincode': '400001',
+
+            # Management Forms for Formsets
+            'bank_accounts-TOTAL_FORMS': '1',
+            'bank_accounts-INITIAL_FORMS': '0',
+            'bank_accounts-MIN_NUM_FORMS': '0',
+            'bank_accounts-MAX_NUM_FORMS': '1000',
+
+            'nominees-TOTAL_FORMS': '1',
+            'nominees-INITIAL_FORMS': '0',
+            'nominees-MIN_NUM_FORMS': '0',
+            'nominees-MAX_NUM_FORMS': '1000',
+
+            # Formset Data (Bank)
+            'bank_accounts-0-ifsc_code': 'HDFC0001234',
+            'bank_accounts-0-account_number': '1234567890',
+            'bank_accounts-0-account_type': 'SB',
+            'bank_accounts-0-bank_name': 'HDFC Bank',
+            'bank_accounts-0-branch_name': 'Mumbai',
+
+            # Formset Data (Nominee)
+            'nominees-0-name': 'Nominee One',
+            'nominees-0-relationship': 'Spouse',
+            'nominees-0-percentage': '100',
         }
+
         response = self.client.post(url, data)
+        # Check for errors if 200 (Form Invalid)
+        if response.status_code == 200:
+            print(response.context['form'].errors)
+            if 'bank_accounts' in response.context:
+                print(response.context['bank_accounts'].errors)
+            if 'nominees' in response.context:
+                print(response.context['nominees'].errors)
+
         self.assertEqual(response.status_code, 302)
 
-        inv = InvestorProfile.objects.get(user__username='inv1')
+        # Check by PAN since username is auto-generated as PAN
+        inv = InvestorProfile.objects.get(pan='ABCDE1234F')
         self.assertEqual(inv.distributor.user, dist_user)
-        self.assertEqual(inv.pan, 'ABCDE1234F')
 
 class AccessControlTests(TestCase):
     def setUp(self):
