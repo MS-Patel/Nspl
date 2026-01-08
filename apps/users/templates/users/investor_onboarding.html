@@ -1,0 +1,295 @@
+{% extends 'layout/base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block content %}
+<main class="main-content w-full px-[var(--margin-x)] pb-8">
+    <div class="flex items-center space-x-4 py-5 lg:py-6">
+        <h2 class="text-xl font-medium text-slate-800 dark:text-navy-50 lg:text-2xl">
+            Investor Onboarding
+        </h2>
+    </div>
+
+    <form method="post" id="investor-onboarding-form">
+        {% csrf_token %}
+
+        <div class="grid grid-cols-12 gap-4 sm:gap-5 lg:gap-6">
+            <div class="col-span-12 grid lg:col-span-3 lg:place-items-center">
+                <div>
+                    <ol class="steps is-vertical line-space [--size:2.75rem] [--line:.5rem]">
+                        <li class="step space-x-4 pb-12 before:bg-slate-200 dark:before:bg-navy-500" id="step-indicator-1">
+                            <div class="step-header mask is-hexagon bg-primary text-white dark:bg-accent">
+                                <i class="fa-solid fa-user text-base"></i>
+                            </div>
+                            <div class="text-left">
+                                <p class="text-xs text-slate-400 dark:text-navy-300">Step 1</p>
+                                <h3 class="text-base font-medium text-primary dark:text-accent-light">Personal</h3>
+                            </div>
+                        </li>
+                        <li class="step space-x-4 pb-12 before:bg-slate-200 dark:before:bg-navy-500" id="step-indicator-2">
+                            <div class="step-header mask is-hexagon bg-slate-200 text-slate-500 dark:bg-navy-500 dark:text-navy-100">
+                                <i class="fa-solid fa-address-card text-base"></i>
+                            </div>
+                            <div class="text-left">
+                                <p class="text-xs text-slate-400 dark:text-navy-300">Step 2</p>
+                                <h3 class="text-base font-medium">Address & Tax</h3>
+                            </div>
+                        </li>
+                        <li class="step space-x-4 pb-12 before:bg-slate-200 dark:before:bg-navy-500" id="step-indicator-3">
+                            <div class="step-header mask is-hexagon bg-slate-200 text-slate-500 dark:bg-navy-500 dark:text-navy-100">
+                                <i class="fa-solid fa-building-columns text-base"></i>
+                            </div>
+                            <div class="text-left">
+                                <p class="text-xs text-slate-400 dark:text-navy-300">Step 3</p>
+                                <h3 class="text-base font-medium">Bank Details</h3>
+                            </div>
+                        </li>
+                        <li class="step space-x-4 before:bg-slate-200 dark:before:bg-navy-500" id="step-indicator-4">
+                            <div class="step-header mask is-hexagon bg-slate-200 text-slate-500 dark:bg-navy-500 dark:text-navy-100">
+                                <i class="fa-solid fa-users text-base"></i>
+                            </div>
+                            <div class="text-left">
+                                <p class="text-xs text-slate-400 dark:text-navy-300">Step 4</p>
+                                <h3 class="text-base font-medium">Nominee</h3>
+                            </div>
+                        </li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="col-span-12 grid lg:col-span-9">
+                <div class="card">
+                    <!-- Step 1: Personal Details -->
+                    <div class="step-content" id="step-1">
+                        <div class="border-b border-slate-200 p-4 dark:border-navy-500 sm:px-5">
+                            <h4 class="text-lg font-medium text-slate-700 dark:text-navy-100">Personal Details</h4>
+                        </div>
+                        <div class="space-y-4 p-4 sm:p-5">
+                            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                <label class="block">
+                                    <span>Full Name</span>
+                                    {% render_field form.name class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" placeholder="Enter full name" %}
+                                    {{ form.name.errors }}
+                                </label>
+                                <label class="block">
+                                    <span>Email</span>
+                                    {% render_field form.email class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" placeholder="Enter email" %}
+                                    {{ form.email.errors }}
+                                </label>
+                                <label class="block">
+                                    <span>PAN</span>
+                                    {% render_field form.pan class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" placeholder="PAN Number" %}
+                                    {{ form.pan.errors }}
+                                </label>
+                                <label class="block">
+                                    <span>Date of Birth</span>
+                                    {% render_field form.dob class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" type="date" %}
+                                    {{ form.dob.errors }}
+                                </label>
+                                <label class="block">
+                                    <span>Gender</span>
+                                    {% render_field form.gender class="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" %}
+                                    {{ form.gender.errors }}
+                                </label>
+                                <label class="block">
+                                    <span>Mobile</span>
+                                    {% render_field form.mobile class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" %}
+                                    {{ form.mobile.errors }}
+                                </label>
+                            </div>
+                            <div class="flex justify-end pt-4">
+                                <button type="button" class="btn bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90" onclick="nextStep(1)">
+                                    Next
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Address & Tax -->
+                    <div class="step-content hidden" id="step-2">
+                        <div class="border-b border-slate-200 p-4 dark:border-navy-500 sm:px-5">
+                            <h4 class="text-lg font-medium text-slate-700 dark:text-navy-100">Address & Tax Status</h4>
+                        </div>
+                        <div class="space-y-4 p-4 sm:p-5">
+                            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                <label class="block">
+                                    <span>Address Line 1</span>
+                                    {% render_field form.address_1 class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" %}
+                                </label>
+                                <label class="block">
+                                    <span>Address Line 2</span>
+                                    {% render_field form.address_2 class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" %}
+                                </label>
+                                <label class="block">
+                                    <span>City</span>
+                                    {% render_field form.city class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" %}
+                                </label>
+                                <label class="block">
+                                    <span>State</span>
+                                    {% render_field form.state class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" %}
+                                </label>
+                                <label class="block">
+                                    <span>Pincode</span>
+                                    {% render_field form.pincode class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" %}
+                                </label>
+                                <label class="block">
+                                    <span>Tax Status</span>
+                                    {% render_field form.tax_status class="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" %}
+                                </label>
+                                <label class="block">
+                                    <span>Occupation</span>
+                                    {% render_field form.occupation class="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" %}
+                                </label>
+                                <label class="block">
+                                    <span>Holding Nature</span>
+                                    {% render_field form.holding_nature class="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" %}
+                                </label>
+                            </div>
+
+                            <!-- Guardian Details (Conditional Logic can be added later) -->
+                            <div class="mt-4 border-t pt-4">
+                                <h5 class="font-medium">Guardian Details (If Minor)</h5>
+                                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 mt-2">
+                                    <label class="block">
+                                        <span>Guardian Name</span>
+                                        {% render_field form.guardian_name class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" %}
+                                    </label>
+                                    <label class="block">
+                                        <span>Guardian PAN</span>
+                                        {% render_field form.guardian_pan class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" %}
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="flex justify-between pt-4">
+                                <button type="button" class="btn bg-slate-150 font-medium text-slate-800 hover:bg-slate-200" onclick="prevStep(2)">Prev</button>
+                                <button type="button" class="btn bg-primary font-medium text-white hover:bg-primary-focus" onclick="nextStep(2)">Next</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Bank Details -->
+                    <div class="step-content hidden" id="step-3">
+                        <div class="border-b border-slate-200 p-4 dark:border-navy-500 sm:px-5">
+                            <h4 class="text-lg font-medium text-slate-700 dark:text-navy-100">Bank Account Details</h4>
+                        </div>
+                        <div class="space-y-4 p-4 sm:p-5">
+                            {{ bank_accounts.management_form }}
+                            {% for bank_form in bank_accounts %}
+                                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 border p-3 rounded-lg">
+                                    {{ bank_form.id }}
+                                    <label class="block">
+                                        <span>IFSC Code</span>
+                                        {% render_field bank_form.ifsc_code class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" %}
+                                    </label>
+                                    <label class="block">
+                                        <span>Account Number</span>
+                                        {% render_field bank_form.account_number class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" %}
+                                    </label>
+                                    <label class="block">
+                                        <span>Account Type</span>
+                                        {% render_field bank_form.account_type class="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" %}
+                                    </label>
+                                    <label class="block">
+                                        <span>Bank Name</span>
+                                        {% render_field bank_form.bank_name class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" %}
+                                    </label>
+                                    <label class="block sm:col-span-2">
+                                        <div class="inline-flex items-center space-x-2">
+                                            {% render_field bank_form.is_default class="form-checkbox is-basic size-5 rounded border-slate-400/70 checked:bg-primary checked:border-primary hover:border-primary focus:border-primary dark:border-navy-400 dark:checked:bg-accent dark:checked:border-accent dark:hover:border-accent dark:focus:border-accent" %}
+                                            <span>Set as Default Bank</span>
+                                        </div>
+                                    </label>
+                                </div>
+                            {% endfor %}
+
+                            <div class="flex justify-between pt-4">
+                                <button type="button" class="btn bg-slate-150 font-medium text-slate-800 hover:bg-slate-200" onclick="prevStep(3)">Prev</button>
+                                <button type="button" class="btn bg-primary font-medium text-white hover:bg-primary-focus" onclick="nextStep(3)">Next</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 4: Nominee Details -->
+                    <div class="step-content hidden" id="step-4">
+                        <div class="border-b border-slate-200 p-4 dark:border-navy-500 sm:px-5">
+                            <h4 class="text-lg font-medium text-slate-700 dark:text-navy-100">Nominee Details</h4>
+                        </div>
+                        <div class="space-y-4 p-4 sm:p-5">
+                            {{ nominees.management_form }}
+                            {% for nom_form in nominees %}
+                                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 border p-3 rounded-lg">
+                                    {{ nom_form.id }}
+                                    <label class="block">
+                                        <span>Nominee Name</span>
+                                        {% render_field nom_form.name class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" %}
+                                    </label>
+                                    <label class="block">
+                                        <span>Relationship</span>
+                                        {% render_field nom_form.relationship class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" %}
+                                    </label>
+                                    <label class="block">
+                                        <span>Percentage (%)</span>
+                                        {% render_field nom_form.percentage class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" step="0.01" %}
+                                    </label>
+                                    <label class="block">
+                                        <span>Guardian (If Minor)</span>
+                                        {% render_field nom_form.guardian_name class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" %}
+                                    </label>
+                                </div>
+                            {% endfor %}
+
+                            <div class="flex justify-between pt-4">
+                                <button type="button" class="btn bg-slate-150 font-medium text-slate-800 hover:bg-slate-200" onclick="prevStep(4)">Prev</button>
+                                <button type="submit" class="btn bg-success font-medium text-white hover:bg-success-focus">
+                                    Create Investor Profile
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </form>
+</main>
+
+<script>
+    function showStep(step) {
+        // Hide all steps
+        document.querySelectorAll('.step-content').forEach(el => el.classList.add('hidden'));
+
+        // Show current step
+        document.getElementById('step-' + step).classList.remove('hidden');
+
+        // Update Indicators
+        for(let i=1; i<=4; i++) {
+            const ind = document.getElementById('step-indicator-' + i);
+            const header = ind.querySelector('.step-header');
+
+            if (i === step) {
+                // Active
+                header.className = "step-header mask is-hexagon bg-primary text-white dark:bg-accent";
+            } else if (i < step) {
+                // Completed
+                header.className = "step-header mask is-hexagon bg-primary text-white dark:bg-accent opacity-80";
+            } else {
+                // Inactive
+                header.className = "step-header mask is-hexagon bg-slate-200 text-slate-500 dark:bg-navy-500 dark:text-navy-100";
+            }
+        }
+    }
+
+    function nextStep(current) {
+        // Simple validation could go here
+        showStep(current + 1);
+    }
+
+    function prevStep(current) {
+        showStep(current - 1);
+    }
+
+    // Initialize
+    showStep(1);
+</script>
+{% endblock %}
