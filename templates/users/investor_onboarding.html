@@ -264,6 +264,9 @@
 <script>
     document.addEventListener("DOMContentLoaded", () => {
 
+        // Initialize Flatpickr for Date of Birth
+        initFlatpickr('#dob', { maxDate: 'today' });
+
         // --- 1. Step Navigation Logic ---
         function showStep(stepNumber) {
              // Hide all steps
