@@ -11,6 +11,12 @@ function setupFormValidation({
     customConfig = {},
     beforeSubmitCallback = null,
 }) {
+    // Ensure JustValidate is available
+    if (typeof JustValidate === 'undefined') {
+        console.error('JustValidate is not loaded. Please include it before using setupFormValidation.');
+        return;
+    }
+
     validation = new JustValidate(formId, {
         errorFieldCssClass: 'is-invalid',
         errorLabelCssClass: 'just-validate-error-label',
@@ -203,3 +209,48 @@ window.addEventListener("app:mounted", function () {
         new Popper("#master-menu-dropdown", ".popper-ref", ".popper-root", o);
     }
 });
+
+// --- Exposed Helpers ---
+
+/**
+ * Expose setupFormValidation to window
+ */
+window.setupFormValidation = setupFormValidation;
+
+/**
+ * Helper to query selector all
+ */
+window.qsa = (selector) => document.querySelectorAll(selector);
+
+/**
+ * Helper to initialize Flatpickr safely
+ * @param {string|Element} selector - CSS selector or DOM element
+ * @param {object} options - Flatpickr options
+ */
+window.initFlatpickr = (selector, options = {}) => {
+    // Ensure flatpickr is loaded
+    if (typeof flatpickr === 'undefined') {
+        console.warn('Flatpickr is not loaded.');
+        return;
+    }
+
+    const el = typeof selector === 'string' ? document.querySelector(selector) : selector;
+    if (el) {
+        flatpickr(el, options);
+    }
+};
+
+/**
+ * Initialize all standard date fields
+ */
+window.initAllFlatpickrs = () => {
+    // Specific fields requested
+    window.initFlatpickr('#dob', { maxDate: 'today' }); // mapped from #dateofbirth for Investor Onboarding
+    window.initFlatpickr('#dateofbirth', { maxDate: 'today' }); // User provided ID
+    window.initFlatpickr('#dateofjoin', { maxDate: null });
+    window.initFlatpickr('#pf_joining_date', { maxDate: null });
+    window.initFlatpickr('#esic_joining_date', { maxDate: null });
+
+    // Generic data attribute initialization
+    window.qsa('[data-flatpickr]').forEach(el => window.initFlatpickr(el, {}));
+};
