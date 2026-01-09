@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.forms import inlineformset_factory
-from .models import RMProfile, DistributorProfile, InvestorProfile, BankAccount, Nominee
+from .models import RMProfile, DistributorProfile, InvestorProfile, BankAccount, Nominee, Document
 
 User = get_user_model()
 
@@ -160,6 +160,11 @@ class NomineeForm(forms.ModelForm):
     class Meta:
         model = Nominee
         fields = ['name', 'relationship', 'percentage', 'guardian_name']
+
+class DocumentForm(forms.ModelForm):
+    class Meta:
+        model = Document
+        fields = ['document_type', 'file', 'description']
 
 # Formsets
 BankAccountFormSet = inlineformset_factory(

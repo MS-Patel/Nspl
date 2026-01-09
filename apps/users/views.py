@@ -9,8 +9,8 @@ from django.contrib import messages
 from django.urls import reverse
 from django.views import View
 from django.shortcuts import get_object_or_404
-from .models import RMProfile, DistributorProfile, InvestorProfile, BankAccount, Nominee
-from .forms import RMCreationForm, DistributorCreationForm, InvestorCreationForm, InvestorProfileForm, BankAccountFormSet, NomineeFormSet
+from .models import RMProfile, DistributorProfile, InvestorProfile, BankAccount, Nominee, Document
+from .forms import RMCreationForm, DistributorCreationForm, InvestorCreationForm, InvestorProfileForm, BankAccountFormSet, NomineeFormSet, DocumentForm
 from apps.integration.bse_client import BSEStarMFClient
 from apps.integration.utils import map_investor_to_bse_param_string
 import json
@@ -303,7 +303,29 @@ class InvestorDetailView(LoginRequiredMixin, DetailView):
         context = super().get_context_data(**kwargs)
         context['bank_accounts'] = self.object.bank_accounts.all()
         context['nominees'] = self.object.nominees.all()
+        context['documents'] = self.object.documents.all()
+        context['document_form'] = DocumentForm()
         return context
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+
+        if request.user.user_type not in [User.Types.RM, User.Types.DISTRIBUTOR, User.Types.ADMIN]:
+             messages.error(request, "Permission denied.")
+             return redirect('investor_detail', pk=self.object.pk)
+
+        form = DocumentForm(request.POST, request.FILES)
+        if form.is_valid():
+            document = form.save(commit=False)
+            document.investor = self.object
+            document.save()
+            messages.success(request, "Document uploaded successfully.")
+            return redirect('investor_detail', pk=self.object.pk)
+        else:
+             messages.error(request, "Error uploading document.")
+             context = self.get_context_data()
+             context['document_form'] = form
+             return self.render_to_response(context)
 
 class PushToBSEView(LoginRequiredMixin, View):
     def post(self, request, pk):
@@ -323,10 +345,30 @@ class PushToBSEView(LoginRequiredMixin, View):
         try:
             response = client.register_client({'Param': param_string})
             if response['status'] == 'success':
+                # If success, the UCC we sent (which defaults to PAN) is now valid.
+                if not investor.ucc_code:
+                    investor.ucc_code = investor.pan
+                    investor.save()
                 messages.success(request, f"BSE Registration Successful: {response.get('remarks')}")
             else:
                 messages.error(request, f"BSE Error: {response.get('remarks')}")
         except Exception as e:
              messages.error(request, f"API Call Failed: {str(e)}")
+
+        return redirect('investor_detail', pk=pk)
+
+class ToggleKYCView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        investor = get_object_or_404(InvestorProfile, pk=pk)
+
+        if request.user.user_type not in [User.Types.RM, User.Types.DISTRIBUTOR, User.Types.ADMIN]:
+             messages.error(request, "Permission denied.")
+             return redirect('investor_detail', pk=pk)
+
+        investor.kyc_status = not investor.kyc_status
+        investor.save()
+
+        status_msg = "Verified" if investor.kyc_status else "Revoked"
+        messages.success(request, f"KYC Status {status_msg}.")
 
         return redirect('investor_detail', pk=pk)

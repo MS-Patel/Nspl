@@ -163,3 +163,25 @@ class Nominee(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.percentage}%)"
+
+class Document(models.Model):
+    PAN_CARD = 'PAN'
+    AADHAAR_CARD = 'AADHAAR'
+    CANCELLED_CHEQUE = 'CHEQUE'
+    OTHERS = 'OTHERS'
+
+    DOCUMENT_TYPE_CHOICES = [
+        (PAN_CARD, 'PAN Card'),
+        (AADHAAR_CARD, 'Aadhaar Card'),
+        (CANCELLED_CHEQUE, 'Cancelled Cheque'),
+        (OTHERS, 'Others'),
+    ]
+
+    investor = models.ForeignKey(InvestorProfile, on_delete=models.CASCADE, related_name='documents')
+    document_type = models.CharField(max_length=10, choices=DOCUMENT_TYPE_CHOICES, default=OTHERS)
+    file = models.FileField(upload_to='documents/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    description = models.CharField(max_length=255, blank=True)
+
+    def __str__(self):
+        return f"{self.get_document_type_display()} - {self.investor.user.username}"
