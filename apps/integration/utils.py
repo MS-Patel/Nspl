@@ -246,3 +246,97 @@ def map_investor_to_bse_param_string(investor):
 
     # Join with pipe
     return "|".join([str(f) for f in fields])
+
+
+def get_bse_order_params(order, member_id, user_id, password, pass_key):
+    """
+    Constructs the parameter dictionary for BSE StarMF orderEntryParam API (SOAP).
+
+    Args:
+        order (Order): The order object.
+        member_id (str): BSE Member ID.
+        user_id (str): BSE User ID.
+        password (str): Encrypted Session Password.
+        pass_key (str): Random Pass Key used for encryption.
+
+    Returns:
+        dict: Parameters to be passed to client.service.orderEntryParam()
+    """
+
+    # Map Order fields to BSE fields
+
+    # 1. Transaction Code & BuySell
+    # Order.PURCHASE ('P') -> BuySell 'P'
+    # Order.REDEMPTION ('R') -> BuySell 'R'
+    # Order.SWITCH ('S') -> BuySell 'S'
+    # Order.SIP ('SIP') -> Handled separately usually, but for Lumpsum API it might be 'P' with SIP flag or separate API.
+    # Current task is Lumpsum.
+
+    buy_sell = order.transaction_type
+    if buy_sell == 'SIP':
+        # Default to P for now if it gets here, but SIP usually uses different logic
+        buy_sell = 'P'
+
+    # 2. BuySellType (FRESH vs ADDITIONAL)
+    buy_sell_type = "FRESH" if order.is_new_folio else "ADDITIONAL"
+
+    # 3. Client Code
+    client_code = order.investor.ucc_code if order.investor.ucc_code else order.investor.pan
+
+    # 4. EUIN
+    euin = order.euin if order.euin else ""
+    euin_flag = "Y" if euin else "N"
+
+    # 5. Folio
+    folio_no = order.folio.folio_number if order.folio else ""
+
+    # 6. DPC (Depository Participant Charge) - Physical is usually 'N'
+    dpc = "N"
+
+    # 7. Transaction Mode - Physical 'P', Demat 'D'
+    trans_mode = "P"
+
+    # 8. Amount & Units
+    # Format amount to 2 decimal places usually required, or simple string.
+    txt_amount = f"{order.amount:.2f}" if order.amount else "0"
+    # Format quantity to 4 decimal places (standard for MF units)
+    txt_quantity = f"{order.units:.4f}" if order.units else "0"
+
+    if buy_sell == 'R' or buy_sell == 'S':
+        # For Redemption/Switch, amount might be 0 if units are specified
+        # But our order model has both.
+        pass
+
+    # Construct the dictionary based on standard orderEntryParam signature
+    params = {
+        'TransactionCode': 'NEW', # Always NEW for entry
+        'UniqueRefNo': str(order.unique_ref_no),
+        'SchemeCode': order.scheme.scheme_code,
+        'MemberCode': member_id,
+        'ClientCode': client_code,
+        'UserId': user_id,
+        'BuySell': buy_sell,
+        'BuySellType': buy_sell_type,
+        'DPC': dpc,
+        'TransMode': trans_mode,
+        'TxtAmount': txt_amount,
+        'TxtQuantity': txt_quantity,
+        'MandateId': order.mandate.mandate_id if order.mandate else "",
+        'EUIN': euin,
+        'SubBrCode': '',
+        'EuinFlag': euin_flag,
+        'MinRedeem': 'N',
+        'DematFlag': 'N',
+        'AllRedeem': 'N',
+        'FolioNo': folio_no,
+        'Remarks': '',
+        'KYCStatus': 'Y', # Assuming compliant
+        'SubMemberCode': '',
+        'Password': password,
+        'PassKey': pass_key,
+        'Param1': '',
+        'Param2': '',
+        'Param3': ''
+    }
+
+    return params

@@ -8,6 +8,10 @@ from .models import Order, Folio, Mandate
 from .forms import OrderForm
 from apps.users.models import InvestorProfile, DistributorProfile
 from apps.products.models import Scheme, AMC, SchemeCategory
+from apps.integration.bse_client import BSEStarMFClient
+import logging
+
+logger = logging.getLogger(__name__)
 
 @login_required
 def order_create(request):
@@ -57,7 +61,34 @@ def order_create(request):
                 order.distributor = user.investor_profile.distributor
 
             order.save()
-            messages.success(request, f"Order {order.unique_ref_no} created successfully!")
+
+            # Execute Order on BSE (Lumpsum only for now)
+            if order.transaction_type in [Order.PURCHASE, Order.REDEMPTION, Order.SWITCH]:
+                try:
+                    client = BSEStarMFClient()
+                    result = client.place_order(order)
+
+                    if result['status'] == 'success':
+                        order.status = Order.SENT_TO_BSE
+                        order.bse_order_id = result.get('bse_order_id')
+                        order.bse_remarks = result.get('remarks')
+                        messages.success(request, f"Order {order.unique_ref_no} placed on BSE: {result.get('remarks')}")
+                    else:
+                        order.status = Order.REJECTED
+                        order.bse_remarks = result.get('remarks')
+                        messages.error(request, f"BSE Error: {result.get('remarks')}")
+
+                    order.save()
+
+                except Exception as e:
+                    logger.exception("Error placing order on BSE")
+                    order.status = Order.REJECTED
+                    order.bse_remarks = f"System Error: {str(e)}"
+                    order.save()
+                    messages.error(request, f"Order saved but failed to push to BSE: {str(e)}")
+            else:
+                messages.success(request, f"Order {order.unique_ref_no} created locally (SIP execution pending).")
+
             return redirect('order_list') # Redirect to order list
         else:
             messages.error(request, "Please correct the errors below.")
