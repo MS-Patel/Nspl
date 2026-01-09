@@ -10,12 +10,14 @@
         </h2>
     </div>
 
-    <form method="post" id="investor-onboarding-form">
+    <!-- Give the form a specific ID for validation -->
+    <form method="post" id="investorOnboardingForm" class="relative">
         {% csrf_token %}
 
         <div class="grid grid-cols-12 gap-4 sm:gap-5 lg:gap-6">
             <div class="col-span-12 grid lg:col-span-3">
                 <div>
+                    <!-- Step Indicators -->
                     <ol class="steps is-vertical line-space [--size:2.75rem] [--line:.5rem]">
                         <li class="step space-x-4 pb-12 before:bg-slate-200 dark:before:bg-navy-500" id="step-indicator-1">
                             <div class="step-header mask is-hexagon bg-primary text-white dark:bg-accent">
@@ -68,37 +70,33 @@
                             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                 <label class="block">
                                     <span>Full Name</span>
-                                    {% render_field form.name class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" placeholder="Enter full name" %}
-                                    {{ form.name.errors }}
+                                    {% render_field form.name id="name" class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" placeholder="Enter full name" %}
                                 </label>
                                 <label class="block">
                                     <span>Email</span>
-                                    {% render_field form.email class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" placeholder="Enter email" %}
-                                    {{ form.email.errors }}
+                                    {% render_field form.email id="email" class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" placeholder="Enter email" %}
                                 </label>
                                 <label class="block">
                                     <span>PAN</span>
-                                    {% render_field form.pan class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" placeholder="PAN Number" %}
-                                    {{ form.pan.errors }}
+                                    {% render_field form.pan id="pan" class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" placeholder="PAN Number" %}
                                 </label>
                                 <label class="block">
                                     <span>Date of Birth</span>
-                                    {% render_field form.dob class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" type="date" %}
-                                    {{ form.dob.errors }}
+                                    <!-- Using flatpickr class if initialized globally or type=date -->
+                                    {% render_field form.dob id="dob" class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" type="date" %}
                                 </label>
                                 <label class="block">
                                     <span>Gender</span>
-                                    {% render_field form.gender class="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" %}
-                                    {{ form.gender.errors }}
+                                    {% render_field form.gender id="gender" class="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" %}
                                 </label>
                                 <label class="block">
                                     <span>Mobile</span>
-                                    {% render_field form.mobile class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" %}
-                                    {{ form.mobile.errors }}
+                                    {% render_field form.mobile id="mobile" class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" %}
                                 </label>
                             </div>
                             <div class="flex justify-end pt-4">
-                                <button type="button" class="btn bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90" onclick="nextStep(1)">
+                                <button type="button" class="btn btn-next bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90"
+                                    data-current="#step-1" data-next="#step-2" data-step-index="1">
                                     Next
                                 </button>
                             </div>
@@ -114,35 +112,39 @@
                             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                 <label class="block">
                                     <span>Address Line 1</span>
-                                    {% render_field form.address_1 class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" %}
+                                    {% render_field form.address_1 id="address_1" class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" %}
                                 </label>
                                 <label class="block">
                                     <span>Address Line 2</span>
-                                    {% render_field form.address_2 class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" %}
+                                    {% render_field form.address_2 id="address_2" class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" %}
                                 </label>
                                 <label class="block">
                                     <span>City</span>
-                                    {% render_field form.city class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" %}
+                                    {% render_field form.city id="city" class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" %}
                                 </label>
                                 <label class="block">
                                     <span>State</span>
-                                    {% render_field form.state class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" %}
+                                    {% render_field form.state id="state" class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" %}
                                 </label>
                                 <label class="block">
                                     <span>Pincode</span>
-                                    {% render_field form.pincode class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" %}
+                                    {% render_field form.pincode id="pincode" class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" %}
+                                </label>
+                                <label class="block">
+                                    <span>Country</span>
+                                    {% render_field form.country id="country" class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" %}
                                 </label>
                                 <label class="block">
                                     <span>Tax Status</span>
-                                    {% render_field form.tax_status class="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" %}
+                                    {% render_field form.tax_status id="tax_status" class="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" %}
                                 </label>
                                 <label class="block">
                                     <span>Occupation</span>
-                                    {% render_field form.occupation class="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" %}
+                                    {% render_field form.occupation id="occupation" class="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" %}
                                 </label>
                                 <label class="block">
                                     <span>Holding Nature</span>
-                                    {% render_field form.holding_nature class="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" %}
+                                    {% render_field form.holding_nature id="holding_nature" class="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" %}
                                 </label>
                             </div>
 
@@ -152,18 +154,20 @@
                                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 mt-2">
                                     <label class="block">
                                         <span>Guardian Name</span>
-                                        {% render_field form.guardian_name class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" %}
+                                        {% render_field form.guardian_name id="guardian_name" class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" %}
                                     </label>
                                     <label class="block">
                                         <span>Guardian PAN</span>
-                                        {% render_field form.guardian_pan class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" %}
+                                        {% render_field form.guardian_pan id="guardian_pan" class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" %}
                                     </label>
                                 </div>
                             </div>
 
                             <div class="flex justify-between pt-4">
-                                <button type="button" class="btn bg-slate-150 font-medium text-slate-800 hover:bg-slate-200" onclick="prevStep(2)">Prev</button>
-                                <button type="button" class="btn bg-primary font-medium text-white hover:bg-primary-focus" onclick="nextStep(2)">Next</button>
+                                <button type="button" class="btn btn-prev bg-slate-150 font-medium text-slate-800 hover:bg-slate-200"
+                                    data-current="#step-2" data-prev="#step-1" data-step-index="2">Prev</button>
+                                <button type="button" class="btn btn-next bg-primary font-medium text-white hover:bg-primary-focus"
+                                    data-current="#step-2" data-next="#step-3" data-step-index="2">Next</button>
                             </div>
                         </div>
                     </div>
@@ -204,8 +208,10 @@
                             {% endfor %}
 
                             <div class="flex justify-between pt-4">
-                                <button type="button" class="btn bg-slate-150 font-medium text-slate-800 hover:bg-slate-200" onclick="prevStep(3)">Prev</button>
-                                <button type="button" class="btn bg-primary font-medium text-white hover:bg-primary-focus" onclick="nextStep(3)">Next</button>
+                                <button type="button" class="btn btn-prev bg-slate-150 font-medium text-slate-800 hover:bg-slate-200"
+                                    data-current="#step-3" data-prev="#step-2" data-step-index="3">Prev</button>
+                                <button type="button" class="btn btn-next bg-primary font-medium text-white hover:bg-primary-focus"
+                                    data-current="#step-3" data-next="#step-4" data-step-index="3">Next</button>
                             </div>
                         </div>
                     </div>
@@ -240,8 +246,9 @@
                             {% endfor %}
 
                             <div class="flex justify-between pt-4">
-                                <button type="button" class="btn bg-slate-150 font-medium text-slate-800 hover:bg-slate-200" onclick="prevStep(4)">Prev</button>
-                                <button type="submit" class="btn bg-success font-medium text-white hover:bg-success-focus">
+                                <button type="button" class="btn btn-prev bg-slate-150 font-medium text-slate-800 hover:bg-slate-200"
+                                    data-current="#step-4" data-prev="#step-3" data-step-index="4">Prev</button>
+                                <button type="submit" id="finalSubmitBtn" class="btn bg-success font-medium text-white hover:bg-success-focus">
                                     Create Investor Profile
                                 </button>
                             </div>
@@ -255,54 +262,154 @@
 
 
 <script>
-    function showStep(step) {
-        // Hide all steps
-        document.querySelectorAll('.step-content').forEach(el => el.classList.add('hidden'));
+    document.addEventListener("DOMContentLoaded", () => {
 
-        // Show current step
-        document.getElementById('step-' + step).classList.remove('hidden');
+        // --- 1. Step Navigation Logic ---
+        function showStep(stepNumber) {
+             // Hide all steps
+             document.querySelectorAll('.step-content').forEach(el => el.classList.add('hidden'));
+             // Show requested step
+             const targetContent = document.querySelector(`#step-${stepNumber}`);
+             if(targetContent) targetContent.classList.remove('hidden');
 
-        // Update Indicators
-        for(let i=1; i<=4; i++) {
-            const ind = document.getElementById('step-indicator-' + i);
-            const header = ind.querySelector('.step-header');
-
-            if (i === step) {
-                // Active
-                header.className = "step-header mask is-hexagon bg-primary text-white dark:bg-accent";
-            } else if (i < step) {
-                // Completed
-                header.className = "step-header mask is-hexagon bg-primary text-white dark:bg-accent opacity-80";
-            } else {
-                // Inactive
-                header.className = "step-header mask is-hexagon bg-slate-200 text-slate-500 dark:bg-navy-500 dark:text-navy-100";
-            }
+             // Update Indicators
+             for(let i=1; i<=4; i++) {
+                 const ind = document.getElementById('step-indicator-' + i);
+                 const header = ind.querySelector('.step-header');
+                 if (i === stepNumber) {
+                     header.className = "step-header mask is-hexagon bg-primary text-white dark:bg-accent";
+                 } else if (i < stepNumber) {
+                     header.className = "step-header mask is-hexagon bg-primary text-white dark:bg-accent opacity-80";
+                 } else {
+                     header.className = "step-header mask is-hexagon bg-slate-200 text-slate-500 dark:bg-navy-500 dark:text-navy-100";
+                 }
+             }
         }
-    }
 
-    function nextStep(current) {
-        const currentStepDiv = document.getElementById('step-' + current);
-        const inputs = currentStepDiv.querySelectorAll('input, select, textarea');
-        let isValid = true;
+        // Initial state
+        showStep(1);
 
-        inputs.forEach(input => {
-            if (!input.checkValidity()) {
-                input.reportValidity();
-                isValid = false;
-                return;
+        // --- 2. Validation Configuration ---
+        // Defines which fields belong to which step for validation purposes
+        const stepFields = {
+            1: ['#name', '#email', '#pan', '#dob', '#mobile', '#gender'],
+            2: ['#address_1', '#city', '#state', '#pincode', '#country', '#tax_status', '#occupation'],
+            3: [], // Formsets - basic check usually, or skip strict JS valid for dynamic rows for now
+            4: []
+        };
+
+        // Initialize Global Validation using the enhanced setupFormValidation
+        setupFormValidation({
+            formId: '#investorOnboardingForm',
+            submitUrl: window.location.href, // Post to self
+            fields: {
+                // -- Step 1 --
+                '#name': [{ rule: 'required', errorMessage: 'Full Name is required' }],
+                '#email': [
+                    { rule: 'required', errorMessage: 'Email is required' },
+                    { rule: 'email', errorMessage: 'Invalid email format' }
+                ],
+                '#pan': [
+                    { rule: 'required', errorMessage: 'PAN is required' },
+                    {
+                        rule: 'customRegexp',
+                        value: /[A-Z]{5}[0-9]{4}[A-Z]{1}/,
+                        errorMessage: 'Invalid PAN format (e.g. ABCDE1234F)'
+                    },
+                    { rule: 'minLength', value: 10 },
+                    { rule: 'maxLength', value: 10 }
+                ],
+                '#mobile': [
+                    { rule: 'required', errorMessage: 'Mobile is required' },
+                    { rule: 'integer', errorMessage: 'Only numbers allowed' },
+                    { rule: 'minLength', value: 10, errorMessage: 'Must be 10 digits' },
+                    { rule: 'maxLength', value: 10, errorMessage: 'Must be 10 digits' }
+                ],
+                '#dob': [{ rule: 'required', errorMessage: 'Date of Birth is required' }],
+                '#gender': [{ rule: 'required', errorMessage: 'Gender is required' }],
+
+                // -- Step 2 --
+                '#address_1': [{ rule: 'required', errorMessage: 'Address is required' }],
+                '#city': [{ rule: 'required', errorMessage: 'City is required' }],
+                '#state': [{ rule: 'required', errorMessage: 'State is required' }],
+                '#pincode': [
+                    { rule: 'required', errorMessage: 'Pincode is required' },
+                    { rule: 'integer', errorMessage: 'Invalid Pincode' },
+                    { rule: 'minLength', value: 6, errorMessage: 'Must be 6 digits' }
+                ],
+                '#country': [{ rule: 'required', errorMessage: 'Country is required' }],
+                '#tax_status': [{ rule: 'required', errorMessage: 'Tax Status is required' }],
+                '#occupation': [{ rule: 'required', errorMessage: 'Occupation is required' }],
+                '#holding_nature': [{ rule: 'required', errorMessage: 'Holding Nature is required' }],
+
+                // Optional Guardian
+                '#guardian_pan': [
+                     {
+                        rule: 'customRegexp',
+                        value: /[A-Z]{5}[0-9]{4}[A-Z]{1}/,
+                        errorMessage: 'Invalid PAN format'
+                    },
+                ]
+            },
+            successCallback: (response) => {
+                 if(window.Swal) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: 'Investor Profile Created Successfully'
+                    }).then(() => {
+                        window.location.href = "{% url 'investor_list' %}";
+                    });
+                 } else {
+                     alert('Success');
+                     window.location.href = "{% url 'investor_list' %}";
+                 }
             }
         });
 
-        if (isValid) {
-            showStep(current + 1);
-        }
-    }
+        // --- 3. Step Buttons Event Listeners ---
 
-    function prevStep(current) {
-        showStep(current - 1);
-    }
+        // Next Buttons
+        document.querySelectorAll('.btn-next').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                const stepIndex = parseInt(btn.getAttribute('data-step-index'));
 
-    // Initialize
-    showStep(1);
+                // Validate fields for current step
+                let isValid = true;
+                const fieldsToCheck = stepFields[stepIndex] || [];
+
+                if (validation && fieldsToCheck.length > 0) {
+                    for (const selector of fieldsToCheck) {
+                        // Check if element exists before validating (conditional fields)
+                        if (document.querySelector(selector)) {
+                            const result = await validation.revalidateField(selector);
+                            if (!result) isValid = false;
+                        }
+                    }
+                }
+
+                if (isValid) {
+                    showStep(stepIndex + 1);
+                    window.scrollTo(0, 0);
+                } else {
+                    if(window.Swal) {
+                        Swal.fire({ icon: 'warning', title: 'Attention', text: 'Please fill in all required fields.'});
+                    }
+                }
+            });
+        });
+
+        // Prev Buttons
+        document.querySelectorAll('.btn-prev').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const stepIndex = parseInt(btn.getAttribute('data-step-index'));
+                showStep(stepIndex - 1);
+                window.scrollTo(0, 0);
+            });
+        });
+
+    });
 </script>
 {% endblock %}
