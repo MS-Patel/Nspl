@@ -1,8 +1,36 @@
 from django.db import models
 from django.conf import settings
-from apps.users.models import InvestorProfile, DistributorProfile
+from apps.users.models import InvestorProfile, DistributorProfile, BankAccount
 from apps.products.models import Scheme, AMC
 import uuid
+
+class Mandate(models.Model):
+    # Status Choices
+    PENDING = 'PENDING'
+    APPROVED = 'APPROVED'
+    REJECTED = 'REJECTED'
+
+    STATUS_CHOICES = [
+        (PENDING, 'Pending'),
+        (APPROVED, 'Approved'),
+        (REJECTED, 'Rejected'),
+    ]
+
+    investor = models.ForeignKey(InvestorProfile, on_delete=models.CASCADE, related_name='mandates')
+    bank_account = models.ForeignKey(BankAccount, on_delete=models.SET_NULL, null=True, blank=True, related_name='mandates')
+    mandate_id = models.CharField(max_length=50, unique=True, help_text="UMRN or Mandate ID from BSE")
+
+    amount_limit = models.DecimalField(max_digits=15, decimal_places=2, help_text="Maximum amount allowed per transaction")
+    start_date = models.DateField()
+    end_date = models.DateField(null=True, blank=True)
+
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=PENDING)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.mandate_id} - {self.investor.user.username}"
 
 class Folio(models.Model):
     investor = models.ForeignKey(InvestorProfile, on_delete=models.CASCADE, related_name='folios')
@@ -26,13 +54,13 @@ class Order(models.Model):
     PURCHASE = 'P'
     REDEMPTION = 'R'
     SWITCH = 'S'
-    SIP_REGISTRATION = 'SIP'
+    SIP = 'SIP' # SIP Registration
 
     TXN_TYPE_CHOICES = [
-        (PURCHASE, 'Purchase'),
+        (PURCHASE, 'Lumpsum Purchase'),
         (REDEMPTION, 'Redemption'),
         (SWITCH, 'Switch'),
-        (SIP_REGISTRATION, 'SIP Registration'),
+        (SIP, 'SIP Registration'),
     ]
 
     # Status
@@ -70,6 +98,7 @@ class Order(models.Model):
     distributor = models.ForeignKey(DistributorProfile, on_delete=models.SET_NULL, null=True, blank=True, related_name='orders')
     scheme = models.ForeignKey(Scheme, on_delete=models.CASCADE, related_name='orders')
     folio = models.ForeignKey(Folio, on_delete=models.SET_NULL, null=True, blank=True, related_name='orders', help_text="Linked Folio if existing")
+    mandate = models.ForeignKey(Mandate, on_delete=models.SET_NULL, null=True, blank=True, related_name='orders', help_text="Required for SIP")
 
     # Transaction Details
     transaction_type = models.CharField(max_length=10, choices=TXN_TYPE_CHOICES, default=PURCHASE)

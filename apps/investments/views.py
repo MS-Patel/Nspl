@@ -1,80 +1,216 @@
-from django.views.generic import CreateView, DetailView, View
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.urls import reverse_lazy
-from django.shortcuts import get_object_or_404
-from django.http import JsonResponse
-from .models import Order, Folio
-from .forms import OrderCreationForm
-from apps.products.models import Scheme
-from apps.users.models import User
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.db.models import Q
+from django.http import JsonResponse, HttpResponseForbidden
+from django.urls import reverse
+from .models import Order, Folio, Mandate
+from .forms import OrderForm
+from apps.users.models import InvestorProfile, DistributorProfile
+from apps.products.models import Scheme, AMC, SchemeCategory
 
-class OrderCreateView(LoginRequiredMixin, CreateView):
-    model = Order
-    form_class = OrderCreationForm
-    template_name = 'investments/order_form.html'
-    success_url = reverse_lazy('order_success') # Placeholder, or redirect to order list
+@login_required
+def order_create(request):
+    """
+    Purchase Order Creation View.
+    Handles order creation for various user roles.
+    """
+    user = request.user
+    initial_data = {}
 
-    def get_initial(self):
-        initial = super().get_initial()
-        # Pre-fill scheme if passed in URL
-        scheme_id = self.request.GET.get('scheme_id')
-        if scheme_id:
-            try:
-                scheme = Scheme.objects.get(pk=scheme_id)
-                initial['scheme'] = scheme
-            except Scheme.DoesNotExist:
-                pass
-        return initial
+    # Pre-fill data if available in GET params (e.g., from Scheme Explorer)
+    if 'scheme' in request.GET:
+        scheme_id = request.GET.get('scheme')
+        try:
+            scheme = Scheme.objects.get(id=scheme_id)
+            initial_data['scheme'] = scheme
+        except Scheme.DoesNotExist:
+            pass
 
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        kwargs['request'] = self.request
-        return kwargs
+    if request.method == 'POST':
+        form = OrderForm(request.POST, user=user)
+        if form.is_valid():
+            order = form.save(commit=False)
 
-    def form_valid(self, form):
-        # We can add extra validation or logic here
-        messages.success(self.request, "Order placed successfully!")
-        return super().form_valid(form)
+            # Additional Logic: Check if new folio is requested
+            if form.cleaned_data.get('folio_selection'):
+                 # Use existing folio
+                 order.folio = form.cleaned_data['folio_selection']
+                 order.is_new_folio = False
+            else:
+                 # Request new folio
+                 order.is_new_folio = True
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['title'] = "New Purchase Order"
-        # If scheme is selected, pass it to context for display details
-        scheme_id = self.request.GET.get('scheme_id') or (self.request.POST.get('scheme') if self.request.POST else None)
-        if scheme_id:
-            try:
-                context['selected_scheme'] = Scheme.objects.get(pk=scheme_id)
-            except Scheme.DoesNotExist:
-                pass
-        return context
+            # Handle SIP logic
+            if order.transaction_type == Order.SIP:
+                # Ensure mandate is selected
+                if not order.mandate:
+                     # This should ideally be caught by form validation
+                     messages.error(request, "Mandate is required for SIP orders.")
+                     # Re-render with context
+                     return render_order_form(request, form)
 
-class OrderDetailView(LoginRequiredMixin, DetailView):
-    model = Order
-    template_name = 'investments/order_detail.html'
-    context_object_name = 'order'
+            # Set Distributor/Investor relationships based on logged-in user
+            # (Already partly handled in form validation, but safe to enforce here)
+            if user.user_type == 'INVESTOR':
+                order.investor = user.investor_profile
+                order.distributor = user.investor_profile.distributor
 
-class InvestorFoliosView(LoginRequiredMixin, View):
-    def get(self, request):
-        investor_id = request.GET.get('investor_id')
-        scheme_id = request.GET.get('scheme_id') # To filter by AMC
+            order.save()
+            messages.success(request, f"Order {order.unique_ref_no} created successfully!")
+            return redirect('order_list') # Redirect to order list
+        else:
+            messages.error(request, "Please correct the errors below.")
+    else:
+        form = OrderForm(initial=initial_data, user=user)
 
-        if not investor_id:
-            return JsonResponse({'folios': []})
+    return render_order_form(request, form)
 
-        # Security check: User must be allowed to see this investor
-        # (Re-use logic or just rely on the fact that they can't guess IDs easily,
-        # but better to check if investor belongs to dist/rm)
-        # For speed, I will rely on the fact that the select box only has valid investors.
+def render_order_form(request, form):
+    """Helper to render the form with necessary context data."""
+    context = {
+        'form': form,
+        'title': 'New Purchase',
+        'amcs': AMC.objects.all(),
+        'categories': SchemeCategory.objects.all(),
+    }
+    return render(request, 'investments/order_form.html', context)
 
-        qs = Folio.objects.filter(investor_id=investor_id)
+@login_required
+def order_list(request):
+    user = request.user
+    if user.user_type == 'ADMIN':
+        orders = Order.objects.all()
+    elif user.user_type == 'RM':
+        # RM sees orders from their distributors' investors
+        orders = Order.objects.filter(distributor__rm__user=user)
+    elif user.user_type == 'DISTRIBUTOR':
+        orders = Order.objects.filter(distributor__user=user)
+    elif user.user_type == 'INVESTOR':
+        orders = Order.objects.filter(investor__user=user)
+    else:
+        orders = Order.objects.none()
 
-        if scheme_id:
-            try:
-                scheme = Scheme.objects.get(pk=scheme_id)
-                qs = qs.filter(amc=scheme.amc)
-            except Scheme.DoesNotExist:
-                pass
+    return render(request, 'investments/order_list.html', {'orders': orders})
 
-        data = [{'id': f.id, 'display': str(f)} for f in qs]
-        return JsonResponse({'folios': data})
+@login_required
+def get_investor_folios(request):
+    """
+    API endpoint to fetch folios for a specific investor and scheme.
+    Used for dynamic dropdowns.
+    IDOR Protection: Checks if the logged-in user has access to the investor.
+    """
+    investor_id = request.GET.get('investor_id')
+    scheme_id = request.GET.get('scheme_id')
+
+    if not investor_id:
+        return JsonResponse({'folios': []})
+
+    # IDOR Check
+    if not has_access_to_investor(request.user, investor_id):
+         return JsonResponse({'error': 'Unauthorized access to investor data'}, status=403)
+
+    folios_qs = Folio.objects.filter(investor_id=investor_id)
+
+    # Filter by AMC if scheme is selected
+    if scheme_id:
+        try:
+            scheme = Scheme.objects.get(id=scheme_id)
+            folios_qs = folios_qs.filter(amc=scheme.amc)
+        except Scheme.DoesNotExist:
+            pass
+
+    data = [{'id': f.id, 'display': str(f)} for f in folios_qs]
+    return JsonResponse({'folios': data})
+
+@login_required
+def get_order_metadata(request):
+    """
+    API endpoint to fetch metadata for cascading dropdowns.
+    Returns:
+    - investors: based on distributor_id (or current user context)
+    - schemes: based on filters (amc, category, type)
+    - mandates: based on investor_id
+    - scheme_details: if scheme_id is provided
+    """
+    response_data = {}
+
+    # 1. Fetch Investors (Filtered by Distributor)
+    # Only Admin/RM should typically need this if they select Distributor first.
+    # For now, we rely on the Distributor ID passed.
+    distributor_id = request.GET.get('distributor_id')
+    if distributor_id:
+        # Permission Check: Can this user view this distributor's investors?
+        if request.user.user_type == 'ADMIN' or \
+           (request.user.user_type == 'RM' and request.user.rm_profile.distributors.filter(id=distributor_id).exists()) or \
+           (request.user.user_type == 'DISTRIBUTOR' and request.user.distributor_profile.id == int(distributor_id)):
+
+            investors = InvestorProfile.objects.filter(distributor_id=distributor_id).values('id', 'user__username', 'pan')
+            response_data['investors'] = list(investors)
+
+    # 2. Fetch Schemes (Filtered) - Public Read (Authenticated)
+    amc_id = request.GET.get('amc_id')
+    category_id = request.GET.get('category_id')
+    scheme_type = request.GET.get('scheme_type') # 'growth', 'idcw', etc. if available
+
+    schemes_qs = Scheme.objects.filter(purchase_allowed=True)
+    if amc_id:
+        schemes_qs = schemes_qs.filter(amc_id=amc_id)
+    if category_id:
+        schemes_qs = schemes_qs.filter(category_id=category_id)
+
+    # Optimizing query: return only needed fields
+    schemes_data = schemes_qs.values(
+        'id', 'name', 'scheme_code', 'min_purchase_amount', 'max_purchase_amount',
+        'purchase_amount_multiplier', 'is_sip_allowed'
+    )
+
+    if request.GET.get('fetch_schemes') == 'true':
+         response_data['schemes'] = list(schemes_data)
+
+    # 3. Fetch Mandates
+    investor_id = request.GET.get('investor_id')
+    if investor_id:
+        # IDOR Check
+        if has_access_to_investor(request.user, investor_id):
+            mandates = Mandate.objects.filter(
+                investor_id=investor_id,
+                status=Mandate.APPROVED
+            ).values('id', 'mandate_id', 'amount_limit', 'bank_account__bank_name', 'bank_account__account_number')
+            response_data['mandates'] = list(mandates)
+
+    # 4. Fetch Scheme Details (Specific Scheme) - Public Read (Authenticated)
+    scheme_id = request.GET.get('scheme_id')
+    if scheme_id:
+        try:
+            scheme = Scheme.objects.get(id=scheme_id)
+            response_data['scheme_details'] = {
+                'id': scheme.id,
+                'name': scheme.name,
+                'min_purchase_amount': scheme.min_purchase_amount,
+                'max_purchase_amount': scheme.max_purchase_amount,
+                'purchase_amount_multiplier': scheme.purchase_amount_multiplier,
+                'is_sip_allowed': scheme.is_sip_allowed
+            }
+        except Scheme.DoesNotExist:
+            pass
+
+    return JsonResponse(response_data)
+
+def has_access_to_investor(user, investor_id):
+    """Helper to check if a user has access to a specific investor."""
+    try:
+        investor = InvestorProfile.objects.get(id=investor_id)
+    except InvestorProfile.DoesNotExist:
+        return False
+
+    if user.user_type == 'ADMIN':
+        return True
+    if user.user_type == 'INVESTOR':
+        return user.investor_profile.id == int(investor_id)
+    if user.user_type == 'DISTRIBUTOR':
+        return investor.distributor.user == user
+    if user.user_type == 'RM':
+        return investor.distributor.rm.user == user
+
+    return False

@@ -202,16 +202,34 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 });
 
-window.addEventListener("app:mounted", function () {
+// Use a more robust initialization for Header Dropdowns
+function initHeaderDropdowns() {
     var o = { placement: "bottom-start", modifiers: [{ name: "offset", options: { offset: [0, 4] } }] };
-    // Only init if elements exist
+
+    // Check if Popper is available (exposed by main.js)
+    if (typeof window.Popper === 'undefined') {
+        // Retry after a short delay if Popper isn't ready yet
+        setTimeout(initHeaderDropdowns, 50);
+        return;
+    }
+
     if(document.querySelector("#master-menu-dropdown")) {
-        new Popper("#master-menu-dropdown", ".popper-ref", ".popper-root", o);
+        new window.Popper("#master-menu-dropdown", ".popper-ref", ".popper-root", o);
     }
     if(document.querySelector("#invest-menu-dropdown")) {
-        new Popper("#invest-menu-dropdown", ".popper-ref", ".popper-root", o);
+        new window.Popper("#invest-menu-dropdown", ".popper-ref", ".popper-root", o);
     }
-});
+}
+
+// Try initializing when DOM is ready, or wait for app:mounted
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initHeaderDropdowns);
+} else {
+    initHeaderDropdowns();
+}
+
+window.addEventListener("app:mounted", initHeaderDropdowns);
+
 
 // --- Exposed Helpers ---
 

@@ -11,81 +11,146 @@
 </div>
 
 <div class="grid grid-cols-12 gap-4 sm:gap-5 lg:gap-6">
-    <div class="col-span-12 sm:col-span-8">
+    <div class="col-span-12 lg:col-span-12">
         <div class="card p-4 sm:p-5">
             <form method="post" id="orderForm">
                 {% csrf_token %}
 
-                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <!-- Step 1: Investor Selection -->
+                <div class="border-b border-slate-200 pb-4 dark:border-navy-500 mb-4">
+                    <h3 class="text-base font-medium text-slate-700 dark:text-navy-100 mb-3">1. Select Investor</h3>
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        {# Distributor Selection (Admin Only - Logic handled in view/form but kept here for potential expansion) #}
+                        {# If Admin/RM, we might show Distributor Dropdown first #}
 
-                    {# Investor Selection #}
-                    <div class="col-span-2">
-                        <label class="block">
-                            <span class="font-medium text-slate-600 dark:text-navy-100">Select Investor</span>
-                            {% render_field form.investor class="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" %}
-                        </label>
-                        {% if form.investor.errors %}
-                            <span class="text-tiny+ text-error">{{ form.investor.errors.0 }}</span>
-                        {% endif %}
-                    </div>
-
-                    {# Scheme Selection (Often pre-filled) #}
-                    <div class="col-span-2">
-                        <label class="block">
-                            <span class="font-medium text-slate-600 dark:text-navy-100">Scheme</span>
-                            {% render_field form.scheme class="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" %}
-                        </label>
-                         {% if form.scheme.errors %}
-                            <span class="text-tiny+ text-error">{{ form.scheme.errors.0 }}</span>
-                        {% endif %}
-                    </div>
-
-                    {% if selected_scheme %}
-                    <div class="col-span-2 rounded-lg bg-info/10 p-3 text-info dark:bg-info/20">
-                        <div class="flex items-center space-x-2">
-                            <i class="fa-solid fa-circle-info text-base"></i>
-                            <p class="font-medium">Scheme Details</p>
+                        <div class="col-span-2 sm:col-span-1">
+                            <label class="block">
+                                <span class="font-medium text-slate-600 dark:text-navy-100">Investor</span>
+                                {% render_field form.investor class="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" id="investorSelect" %}
+                            </label>
+                            {% if form.investor.errors %}
+                                <span class="text-tiny+ text-error">{{ form.investor.errors.0 }}</span>
+                            {% endif %}
                         </div>
-                        <p class="mt-1 text-xs+">Min Purchase: ₹{{ selected_scheme.min_purchase_amount }}</p>
-                        <p class="text-xs+">AMC: {{ selected_scheme.amc.name }}</p>
+                         <div class="col-span-2 sm:col-span-1">
+                            <label class="block">
+                                <span class="font-medium text-slate-600 dark:text-navy-100">Transaction Type</span>
+                                {% render_field form.transaction_type class="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" id="txnTypeSelect" %}
+                            </label>
+                        </div>
                     </div>
-                    {% endif %}
+                </div>
 
-                    {# Folio Selection #}
-                    <div class="col-span-2 sm:col-span-1">
-                        <label class="block">
-                            <span class="font-medium text-slate-600 dark:text-navy-100">Folio</span>
-                            {% render_field form.folio_selection class="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" %}
-                        </label>
-                        <span class="text-tiny+ text-slate-400">Select 'Create New Folio' if uncertain.</span>
+                <!-- Step 2: Scheme Selection -->
+                <div class="border-b border-slate-200 pb-4 dark:border-navy-500 mb-4">
+                    <h3 class="text-base font-medium text-slate-700 dark:text-navy-100 mb-3">2. Select Scheme</h3>
+
+                    <!-- Filters -->
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-3 mb-4 p-3 bg-slate-50 dark:bg-navy-800 rounded-lg">
+                        <div>
+                            <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">AMC</label>
+                            <select id="filter_amc" class="form-select w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs+ hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:bg-navy-700 dark:hover:border-navy-400 dark:focus:border-accent">
+                                <option value="">All AMCs</option>
+                                {% for amc in amcs %}
+                                    <option value="{{ amc.id }}">{{ amc.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Category</label>
+                            <select id="filter_category" class="form-select w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs+ hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:bg-navy-700 dark:hover:border-navy-400 dark:focus:border-accent">
+                                <option value="">All Categories</option>
+                                {% for cat in categories %}
+                                    <option value="{{ cat.id }}">{{ cat.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                             <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Scheme Type</label>
+                             <select id="filter_type" class="form-select w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs+ hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:bg-navy-700 dark:hover:border-navy-400 dark:focus:border-accent">
+                                <option value="">All Types</option>
+                                <option value="growth">Growth</option>
+                                <option value="idcw">IDCW (Dividend)</option>
+                             </select>
+                        </div>
                     </div>
 
-                    {# Amount #}
-                    <div class="col-span-2 sm:col-span-1">
-                        <label class="block">
-                            <span class="font-medium text-slate-600 dark:text-navy-100">Investment Amount (₹)</span>
-                            {% render_field form.amount class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" placeholder="Min Amount" %}
-                        </label>
-                        {% if form.amount.errors %}
-                            <span class="text-tiny+ text-error">{{ form.amount.errors.0 }}</span>
-                        {% endif %}
-                    </div>
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-1">
+                        <div class="col-span-1">
+                            <label class="block">
+                                <span class="font-medium text-slate-600 dark:text-navy-100">Scheme Name</span>
+                                {% render_field form.scheme class="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" id="schemeSelect" %}
+                            </label>
+                             {% if form.scheme.errors %}
+                                <span class="text-tiny+ text-error">{{ form.scheme.errors.0 }}</span>
+                            {% endif %}
+                        </div>
 
-                    {# Payment Mode #}
-                    <div class="col-span-2">
-                        <label class="block">
-                            <span class="font-medium text-slate-600 dark:text-navy-100">Payment Mode</span>
-                            {% render_field form.payment_mode class="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" %}
-                        </label>
+                        <!-- Scheme Info Panel -->
+                        <div id="schemeInfoPanel" class="hidden col-span-1 rounded-lg bg-info/10 p-3 text-info dark:bg-info/20">
+                            <div class="flex items-center space-x-2">
+                                <i class="fa-solid fa-circle-info text-base"></i>
+                                <p class="font-medium">Scheme Constraints</p>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4 mt-2">
+                                <p class="text-xs+">Min Purchase: <span id="info_min_amt" class="font-semibold">₹0</span></p>
+                                <p class="text-xs+">Max Purchase: <span id="info_max_amt" class="font-semibold">No Limit</span></p>
+                                <p class="text-xs+">SIP Allowed: <span id="info_sip" class="font-semibold">Yes</span></p>
+                                <p class="text-xs+">Multiplier: <span id="info_mult" class="font-semibold">1</span></p>
+                            </div>
+                        </div>
                     </div>
+                </div>
 
+                <!-- Step 3: Investment Details -->
+                <div class="border-b border-slate-200 pb-4 dark:border-navy-500 mb-4">
+                     <h3 class="text-base font-medium text-slate-700 dark:text-navy-100 mb-3">3. Investment Details</h3>
+                     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        {# Folio Selection #}
+                        <div class="col-span-2 sm:col-span-1">
+                            <label class="block">
+                                <span class="font-medium text-slate-600 dark:text-navy-100">Folio</span>
+                                {% render_field form.folio_selection class="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" id="folioSelect" %}
+                            </label>
+                            <span class="text-tiny+ text-slate-400">Select 'Create New Folio' if uncertain.</span>
+                        </div>
+
+                        {# Amount #}
+                        <div class="col-span-2 sm:col-span-1">
+                            <label class="block">
+                                <span class="font-medium text-slate-600 dark:text-navy-100">Investment Amount (₹)</span>
+                                {% render_field form.amount class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" placeholder="Enter Amount" id="amountInput" %}
+                            </label>
+                            {% if form.amount.errors %}
+                                <span class="text-tiny+ text-error">{{ form.amount.errors.0 }}</span>
+                            {% endif %}
+                            <span id="amountError" class="hidden text-tiny+ text-error mt-1">Amount must be between Min and Max limits.</span>
+                        </div>
+
+                         {# Mandate (Conditional) #}
+                        <div class="col-span-2 sm:col-span-1 hidden" id="mandateContainer">
+                            <label class="block">
+                                <span class="font-medium text-slate-600 dark:text-navy-100">SIP Mandate</span>
+                                {% render_field form.mandate class="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" id="mandateSelect" %}
+                            </label>
+                             <span class="text-tiny+ text-slate-400">Required for SIP Registration.</span>
+                        </div>
+
+                        {# Payment Mode #}
+                        <div class="col-span-2 sm:col-span-1">
+                            <label class="block">
+                                <span class="font-medium text-slate-600 dark:text-navy-100">Payment Mode</span>
+                                {% render_field form.payment_mode class="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" %}
+                            </label>
+                        </div>
+                     </div>
                 </div>
 
                 <div class="mt-6 flex justify-end space-x-2">
                     <a href="{% url 'scheme_list' %}" class="btn border border-slate-300 font-medium text-slate-800 hover:bg-slate-150 focus:bg-slate-150 active:bg-slate-150/80 dark:border-navy-450 dark:text-navy-50 dark:hover:bg-navy-500 dark:focus:bg-navy-500 dark:active:bg-navy-500/90">
                         Cancel
                     </a>
-                    <button type="submit" class="btn bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90">
+                    <button type="submit" id="submitBtn" class="btn bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90">
                         Place Order
                     </button>
                 </div>
@@ -98,45 +163,226 @@
 {% block javascript %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const investorSelect = document.getElementById('{{ form.investor.id_for_label }}');
-        const schemeSelect = document.getElementById('{{ form.scheme.id_for_label }}');
-        const folioSelect = document.getElementById('{{ form.folio_selection.id_for_label }}');
+        // --- 1. Initialize Tom Select for Searchable Dropdowns ---
+        // Note: Using a helper or direct instantiation if library is loaded via mix
+        // We assume TomSelect is available globally via window.TomSelect if imported in app.js,
+        // or we check if we need to init it. If not in app.js globally, we might rely on standard HTML selects or check if we can init it.
+        // For now, let's assume standard selects with the 'form-select' class,
+        // but the requirement was "use select2 js" (interpreted as Tom Select since it's in package.json).
 
-        async function reloadFolios() {
+        let tsInvestor, tsScheme, tsFolio, tsMandate;
+
+        if (window.TomSelect) {
+            tsInvestor = new TomSelect("#investorSelect", { create: false, sortField: { field: "text", direction: "asc" } });
+            tsScheme = new TomSelect("#schemeSelect", {
+                create: false,
+                valueField: 'id',
+                labelField: 'name',
+                searchField: 'name',
+                load: function(query, callback) {
+                    // Logic to load remotely if needed, but we filter locally for now or via cascading
+                    callback();
+                }
+            });
+            tsFolio = new TomSelect("#folioSelect", { create: false });
+            // Mandate might be hidden initially, careful with init
+             if(document.getElementById('mandateSelect')) {
+               tsMandate = new TomSelect("#mandateSelect", { create: false });
+            }
+        }
+
+        // --- 2. Element References ---
+        const investorSelect = document.getElementById('investorSelect');
+        const schemeSelect = document.getElementById('schemeSelect');
+        const folioSelect = document.getElementById('folioSelect');
+        const txnTypeSelect = document.getElementById('txnTypeSelect');
+        const mandateSelect = document.getElementById('mandateSelect');
+        const mandateContainer = document.getElementById('mandateContainer');
+        const amountInput = document.getElementById('amountInput');
+        const amountError = document.getElementById('amountError');
+        const submitBtn = document.getElementById('submitBtn');
+
+        const filterAmc = document.getElementById('filter_amc');
+        const filterCat = document.getElementById('filter_category');
+        const filterType = document.getElementById('filter_type');
+
+        const infoPanel = document.getElementById('schemeInfoPanel');
+        const infoMin = document.getElementById('info_min_amt');
+        const infoMax = document.getElementById('info_max_amt');
+        const infoSip = document.getElementById('info_sip');
+        const infoMult = document.getElementById('info_mult');
+
+        let currentSchemeDetails = null;
+
+        // --- 3. Cascading Logic ---
+
+        // A. Load Folios and Mandates when Investor changes
+        async function onInvestorChange() {
             const investorId = investorSelect.value;
-            const schemeId = schemeSelect.value;
+            if (!investorId) return;
 
-            if (!investorId) {
-                folioSelect.innerHTML = '<option value=>Create New Folio</option>';
+            // Load Folios
+            fetch(`{% url 'api_folios' %}?investor_id=${investorId}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (tsFolio) {
+                        tsFolio.clear();
+                        tsFolio.clearOptions();
+                        tsFolio.addOption({value: '', text: 'Create New Folio'});
+                        data.folios.forEach(f => tsFolio.addOption({value: f.id, text: f.display}));
+                        tsFolio.setValue(''); // Default to New Folio
+                    } else {
+                         // Fallback for standard select
+                         folioSelect.innerHTML = '<option value="">Create New Folio</option>';
+                         data.folios.forEach(f => {
+                             folioSelect.innerHTML += `<option value="${f.id}">${f.display}</option>`;
+                         });
+                    }
+                });
+
+            // Load Mandates
+            fetch(`{% url 'api_order_metadata' %}?investor_id=${investorId}`)
+                .then(r => r.json())
+                .then(data => {
+                     if(data.mandates) {
+                        if (tsMandate) {
+                            tsMandate.clear();
+                            tsMandate.clearOptions();
+                            data.mandates.forEach(m => tsMandate.addOption({
+                                value: m.id,
+                                text: `${m.mandate_id} - Limit: ${m.amount_limit} (${m.bank_account__bank_name})`
+                            }));
+                        } else if (mandateSelect) {
+                            mandateSelect.innerHTML = '';
+                            data.mandates.forEach(m => {
+                                mandateSelect.innerHTML += `<option value="${m.id}">${m.mandate_id} - Limit: ${m.amount_limit}</option>`;
+                            });
+                        }
+                     }
+                });
+        }
+
+        // B. Filter Schemes
+        async function refreshSchemes() {
+            const amc = filterAmc.value;
+            const cat = filterCat.value;
+            const type = filterType.value;
+
+            // Build query params
+            const params = new URLSearchParams({ fetch_schemes: 'true' });
+            if (amc) params.append('amc_id', amc);
+            if (cat) params.append('category_id', cat);
+            if (type) params.append('scheme_type', type);
+
+            // Fetch filtered schemes
+            fetch(`{% url 'api_order_metadata' %}?${params.toString()}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.schemes) {
+                        if (tsScheme) {
+                            tsScheme.clear();
+                            tsScheme.clearOptions();
+                            data.schemes.forEach(s => tsScheme.addOption(s));
+                            // If only one option, select it? No, explicit choice is better.
+                        } else {
+                            schemeSelect.innerHTML = '<option value="">---------</option>';
+                            data.schemes.forEach(s => {
+                                schemeSelect.innerHTML += `<option value="${s.id}">${s.name}</option>`;
+                            });
+                        }
+                    }
+                });
+        }
+
+        // C. On Scheme Selection -> Load Details & Validate
+        async function onSchemeChange() {
+            const schemeId = schemeSelect.value;
+            if (!schemeId) {
+                infoPanel.classList.add('hidden');
+                currentSchemeDetails = null;
                 return;
             }
 
-            const url = `{% url 'api_folios' %}?investor_id=${investorId}&scheme_id=${schemeId || ''}`;
-            try {
-                const response = await fetch(url);
-                const data = await response.json();
+            fetch(`{% url 'api_order_metadata' %}?scheme_id=${schemeId}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.scheme_details) {
+                        currentSchemeDetails = data.scheme_details;
+                        // Update Info Panel
+                        infoPanel.classList.remove('hidden');
+                        infoMin.innerText = `₹${currentSchemeDetails.min_purchase_amount}`;
+                        infoMax.innerText = currentSchemeDetails.max_purchase_amount > 0 ? `₹${currentSchemeDetails.max_purchase_amount}` : 'No Limit';
+                        infoSip.innerText = currentSchemeDetails.is_sip_allowed ? 'Yes' : 'No';
+                        infoMult.innerText = currentSchemeDetails.purchase_amount_multiplier;
 
-                let options = '<option value=>Create New Folio</option>';
-                data.folios.forEach(folio => {
-                    options += `<option value='${folio.id}'>${folio.display}</option>`;
+                        // Check SIP compatibility
+                        if (txnTypeSelect.value === 'SIP' && !currentSchemeDetails.is_sip_allowed) {
+                            alert('This scheme does not allow SIP investments. Switched to Lumpsum.');
+                            txnTypeSelect.value = 'P'; // Reset to Purchase
+                            toggleMandateVisibility();
+                        }
+                        validateAmount();
+                    }
                 });
-                folioSelect.innerHTML = options;
-            } catch (e) {
-                console.error('Failed to load folios', e);
+        }
+
+        // D. Transaction Type Toggle
+        function toggleMandateVisibility() {
+            const type = txnTypeSelect.value;
+            if (type === 'SIP') {
+                mandateContainer.classList.remove('hidden');
+                // Ensure mandate requirement validation logic if needed
+            } else {
+                mandateContainer.classList.add('hidden');
             }
         }
 
-        if (investorSelect) {
-            investorSelect.addEventListener('change', reloadFolios);
-        }
-        if (schemeSelect) {
-            schemeSelect.addEventListener('change', reloadFolios);
+        // E. Amount Validation
+        function validateAmount() {
+            if (!currentSchemeDetails) return;
+            const amt = parseFloat(amountInput.value) || 0;
+            let isValid = true;
+
+            // Min Check
+            if (amt < parseFloat(currentSchemeDetails.min_purchase_amount)) {
+                isValid = false;
+            }
+            // Max Check
+            if (parseFloat(currentSchemeDetails.max_purchase_amount) > 0 && amt > parseFloat(currentSchemeDetails.max_purchase_amount)) {
+                isValid = false;
+            }
+
+            if (!isValid && amt > 0) {
+                amountError.classList.remove('hidden');
+                submitBtn.disabled = true;
+                submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            } else {
+                amountError.classList.add('hidden');
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
         }
 
-        // Initial load if investor is already selected (e.g. pre-filled form)
-        if (investorSelect && investorSelect.value) {
-            reloadFolios();
-        }
+
+        // --- 4. Event Listeners ---
+        if (investorSelect) investorSelect.addEventListener('change', onInvestorChange);
+
+        // Scheme Filters
+        filterAmc.addEventListener('change', refreshSchemes);
+        filterCat.addEventListener('change', refreshSchemes);
+        filterType.addEventListener('change', refreshSchemes);
+
+        // Scheme Selection
+        if (schemeSelect) schemeSelect.addEventListener('change', onSchemeChange);
+
+        // Transaction Type
+        if (txnTypeSelect) txnTypeSelect.addEventListener('change', toggleMandateVisibility);
+
+        // Amount Input
+        if (amountInput) amountInput.addEventListener('input', validateAmount);
+
+        // Initial setup
+        toggleMandateVisibility();
     });
 </script>
 {% endblock %}
