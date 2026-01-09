@@ -33,7 +33,7 @@
       localStorage.getItem("dark-mode") === "dark" &&
       document.documentElement.classList.add("dark");
   </script>
-  <script src="{% static 'js/pages/navigation-horizontal.js' %}" defer></script>
+  {% comment %} <script src="{% static 'js/pages/navigation-horizontal.js' %}" defer></script> {% endcomment %}
     {% block css %}
 
     {% endblock %}

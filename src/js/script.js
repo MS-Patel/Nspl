@@ -216,6 +216,7 @@ window.addEventListener("app:mounted", function () {
  * Expose setupFormValidation to window
  */
 window.setupFormValidation = setupFormValidation;
+window.validation = validation;
 
 /**
  * Helper to query selector all
