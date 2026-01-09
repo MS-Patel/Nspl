@@ -125,12 +125,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
 <script>
-// Since I cannot modify the build pipeline to include the new JS file in assets/, I'll embed the util code here for now, or assume it's loaded.
-// However, the best way given the constraints and the user request is to include the provided JS.
-// I will attempt to fetch it if it was exposed via static, but since I just created it in src/js/utils, it needs compilation.
-// For this turn, I will inline the helper object or rely on the user having setup the build.
-// But to ensure it works *now*, I will inline the GridJSExportUtils here.
-
+// Inline Export Utils
 const GridJSExportUtils = (() => {
   const defaultOptions = { filename: 'report', title: 'Report', sheetName: 'Sheet1' };
   function convertDataToRows(data, columns) {
@@ -191,6 +186,7 @@ const GridJSExportUtils = (() => {
   document.addEventListener('DOMContentLoaded', () => {
     const tableData = {{ grid_data_json|safe }};
     const gridContainer = document.querySelector("#scheme_list");
+    const investUrl = "{% url 'order_create' %}";
 
     const gridConfig = {
       columns: [
@@ -209,6 +205,19 @@ const GridJSExportUtils = (() => {
             name: "Min Inv.",
             formatter: (cell) => `₹ ${cell.toLocaleString('en-IN')}`
         },
+        {
+            id: "action",
+            name: "Action",
+            formatter: (cell, row) => {
+                const schemeId = row.cells[0].data; // id is 1st column
+                return Gridjs.html(`
+                    <a href="${investUrl}?scheme_id=${schemeId}"
+                       class="btn h-8 rounded-full bg-primary/10 px-3 text-xs+ font-medium text-primary hover:bg-primary/20 focus:bg-primary/20 active:bg-primary/25 dark:bg-accent-light/10 dark:text-accent-light dark:hover:bg-accent-light/20 dark:focus:bg-accent-light/20 dark:active:bg-accent-light/25">
+                       Invest
+                    </a>
+                `);
+            }
+        }
       ],
       data: tableData,
       sort: true,

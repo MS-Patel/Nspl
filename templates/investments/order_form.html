@@ -1,0 +1,142 @@
+{% extends 'layout/base.html' %}
+{% load widget_tweaks %}
+
+{% block content %}
+<div class="flex flex-col items-center justify-between space-y-4 py-5 sm:flex-row sm:space-y-0 lg:py-6">
+    <div class="flex items-center space-x-1">
+        <h2 class="text-xl font-medium text-slate-700 line-clamp-1 dark:text-navy-50">
+            {{ title }}
+        </h2>
+    </div>
+</div>
+
+<div class="grid grid-cols-12 gap-4 sm:gap-5 lg:gap-6">
+    <div class="col-span-12 sm:col-span-8">
+        <div class="card p-4 sm:p-5">
+            <form method="post" id="orderForm">
+                {% csrf_token %}
+
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+
+                    {# Investor Selection #}
+                    <div class="col-span-2">
+                        <label class="block">
+                            <span class="font-medium text-slate-600 dark:text-navy-100">Select Investor</span>
+                            {% render_field form.investor class="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" %}
+                        </label>
+                        {% if form.investor.errors %}
+                            <span class="text-tiny+ text-error">{{ form.investor.errors.0 }}</span>
+                        {% endif %}
+                    </div>
+
+                    {# Scheme Selection (Often pre-filled) #}
+                    <div class="col-span-2">
+                        <label class="block">
+                            <span class="font-medium text-slate-600 dark:text-navy-100">Scheme</span>
+                            {% render_field form.scheme class="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" %}
+                        </label>
+                         {% if form.scheme.errors %}
+                            <span class="text-tiny+ text-error">{{ form.scheme.errors.0 }}</span>
+                        {% endif %}
+                    </div>
+
+                    {% if selected_scheme %}
+                    <div class="col-span-2 rounded-lg bg-info/10 p-3 text-info dark:bg-info/20">
+                        <div class="flex items-center space-x-2">
+                            <i class="fa-solid fa-circle-info text-base"></i>
+                            <p class="font-medium">Scheme Details</p>
+                        </div>
+                        <p class="mt-1 text-xs+">Min Purchase: ₹{{ selected_scheme.min_purchase_amount }}</p>
+                        <p class="text-xs+">AMC: {{ selected_scheme.amc.name }}</p>
+                    </div>
+                    {% endif %}
+
+                    {# Folio Selection #}
+                    <div class="col-span-2 sm:col-span-1">
+                        <label class="block">
+                            <span class="font-medium text-slate-600 dark:text-navy-100">Folio</span>
+                            {% render_field form.folio_selection class="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" %}
+                        </label>
+                        <span class="text-tiny+ text-slate-400">Select 'Create New Folio' if uncertain.</span>
+                    </div>
+
+                    {# Amount #}
+                    <div class="col-span-2 sm:col-span-1">
+                        <label class="block">
+                            <span class="font-medium text-slate-600 dark:text-navy-100">Investment Amount (₹)</span>
+                            {% render_field form.amount class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" placeholder="Min Amount" %}
+                        </label>
+                        {% if form.amount.errors %}
+                            <span class="text-tiny+ text-error">{{ form.amount.errors.0 }}</span>
+                        {% endif %}
+                    </div>
+
+                    {# Payment Mode #}
+                    <div class="col-span-2">
+                        <label class="block">
+                            <span class="font-medium text-slate-600 dark:text-navy-100">Payment Mode</span>
+                            {% render_field form.payment_mode class="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" %}
+                        </label>
+                    </div>
+
+                </div>
+
+                <div class="mt-6 flex justify-end space-x-2">
+                    <a href="{% url 'scheme_list' %}" class="btn border border-slate-300 font-medium text-slate-800 hover:bg-slate-150 focus:bg-slate-150 active:bg-slate-150/80 dark:border-navy-450 dark:text-navy-50 dark:hover:bg-navy-500 dark:focus:bg-navy-500 dark:active:bg-navy-500/90">
+                        Cancel
+                    </a>
+                    <button type="submit" class="btn bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90">
+                        Place Order
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascript %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const investorSelect = document.getElementById('{{ form.investor.id_for_label }}');
+        const schemeSelect = document.getElementById('{{ form.scheme.id_for_label }}');
+        const folioSelect = document.getElementById('{{ form.folio_selection.id_for_label }}');
+
+        async function reloadFolios() {
+            const investorId = investorSelect.value;
+            const schemeId = schemeSelect.value;
+
+            if (!investorId) {
+                folioSelect.innerHTML = '<option value=>Create New Folio</option>';
+                return;
+            }
+
+            const url = `{% url 'api_folios' %}?investor_id=${investorId}&scheme_id=${schemeId || ''}`;
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+
+                let options = '<option value=>Create New Folio</option>';
+                data.folios.forEach(folio => {
+                    options += `<option value='${folio.id}'>${folio.display}</option>`;
+                });
+                folioSelect.innerHTML = options;
+            } catch (e) {
+                console.error('Failed to load folios', e);
+            }
+        }
+
+        if (investorSelect) {
+            investorSelect.addEventListener('change', reloadFolios);
+        }
+        if (schemeSelect) {
+            schemeSelect.addEventListener('change', reloadFolios);
+        }
+
+        // Initial load if investor is already selected (e.g. pre-filled form)
+        if (investorSelect && investorSelect.value) {
+            reloadFolios();
+        }
+    });
+</script>
+{% endblock %}

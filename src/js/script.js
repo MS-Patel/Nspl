@@ -208,6 +208,9 @@ window.addEventListener("app:mounted", function () {
     if(document.querySelector("#master-menu-dropdown")) {
         new Popper("#master-menu-dropdown", ".popper-ref", ".popper-root", o);
     }
+    if(document.querySelector("#invest-menu-dropdown")) {
+        new Popper("#invest-menu-dropdown", ".popper-ref", ".popper-root", o);
+    }
 });
 
 // --- Exposed Helpers ---
