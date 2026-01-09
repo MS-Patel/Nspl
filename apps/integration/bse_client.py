@@ -6,6 +6,7 @@ import logging
 from django.conf import settings
 from zeep import Client, Settings
 import datetime
+from .utils import get_bse_order_params
 
 # Configure a specific logger for BSE API
 # propagate=False ensures these logs don't bubble up to the root Django logger
@@ -37,9 +38,11 @@ class BSEStarMFClient:
         """Generates a random 10-character alphanumeric pass key."""
         return ''.join(random.choices(string.ascii_letters + string.digits, k=10))
 
-    def _get_password(self):
+    def _get_auth_details(self):
         """
-        Authenticates with BSE StarMF SOAP API to get the session key (EncryptedPassword).
+        Authenticates with BSE StarMF SOAP API to get the session key (EncryptedPassword) and PassKey.
+        Returns:
+            tuple: (EncryptedPassword, PassKey)
         """
         pass_key = self._generate_pass_key()
 
@@ -58,12 +61,69 @@ class BSEStarMFClient:
             # Response format is usually "100|EncryptedPassword" or "101|Error"
             result_str = response.split('|')
             if result_str[0] == '100':
-                return result_str[1]
+                return result_str[1], pass_key
             else:
                 raise Exception(f"BSE Authentication Failed: {response}")
 
         except Exception as e:
             raise Exception(f"SOAP Error during authentication: {str(e)}")
+
+    def _get_password(self):
+        """
+        Wrapper to maintain backward compatibility.
+        Returns just the EncryptedPassword string.
+        """
+        token, _ = self._get_auth_details()
+        return token
+
+    def place_order(self, order):
+        """
+        Places a lumpsum order using the SOAP MFOrderEntry service.
+        Args:
+            order (Order): The order object.
+        Returns:
+            dict: {status: success/error, bse_order_id: ..., remarks: ...}
+        """
+        try:
+            # 1. Get Session Password (using the new tuple method)
+            encrypted_password, pass_key = self._get_auth_details()
+
+            # 2. Prepare Parameters
+            params = get_bse_order_params(
+                order,
+                self.member_id,
+                self.user_id,
+                encrypted_password,
+                pass_key
+            )
+
+            # 3. SOAP Call
+            zeep_settings = Settings(strict=False, xml_huge_tree=True)
+            client = Client(wsdl=self.order_wsdl, settings=zeep_settings)
+
+            # Calling orderEntryParam with keyword arguments expanded from the dict
+            response = client.service.orderEntryParam(**params)
+
+            # Log response
+            bse_logger.info(f"ORDER ENTRY: {order.unique_ref_no} | RESPONSE: {response}")
+
+            # Response: "0|OrderNo|Remarks" (Success) or "1|Error"
+            parts = str(response).split('|')
+            if parts[0] == '0':
+                return {
+                    'status': 'success',
+                    'bse_order_id': parts[1] if len(parts) > 1 else "",
+                    'remarks': parts[2] if len(parts) > 2 else 'Order Placed'
+                }
+            else:
+                return {
+                    'status': 'error',
+                    'remarks': parts[1] if len(parts) > 1 else response
+                }
+
+        except Exception as e:
+            bse_logger.error(f"ORDER ENTRY ERROR: {str(e)}")
+            return {'status': 'error', 'remarks': str(e)}
 
     def register_client(self, payload):
         """
