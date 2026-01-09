@@ -1,9 +1,9 @@
 from django.urls import path
-from .views import OrderCreateView, OrderDetailView, InvestorFoliosView
+from . import views
 
 urlpatterns = [
-    path('invest/order/create/', OrderCreateView.as_view(), name='order_create'),
-    path('invest/order/<int:pk>/', OrderDetailView.as_view(), name='order_detail'),
-    path('invest/order/success/', OrderCreateView.as_view(), name='order_success'), # Temporary
-    path('api/folios/', InvestorFoliosView.as_view(), name='api_folios'),
+    path('order/create/', views.order_create, name='order_create'),
+    path('order/list/', views.order_list, name='order_list'),
+    path('api/folios/', views.get_investor_folios, name='api_folios'),
+    path('api/metadata/', views.get_order_metadata, name='api_order_metadata'),
 ]
