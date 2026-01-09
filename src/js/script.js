@@ -1,5 +1,5 @@
 // Form validation setup function
-let validation = null; // Declare and initialize globally
+window.validation = null; // Declare and initialize globally
 
 function setupFormValidation({
     formId,
@@ -216,7 +216,7 @@ window.addEventListener("app:mounted", function () {
  * Expose setupFormValidation to window
  */
 window.setupFormValidation = setupFormValidation;
-window.validation = validation;
+
 
 /**
  * Helper to query selector all
