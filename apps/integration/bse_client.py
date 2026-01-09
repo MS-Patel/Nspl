@@ -7,13 +7,20 @@ from django.conf import settings
 from zeep import Client, Settings
 import datetime
 
-# Configure logging
-logging.basicConfig(
-    filename='bse_api.log',
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
+# Configure a specific logger for BSE API
+# propagate=False ensures these logs don't bubble up to the root Django logger
+bse_logger = logging.getLogger('bse_api')
+bse_logger.setLevel(logging.INFO)
+bse_logger.propagate = False
+
+# Create a file handler
+file_handler = logging.FileHandler('bse_api.log')
+formatter = logging.Formatter('%(asctime)s - %(message)s')
+file_handler.setFormatter(formatter)
+
+# Add handler to logger (avoid adding multiple times if module is reloaded)
+if not bse_logger.handlers:
+    bse_logger.addHandler(file_handler)
 
 class BSEStarMFClient:
     def __init__(self):
@@ -65,14 +72,6 @@ class BSEStarMFClient:
         Args:
             payload (dict): The dictionary containing the client details (Param).
         """
-        # Get session password
-        # NOTE: For the JSON API, the 'Password' field in the JSON body is usually the
-        # *raw* password, not the session token, OR the session token depending on the specific API.
-        # However, checking the documentation provided by the user:
-        # Request Parameter (JSON Format):
-        # { "UserId": "...", "MemberCode": "...", "Password": "@123456", ... }
-        # It seems to take the raw password.
-
         request_body = {
             "UserId": self.user_id,
             "MemberCode": self.member_id,
@@ -84,16 +83,14 @@ class BSEStarMFClient:
         }
 
         try:
-            # Mask sensitive data for logging
-            log_body = request_body.copy()
-            log_body['Password'] = '********'
-            logger.info(f"BSE Client Registration Request: {log_body}")
-
             response = requests.post(self.common_api_url, json=request_body, verify=False) # verify=False for UAT often needed
             response.raise_for_status()
 
+            # --- LOGGING REQUIREMENT: Base Response Only ---
+            # We log the raw text response from the API
+            bse_logger.info(f"API: {self.common_api_url} | RESPONSE: {response.text}")
+
             result = response.json()
-            logger.info(f"BSE Client Registration Response: {result}")
 
             if result.get("Status") == "0":
                 return {
@@ -109,7 +106,8 @@ class BSEStarMFClient:
                 }
 
         except Exception as e:
-            logger.error(f"BSE Client Registration Error: {str(e)}")
+            # Also log errors to the specific file
+            bse_logger.error(f"API Error: {str(e)}")
             return {
                 "status": "error",
                 "remarks": f"HTTP/Network Error: {str(e)}"

@@ -1,5 +1,6 @@
 // Form validation setup function
 let validation = null; // Declare and initialize globally
+
 function setupFormValidation({
     formId,
     fields,
@@ -18,30 +19,39 @@ function setupFormValidation({
 
     // Add validation rules dynamically
     Object.entries(fields).forEach(([fieldId, rules]) => {
-        validation.addField(fieldId, rules);
+        // Check if element exists to avoid errors
+        if(document.querySelector(fieldId)) {
+            validation.addField(fieldId, rules);
+        }
     });
 
     // Submission handler
     validation.onSuccess(async (event) => {
-        event.preventDefault();
+        // Prevent default submission if it's an event
+        if (event && event.preventDefault) {
+            event.preventDefault();
+        }
 
         const form = document.querySelector(formId);
         const formData = new FormData(form);
-        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const csrfTokenInput = document.querySelector('[name=csrfmiddlewaretoken]');
+        const csrfToken = csrfTokenInput ? csrfTokenInput.value : '';
 
-        const loader = document.getElementById('loader');
-
-        // if (loader) loader.classList.add('active'); // Activate the loader
-        Swal.fire({
-            title: 'Processing...',
-            text: 'Submitting form, please wait...',
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
-        });
+        // Hook for modifying formData before submit
         if (beforeSubmitCallback && typeof beforeSubmitCallback === 'function') {
             beforeSubmitCallback(formData);
+        }
+
+        // Show loading state
+        if (window.Swal) {
+            Swal.fire({
+                title: 'Processing...',
+                text: 'Submitting form, please wait...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
         }
 
         try {
@@ -49,6 +59,7 @@ function setupFormValidation({
                 method: method.toUpperCase(),
                 headers: {
                     'X-CSRFToken': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest' // Standard for Django AJAX
                 },
                 body: formData,
             });
@@ -58,26 +69,114 @@ function setupFormValidation({
                 if (typeof successCallback === 'function') {
                     successCallback(data); // Call custom success handler
                 } else {
-                    alert('Form submitted successfully!');
+                    if(window.Swal) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: 'Form submitted successfully!',
+                        }).then(() => {
+                           window.location.reload();
+                        });
+                    } else {
+                         alert('Form submitted successfully!');
+                         window.location.reload();
+                    }
                 }
             } else {
                 const errorData = await response.json();
                 if (typeof errorCallback === 'function') {
                     errorCallback(errorData, validation); // Call custom error handler
                 } else {
-                    alert('Error submitting form. Check for any backend issues.');
+                    // Default error handling if no callback provided
+                    handleErrorResponse(errorData);
                 }
             }
         } catch (error) {
             console.error('Network Error:', error);
-            alert('Failed to submit form due to a network issue.');
-        } finally {
-            // if (loader) loader.classList.remove('active'); // Deactivate the loader
+            if(window.Swal) {
+                 Swal.fire({
+                    icon: 'error',
+                    title: 'Network Error',
+                    text: 'Failed to submit form due to a network issue.',
+                });
+            } else {
+                alert('Failed to submit form due to a network issue.');
+            }
         }
     });
 }
 
-  document.addEventListener("DOMContentLoaded", function () {
+// === Error Handler ===
+function handleErrorResponse(errorData) {
+    if (window.Swal) {
+        Swal.close(); // Close loading spinner
+    }
+
+    // Clear existing custom error messages if any (JustValidate handles its own, but this is for extra ones)
+    document.querySelectorAll('.error-message').forEach((el) => el.textContent = '');
+
+    if (errorData?.error?.errors?.length) {
+      // 1. Validation Errors (Field specific)
+      // Expected format: { error: { errors: [ { field: 'email', message: '...' } ] } }
+      errorData.error.errors.forEach((err) => {
+        // Try to match field by ID first, then Name
+        let fieldSelector = `#${err.field}`;
+        let el = document.querySelector(fieldSelector);
+
+        // If not found by ID, try Django default ID format "id_field"
+        if (!el) {
+            fieldSelector = `#id_${err.field}`;
+            el = document.querySelector(fieldSelector);
+        }
+
+        if (el && validation) {
+             // Use JustValidate to show error if possible
+             validation.showErrors({ [fieldSelector]: err.message });
+        } else if (el) {
+            // Fallback manual error placement
+            let errorEl = el.parentNode.querySelector('.error-message');
+            if (!errorEl) {
+                errorEl = document.createElement('div');
+                errorEl.classList.add('text-tiny+', 'text-error', 'mt-1', 'error-message');
+                el.parentNode.appendChild(errorEl);
+            }
+            errorEl.textContent = err.message;
+        }
+      });
+
+      if(window.Swal) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Validation Error',
+            text: 'Please correct the errors in the form.',
+          });
+      }
+
+    } else if (errorData.message) {
+      // 2. General Error Message
+      if (window.Swal) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: errorData.message,
+        });
+      } else {
+        alert(errorData.message);
+      }
+    } else {
+      if (window.Swal) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Failed to submit form. Check for errors.',
+          });
+      } else {
+          alert('Failed to submit form. Check for errors.');
+      }
+    }
+}
+
+document.addEventListener("DOMContentLoaded", function () {
     const whatsappBtn = document.getElementById("whatsappBtn");
 
     if (whatsappBtn) {
@@ -95,9 +194,12 @@ function setupFormValidation({
         window.open(whatsappURL, "_blank");
         });
     }
-  });
+});
 
-  window.addEventListener("app:mounted", function () {
+window.addEventListener("app:mounted", function () {
     var o = { placement: "bottom-start", modifiers: [{ name: "offset", options: { offset: [0, 4] } }] };
-    new Popper("#master-menu-dropdown", ".popper-ref", ".popper-root", o);
-  });
+    // Only init if elements exist
+    if(document.querySelector("#master-menu-dropdown")) {
+        new Popper("#master-menu-dropdown", ".popper-ref", ".popper-root", o);
+    }
+});

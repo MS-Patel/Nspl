@@ -9,7 +9,7 @@
 </div>
 
 <div class="card p-6 max-w-2xl mx-auto">
-    <form method="post">
+    <form method="post" id="userForm">
         {% csrf_token %}
 
         {% if form.non_field_errors %}
@@ -23,7 +23,11 @@
             <label class="block text-sm font-medium text-slate-700 dark:text-navy-100 mb-1">
                 {{ field.label }} {% if field.field.required %}<span class="text-error">*</span>{% endif %}
             </label>
+            <!-- Render field with Django default ID (id_fieldname) but ensure explicit ID attribute -->
             {{ field|add_class:"form-input w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" }}
+
+            <!-- Removed inline server-side errors as JS will handle them,
+                 but keeping them for fallback if JS fails or for non-AJAX submissions -->
             {% if field.errors %}
             <span class="text-tiny+ text-error">{{ field.errors.0 }}</span>
             {% endif %}
@@ -40,4 +44,64 @@
         </div>
     </form>
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        setupFormValidation({
+            formId: '#userForm',
+            submitUrl: window.location.href,
+            fields: {
+                // Common fields for User Creation (RM, Distributor)
+                '#id_username': [{ rule: 'required', errorMessage: 'Username is required' }],
+                '#id_name': [{ rule: 'required', errorMessage: 'Name is required' }],
+                '#id_email': [
+                    { rule: 'required', errorMessage: 'Email is required' },
+                    { rule: 'email', errorMessage: 'Invalid email format' }
+                ],
+                '#id_password': [{ rule: 'required', errorMessage: 'Password is required' }],
+                '#id_confirm_password': [
+                    { rule: 'required', errorMessage: 'Confirm Password is required' },
+                    {
+                        validator: (value, fields) => {
+                            const pwd = document.querySelector('#id_password').value;
+                            return value === pwd;
+                        },
+                        errorMessage: 'Passwords do not match',
+                    },
+                ],
+                // RM Specific
+                '#id_employee_code': [{ rule: 'required', errorMessage: 'Employee Code is required' }],
+                // Distributor Specific
+                '#id_arn_number': [{ rule: 'required', errorMessage: 'ARN Number is required' }],
+                '#id_pan': [
+                     { rule: 'required', errorMessage: 'PAN is required' },
+                     { rule: 'customRegexp', value: /[A-Z]{5}[0-9]{4}[A-Z]{1}/, errorMessage: 'Invalid PAN' }
+                ],
+                '#id_mobile': [
+                    { rule: 'minLength', value: 10 },
+                    { rule: 'maxLength', value: 10 },
+                    { rule: 'integer', errorMessage: 'Numbers only'}
+                ]
+            },
+            successCallback: (response) => {
+                 if(window.Swal) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: 'User Created Successfully'
+                    }).then(() => {
+                        // Redirect to the list view or dashboard provided in response,
+                        // or default based on logic.
+                        // Note: The generic view usually redirects to success_url.
+                        // We will rely on reloading or going back if response doesn't give URL.
+                        window.location.href = document.referrer || '/';
+                    });
+                 } else {
+                     alert('User Created');
+                     window.location.href = document.referrer || '/';
+                 }
+            }
+        });
+    });
+</script>
 {% endblock %}
