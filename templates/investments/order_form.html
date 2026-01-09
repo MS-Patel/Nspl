@@ -13,31 +13,7 @@
 <div class="grid grid-cols-12 gap-4 sm:gap-5 lg:gap-6">
     <div class="col-span-12 sm:col-span-8">
         <div class="card p-4 sm:p-5">
-            <form method="post" id="orderForm" x-data="{
-                investorId: '{{ form.investor.value|default:'' }}',
-                schemeId: '{{ form.scheme.value|default:'' }}',
-                async reloadFolios() {
-                    const folioSelect = document.getElementById('{{ form.folio_selection.id_for_label }}');
-                    if (!this.investorId) {
-                        folioSelect.innerHTML = '<option value=>Create New Folio</option>';
-                        return;
-                    }
-
-                    const url = `{% url 'api_folios' %}?investor_id=${this.investorId}&scheme_id=${this.schemeId || ''}`;
-                    try {
-                        const response = await fetch(url);
-                        const data = await response.json();
-
-                        let options = '<option value=>Create New Folio</option>';
-                        data.folios.forEach(folio => {
-                            options += `<option value='${folio.id}'>${folio.display}</option>`;
-                        });
-                        folioSelect.innerHTML = options;
-                    } catch (e) {
-                        console.error('Failed to load folios', e);
-                    }
-                }
-            }" x-init="if(investorId) reloadFolios()">
+            <form method="post" id="orderForm">
                 {% csrf_token %}
 
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -46,7 +22,7 @@
                     <div class="col-span-2">
                         <label class="block">
                             <span class="font-medium text-slate-600 dark:text-navy-100">Select Investor</span>
-                            {% render_field form.investor class="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" x-model="investorId" @change="reloadFolios()" %}
+                            {% render_field form.investor class="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" %}
                         </label>
                         {% if form.investor.errors %}
                             <span class="text-tiny+ text-error">{{ form.investor.errors.0 }}</span>
@@ -57,7 +33,7 @@
                     <div class="col-span-2">
                         <label class="block">
                             <span class="font-medium text-slate-600 dark:text-navy-100">Scheme</span>
-                            {% render_field form.scheme class="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" x-model="schemeId" @change="reloadFolios()" %}
+                            {% render_field form.scheme class="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" %}
                         </label>
                          {% if form.scheme.errors %}
                             <span class="text-tiny+ text-error">{{ form.scheme.errors.0 }}</span>
@@ -117,4 +93,50 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block javascript %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const investorSelect = document.getElementById('{{ form.investor.id_for_label }}');
+        const schemeSelect = document.getElementById('{{ form.scheme.id_for_label }}');
+        const folioSelect = document.getElementById('{{ form.folio_selection.id_for_label }}');
+
+        async function reloadFolios() {
+            const investorId = investorSelect.value;
+            const schemeId = schemeSelect.value;
+
+            if (!investorId) {
+                folioSelect.innerHTML = '<option value=>Create New Folio</option>';
+                return;
+            }
+
+            const url = `{% url 'api_folios' %}?investor_id=${investorId}&scheme_id=${schemeId || ''}`;
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+
+                let options = '<option value=>Create New Folio</option>';
+                data.folios.forEach(folio => {
+                    options += `<option value='${folio.id}'>${folio.display}</option>`;
+                });
+                folioSelect.innerHTML = options;
+            } catch (e) {
+                console.error('Failed to load folios', e);
+            }
+        }
+
+        if (investorSelect) {
+            investorSelect.addEventListener('change', reloadFolios);
+        }
+        if (schemeSelect) {
+            schemeSelect.addEventListener('change', reloadFolios);
+        }
+
+        // Initial load if investor is already selected (e.g. pre-filled form)
+        if (investorSelect && investorSelect.value) {
+            reloadFolios();
+        }
+    });
+</script>
 {% endblock %}
