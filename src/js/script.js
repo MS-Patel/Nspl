@@ -213,11 +213,11 @@ function initHeaderDropdowns() {
         return;
     }
 
-    if(document.querySelector("#master-menu-dropdown")) {
-        new window.Popper("#master-menu-dropdown", ".popper-ref", ".popper-root", o);
-    }
     if(document.querySelector("#invest-menu-dropdown")) {
         new window.Popper("#invest-menu-dropdown", ".popper-ref", ".popper-root", o);
+    }
+    if(document.querySelector("#master-menu-dropdown")) {
+        new window.Popper("#master-menu-dropdown", ".popper-ref", ".popper-root", o);
     }
 }
 
