@@ -186,11 +186,15 @@ def order_create(request):
 
 def render_order_form(request, form):
     """Helper to render the form with necessary context data."""
+    # Get distinct scheme types for the filter
+    scheme_types = Scheme.objects.values_list('scheme_type', flat=True).distinct().order_by('scheme_type')
+
     context = {
         'form': form,
         'title': 'New Purchase / SIP',
         'amcs': AMC.objects.all(),
         'categories': SchemeCategory.objects.all(),
+        'scheme_types': [st for st in scheme_types if st], # Filter out None/Empty
     }
     return render(request, 'investments/order_form.html', context)
 
@@ -282,13 +286,15 @@ def get_order_metadata(request):
     # 2. Fetch Schemes (Filtered) - Public Read (Authenticated)
     amc_id = request.GET.get('amc_id')
     category_id = request.GET.get('category_id')
-    scheme_type = request.GET.get('scheme_type') # 'growth', 'idcw', etc. if available
+    scheme_type = request.GET.get('scheme_type')
 
     schemes_qs = Scheme.objects.filter(purchase_allowed=True)
     if amc_id:
         schemes_qs = schemes_qs.filter(amc_id=amc_id)
     if category_id:
         schemes_qs = schemes_qs.filter(category_id=category_id)
+    if scheme_type:
+        schemes_qs = schemes_qs.filter(scheme_type=scheme_type)
 
     # Optimizing query: return only needed fields
     schemes_data = schemes_qs.values(
