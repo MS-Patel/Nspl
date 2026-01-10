@@ -1,5 +1,12 @@
 # Development Instructions
 
+## Testing & Quality Assurance
+*   **Mandatory Testing**: All new logic (Models, Views, Utils) MUST be tested.
+*   **Framework**: Use `pytest` for all testing. Do not use `unittest.TestCase` or `django.test.TestCase`.
+*   **Fixtures**: Use `factory_boy` and `faker` for creating test data. Define factories in `apps/<app_name>/factories.py`.
+*   **Verification**: Before submitting any code, you MUST run `scripts/verify_work.sh` to ensure all tests pass.
+*   **TDD/BDD**: Practice Test-Driven Development where possible. Write a failing test before writing the code.
+
 ## UI Development
 *   **Theme Folder**: Always refer to the `theme/` folder for UI components and HTML structure. This folder contains the reference templates for the LimeOne theme.
 *   **Components**: When building new pages, use the components found in the `theme/` folder to ensure consistency with the design system.
