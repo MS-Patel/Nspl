@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'apps.payouts',
     'apps.integration',
     'apps.analytics',
+    'apps.reconciliation',
 ]
 
 MIDDLEWARE = [

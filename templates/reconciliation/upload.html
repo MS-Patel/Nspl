@@ -1,0 +1,77 @@
+{% extends "layout/base.html" %}
+{% load widget_tweaks %}
+
+{% block content %}
+<div class="flex items-center justify-between py-5 lg:py-6">
+    <div class="flex items-center space-x-1">
+        <h2 class="text-xl font-medium text-slate-700 line-clamp-1 dark:text-navy-50">
+            Reconciliation Upload
+        </h2>
+    </div>
+</div>
+
+<div class="grid grid-cols-12 gap-4 sm:gap-5 lg:gap-6">
+    <div class="col-span-12 lg:col-span-6">
+        <div class="card p-4 sm:p-5">
+             <h4 class="text-lg font-medium text-slate-700 dark:text-navy-100 mb-4">Upload RTA File</h4>
+
+             <form method="post" enctype="multipart/form-data" class="space-y-4">
+                 {% csrf_token %}
+
+                 {% if form.non_field_errors %}
+                    <div class="alert flex rounded-lg bg-error/10 py-4 px-4 text-error dark:bg-error/15 sm:px-5">
+                        {{ form.non_field_errors }}
+                    </div>
+                 {% endif %}
+
+                 <div>
+                     <label class="block">
+                        <span class="font-medium text-slate-600 dark:text-navy-100">RTA Type</span>
+                        {% render_field form.rta_type class="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:bg-navy-700 dark:hover:border-navy-400 dark:focus:border-accent" %}
+                    </label>
+                 </div>
+
+                 <div>
+                     <label class="block">
+                        <span class="font-medium text-slate-600 dark:text-navy-100">File (Mailback WBR9)</span>
+                        {% render_field form.file class="form-file mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" %}
+                    </label>
+                 </div>
+
+                 <div class="flex justify-end pt-4">
+                     <button type="submit" class="btn bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90">
+                        Upload & Process
+                    </button>
+                 </div>
+             </form>
+        </div>
+    </div>
+
+    <div class="col-span-12 lg:col-span-6">
+        <div class="card p-4 sm:p-5">
+            <h4 class="text-lg font-medium text-slate-700 dark:text-navy-100 mb-4">Recent Uploads</h4>
+            <div class="space-y-3">
+                {% for file in recent_files %}
+                <div class="flex items-center justify-between border-b border-slate-100 pb-2 dark:border-navy-600">
+                    <div>
+                        <p class="font-medium text-slate-700 dark:text-navy-100">{{ file.file_name }}</p>
+                        <p class="text-xs text-slate-500">{{ file.get_rta_type_display }} • {{ file.uploaded_at|date:"d M Y H:i" }}</p>
+                    </div>
+                    <div>
+                        {% if file.status == 'PROCESSED' %}
+                            <span class="badge rounded-full bg-success/10 text-success">Processed</span>
+                        {% elif file.status == 'FAILED' %}
+                            <span class="badge rounded-full bg-error/10 text-error" title="{{ file.error_log }}">Failed</span>
+                        {% else %}
+                            <span class="badge rounded-full bg-warning/10 text-warning">Pending</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-slate-500">No files uploaded yet.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
