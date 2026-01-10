@@ -1,0 +1,166 @@
+{% extends "layout/base.html" %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block content %}
+<div class="flex items-center justify-between py-5 lg:py-6">
+    <div class="flex items-center space-x-1">
+        <h2 class="text-xl font-medium text-slate-700 line-clamp-1 dark:text-navy-50">
+            Create Mandate
+        </h2>
+    </div>
+</div>
+
+<div class="grid grid-cols-12 gap-4 sm:gap-5 lg:gap-6">
+    <div class="col-span-12 lg:col-span-8">
+        <div class="card">
+            <div class="border-b border-slate-200 p-4 dark:border-navy-500 sm:p-5">
+                <div class="flex items-center space-x-2">
+                    <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary dark:bg-accent/10 dark:text-accent-light">
+                        <i class="fa-solid fa-file-contract text-base"></i>
+                    </div>
+                    <h4 class="text-lg font-medium text-slate-700 dark:text-navy-100">Mandate Details</h4>
+                </div>
+            </div>
+
+            <form method="post" id="mandateForm">
+                {% csrf_token %}
+
+                <div class="p-4 sm:p-5">
+                    {% if form.non_field_errors %}
+                    <div class="alert flex rounded-lg bg-error/10 py-4 px-4 text-error dark:bg-error/15 sm:px-5 mb-4">
+                        {{ form.non_field_errors }}
+                    </div>
+                    {% endif %}
+
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+
+                        <!-- Investor Selection -->
+                        <div class="sm:col-span-2">
+                            <label class="block">
+                                <span class="font-medium text-slate-600 dark:text-navy-100">Investor</span>
+                                {% render_field form.investor class="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:bg-navy-700 dark:hover:border-navy-400 dark:focus:border-accent" id="id_investor" %}
+                                {% if form.investor.errors %}
+                                    <span class="text-tiny+ text-error">{{ form.investor.errors.0 }}</span>
+                                {% endif %}
+                            </label>
+                        </div>
+
+                        <!-- Bank Account -->
+                        <div class="sm:col-span-2">
+                            <label class="block">
+                                <span class="font-medium text-slate-600 dark:text-navy-100">Bank Account</span>
+                                {% render_field form.bank_account class="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:bg-navy-700 dark:hover:border-navy-400 dark:focus:border-accent" id="id_bank_account" %}
+                                <span class="text-xs text-slate-400 dark:text-navy-300">Select the bank account linked to this mandate.</span>
+                                {% if form.bank_account.errors %}
+                                    <span class="text-tiny+ text-error">{{ form.bank_account.errors.0 }}</span>
+                                {% endif %}
+                            </label>
+                        </div>
+
+                        <!-- Amount Limit -->
+                        <div class="sm:col-span-1">
+                            <label class="block">
+                                <span class="font-medium text-slate-600 dark:text-navy-100">Mandate Amount Limit</span>
+                                {% render_field form.amount_limit class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" placeholder="e.g. 100000" %}
+                                {% if form.amount_limit.errors %}
+                                    <span class="text-tiny+ text-error">{{ form.amount_limit.errors.0 }}</span>
+                                {% endif %}
+                            </label>
+                        </div>
+
+                        <!-- Dates -->
+                        <div class="sm:col-span-1">
+                             <label class="block">
+                                <span class="font-medium text-slate-600 dark:text-navy-100">Start Date</span>
+                                <span class="relative mt-1.5 flex">
+                                    {% render_field form.start_date class="form-input peer w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 pl-9 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" type="date" %}
+                                    <span class="pointer-events-none absolute flex h-full w-10 items-center justify-center text-slate-400 peer-focus:text-primary dark:text-navy-300 dark:peer-focus:text-accent">
+                                        <i class="fa-regular fa-calendar"></i>
+                                    </span>
+                                </span>
+                                {% if form.start_date.errors %}
+                                    <span class="text-tiny+ text-error">{{ form.start_date.errors.0 }}</span>
+                                {% endif %}
+                            </label>
+                        </div>
+
+                         <div class="sm:col-span-1">
+                             <label class="block">
+                                <span class="font-medium text-slate-600 dark:text-navy-100">End Date (Optional)</span>
+                                <span class="relative mt-1.5 flex">
+                                    {% render_field form.end_date class="form-input peer w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 pl-9 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" type="date" %}
+                                    <span class="pointer-events-none absolute flex h-full w-10 items-center justify-center text-slate-400 peer-focus:text-primary dark:text-navy-300 dark:peer-focus:text-accent">
+                                        <i class="fa-regular fa-calendar"></i>
+                                    </span>
+                                </span>
+                                <span class="text-xs text-slate-400 dark:text-navy-300">Leave blank for "Until Cancelled" (Auto set to 2099).</span>
+                                {% if form.end_date.errors %}
+                                    <span class="text-tiny+ text-error">{{ form.end_date.errors.0 }}</span>
+                                {% endif %}
+                            </label>
+                        </div>
+
+                    </div>
+
+                    <div class="mt-6 flex justify-end space-x-2">
+                        <button type="button" onclick="history.back()" class="btn border border-slate-300 font-medium text-slate-700 hover:bg-slate-150 focus:bg-slate-150 active:bg-slate-150/80 dark:border-navy-450 dark:text-navy-100 dark:hover:bg-navy-500 dark:focus:bg-navy-500 dark:active:bg-navy-500/90">
+                            Cancel
+                        </button>
+                        <button type="submit" class="btn bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90">
+                            Create & Register
+                        </button>
+                    </div>
+
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-span-12 lg:col-span-4">
+        <div class="card p-4 sm:p-5">
+            <h3 class="text-base font-medium text-slate-700 dark:text-navy-100">Information</h3>
+            <div class="mt-4 space-y-4">
+                <div class="flex items-start space-x-3">
+                    <div class="mt-1 flex h-8 w-8 items-center justify-center rounded-lg bg-info/10 text-info">
+                        <i class="fa-solid fa-info"></i>
+                    </div>
+                    <div>
+                        <p class="font-medium text-slate-700 dark:text-navy-100">BSE XSIP Mandate</p>
+                        <p class="text-xs text-slate-500 dark:text-navy-300 mt-1">
+                            This will create an XSIP Mandate on BSE StarMF platform. The investor will receive an authorization link/email from BSE to approve this mandate via Netbanking or Debit Card.
+                        </p>
+                    </div>
+                </div>
+                 <div class="flex items-start space-x-3">
+                    <div class="mt-1 flex h-8 w-8 items-center justify-center rounded-lg bg-warning/10 text-warning">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
+                    <div>
+                        <p class="font-medium text-slate-700 dark:text-navy-100">Approval Required</p>
+                        <p class="text-xs text-slate-500 dark:text-navy-300 mt-1">
+                           SIPs cannot be started until this Mandate is APPROVED by the bank. This process may take 2-5 days depending on the bank.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Simple dynamic filtering (Ideally use fetch API or existing utils)
+    // For now, reload page on investor change or use HTMX if available
+    // Here we assume standard backend rendering, but added simple JS for UX if needed.
+    const investorSelect = document.getElementById('id_investor');
+    if (investorSelect) {
+        investorSelect.addEventListener('change', function() {
+            // Trigger a reload to filter bank accounts (Basic approach)
+            // Or better, use JS to fetch accounts
+             const url = new URL(window.location.href);
+             url.searchParams.set('investor', this.value);
+             window.location.href = url.toString();
+        });
+    }
+</script>
+{% endblock %}

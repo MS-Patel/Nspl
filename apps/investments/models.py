@@ -49,6 +49,53 @@ class Folio(models.Model):
     def __str__(self):
         return f"{self.folio_number} - {self.amc.name}"
 
+class SIP(models.Model):
+    # Frequencies
+    MONTHLY = 'MONTHLY'
+    WEEKLY = 'WEEKLY'
+    QUARTERLY = 'QUARTERLY'
+
+    FREQUENCY_CHOICES = [
+        (MONTHLY, 'Monthly'),
+        (WEEKLY, 'Weekly'),
+        (QUARTERLY, 'Quarterly'),
+    ]
+
+    STATUS_ACTIVE = 'ACTIVE'
+    STATUS_PAUSED = 'PAUSED'
+    STATUS_CANCELLED = 'CANCELLED'
+    STATUS_COMPLETED = 'COMPLETED'
+    STATUS_PENDING = 'PENDING'
+
+    STATUS_CHOICES = [
+        (STATUS_ACTIVE, 'Active'),
+        (STATUS_PAUSED, 'Paused'),
+        (STATUS_CANCELLED, 'Cancelled'),
+        (STATUS_COMPLETED, 'Completed'),
+        (STATUS_PENDING, 'Pending'),
+    ]
+
+    investor = models.ForeignKey(InvestorProfile, on_delete=models.CASCADE, related_name='sips')
+    scheme = models.ForeignKey(Scheme, on_delete=models.CASCADE, related_name='sips')
+    folio = models.ForeignKey(Folio, on_delete=models.SET_NULL, null=True, blank=True, related_name='sips')
+    mandate = models.ForeignKey(Mandate, on_delete=models.PROTECT, related_name='sips')
+
+    amount = models.DecimalField(max_digits=15, decimal_places=2)
+    frequency = models.CharField(max_length=20, choices=FREQUENCY_CHOICES, default=MONTHLY)
+    start_date = models.DateField()
+    end_date = models.DateField(null=True, blank=True)
+    installments = models.IntegerField(help_text="Number of installments")
+
+    bse_sip_id = models.CharField(max_length=50, blank=True, null=True, help_text="BSE SIP Registration ID")
+    bse_reg_no = models.CharField(max_length=50, blank=True, null=True, help_text="BSE XSIP Registration Number")
+
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"SIP - {self.investor.user.username} - {self.scheme.name} - {self.amount}"
+
 class Order(models.Model):
     # Transaction Types
     PURCHASE = 'P'
@@ -99,6 +146,7 @@ class Order(models.Model):
     scheme = models.ForeignKey(Scheme, on_delete=models.CASCADE, related_name='orders')
     folio = models.ForeignKey(Folio, on_delete=models.SET_NULL, null=True, blank=True, related_name='orders', help_text="Linked Folio if existing")
     mandate = models.ForeignKey(Mandate, on_delete=models.SET_NULL, null=True, blank=True, related_name='orders', help_text="Required for SIP")
+    sip_reg = models.ForeignKey(SIP, on_delete=models.SET_NULL, null=True, blank=True, related_name='registration_orders', help_text="Linked SIP Registration")
 
     # Transaction Details
     transaction_type = models.CharField(max_length=10, choices=TXN_TYPE_CHOICES, default=PURCHASE)

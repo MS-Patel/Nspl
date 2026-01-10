@@ -1,8 +1,9 @@
-{% extends 'layout/base.html' %}
+{% extends "layout/base.html" %}
+{% load static %}
 {% load widget_tweaks %}
 
 {% block content %}
-<div class="flex flex-col items-center justify-between space-y-4 py-5 sm:flex-row sm:space-y-0 lg:py-6">
+<div class="flex items-center justify-between py-5 lg:py-6">
     <div class="flex items-center space-x-1">
         <h2 class="text-xl font-medium text-slate-700 line-clamp-1 dark:text-navy-50">
             {{ title }}
@@ -11,378 +12,251 @@
 </div>
 
 <div class="grid grid-cols-12 gap-4 sm:gap-5 lg:gap-6">
-    <div class="col-span-12 lg:col-span-12">
-        <div class="card p-4 sm:p-5">
+    <div class="col-span-12 lg:col-span-8">
+        <div class="card">
+            <div class="border-b border-slate-200 p-4 dark:border-navy-500 sm:p-5">
+                <div class="flex items-center space-x-2">
+                    <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary dark:bg-accent/10 dark:text-accent-light">
+                        <i class="fa-solid fa-cart-shopping text-base"></i>
+                    </div>
+                    <h4 class="text-lg font-medium text-slate-700 dark:text-navy-100">Order Details</h4>
+                </div>
+            </div>
+
             <form method="post" id="orderForm">
                 {% csrf_token %}
 
-                <!-- Step 1: Investor Selection -->
-                <div class="border-b border-slate-200 pb-4 dark:border-navy-500 mb-4">
-                    <h3 class="text-base font-medium text-slate-700 dark:text-navy-100 mb-3">1. Select Investor</h3>
-                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                        {# Distributor Selection (Admin Only - Logic handled in view/form but kept here for potential expansion) #}
-                        {# If Admin/RM, we might show Distributor Dropdown first #}
+                <div class="p-4 sm:p-5">
+                    {% if form.non_field_errors %}
+                    <div class="alert flex rounded-lg bg-error/10 py-4 px-4 text-error dark:bg-error/15 sm:px-5 mb-4">
+                        {{ form.non_field_errors }}
+                    </div>
+                    {% endif %}
 
-                        <div class="col-span-2 sm:col-span-1">
+                    <!-- Transaction Type Tabs -->
+                    <div class="mb-5">
+                         <label class="block mb-2 font-medium text-slate-600 dark:text-navy-100">Transaction Type</label>
+                         <div class="tabs-list flex space-x-2">
+                             {% for radio in form.transaction_type %}
+                                <label class="btn cursor-pointer rounded-lg border border-slate-300 px-4 py-2 font-medium hover:bg-slate-150 focus:bg-slate-150 active:bg-slate-150/80 dark:border-navy-450 dark:hover:bg-navy-500 dark:focus:bg-navy-500 dark:active:bg-navy-500/90 has-[:checked]:bg-primary has-[:checked]:text-white dark:has-[:checked]:bg-accent">
+                                    {{ radio.tag }}
+                                    <span class="ml-2">{{ radio.choice_label }}</span>
+                                </label>
+                             {% endfor %}
+                         </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+
+                        <!-- Investor -->
+                        <div class="sm:col-span-2">
                             <label class="block">
                                 <span class="font-medium text-slate-600 dark:text-navy-100">Investor</span>
-                                {% render_field form.investor class="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" id="investorSelect" %}
-                            </label>
-                            {% if form.investor.errors %}
-                                <span class="text-tiny+ text-error">{{ form.investor.errors.0 }}</span>
-                            {% endif %}
-                        </div>
-                         <div class="col-span-2 sm:col-span-1">
-                            <label class="block">
-                                <span class="font-medium text-slate-600 dark:text-navy-100">Transaction Type</span>
-                                {% render_field form.transaction_type class="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" id="txnTypeSelect" %}
+                                {% render_field form.investor class="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:bg-navy-700 dark:hover:border-navy-400 dark:focus:border-accent" id="id_investor" %}
+                                {% if form.investor.errors %}
+                                    <span class="text-tiny+ text-error">{{ form.investor.errors.0 }}</span>
+                                {% endif %}
                             </label>
                         </div>
-                    </div>
-                </div>
 
-                <!-- Step 2: Scheme Selection -->
-                <div class="border-b border-slate-200 pb-4 dark:border-navy-500 mb-4">
-                    <h3 class="text-base font-medium text-slate-700 dark:text-navy-100 mb-3">2. Select Scheme</h3>
-
-                    <!-- Filters -->
-                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-3 mb-4 p-3 bg-slate-50 dark:bg-navy-800 rounded-lg">
-                        <div>
-                            <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">AMC</label>
-                            <select id="filter_amc" class="form-select w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs+ hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:bg-navy-700 dark:hover:border-navy-400 dark:focus:border-accent">
-                                <option value="">All AMCs</option>
-                                {% for amc in amcs %}
-                                    <option value="{{ amc.id }}">{{ amc.name }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Category</label>
-                            <select id="filter_category" class="form-select w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs+ hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:bg-navy-700 dark:hover:border-navy-400 dark:focus:border-accent">
-                                <option value="">All Categories</option>
-                                {% for cat in categories %}
-                                    <option value="{{ cat.id }}">{{ cat.name }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div>
-                             <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Scheme Type</label>
-                             <select id="filter_type" class="form-select w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs+ hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:bg-navy-700 dark:hover:border-navy-400 dark:focus:border-accent">
-                                <option value="">All Types</option>
-                                <option value="growth">Growth</option>
-                                <option value="idcw">IDCW (Dividend)</option>
-                             </select>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-1">
-                        <div class="col-span-1">
-                            <label class="block">
-                                <span class="font-medium text-slate-600 dark:text-navy-100">Scheme Name</span>
-                                {% render_field form.scheme class="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" id="schemeSelect" %}
+                        <!-- Scheme Selection -->
+                        <div class="sm:col-span-2">
+                             <label class="block">
+                                <span class="font-medium text-slate-600 dark:text-navy-100">Scheme</span>
+                                <!-- Using TomSelect or similar if possible, standard select for now -->
+                                {% render_field form.scheme class="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:bg-navy-700 dark:hover:border-navy-400 dark:focus:border-accent" id="id_scheme" %}
+                                {% if form.scheme.errors %}
+                                    <span class="text-tiny+ text-error">{{ form.scheme.errors.0 }}</span>
+                                {% endif %}
                             </label>
-                             {% if form.scheme.errors %}
-                                <span class="text-tiny+ text-error">{{ form.scheme.errors.0 }}</span>
-                            {% endif %}
                         </div>
 
-                        <!-- Scheme Info Panel -->
-                        <div id="schemeInfoPanel" class="hidden col-span-1 rounded-lg bg-info/10 p-3 text-info dark:bg-info/20">
-                            <div class="flex items-center space-x-2">
-                                <i class="fa-solid fa-circle-info text-base"></i>
-                                <p class="font-medium">Scheme Constraints</p>
-                            </div>
-                            <div class="grid grid-cols-2 gap-4 mt-2">
-                                <p class="text-xs+">Min Purchase: <span id="info_min_amt" class="font-semibold">₹0</span></p>
-                                <p class="text-xs+">Max Purchase: <span id="info_max_amt" class="font-semibold">No Limit</span></p>
-                                <p class="text-xs+">SIP Allowed: <span id="info_sip" class="font-semibold">Yes</span></p>
-                                <p class="text-xs+">Multiplier: <span id="info_mult" class="font-semibold">1</span></p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Step 3: Investment Details -->
-                <div class="border-b border-slate-200 pb-4 dark:border-navy-500 mb-4">
-                     <h3 class="text-base font-medium text-slate-700 dark:text-navy-100 mb-3">3. Investment Details</h3>
-                     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                        {# Folio Selection #}
-                        <div class="col-span-2 sm:col-span-1">
+                        <!-- Folio Selection -->
+                         <div class="sm:col-span-2">
                             <label class="block">
                                 <span class="font-medium text-slate-600 dark:text-navy-100">Folio</span>
-                                {% render_field form.folio_selection class="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" id="folioSelect" %}
+                                {% render_field form.folio_selection class="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:bg-navy-700 dark:hover:border-navy-400 dark:focus:border-accent" id="id_folio_selection" %}
+                                <span class="text-xs text-slate-400 dark:text-navy-300">Select existing or create new.</span>
+                                {% if form.folio_selection.errors %}
+                                    <span class="text-tiny+ text-error">{{ form.folio_selection.errors.0 }}</span>
+                                {% endif %}
                             </label>
-                            <span class="text-tiny+ text-slate-400">Select 'Create New Folio' if uncertain.</span>
                         </div>
 
-                        {# Amount #}
-                        <div class="col-span-2 sm:col-span-1">
+                         <!-- Amount -->
+                        <div class="sm:col-span-1">
                             <label class="block">
-                                <span class="font-medium text-slate-600 dark:text-navy-100">Investment Amount (₹)</span>
-                                {% render_field form.amount class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" placeholder="Enter Amount" id="amountInput" %}
+                                <span class="font-medium text-slate-600 dark:text-navy-100">Amount (₹)</span>
+                                {% render_field form.amount class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" placeholder="Min Amount..." %}
+                                {% if form.amount.errors %}
+                                    <span class="text-tiny+ text-error">{{ form.amount.errors.0 }}</span>
+                                {% endif %}
                             </label>
-                            {% if form.amount.errors %}
-                                <span class="text-tiny+ text-error">{{ form.amount.errors.0 }}</span>
-                            {% endif %}
-                            <span id="amountError" class="hidden text-tiny+ text-error mt-1">Amount must be between Min and Max limits.</span>
                         </div>
 
-                         {# Mandate (Conditional) #}
-                        <div class="col-span-2 sm:col-span-1 hidden" id="mandateContainer">
-                            <label class="block">
-                                <span class="font-medium text-slate-600 dark:text-navy-100">SIP Mandate</span>
-                                {% render_field form.mandate class="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" id="mandateSelect" %}
-                            </label>
-                             <span class="text-tiny+ text-slate-400">Required for SIP Registration.</span>
-                        </div>
-
-                        {# Payment Mode #}
-                        <div class="col-span-2 sm:col-span-1">
+                         <!-- Payment Mode -->
+                        <div class="sm:col-span-1">
                             <label class="block">
                                 <span class="font-medium text-slate-600 dark:text-navy-100">Payment Mode</span>
-                                {% render_field form.payment_mode class="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" %}
+                                {% render_field form.payment_mode class="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:bg-navy-700 dark:hover:border-navy-400 dark:focus:border-accent" %}
+                                {% if form.payment_mode.errors %}
+                                    <span class="text-tiny+ text-error">{{ form.payment_mode.errors.0 }}</span>
+                                {% endif %}
                             </label>
                         </div>
-                     </div>
-                </div>
 
-                <div class="mt-6 flex justify-end space-x-2">
-                    <a href="{% url 'scheme_list' %}" class="btn border border-slate-300 font-medium text-slate-800 hover:bg-slate-150 focus:bg-slate-150 active:bg-slate-150/80 dark:border-navy-450 dark:text-navy-50 dark:hover:bg-navy-500 dark:focus:bg-navy-500 dark:active:bg-navy-500/90">
-                        Cancel
-                    </a>
-                    <button type="submit" id="submitBtn" class="btn bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90">
-                        Place Order
-                    </button>
+                        <!-- SIP Section (Initially Hidden via JS unless SIP selected) -->
+                        <div id="sip-section" class="col-span-1 sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-slate-200 dark:border-navy-500 pt-4 mt-2" style="display:none;">
+                            <div class="sm:col-span-2">
+                                <h5 class="text-base font-medium text-slate-700 dark:text-navy-100 mb-2">SIP Details</h5>
+                            </div>
+
+                            <!-- Mandate -->
+                             <div class="sm:col-span-2">
+                                <label class="block">
+                                    <span class="font-medium text-slate-600 dark:text-navy-100">Mandate (UMRN)</span>
+                                    {% render_field form.mandate class="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:bg-navy-700 dark:hover:border-navy-400 dark:focus:border-accent" id="id_mandate" %}
+                                    <span class="text-xs text-slate-400 dark:text-navy-300">Required for SIP. Only Approved Mandates listed.</span>
+                                    {% if form.mandate.errors %}
+                                        <span class="text-tiny+ text-error">{{ form.mandate.errors.0 }}</span>
+                                    {% endif %}
+                                </label>
+                            </div>
+
+                            <!-- Frequency -->
+                            <div class="sm:col-span-1">
+                                <label class="block">
+                                    <span class="font-medium text-slate-600 dark:text-navy-100">Frequency</span>
+                                    {% render_field form.sip_frequency class="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:bg-navy-700 dark:hover:border-navy-400 dark:focus:border-accent" %}
+                                    {% if form.sip_frequency.errors %}
+                                        <span class="text-tiny+ text-error">{{ form.sip_frequency.errors.0 }}</span>
+                                    {% endif %}
+                                </label>
+                            </div>
+
+                            <!-- Start Date -->
+                             <div class="sm:col-span-1">
+                                <label class="block">
+                                    <span class="font-medium text-slate-600 dark:text-navy-100">Start Date</span>
+                                    <span class="relative mt-1.5 flex">
+                                        {% render_field form.sip_start_date class="form-input peer w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 pl-9 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" type="date" %}
+                                        <span class="pointer-events-none absolute flex h-full w-10 items-center justify-center text-slate-400 peer-focus:text-primary dark:text-navy-300 dark:peer-focus:text-accent">
+                                            <i class="fa-regular fa-calendar"></i>
+                                        </span>
+                                    </span>
+                                    {% if form.sip_start_date.errors %}
+                                        <span class="text-tiny+ text-error">{{ form.sip_start_date.errors.0 }}</span>
+                                    {% endif %}
+                                </label>
+                            </div>
+
+                             <!-- Installments -->
+                             <div class="sm:col-span-1">
+                                <label class="block">
+                                    <span class="font-medium text-slate-600 dark:text-navy-100">Installments</span>
+                                    {% render_field form.sip_installments class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" placeholder="e.g. 12" %}
+                                    {% if form.sip_installments.errors %}
+                                        <span class="text-tiny+ text-error">{{ form.sip_installments.errors.0 }}</span>
+                                    {% endif %}
+                                </label>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="mt-6 flex justify-end space-x-2">
+                        <button type="button" onclick="history.back()" class="btn border border-slate-300 font-medium text-slate-700 hover:bg-slate-150 focus:bg-slate-150 active:bg-slate-150/80 dark:border-navy-450 dark:text-navy-100 dark:hover:bg-navy-500 dark:focus:bg-navy-500 dark:active:bg-navy-500/90">
+                            Cancel
+                        </button>
+                        <button type="submit" class="btn bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90">
+                            Submit Order
+                        </button>
+                    </div>
+
                 </div>
             </form>
         </div>
     </div>
-</div>
-{% endblock %}
 
-{% block javascript %}
+    <div class="col-span-12 lg:col-span-4">
+        <div class="card p-4 sm:p-5">
+            <h3 class="text-base font-medium text-slate-700 dark:text-navy-100">Scheme Info</h3>
+            <div id="scheme-info-box" class="mt-4 space-y-4">
+                <p class="text-xs text-slate-500">Select a scheme to view details.</p>
+            </div>
+        </div>
+
+        <div class="card p-4 sm:p-5 mt-4">
+            <h3 class="text-base font-medium text-slate-700 dark:text-navy-100">Help</h3>
+             <ul class="list-disc list-inside mt-2 text-xs text-slate-500 space-y-1">
+                 <li>Ensure Mandate is approved before starting SIP.</li>
+                 <li>Cut-off time for liquid funds is 1:30 PM.</li>
+                 <li>Payment link will be sent to investor's email.</li>
+             </ul>
+        </div>
+    </div>
+</div>
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // --- 1. Initialize Tom Select for Searchable Dropdowns ---
-        // Note: Using a helper or direct instantiation if library is loaded via mix
-        // We assume TomSelect is available globally via window.TomSelect if imported in app.js,
-        // or we check if we need to init it. If not in app.js globally, we might rely on standard HTML selects or check if we can init it.
-        // For now, let's assume standard selects with the 'form-select' class,
-        // but the requirement was "use select2 js" (interpreted as Tom Select since it's in package.json).
+        const txnTypeRadios = document.querySelectorAll('input[name="transaction_type"]');
+        const sipSection = document.getElementById('sip-section');
+        const investorSelect = document.getElementById('id_investor');
+        const schemeSelect = document.getElementById('id_scheme');
+        const schemeInfoBox = document.getElementById('scheme-info-box');
 
-        let tsInvestor, tsScheme, tsFolio, tsMandate;
+        function toggleSipSection() {
+            let selectedType = document.querySelector('input[name="transaction_type"]:checked').value;
+            if (selectedType === 'SIP') {
+                sipSection.style.display = 'grid';
+            } else {
+                sipSection.style.display = 'none';
+            }
+        }
 
-        if (window.TomSelect) {
-            tsInvestor = new TomSelect("#investorSelect", { create: false, sortField: { field: "text", direction: "asc" } });
-            tsScheme = new TomSelect("#schemeSelect", {
-                create: false,
-                valueField: 'id',
-                labelField: 'name',
-                searchField: 'name',
-                load: function(query, callback) {
-                    // Logic to load remotely if needed, but we filter locally for now or via cascading
-                    callback();
+        txnTypeRadios.forEach(radio => {
+            radio.addEventListener('change', toggleSipSection);
+        });
+
+        // Initial check
+        if (document.querySelector('input[name="transaction_type"]:checked')) {
+            toggleSipSection();
+        }
+
+        // Scheme Details Fetcher
+        if (schemeSelect) {
+            schemeSelect.addEventListener('change', function() {
+                const schemeId = this.value;
+                if (!schemeId) {
+                    schemeInfoBox.innerHTML = '<p class="text-xs text-slate-500">Select a scheme to view details.</p>';
+                    return;
                 }
-            });
-            tsFolio = new TomSelect("#folioSelect", { create: false });
-            // Mandate might be hidden initially, careful with init
-             if(document.getElementById('mandateSelect')) {
-               tsMandate = new TomSelect("#mandateSelect", { create: false });
-            }
-        }
 
-        // --- 2. Element References ---
-        const investorSelect = document.getElementById('investorSelect');
-        const schemeSelect = document.getElementById('schemeSelect');
-        const folioSelect = document.getElementById('folioSelect');
-        const txnTypeSelect = document.getElementById('txnTypeSelect');
-        const mandateSelect = document.getElementById('mandateSelect');
-        const mandateContainer = document.getElementById('mandateContainer');
-        const amountInput = document.getElementById('amountInput');
-        const amountError = document.getElementById('amountError');
-        const submitBtn = document.getElementById('submitBtn');
-
-        const filterAmc = document.getElementById('filter_amc');
-        const filterCat = document.getElementById('filter_category');
-        const filterType = document.getElementById('filter_type');
-
-        const infoPanel = document.getElementById('schemeInfoPanel');
-        const infoMin = document.getElementById('info_min_amt');
-        const infoMax = document.getElementById('info_max_amt');
-        const infoSip = document.getElementById('info_sip');
-        const infoMult = document.getElementById('info_mult');
-
-        let currentSchemeDetails = null;
-
-        // --- 3. Cascading Logic ---
-
-        // A. Load Folios and Mandates when Investor changes
-        async function onInvestorChange() {
-            const investorId = investorSelect.value;
-            if (!investorId) return;
-
-            // Load Folios
-            fetch(`{% url 'api_folios' %}?investor_id=${investorId}`)
-                .then(r => r.json())
-                .then(data => {
-                    if (tsFolio) {
-                        tsFolio.clear();
-                        tsFolio.clearOptions();
-                        tsFolio.addOption({value: '', text: 'Create New Folio'});
-                        data.folios.forEach(f => tsFolio.addOption({value: f.id, text: f.display}));
-                        tsFolio.setValue(''); // Default to New Folio
-                    } else {
-                         // Fallback for standard select
-                         folioSelect.innerHTML = '<option value="">Create New Folio</option>';
-                         data.folios.forEach(f => {
-                             folioSelect.innerHTML += `<option value="${f.id}">${f.display}</option>`;
-                         });
-                    }
-                });
-
-            // Load Mandates
-            fetch(`{% url 'api_order_metadata' %}?investor_id=${investorId}`)
-                .then(r => r.json())
-                .then(data => {
-                     if(data.mandates) {
-                        if (tsMandate) {
-                            tsMandate.clear();
-                            tsMandate.clearOptions();
-                            data.mandates.forEach(m => tsMandate.addOption({
-                                value: m.id,
-                                text: `${m.mandate_id} - Limit: ${m.amount_limit} (${m.bank_account__bank_name})`
-                            }));
-                        } else if (mandateSelect) {
-                            mandateSelect.innerHTML = '';
-                            data.mandates.forEach(m => {
-                                mandateSelect.innerHTML += `<option value="${m.id}">${m.mandate_id} - Limit: ${m.amount_limit}</option>`;
-                            });
-                        }
-                     }
-                });
-        }
-
-        // B. Filter Schemes
-        async function refreshSchemes() {
-            const amc = filterAmc.value;
-            const cat = filterCat.value;
-            const type = filterType.value;
-
-            // Build query params
-            const params = new URLSearchParams({ fetch_schemes: 'true' });
-            if (amc) params.append('amc_id', amc);
-            if (cat) params.append('category_id', cat);
-            if (type) params.append('scheme_type', type);
-
-            // Fetch filtered schemes
-            fetch(`{% url 'api_order_metadata' %}?${params.toString()}`)
-                .then(r => r.json())
-                .then(data => {
-                    if (data.schemes) {
-                        if (tsScheme) {
-                            tsScheme.clear();
-                            tsScheme.clearOptions();
-                            data.schemes.forEach(s => tsScheme.addOption(s));
-                            // If only one option, select it? No, explicit choice is better.
-                        } else {
-                            schemeSelect.innerHTML = '<option value="">---------</option>';
-                            data.schemes.forEach(s => {
-                                schemeSelect.innerHTML += `<option value="${s.id}">${s.name}</option>`;
-                            });
-                        }
-                    }
-                });
-        }
-
-        // C. On Scheme Selection -> Load Details & Validate
-        async function onSchemeChange() {
-            const schemeId = schemeSelect.value;
-            if (!schemeId) {
-                infoPanel.classList.add('hidden');
-                currentSchemeDetails = null;
-                return;
-            }
-
-            fetch(`{% url 'api_order_metadata' %}?scheme_id=${schemeId}`)
-                .then(r => r.json())
+                fetch(`/investments/api/order-metadata/?scheme_id=${schemeId}`)
+                .then(response => response.json())
                 .then(data => {
                     if (data.scheme_details) {
-                        currentSchemeDetails = data.scheme_details;
-                        // Update Info Panel
-                        infoPanel.classList.remove('hidden');
-                        infoMin.innerText = `₹${currentSchemeDetails.min_purchase_amount}`;
-                        infoMax.innerText = currentSchemeDetails.max_purchase_amount > 0 ? `₹${currentSchemeDetails.max_purchase_amount}` : 'No Limit';
-                        infoSip.innerText = currentSchemeDetails.is_sip_allowed ? 'Yes' : 'No';
-                        infoMult.innerText = currentSchemeDetails.purchase_amount_multiplier;
-
-                        // Check SIP compatibility
-                        if (txnTypeSelect.value === 'SIP' && !currentSchemeDetails.is_sip_allowed) {
-                            alert('This scheme does not allow SIP investments. Switched to Lumpsum.');
-                            txnTypeSelect.value = 'P'; // Reset to Purchase
-                            toggleMandateVisibility();
-                        }
-                        validateAmount();
+                        const s = data.scheme_details;
+                        schemeInfoBox.innerHTML = `
+                            <div class="space-y-2">
+                                <div class="flex justify-between border-b border-slate-100 pb-2 dark:border-navy-600">
+                                    <span class="text-slate-600 dark:text-navy-100">Min Purchase</span>
+                                    <span class="font-medium">₹${s.min_purchase_amount}</span>
+                                </div>
+                                <div class="flex justify-between border-b border-slate-100 pb-2 dark:border-navy-600">
+                                    <span class="text-slate-600 dark:text-navy-100">Multiplier</span>
+                                    <span class="font-medium">₹${s.purchase_amount_multiplier}</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-slate-600 dark:text-navy-100">SIP Allowed</span>
+                                    <span class="font-medium ${s.is_sip_allowed ? 'text-success' : 'text-error'}">${s.is_sip_allowed ? 'Yes' : 'No'}</span>
+                                </div>
+                            </div>
+                        `;
                     }
                 });
+            });
         }
-
-        // D. Transaction Type Toggle
-        function toggleMandateVisibility() {
-            const type = txnTypeSelect.value;
-            if (type === 'SIP') {
-                mandateContainer.classList.remove('hidden');
-                // Ensure mandate requirement validation logic if needed
-            } else {
-                mandateContainer.classList.add('hidden');
-            }
-        }
-
-        // E. Amount Validation
-        function validateAmount() {
-            if (!currentSchemeDetails) return;
-            const amt = parseFloat(amountInput.value) || 0;
-            let isValid = true;
-
-            // Min Check
-            if (amt < parseFloat(currentSchemeDetails.min_purchase_amount)) {
-                isValid = false;
-            }
-            // Max Check
-            if (parseFloat(currentSchemeDetails.max_purchase_amount) > 0 && amt > parseFloat(currentSchemeDetails.max_purchase_amount)) {
-                isValid = false;
-            }
-
-            if (!isValid && amt > 0) {
-                amountError.classList.remove('hidden');
-                submitBtn.disabled = true;
-                submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
-            } else {
-                amountError.classList.add('hidden');
-                submitBtn.disabled = false;
-                submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-            }
-        }
-
-
-        // --- 4. Event Listeners ---
-        if (investorSelect) investorSelect.addEventListener('change', onInvestorChange);
-
-        // Scheme Filters
-        filterAmc.addEventListener('change', refreshSchemes);
-        filterCat.addEventListener('change', refreshSchemes);
-        filterType.addEventListener('change', refreshSchemes);
-
-        // Scheme Selection
-        if (schemeSelect) schemeSelect.addEventListener('change', onSchemeChange);
-
-        // Transaction Type
-        if (txnTypeSelect) txnTypeSelect.addEventListener('change', toggleMandateVisibility);
-
-        // Amount Input
-        if (amountInput) amountInput.addEventListener('input', validateAmount);
-
-        // Initial setup
-        toggleMandateVisibility();
     });
 </script>
 {% endblock %}
