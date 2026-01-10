@@ -6,7 +6,7 @@ import logging
 from django.conf import settings
 from zeep import Client, Settings
 import datetime
-from .utils import get_bse_order_params
+from .utils import get_bse_order_params, get_bse_xsip_order_params, get_bse_mandate_params
 
 # Configure a specific logger for BSE API
 # propagate=False ensures these logs don't bubble up to the root Django logger
@@ -123,6 +123,88 @@ class BSEStarMFClient:
 
         except Exception as e:
             bse_logger.error(f"ORDER ENTRY ERROR: {str(e)}")
+            return {'status': 'error', 'remarks': str(e)}
+
+    def register_sip(self, sip):
+        """
+        Registers a SIP (XSIP) using the SOAP xsipOrderEntryParam service.
+        Args:
+            sip (SIP): The SIP object.
+        Returns:
+            dict: {status: success/error, bse_reg_no: ..., remarks: ...}
+        """
+        try:
+            encrypted_password, pass_key = self._get_auth_details()
+            params = get_bse_xsip_order_params(
+                sip,
+                self.member_id,
+                self.user_id,
+                encrypted_password,
+                pass_key
+            )
+
+            zeep_settings = Settings(strict=False, xml_huge_tree=True)
+            client = Client(wsdl=self.order_wsdl, settings=zeep_settings)
+
+            response = client.service.xsipOrderEntryParam(**params)
+            bse_logger.info(f"SIP ENTRY: {sip.id} | RESPONSE: {response}")
+
+            parts = str(response).split('|')
+            if parts[0] == '0':
+                return {
+                    'status': 'success',
+                    'bse_reg_no': parts[1] if len(parts) > 1 else "",
+                    'remarks': parts[2] if len(parts) > 2 else 'SIP Registered',
+                    'bse_sip_id': parts[1]
+                }
+            else:
+                return {
+                    'status': 'error',
+                    'remarks': parts[1] if len(parts) > 1 else response
+                }
+
+        except Exception as e:
+            bse_logger.error(f"SIP ENTRY ERROR: {str(e)}")
+            return {'status': 'error', 'remarks': str(e)}
+
+    def register_mandate(self, mandate):
+        """
+        Registers a Mandate (XSIP Mandate) using the SOAP mandateRegistrationParam service.
+        Args:
+            mandate (Mandate): The Mandate object.
+        """
+        try:
+            encrypted_password, pass_key = self._get_auth_details()
+            params = get_bse_mandate_params(
+                mandate,
+                self.member_id,
+                self.user_id,
+                encrypted_password,
+                pass_key
+            )
+
+            zeep_settings = Settings(strict=False, xml_huge_tree=True)
+            client = Client(wsdl=self.order_wsdl, settings=zeep_settings)
+
+            response = client.service.mandateRegistrationParam(**params)
+            bse_logger.info(f"MANDATE REG: {mandate.id} | RESPONSE: {response}")
+
+            parts = str(response).split('|')
+            # 100|Mandate ID|Upload Successfully
+            if parts[0] == '100':
+                 return {
+                    'status': 'success',
+                    'mandate_id': parts[1], # Returns the BSE UMRN/MandateID
+                    'remarks': parts[2] if len(parts) > 2 else 'Mandate Registered'
+                }
+            else:
+                return {
+                    'status': 'error',
+                    'remarks': parts[1] if len(parts) > 1 else response
+                }
+
+        except Exception as e:
+            bse_logger.error(f"MANDATE REG ERROR: {str(e)}")
             return {'status': 'error', 'remarks': str(e)}
 
     def register_client(self, payload):

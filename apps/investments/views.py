@@ -4,8 +4,12 @@ from django.contrib import messages
 from django.db.models import Q
 from django.http import JsonResponse, HttpResponseForbidden
 from django.urls import reverse
-from .models import Order, Folio, Mandate
-from .forms import OrderForm
+from django.views.generic import CreateView
+from django.urls import reverse_lazy
+from django.utils.decorators import method_decorator
+
+from .models import Order, Folio, Mandate, SIP
+from .forms import OrderForm, MandateForm
 from apps.users.models import InvestorProfile, DistributorProfile
 from apps.products.models import Scheme, AMC, SchemeCategory
 from apps.integration.bse_client import BSEStarMFClient
@@ -13,6 +17,54 @@ import logging
 import json
 
 logger = logging.getLogger(__name__)
+
+@method_decorator(login_required, name='dispatch')
+class MandateCreateView(CreateView):
+    model = Mandate
+    form_class = MandateForm
+    template_name = 'investments/mandate_form.html'
+    success_url = reverse_lazy('order_list') # Redirect to list for now
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
+    def form_valid(self, form):
+        mandate = form.save(commit=False)
+        # Verify access
+        if not has_access_to_investor(self.request.user, mandate.investor.id):
+             return HttpResponseForbidden("You do not have access to this investor.")
+
+        # Default Mandate ID (Will be updated by BSE)
+        # Ideally, we should generate a temporary one or wait for BSE
+        # For now, let's assume we save it locally then push
+        # But Mandate ID is unique. Let's create a temporary one.
+        import uuid
+        mandate.mandate_id = f"TEMP-{uuid.uuid4().hex[:8].upper()}"
+        mandate.save()
+
+        # Push to BSE
+        try:
+            client = BSEStarMFClient()
+            result = client.register_mandate(mandate)
+
+            if result['status'] == 'success':
+                mandate.mandate_id = result['mandate_id']
+                mandate.status = Mandate.APPROVED # Auto-approve for demo/UAT or set to PENDING
+                # In prod, it might stay PENDING until verified by Bank
+                mandate.save()
+                messages.success(self.request, f"Mandate Registered successfully. UMRN: {result['mandate_id']}")
+            else:
+                mandate.status = Mandate.REJECTED
+                mandate.save()
+                messages.error(self.request, f"BSE Mandate Error: {result['remarks']}")
+
+        except Exception as e:
+            logger.exception("Mandate Registration Failed")
+            messages.error(self.request, f"System Error: {str(e)}")
+
+        return super().form_valid(form)
 
 @login_required
 def order_create(request):
@@ -46,25 +98,61 @@ def order_create(request):
                  # Request new folio
                  order.is_new_folio = True
 
-            # Handle SIP logic
-            if order.transaction_type == Order.SIP:
-                # Ensure mandate is selected
-                if not order.mandate:
-                     # This should ideally be caught by form validation
-                     messages.error(request, "Mandate is required for SIP orders.")
-                     # Re-render with context
-                     return render_order_form(request, form)
-
             # Set Distributor/Investor relationships based on logged-in user
-            # (Already partly handled in form validation, but safe to enforce here)
             if user.user_type == 'INVESTOR':
                 order.investor = user.investor_profile
                 order.distributor = user.investor_profile.distributor
 
-            order.save()
+            # Handle SIP Registration
+            if order.transaction_type == Order.SIP:
+                # 1. Create SIP Object
+                try:
+                    sip = SIP.objects.create(
+                        investor=order.investor,
+                        scheme=order.scheme,
+                        folio=order.folio,
+                        mandate=order.mandate,
+                        amount=order.amount,
+                        frequency=form.cleaned_data['sip_frequency'],
+                        start_date=form.cleaned_data['sip_start_date'],
+                        installments=form.cleaned_data['sip_installments']
+                    )
 
-            # Execute Order on BSE (Lumpsum only for now)
-            if order.transaction_type in [Order.PURCHASE, Order.REDEMPTION, Order.SWITCH]:
+                    # 2. Link SIP to Order
+                    order.sip_reg = sip
+                    order.save() # Save order to generate ID
+
+                    # 3. Call BSE XSIP API
+                    client = BSEStarMFClient()
+                    result = client.register_sip(sip)
+
+                    if result['status'] == 'success':
+                        sip.bse_sip_id = result['bse_sip_id']
+                        sip.bse_reg_no = result['bse_reg_no']
+                        sip.status = SIP.STATUS_ACTIVE
+                        sip.save()
+
+                        order.status = Order.SENT_TO_BSE
+                        order.bse_order_id = result['bse_reg_no'] # Use Reg No as Order ID ref
+                        order.bse_remarks = result['remarks']
+                        order.save()
+
+                        messages.success(request, f"SIP Registered Successfully! Reg No: {result['bse_reg_no']}")
+                    else:
+                        sip.status = SIP.STATUS_PENDING # Or Rejected
+                        sip.save()
+                        order.status = Order.REJECTED
+                        order.bse_remarks = result['remarks']
+                        order.save()
+                        messages.error(request, f"BSE SIP Error: {result['remarks']}")
+
+                except Exception as e:
+                    logger.exception("SIP Registration Failed")
+                    messages.error(request, f"System Error: {str(e)}")
+
+            # Execute Lumpsum Order on BSE
+            elif order.transaction_type in [Order.PURCHASE, Order.REDEMPTION, Order.SWITCH]:
+                order.save()
                 try:
                     client = BSEStarMFClient()
                     result = client.place_order(order)
@@ -87,8 +175,6 @@ def order_create(request):
                     order.bse_remarks = f"System Error: {str(e)}"
                     order.save()
                     messages.error(request, f"Order saved but failed to push to BSE: {str(e)}")
-            else:
-                messages.success(request, f"Order {order.unique_ref_no} created locally (SIP execution pending).")
 
             return redirect('order_list') # Redirect to order list
         else:
@@ -102,7 +188,7 @@ def render_order_form(request, form):
     """Helper to render the form with necessary context data."""
     context = {
         'form': form,
-        'title': 'New Purchase',
+        'title': 'New Purchase / SIP',
         'amcs': AMC.objects.all(),
         'categories': SchemeCategory.objects.all(),
     }

@@ -340,3 +340,105 @@ def get_bse_order_params(order, member_id, user_id, password, pass_key):
     }
 
     return params
+
+def get_bse_xsip_order_params(sip, member_id, user_id, password, pass_key):
+    """
+    Constructs the parameter dictionary for BSE StarMF xsipOrderEntryParam API (SOAP).
+
+    Args:
+        sip (SIP): The sip object.
+        member_id (str): BSE Member ID.
+        user_id (str): BSE User ID.
+        password (str): Encrypted Session Password.
+        pass_key (str): Random Pass Key used for encryption.
+
+    Returns:
+        dict: Parameters to be passed to client.service.xsipOrderEntryParam()
+    """
+
+    # Client Code
+    client_code = sip.investor.ucc_code if sip.investor.ucc_code else sip.investor.pan
+
+    # EUIN - SIP doesn't have direct distributor link, but we can traverse
+    # We should probably store EUIN on SIP model too, but for now grab from investor's distributor
+    euin = ""
+    if sip.investor.distributor:
+        euin = sip.investor.distributor.euin
+
+    # Folio
+    folio_no = sip.folio.folio_number if sip.folio else ""
+    buy_sell_type = "FRESH" if not folio_no else "ADDITIONAL" # Simple logic
+
+    # Frequency Code Map
+    freq_map = {
+        'MONTHLY': 'MONTHLY',
+        'WEEKLY': 'WEEKLY',
+        'QUARTERLY': 'QUARTERLY'
+    }
+
+    # Start Date (DD/MM/YYYY)
+    start_date = sip.start_date.strftime("%d/%m/%Y")
+
+    params = {
+        'TransactionCode': 'NEW',
+        'UniqueRefNo': f"SIP-{sip.id}", # Or generate a unique string
+        'SchemeCode': sip.scheme.scheme_code,
+        'MemberCode': member_id,
+        'ClientCode': client_code,
+        'UserId': user_id,
+        'TransMode': 'P', # Physical
+        'DPC': 'N',
+        'MandateID': sip.mandate.mandate_id,
+        'FirstOrderFlag': 'Y', # Assuming XSIP generates first order
+        'Brokerage': '', # Default
+        'FrequencyType': freq_map.get(sip.frequency, 'MONTHLY'),
+        'StartDate': start_date,
+        'InstallmentAmount': f"{sip.amount:.2f}",
+        'NoOfInstallment': str(sip.installments),
+        'EUIN': euin,
+        'EuinFlag': 'Y' if euin else 'N',
+        'SubBrCode': '',
+        'FolioNo': folio_no,
+        'BuySellType': buy_sell_type,
+        'Remarks': '',
+        'SubMemberCode': '',
+        'Password': password,
+        'PassKey': pass_key,
+        'Param1': '',
+        'Param2': '',
+        'Param3': ''
+    }
+
+    return params
+
+def get_bse_mandate_params(mandate, member_id, user_id, password, pass_key):
+    """
+    Constructs parameters for mandateRegistrationParam (XSIP Mandate).
+    """
+    client_code = mandate.investor.ucc_code if mandate.investor.ucc_code else mandate.investor.pan
+
+    # Bank info from mandate.bank_account
+    bank = mandate.bank_account
+    if not bank:
+        # Fallback to default
+        bank = mandate.investor.bank_accounts.filter(is_default=True).first()
+
+    params = {
+        'MemberCode': member_id,
+        'ClientCode': client_code,
+        'UserId': user_id,
+        'MandateType': 'XSIP', # Or 'ISIP', 'E-MANDATE'
+        'MandateAmount': f"{mandate.amount_limit:.2f}",
+        'StartDate': mandate.start_date.strftime("%d/%m/%Y"),
+        'EndDate': mandate.end_date.strftime("%d/%m/%Y") if mandate.end_date else "31/12/2099",
+        'BankAccountNo': bank.account_number if bank else "",
+        'IFSC': bank.ifsc_code if bank else "",
+        'BankName': bank.bank_name if bank else "", # Optional
+        'AccountType': bank.account_type if bank else "SB",
+        'Password': password,
+        'PassKey': pass_key,
+        'Param1': '',
+        'Param2': '',
+        'Param3': ''
+    }
+    return params
