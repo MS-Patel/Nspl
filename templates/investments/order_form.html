@@ -344,7 +344,7 @@
                     scheme_type: typeVal
                 });
 
-                fetch(`/investments/api/order-metadata/?${params.toString()}`)
+                fetch(`{% url 'api_order_metadata' %}?${params.toString()}`)
                     .then(response => response.json())
                     .then(data => {
                         callback(data.schemes);
@@ -373,7 +373,7 @@
                 return;
             }
 
-            fetch(`/investments/api/order-metadata/?scheme_id=${value}`)
+            fetch(`{% url 'api_order_metadata' %}?scheme_id=${value}`)
                 .then(response => response.json())
                 .then(data => {
                     if (data.scheme_details) {
@@ -442,7 +442,7 @@
                 folioSelect.clear();
                 folioSelect.clearOptions();
                 folioSelect.load(function(callback) {
-                     fetch(`/investments/api/investor-folios/?investor_id=${investorId}`)
+                     fetch(`{% url 'api_folios' %}?investor_id=${investorId}`)
                         .then(r => r.json())
                         .then(data => callback(data.folios || []))
                         .catch(() => callback());
@@ -452,7 +452,7 @@
                 mandateSelect.clear();
                 mandateSelect.clearOptions();
                 mandateSelect.load(function(callback) {
-                    fetch(`/investments/api/order-metadata/?investor_id=${investorId}`)
+                    fetch(`{% url 'api_order_metadata' %}?investor_id=${investorId}`)
                         .then(r => r.json())
                         .then(data => {
                              const mapped = (data.mandates || []).map(m => ({
