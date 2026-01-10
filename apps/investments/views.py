@@ -10,6 +10,7 @@ from apps.users.models import InvestorProfile, DistributorProfile
 from apps.products.models import Scheme, AMC, SchemeCategory
 from apps.integration.bse_client import BSEStarMFClient
 import logging
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -122,7 +123,20 @@ def order_list(request):
     else:
         orders = Order.objects.none()
 
-    return render(request, 'investments/order_list.html', {'orders': orders})
+    data = []
+    for order in orders:
+        data.append({
+            'created_at': order.created_at.strftime('%Y-%m-%d %H:%M'),
+            'unique_ref_no': order.unique_ref_no,
+            'investor_name': order.investor.user.name if order.investor.user.name else order.investor.user.username,
+            'scheme_name': order.scheme.name,
+            'transaction_type': order.get_transaction_type_display(),
+            'amount': float(order.amount),
+            'status': order.get_status_display(),
+            'bse_order_id': order.bse_order_id if order.bse_order_id else '-',
+        })
+
+    return render(request, 'investments/order_list.html', {'grid_data_json': json.dumps(data)})
 
 @login_required
 def get_investor_folios(request):
