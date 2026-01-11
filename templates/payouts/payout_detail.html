@@ -1,0 +1,136 @@
+{% extends 'layout/base.html' %}
+{% load static %}
+{% block css %}
+{% endblock %}
+{% block content %}
+<div class="my-5 flex h-8 items-center justify-between px-4 sm:px-5">
+  <div class="flex items-center space-x-4">
+        <h2
+          class="text-xl font-medium text-slate-800 dark:text-navy-50 lg:text-2xl"
+        >
+         Payout Details: {{ payout.period_date|date:"F Y" }}
+        </h2>
+        <div class="hidden h-full py-1 sm:flex">
+          <div class="h-full w-px bg-slate-300 dark:bg-navy-600"></div>
+        </div>
+        <ul class="hidden flex-wrap items-center space-x-2 sm:flex">
+          <li class="flex items-center space-x-2">
+            <a
+              class="text-primary transition-colors hover:text-primary-focus dark:text-accent-light dark:hover:text-accent"
+              href="{% url 'payout_list' %}"
+              >Payouts</a
+            >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="size-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+          </li>
+          <li>Details</li>
+        </ul>
+      </div>
+      <div>
+        <a href="{% url 'payout_export' payout.pk %}" class="btn bg-success font-medium text-white hover:bg-success-focus focus:bg-success-focus active:bg-success-focus/90">
+            <i class="fa-solid fa-file-excel mr-2"></i> Export to Excel
+        </a>
+      </div>
+</div>
+<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 px-4 sm:px-5 mb-5">
+    <div class="card p-4 flex flex-col justify-center items-center">
+        <span class="text-slate-400 dark:text-navy-300 uppercase text-xs">Total AUM</span>
+        <span class="text-xl font-semibold">₹ {{ payout.total_aum|floatformat:2 }}</span>
+    </div>
+    <div class="card p-4 flex flex-col justify-center items-center">
+        <span class="text-slate-400 dark:text-navy-300 uppercase text-xs">Total Commission</span>
+        <span class="text-2xl font-bold text-success">₹ {{ payout.total_commission|floatformat:2 }}</span>
+    </div>
+    <div class="card p-4 flex flex-col justify-center items-center">
+        <span class="text-slate-400 dark:text-navy-300 uppercase text-xs">Status</span>
+        <span class="badge {% if payout.status == 'PAID' %}bg-success/10 text-success{% else %}bg-warning/10 text-warning{% endif %}">
+            {{ payout.get_status_display }}
+        </span>
+    </div>
+</div>
+
+<div class="card p-4">
+  <div>
+    <div class="flex items-end justify-between">
+      <input id="filter-input" type="search" placeholder="Search details..." class="mb-4 p-2 border rounded form-control" />
+    </div>
+    <div id="payout_detail_list"></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block javascript %}
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const tableData = {{ grid_data_json|safe }};
+    const gridContainer = document.querySelector("#payout_detail_list");
+
+    const gridConfig = {
+      columns: [
+        { id: "investor", name: "Investor" },
+        { id: "folio", name: "Folio" },
+        { id: "scheme", name: "Scheme" },
+        { id: "category", name: "Category" },
+        { id: "amc", name: "AMC" },
+        {
+          id: "aum",
+          name: "AUM (₹)",
+          formatter: (cell) => cell.toLocaleString('en-IN', {minimumFractionDigits: 2})
+        },
+        {
+          id: "rate",
+          name: "Rate (%)",
+          formatter: (cell) => `${cell.toFixed(2)}%`
+        },
+        {
+          id: "commission",
+          name: "Comm. (₹)",
+          formatter: (cell) => Gridjs.html(`<span class="font-bold text-slate-700 dark:text-navy-100">${cell.toLocaleString('en-IN', {minimumFractionDigits: 2})}</span>`)
+        },
+      ],
+      data: tableData,
+      sort: true,
+      search: false,
+      pagination: {
+        limit: 20
+      },
+      className: {
+        table: 'is-hoverable w-full text-left',
+        tbody: 'text-slate-600 dark:text-navy-200',
+        thead: 'bg-slate-200 text-slate-800 dark:bg-navy-800 dark:text-navy-100',
+      }
+    };
+
+    const grid = new Gridjs.Grid(gridConfig).render(gridContainer);
+
+    // Search Logic
+    const filterInput = document.getElementById('filter-input');
+    filterInput.addEventListener('input', (e) => {
+      const keyword = e.target.value.toLowerCase();
+      if (!keyword) {
+          grid.updateConfig({ data: tableData }).forceRender();
+          return;
+      }
+      const filteredData = tableData.filter(item =>
+          item.investor.toLowerCase().includes(keyword) ||
+          item.scheme.toLowerCase().includes(keyword) ||
+          item.folio.toLowerCase().includes(keyword) ||
+          item.amc.toLowerCase().includes(keyword)
+      );
+      grid.updateConfig({ data: filteredData }).forceRender();
+    });
+  });
+</script>
+{% endblock %}
