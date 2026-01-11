@@ -13,6 +13,7 @@ from .models import RMProfile, DistributorProfile, InvestorProfile, BankAccount,
 from .forms import RMCreationForm, DistributorCreationForm, InvestorCreationForm, InvestorProfileForm, BankAccountFormSet, NomineeFormSet, DocumentForm
 from apps.integration.bse_client import BSEStarMFClient
 from apps.integration.utils import map_investor_to_bse_param_string
+from apps.reconciliation.utils.valuation import calculate_portfolio_valuation
 import json
 
 User = get_user_model()
@@ -70,6 +71,26 @@ class DistributorDashboardView(LoginRequiredMixin, IsDistributorMixin, TemplateV
 
 class InvestorDashboardView(LoginRequiredMixin, TemplateView):
     template_name = 'dashboard/investor.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+
+        # Determine the Investor Profile
+        investor_profile = None
+        if user.user_type == User.Types.INVESTOR:
+            # Handle potential DoesNotExist if profile creation failed (though it shouldn't)
+            try:
+                investor_profile = user.investor_profile
+            except InvestorProfile.DoesNotExist:
+                pass
+
+        if investor_profile:
+            valuation_data = calculate_portfolio_valuation(investor_profile)
+            context['valuation'] = valuation_data
+            context['grid_data_json'] = json.dumps(valuation_data['holdings'], default=str)
+
+        return context
 
 # --- User Management Views (The Permissions Layer) ---
 
