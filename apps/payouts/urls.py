@@ -1,6 +1,7 @@
 from django.urls import path
 from . import views
 
+app_name = 'payouts'
 urlpatterns = [
     # Commission Rules (Admin)
     path('payouts/rules/', views.CommissionRuleListView.as_view(), name='payout_rule_list'),

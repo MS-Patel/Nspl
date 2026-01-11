@@ -3,7 +3,7 @@ from .views import (
     GoalListView, GoalCreateView, GoalUpdateView, GoalDetailView, GoalDeleteView,
     CASUploadView, CASListView, ExternalHoldingListView
 )
-
+app_name = 'analytics'
 urlpatterns = [
     # Goal Planning
     path('goals/', GoalListView.as_view(), name='goal_list'),

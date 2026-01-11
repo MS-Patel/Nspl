@@ -238,6 +238,7 @@
 
 <script>
     const onLoad = () => {
+        console.log("Order Form JS Initialized");
         // --- Init TomSelects ---
         const config = {
             create: false,
@@ -330,6 +331,7 @@
 
         // --- Dynamic Scheme Filtering ---
         function fetchSchemes() {
+            console.log("Fetching schemes with filters");
             const amcId = amcSelect.getValue();
             const catId = categorySelect.getValue();
             const typeVal = typeSelect.getValue();
@@ -344,7 +346,7 @@
                     scheme_type: typeVal
                 });
 
-                fetch(`{% url 'api_order_metadata' %}?${params.toString()}`)
+                fetch(`{% url 'investments:api_order_metadata' %}?${params.toString()}`)
                     .then(response => response.json())
                     .then(data => {
                         callback(data.schemes);
@@ -467,6 +469,8 @@
         }
     };
 
-    window.addEventListener("app:mounted", onLoad, { once: true });
+    window.addEventListener("DOMContentLoaded", function() {
+        onLoad();
+    });
 </script>
 {% endblock %}

@@ -22,12 +22,12 @@ from django.conf import settings
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('apps.administration.urls'), name="web"),
-    path('', include('apps.users.urls')),
-    path('', include('apps.products.urls')),
-    path('', include('apps.investments.urls')),
-    path('', include('apps.reconciliation.urls')),
-    path('', include('apps.payouts.urls')),
-    path('', include('apps.analytics.urls')),
+    path('', include('apps.users.urls'), name="users"),
+    path('', include('apps.products.urls'), name="products"),
+    path('', include('apps.investments.urls'), name="investments"),
+    path('', include('apps.reconciliation.urls'), name="reconciliation"),
+    path('', include('apps.payouts.urls'), name="payouts"),
+    path('', include('apps.analytics.urls'), name="analytics"),
 ]
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
