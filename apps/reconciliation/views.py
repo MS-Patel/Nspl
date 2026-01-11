@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django import forms
 from .models import RTAFile
-from .parsers import CAMSParser
+from .parsers import CAMSParser, KarvyParser, FranklinParser
 
 class RTAUploadForm(forms.ModelForm):
     class Meta:
@@ -25,14 +25,27 @@ def upload_rta_file(request):
             rta_file.save()
 
             # Trigger Parser Sync
+            parser = None
             if rta_file.rta_type == RTAFile.RTA_CAMS:
                 parser = CAMSParser(rta_file)
+            elif rta_file.rta_type == RTAFile.RTA_KARVY:
+                parser = KarvyParser(rta_file)
+            elif rta_file.rta_type == RTAFile.RTA_FRANKLIN:
+                parser = FranklinParser(rta_file)
+
+            if parser:
                 parser.parse()
+            else:
+                rta_file.status = RTAFile.STATUS_FAILED
+                rta_file.error_log = "Unknown RTA Type"
+                rta_file.save()
 
             if rta_file.status == RTAFile.STATUS_PROCESSED:
                 messages.success(request, "File processed successfully.")
+            elif rta_file.status == RTAFile.STATUS_FAILED:
+                 messages.error(request, f"Processing Failed: {rta_file.error_log}")
             else:
-                messages.error(request, "File upload failed processing. Check logs.")
+                messages.warning(request, "File uploaded but processing status is pending.")
 
             return redirect('rta_upload')
     else:
