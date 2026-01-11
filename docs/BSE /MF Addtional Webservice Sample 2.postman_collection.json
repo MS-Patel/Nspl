@@ -1,0 +1,233 @@
+{
+	"info": {
+		"_postman_id": "3a46cebe-d698-46fb-94f4-e41814d2cb60",
+		"name": "MF Addtional Webservice Sample 2",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "10086648",
+		"_collection_link": "https://starmf.postman.co/workspace/SAMPLE-API-COLLECTION~786c2d1b-a3c1-4d57-a570-f50bd8cd173d/collection/10086648-3a46cebe-d698-46fb-94f4-e41814d2cb60?action=share&source=collection_link&creator=10086648"
+	},
+	"item": [
+		{
+			"name": "MF Additional",
+			"item": [
+				{
+					"name": "Get Password",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/soap+xml"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "<soap:Envelope xmlns:soap=\"http://www.w3.org/2003/05/soap-envelope\"  \r\nxmlns:ns=\"http://bsestarmfdemo.bseindia.com/2016/01/\">\r\n\r\n   <soap:Header xmlns:wsa=\"http://www.w3.org/2005/08/addressing\">\r\n   <wsa:Action>http://bsestarmfdemo.bseindia.com/2016/01/IMFUploadService/getPassword</wsa:Action>\r\n   <wsa:To>https://bsestarmfdemo.bseindia.com/MFUploadService/MFUploadService.svc/Secure</wsa:To>\r\n   </soap:Header>\r\n   \r\n   <soap:Body>\r\n      <ns:getPassword>\r\n         <!--Optional:-->\r\n         <ns:UserId> </ns:UserId>\r\n         <!--Optional:-->\r\n         <ns:MemberId> </ns:MemberId>\r\n         <!--Optional:-->\r\n         <ns:Password> </ns:Password>\r\n         <!--Optional:-->\r\n         <ns:PassKey> </ns:PassKey>\r\n      </ns:getPassword>\r\n   </soap:Body>\r\n</soap:Envelope>\r\n\r\n\r\n"
+						},
+						"url": {
+							"raw": "https://bsestarmfdemo.bseindia.com/MFUploadService/MFUploadService.svc/Secure",
+							"protocol": "https",
+							"host": [
+								"bsestarmfdemo",
+								"bseindia",
+								"com"
+							],
+							"path": [
+								"MFUploadService",
+								"MFUploadService.svc",
+								"Secure"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "FATCA",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/soap+xml"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "<soap:Envelope xmlns:soap=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:ns=\"http://bsestarmfdemo.bseindia.com/2016/01/\">\r\n   <soap:Header xmlns:wsa=\"http://www.w3.org/2005/08/addressing\"><wsa:Action>http://bsestarmfdemo.bseindia.com/2016/01/IMFUploadService/MFAPI</wsa:Action><wsa:To>https://bsestarmfdemo.bseindia.com/MFUploadService/MFUploadService.svc/Secure</wsa:To></soap:Header>\r\n   <soap:Body>\r\n      <ns:MFAPI>\r\n         <!--Optional:-->\r\n         <ns:Flag>01</ns:Flag>\r\n         <!--Optional:-->\r\n         <ns:UserId> </ns:UserId>\r\n         <!--Optional:-->\r\n         <ns:EncryptedPassword> </ns:EncryptedPassword>\r\n         <!--Optional:-->\r\n         <ns:param></ns:param>\r\n      </ns:MFAPI>\r\n   </soap:Body>\r\n</soap:Envelope>"
+						},
+						"url": {
+							"raw": "https://bsestarmfdemo.bseindia.com/MFUploadService/MFUploadService.svc/Secure",
+							"protocol": "https",
+							"host": [
+								"bsestarmfdemo",
+								"bseindia",
+								"com"
+							],
+							"path": [
+								"MFUploadService",
+								"MFUploadService.svc",
+								"Secure"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Mandate Registration",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/soap+xml"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "<soap:Envelope xmlns:soap=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:ns=\"http://bsestarmfdemo.bseindia.com/2016/01/\">\r\n   <soap:Header xmlns:wsa=\"http://www.w3.org/2005/08/addressing\"><wsa:Action>http://bsestarmfdemo.bseindia.com/2016/01/IMFUploadService/MFAPI</wsa:Action><wsa:To>https://bsestarmfdemo.bseindia.com/MFUploadService/MFUploadService.svc/Secure</wsa:To></soap:Header>\r\n   <soap:Body>\r\n      <ns:MFAPI>\r\n         <!--Optional:-->\r\n         <ns:Flag>06</ns:Flag>\r\n         <!--Optional:-->\r\n         <ns:UserId></ns:UserId>\r\n         <!--Optional:-->\r\n         <ns:EncryptedPassword></ns:EncryptedPassword>\r\n         <!--Optional:-->\r\n         <ns:param></ns:param>\r\n      </ns:MFAPI>\r\n   </soap:Body>\r\n</soap:Envelope>"
+						},
+						"url": {
+							"raw": "https://bsestarmfdemo.bseindia.com/MFUploadService/MFUploadService.svc/Secure",
+							"protocol": "https",
+							"host": [
+								"bsestarmfdemo",
+								"bseindia",
+								"com"
+							],
+							"path": [
+								"MFUploadService",
+								"MFUploadService.svc",
+								"Secure"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Change password",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/soap+xml"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "<soap:Envelope xmlns:soap=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:ns=\"http://bsestarmfdemo.bseindia.com/2016/01/\">\r\n   <soap:Header xmlns:wsa=\"http://www.w3.org/2005/08/addressing\"><wsa:Action>http://bsestarmfdemo.bseindia.com/2016/01/IMFUploadService/MFAPI</wsa:Action><wsa:To>https://bsestarmfdemo.bseindia.com/MFUploadService/MFUploadService.svc/Secure</wsa:To></soap:Header>\r\n   <soap:Body>\r\n      <ns:MFAPI>\r\n         <!--Optional:-->\r\n         <ns:Flag>04</ns:Flag>\r\n         <!--Optional:-->\r\n         <ns:UserId> </ns:UserId>\r\n         <!--Optional:-->\r\n         <ns:EncryptedPassword> </ns:EncryptedPassword>\r\n         <!--Optional:-->\r\n         <ns:param>old password|new password|confirm password</ns:param>\r\n      </ns:MFAPI>\r\n   </soap:Body>\r\n</soap:Envelope>"
+						},
+						"url": {
+							"raw": "https://bsestarmfdemo.bseindia.com/MFUploadService/MFUploadService.svc/Secure",
+							"protocol": "https",
+							"host": [
+								"bsestarmfdemo",
+								"bseindia",
+								"com"
+							],
+							"path": [
+								"MFUploadService",
+								"MFUploadService.svc",
+								"Secure"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Client Order Payment Status",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/soap+xml"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "<soap:Envelope xmlns:soap=\"http://www.w3.org/2003/05/soap-envelope\" \r\n\r\nxmlns:ns=\"http://bsestarmfdemo.bseindia.com/2016/01/\">\r\n\r\n<soap:Header xmlns:wsa=\"http://www.w3.org/2005/08/addressing\">\r\n<wsa:Action>http://bsestarmfdemo.bseindia.com/2016/01/IMFUploadService/MFAPI</wsa:Action>\r\n<wsa:To>https://bsestarmfdemo.bseindia.com/MFUploadService/MFUploadService.svc/Secure</wsa:To>\r\n</soap:Header>\r\n   \r\n   <soap:Body>\r\n      <ns:MFAPI>\r\n         <!--Optional:-->\r\n         <ns:Flag>11</ns:Flag>\r\n         <!--Optional:-->\r\n         <ns:UserId> </ns:UserId>\r\n         <!--Optional:-->\r\n         <ns:EncryptedPassword> </ns:EncryptedPassword>\r\n         <!--Optional:-->\r\n         <ns:param></ns:param>\r\n      </ns:MFAPI>\r\n   </soap:Body>\r\n</soap:Envelope>\r\n\r\n"
+						},
+						"url": {
+							"raw": "https://bsestarmfdemo.bseindia.com/MFUploadService/MFUploadService.svc/Secure",
+							"protocol": "https",
+							"host": [
+								"bsestarmfdemo",
+								"bseindia",
+								"com"
+							],
+							"path": [
+								"MFUploadService",
+								"MFUploadService.svc",
+								"Secure"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "SWP Registration",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/soap+xml"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "<soap:Envelope xmlns:soap=\"http://www.w3.org/2003/05/soap-envelope\" \r\nxmlns:ns=\"http://bsestarmfdemo.bseindia.com/2016/01/\">\r\n<soap:Header xmlns:wsa=\"http://www.w3.org/2005/08/addressing\">\r\n<wsa:Action>http://bsestarmfdemo.bseindia.com/2016/01/IMFUploadService/MFAPI</wsa:Action>\r\n<wsa:To>https://bsestarmfdemo.bseindia.com/MFUploadService/MFUploadService.svc/Secure</wsa:To>\r\n</soap:Header>\r\n<soap:Body>\r\n<ns:MFAPI>\r\n\t<!--Optional:-->\r\n\t<ns:Flag>08</ns:Flag>\r\n\t<!--Optional:-->\r\n\t<ns:UserId> </ns:UserId>\r\n\t<!--Optional:-->\r\n\t<ns:EncryptedPassword> </ns:EncryptedPassword>\r\n\t<!--Optional:-->\r\n\t<ns:param></ns:param>\r\n\t</ns:MFAPI></soap:Body>\r\n</soap:Envelope>\r\n"
+						},
+						"url": {
+							"raw": "https://bsestarmfdemo.bseindia.com/MFUploadService/MFUploadService.svc/Secure",
+							"protocol": "https",
+							"host": [
+								"bsestarmfdemo",
+								"bseindia",
+								"com"
+							],
+							"path": [
+								"MFUploadService",
+								"MFUploadService.svc",
+								"Secure"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "SWP Cancellation",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/soap+xml"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "<soap:Envelope xmlns:soap=\"http://www.w3.org/2003/05/soap-envelope\" \r\nxmlns:ns=\"http://bsestarmfdemo.bseindia.com/2016/01/\">\r\n   <soap:Header xmlns:wsa=\"http://www.w3.org/2005/08/addressing\">\r\n   <wsa:Action>http://bsestarmfdemo.bseindia.com/2016/01/IMFUploadService/MFAPI</wsa:Action>\r\n   <wsa:To>https://bsestarmfdemo.bseindia.com/MFUploadService/MFUploadService.svc/Secure</wsa:To>\r\n   </soap:Header>\r\n   <soap:Body>\r\n      <ns:MFAPI>\r\n         <!--Optional:-->\r\n         <ns:Flag>10</ns:Flag>\r\n         <!--Optional:-->\r\n         <ns:UserId> </ns:UserId>\r\n         <!--Optional:-->\r\n         <ns:EncryptedPassword> </ns:EncryptedPassword>\r\n         <!--Optional:-->\r\n         <ns:param></ns:param>\r\n      </ns:MFAPI>\r\n   </soap:Body>\r\n</soap:Envelope>"
+						},
+						"url": {
+							"raw": "https://bsestarmfdemo.bseindia.com/MFUploadService/MFUploadService.svc/Secure",
+							"protocol": "https",
+							"host": [
+								"bsestarmfdemo",
+								"bseindia",
+								"com"
+							],
+							"path": [
+								"MFUploadService",
+								"MFUploadService.svc",
+								"Secure"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

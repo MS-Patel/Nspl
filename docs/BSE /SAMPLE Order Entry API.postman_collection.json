@@ -1,0 +1,233 @@
+{
+	"info": {
+		"_postman_id": "c9d7559e-165d-45a5-86bc-b01e0ecce2ae",
+		"name": "SAMPLE Order Entry API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "10086648",
+		"_collection_link": "https://starmf.postman.co/workspace/SAMPLE-API-COLLECTION~786c2d1b-a3c1-4d57-a570-f50bd8cd173d/collection/10086648-c9d7559e-165d-45a5-86bc-b01e0ecce2ae?action=share&source=collection_link&creator=10086648"
+	},
+	"item": [
+		{
+			"name": "Get Password Copy",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/soap+xml"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "<soap:Envelope xmlns:soap=\"http://www.w3.org/2003/05/soap-envelope\" \r\nxmlns:bses=\"http://bsestarmf.in/\">\r\n\r\n   <soap:Header xmlns:wsa=\"http://www.w3.org/2005/08/addressing\">\r\n   \r\n   <wsa:Action>http://bsestarmf.in/MFOrderEntry/getPassword</wsa:Action>\r\n   <wsa:To>https://bsestarmfdemo.bseindia.com/MFOrderEntry/MFOrder.svc/Secure</wsa:To>\r\n   \r\n   </soap:Header>\r\n   <soap:Body>\r\n      <bses:getPassword>\r\n         <!--Optional:-->\r\n         <bses:UserId> </bses:UserId>\r\n         <!--Optional:-->\r\n         <bses:Password> </bses:Password>\r\n         <!--Optional:-->\r\n         <bses:PassKey> </bses:PassKey>\r\n      </bses:getPassword>\r\n   </soap:Body>\r\n</soap:Envelope>"
+				},
+				"url": {
+					"raw": "https://bsestarmfdemo.bseindia.com/MFOrderEntry/MFOrder.svc/Secure",
+					"protocol": "https",
+					"host": [
+						"bsestarmfdemo",
+						"bseindia",
+						"com"
+					],
+					"path": [
+						"MFOrderEntry",
+						"MFOrder.svc",
+						"Secure"
+					]
+				},
+				"description": "MF Order GetPassword"
+			},
+			"response": []
+		},
+		{
+			"name": "Purchase mfd Copy",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/soap+xml"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "<soap:Envelope xmlns:soap=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:bses=\"http://bsestarmf.in/\">\r\n   <soap:Header xmlns:wsa=\"http://www.w3.org/2005/08/addressing\">\r\n   <wsa:Action>http://bsestarmf.in/MFOrderEntry/orderEntryParam</wsa:Action>\r\n   <wsa:To>https://bsestarmfdemo.bseindia.com/MFOrderEntry/MFOrder.svc/Secure</wsa:To>\r\n   </soap:Header>\r\n   <soap:Body>\r\n      <bses:orderEntryParam>\r\n         <!--Optional:-->\r\n         <bses:TransCode></bses:TransCode>\r\n         <!--Optional:-->\r\n         <bses:TransNo></bses:TransNo>\r\n         <!--Optional:-->\r\n         <bses:OrderId></bses:OrderId>\r\n         <!--Optional:-->\r\n         <bses:UserID></bses:UserID>\r\n         <!--Optional:-->\r\n         <bses:MemberId></bses:MemberId>\r\n         <!--Optional:-->\r\n         <bses:ClientCode></bses:ClientCode>\r\n         <!--Optional:-->\r\n         <bses:SchemeCd></bses:SchemeCd>\r\n         <!--Optional:-->\r\n         <bses:BuySell></bses:BuySell>\r\n         <!--Optional:-->\r\n         <bses:BuySellType></bses:BuySellType>\r\n         <!--Optional:-->\r\n         <bses:DPTxn></bses:DPTxn>\r\n         <!--Optional:-->\r\n         <bses:OrderVal></bses:OrderVal>\r\n         <!--Optional:-->\r\n         <bses:Qty></bses:Qty>\r\n         <!--Optional:-->\r\n         <bses:AllRedeem>n</bses:AllRedeem>\r\n         <!--Optional:-->\r\n         <bses:FolioNo></bses:FolioNo>\r\n         <!--Optional:-->\r\n         <bses:Remarks></bses:Remarks>\r\n         <!--Optional:-->\r\n         <bses:KYCStatus>Y</bses:KYCStatus>\r\n         <!--Optional:-->\r\n         <bses:RefNo></bses:RefNo>\r\n         <!--Optional:-->\r\n         <bses:SubBrCode></bses:SubBrCode>\r\n         <!--Optional:-->\r\n         <bses:EUIN></bses:EUIN>\r\n         <!--Optional:-->\r\n         <bses:EUINVal></bses:EUINVal>\r\n         <!--Optional:-->\r\n         <bses:MinRedeem></bses:MinRedeem>\r\n         <!--Optional:-->\r\n         <bses:DPC></bses:DPC>\r\n         <!--Optional:-->\r\n         <bses:IPAdd></bses:IPAdd>\r\n         <!--Optional:-->\r\n         <bses:Password></bses:Password>\r\n         <!--Optional:-->\r\n         <bses:PassKey></bses:PassKey>\r\n         <!--Optional:-->\r\n         <bses:Parma1></bses:Parma1>\r\n         <!--Optional:-->\r\n         <bses:Param2></bses:Param2>\r\n         <!--Optional:-->\r\n         <bses:Param3></bses:Param3>\r\n         <!--Optional:-->\r\n         <bses:MobileNo></bses:MobileNo>\r\n         <!--Optional:-->\r\n         <bses:EmailID></bses:EmailID>\r\n         <!--Optional:-->\r\n         <bses:MandateID></bses:MandateID>\r\n         <!--Optional:-->\r\n         <bses:Filler1></bses:Filler1>\r\n         <!--Optional:-->\r\n         <bses:Filler2></bses:Filler2>\r\n         <!--Optional:-->\r\n         <bses:Filler3></bses:Filler3>\r\n         <!--Optional:-->\r\n         <bses:Filler4></bses:Filler4>\r\n         <!--Optional:-->\r\n         <bses:Filler5></bses:Filler5>\r\n         <!--Optional:-->\r\n         <bses:Filler6></bses:Filler6>\r\n      </bses:orderEntryParam>\r\n   </soap:Body>\r\n</soap:Envelope>"
+				},
+				"url": {
+					"raw": "https://bsestarmfdemo.bseindia.com/MFOrderEntry/MFOrder.svc/Secure",
+					"protocol": "https",
+					"host": [
+						"bsestarmfdemo",
+						"bseindia",
+						"com"
+					],
+					"path": [
+						"MFOrderEntry",
+						"MFOrder.svc",
+						"Secure"
+					]
+				},
+				"description": "MF Order Normal Order"
+			},
+			"response": []
+		},
+		{
+			"name": "Redemption mfd Copy",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/soap+xml"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "<soap:Envelope xmlns:soap=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:bses=\"http://bsestarmf.in/\">\r\n   <soap:Header xmlns:wsa=\"http://www.w3.org/2005/08/addressing\">\r\n   <wsa:Action>http://bsestarmf.in/MFOrderEntry/orderEntryParam</wsa:Action>\r\n   <wsa:To>https://bsestarmfdemo.bseindia.com/MFOrderEntry/MFOrder.svc/Secure</wsa:To>\r\n   </soap:Header>\r\n   <soap:Body>\r\n      <bses:orderEntryParam>\r\n         <!--Optional:-->\r\n         <bses:TransCode></bses:TransCode>\r\n         <!--Optional:-->\r\n         <bses:TransNo></bses:TransNo>\r\n         <!--Optional:-->\r\n         <bses:OrderId></bses:OrderId>\r\n         <!--Optional:-->\r\n         <bses:UserID></bses:UserID>\r\n         <!--Optional:-->\r\n         <bses:MemberId></bses:MemberId>\r\n         <!--Optional:-->\r\n         <bses:ClientCode></bses:ClientCode>\r\n         <!--Optional:-->\r\n         <bses:SchemeCd></bses:SchemeCd>\r\n         <!--Optional:-->\r\n         <bses:BuySell></bses:BuySell>\r\n         <!--Optional:-->\r\n         <bses:BuySellType></bses:BuySellType>\r\n         <!--Optional:-->\r\n         <bses:DPTxn></bses:DPTxn>\r\n         <!--Optional:-->\r\n         <bses:OrderVal></bses:OrderVal>\r\n         <!--Optional:-->\r\n         <bses:Qty></bses:Qty>\r\n         <!--Optional:-->\r\n         <bses:AllRedeem></bses:AllRedeem>\r\n         <!--Optional:-->\r\n         <bses:FolioNo></bses:FolioNo>\r\n         <!--Optional:-->\r\n         <bses:Remarks></bses:Remarks>\r\n         <!--Optional:-->\r\n         <bses:KYCStatus>Y</bses:KYCStatus>\r\n         <!--Optional:-->\r\n         <bses:RefNo></bses:RefNo>\r\n         <!--Optional:-->\r\n         <bses:SubBrCode></bses:SubBrCode>\r\n         <!--Optional:-->\r\n         <bses:EUIN></bses:EUIN>\r\n         <!--Optional:-->\r\n         <bses:EUINVal></bses:EUINVal>\r\n         <!--Optional:-->\r\n         <bses:MinRedeem></bses:MinRedeem>\r\n         <!--Optional:-->\r\n         <bses:DPC>Y</bses:DPC>\r\n         <!--Optional:-->\r\n         <bses:IPAdd></bses:IPAdd>\r\n         <!--Optional:-->\r\n         <bses:Password></bses:Password>\r\n         <!--Optional:-->\r\n         <bses:PassKey></bses:PassKey>\r\n         <!--Optional:-->\r\n         <bses:Parma1></bses:Parma1>\r\n         <!--Optional:-->\r\n         <bses:Param2></bses:Param2>\r\n         <!--Optional:-->\r\n         <bses:Param3></bses:Param3>\r\n         <!--Optional:-->\r\n         <bses:MobileNo></bses:MobileNo>\r\n         <!--Optional:-->\r\n         <bses:EmailID></bses:EmailID>\r\n         <!--Optional:-->\r\n         <bses:MandateID></bses:MandateID>\r\n         <!--Optional:-->\r\n         <bses:Filler1></bses:Filler1>\r\n         <!--Optional:-->\r\n         <bses:Filler2></bses:Filler2>\r\n         <!--Optional:-->\r\n         <bses:Filler3></bses:Filler3>\r\n         <!--Optional:-->\r\n         <bses:Filler4></bses:Filler4>\r\n         <!--Optional:-->\r\n         <bses:Filler5></bses:Filler5>\r\n         <!--Optional:-->\r\n         <bses:Filler6></bses:Filler6>\r\n      </bses:orderEntryParam>\r\n   </soap:Body>\r\n</soap:Envelope>"
+				},
+				"url": {
+					"raw": "https://bsestarmfdemo.bseindia.com/MFOrderEntry/MFOrder.svc/Secure",
+					"protocol": "https",
+					"host": [
+						"bsestarmfdemo",
+						"bseindia",
+						"com"
+					],
+					"path": [
+						"MFOrderEntry",
+						"MFOrder.svc",
+						"Secure"
+					]
+				},
+				"description": "MF Order Normal Order"
+			},
+			"response": []
+		},
+		{
+			"name": "SIP mfd Copy",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/soap+xml"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "<soap:Envelope xmlns:soap=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:bses=\"http://bsestarmf.in/\">\r\n   <soap:Header xmlns:wsa=\"http://www.w3.org/2005/08/addressing\"><wsa:Action>http://bsestarmf.in/MFOrderEntry/sipOrderEntryParam</wsa:Action><wsa:To>https://bsestarmfdemo.bseindia.com/MFOrderEntry/MFOrder.svc/Secure</wsa:To></soap:Header>\r\n   <soap:Body>\r\n      <bses:sipOrderEntryParam>\r\n         <!--Optional:-->\r\n         <bses:TransactionCode></bses:TransactionCode>\r\n         <!--Optional:-->\r\n         <bses:UniqueRefNo></bses:UniqueRefNo>\r\n         <!--Optional:-->\r\n         <bses:SchemeCode></bses:SchemeCode>\r\n         <!--Optional:-->\r\n         <bses:MemberCode></bses:MemberCode>\r\n         <!--Optional:-->\r\n         <bses:ClientCode></bses:ClientCode>\r\n         <!--Optional:-->\r\n         <bses:UserID></bses:UserID>\r\n         <!--Optional:-->\r\n         <bses:InternalRefNo></bses:InternalRefNo>\r\n         <!--Optional:-->\r\n         <bses:TransMode></bses:TransMode>\r\n         <!--Optional:-->\r\n         <bses:DpTxnMode></bses:DpTxnMode>\r\n         <!--Optional:-->\r\n         <bses:StartDate></bses:StartDate>\r\n         <!--Optional:-->\r\n         <bses:FrequencyType></bses:FrequencyType>\r\n         <!--Optional:-->\r\n         <bses:FrequencyAllowed></bses:FrequencyAllowed>\r\n         <!--Optional:-->\r\n         <bses:InstallmentAmount></bses:InstallmentAmount>\r\n         <!--Optional:-->\r\n         <bses:NoOfInstallment></bses:NoOfInstallment>\r\n         <!--Optional:-->\r\n         <bses:Remarks></bses:Remarks>\r\n         <!--Optional:-->\r\n         <bses:FolioNo></bses:FolioNo>\r\n         <!--Optional:-->\r\n         <bses:FirstOrderFlag></bses:FirstOrderFlag>\r\n         <!--Optional:-->\r\n         <bses:SubberCode></bses:SubberCode>\r\n         <!--Optional:-->\r\n         <bses:Euin></bses:Euin>\r\n         <!--Optional:-->\r\n         <bses:EuinVal></bses:EuinVal>\r\n         <!--Optional:-->\r\n         <bses:DPC>Y</bses:DPC>\r\n         <!--Optional:-->\r\n         <bses:RegId></bses:RegId>\r\n         <!--Optional:-->\r\n         <bses:IPAdd></bses:IPAdd>\r\n         <!--Optional:-->\r\n         <bses:Password></bses:Password>\r\n         <!--Optional:-->\r\n         <bses:PassKey></bses:PassKey>\r\n         <!--Optional:-->\r\n         <bses:Param1></bses:Param1>\r\n         <!--Optional:-->\r\n         <bses:Param2></bses:Param2>\r\n         <!--Optional:-->\r\n         <bses:Param3></bses:Param3>\r\n         <!--Optional:-->\r\n         <bses:Filler1></bses:Filler1>\r\n         <!--Optional:-->\r\n         <bses:Filler2></bses:Filler2>\r\n         <!--Optional:-->\r\n         <bses:Filler3></bses:Filler3>\r\n         <!--Optional:-->\r\n         <bses:Filler4></bses:Filler4>\r\n         <!--Optional:-->\r\n         <bses:Filler5></bses:Filler5>\r\n         <!--Optional:-->\r\n         <bses:Filler6></bses:Filler6>\r\n      </bses:sipOrderEntryParam>\r\n   </soap:Body>\r\n</soap:Envelope>\r\n\r\n"
+				},
+				"url": {
+					"raw": "https://bsestarmfdemo.bseindia.com/MFOrderEntry/MFOrder.svc/Secure",
+					"protocol": "https",
+					"host": [
+						"bsestarmfdemo",
+						"bseindia",
+						"com"
+					],
+					"path": [
+						"MFOrderEntry",
+						"MFOrder.svc",
+						"Secure"
+					]
+				},
+				"description": "MF Order Normal Order"
+			},
+			"response": []
+		},
+		{
+			"name": "XSIP mfd Copy",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/soap+xml"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "<soap:Envelope xmlns:soap=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:bses=\"http://bsestarmf.in/\">\r\n   <soap:Header xmlns:wsa=\"http://www.w3.org/2005/08/addressing\">\r\n   <wsa:Action>http://bsestarmf.in/MFOrderEntry/xsipOrderEntryParam</wsa:Action>\r\n   <wsa:To>https://bsestarmfdemo.bseindia.com/MFOrderEntry/MFOrder.svc/Secure</wsa:To>\r\n   </soap:Header>\r\n   <soap:Body>\r\n      <bses:xsipOrderEntryParam>\r\n         <!--Optional:-->\r\n         <bses:TransactionCode></bses:TransactionCode>\r\n         <!--Optional:-->\r\n         <bses:UniqueRefNo></bses:UniqueRefNo>\r\n         <!--Optional:-->\r\n         <bses:SchemeCode></bses:SchemeCode>\r\n         <!--Optional:-->\r\n         <bses:MemberCode></bses:MemberCode>\r\n         <!--Optional:-->\r\n         <bses:ClientCode></bses:ClientCode>\r\n         <!--Optional:-->\r\n         <bses:UserId></bses:UserId>\r\n         <!--Optional:-->\r\n         <bses:InternalRefNo></bses:InternalRefNo>\r\n         <!--Optional:-->\r\n         <bses:TransMode></bses:TransMode>\r\n         <!--Optional:-->\r\n         <bses:DpTxnMode></bses:DpTxnMode>\r\n         <!--Optional:-->\r\n         <bses:StartDate></bses:StartDate>\r\n         <!--Optional:-->\r\n         <bses:FrequencyType></bses:FrequencyType>\r\n         <!--Optional:-->\r\n         <bses:FrequencyAllowed></bses:FrequencyAllowed>\r\n         <!--Optional:-->\r\n         <bses:InstallmentAmount></bses:InstallmentAmount>\r\n         <!--Optional:-->\r\n         <bses:NoOfInstallment></bses:NoOfInstallment>\r\n         <!--Optional:-->\r\n         <bses:Remarks></bses:Remarks>\r\n         <!--Optional:-->\r\n         <bses:FolioNo></bses:FolioNo>\r\n         <!--Optional:-->\r\n         <bses:FirstOrderFlag></bses:FirstOrderFlag>\r\n         <!--Optional:-->\r\n         <bses:Brokerage></bses:Brokerage>\r\n         <!--Optional:-->\r\n         <bses:MandateID></bses:MandateID>\r\n         <!--Optional:-->\r\n         <bses:SubberCode></bses:SubberCode>\r\n         <!--Optional:-->\r\n         <bses:Euin></bses:Euin>\r\n         <!--Optional:-->\r\n         <bses:EuinVal></bses:EuinVal>\r\n         <!--Optional:-->\r\n         <bses:DPC>Y</bses:DPC>\r\n         <!--Optional:-->\r\n         <bses:XsipRegID></bses:XsipRegID>\r\n         <!--Optional:-->\r\n         <bses:IPAdd></bses:IPAdd>\r\n         <!--Optional:-->\r\n         <bses:Password></bses:Password>\r\n         <!--Optional:-->\r\n         <bses:PassKey></bses:PassKey>\r\n         <!--Optional:-->\r\n         <bses:Param1></bses:Param1>\r\n         <!--Optional:-->\r\n         <bses:Param2></bses:Param2>\r\n         <!--Optional:-->\r\n         <bses:Param3></bses:Param3>\r\n          <!--Optional:-->\r\n         <bses:Filler1></bses:Filler1>\r\n         <!--Optional:-->\r\n         <bses:Filler2></bses:Filler2>\r\n         <!--Optional:-->\r\n         <bses:Filler3></bses:Filler3>\r\n         <!--Optional:-->\r\n         <bses:Filler4></bses:Filler4>\r\n         <!--Optional:-->\r\n         <bses:Filler5></bses:Filler5>\r\n         <!--Optional:-->\r\n         <bses:Filler6></bses:Filler6>\r\n      </bses:xsipOrderEntryParam>\r\n   </soap:Body>\r\n</soap:Envelope>\r\n\r\n"
+				},
+				"url": {
+					"raw": "https://bsestarmfdemo.bseindia.com/MFOrderEntry/MFOrder.svc/Secure",
+					"protocol": "https",
+					"host": [
+						"bsestarmfdemo",
+						"bseindia",
+						"com"
+					],
+					"path": [
+						"MFOrderEntry",
+						"MFOrder.svc",
+						"Secure"
+					]
+				},
+				"description": "MF Order Normal Order"
+			},
+			"response": []
+		},
+		{
+			"name": "Spread mfd Copy",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/soap+xml"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "<soap:Envelope xmlns:soap=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:bses=\"http://bsestarmf.in/\">\r\n   <soap:Header xmlns:wsa=\"http://www.w3.org/2005/08/addressing\">\r\n   <wsa:Action>http://bsestarmf.in/MFOrderEntry/spreadOrderEntryParam</wsa:Action>\r\n   <wsa:To>https://bsestarmfdemo.bseindia.com/MFOrderEntry/MFOrder.svc/Secure</wsa:To>\r\n   </soap:Header>\r\n   <soap:Body>\r\n      <bses:spreadOrderEntryParam>\r\n         <!--Optional:-->\r\n         <bses:TransactionCode> </bses:TransactionCode>\r\n         <!--Optional:-->\r\n         <bses:UniqueRefNo> </bses:UniqueRefNo>\r\n         <!--Optional:-->\r\n         <bses:OrderID></bses:OrderID>\r\n         <!--Optional:-->\r\n         <bses:UserID> </bses:UserID>\r\n         <!--Optional:-->\r\n         <bses:MemberId> </bses:MemberId>\r\n         <!--Optional:-->\r\n         <bses:ClientCode> </bses:ClientCode>\r\n         <!--Optional:-->\r\n         <bses:SchemeCode> </bses:SchemeCode>\r\n         <!--Optional:-->\r\n         <bses:BuySell> </bses:BuySell>\r\n         <!--Optional:-->\r\n         <bses:BuySellType> </bses:BuySellType>\r\n         <!--Optional:-->\r\n         <bses:DPTxn> </bses:DPTxn>\r\n         <!--Optional:-->\r\n         <bses:OrderValue> </bses:OrderValue>\r\n         <!--Optional:-->\r\n         <bses:RedemptionAmt> </bses:RedemptionAmt>\r\n         <!--Optional:-->\r\n         <bses:AllUnitFlag> </bses:AllUnitFlag>\r\n         <!--Optional:-->\r\n         <bses:RedeemDate> </bses:RedeemDate>\r\n         <!--Optional:-->\r\n         <bses:FolioNo></bses:FolioNo>\r\n         <!--Optional:-->\r\n         <bses:Remarks></bses:Remarks>\r\n         <!--Optional:-->\r\n         <bses:KYCStatus>Y</bses:KYCStatus>\r\n         <!--Optional:-->\r\n         <bses:RefNo></bses:RefNo>\r\n         <!--Optional:-->\r\n         <bses:SubBroCode></bses:SubBroCode>\r\n         <!--Optional:-->\r\n         <bses:EUIN></bses:EUIN>\r\n         <!--Optional:-->\r\n         <bses:EUINVal>N</bses:EUINVal>\r\n         <!--Optional:-->\r\n         <bses:MinRedeem>N</bses:MinRedeem>\r\n         <!--Optional:-->\r\n         <bses:DPC>Y</bses:DPC>\r\n         <!--Optional:-->\r\n         <bses:IPAddress></bses:IPAddress>\r\n         <!--Optional:-->\r\n         <bses:Password> </bses:Password>\r\n         <!--Optional:-->\r\n         <bses:PassKey> </bses:PassKey>\r\n         <!--Optional:-->\r\n         <bses:Parma1></bses:Parma1>\r\n         <!--Optional:-->\r\n         <bses:Param2></bses:Param2>\r\n         <!--Optional:-->\r\n         <bses:Param3> </bses:Param3>\r\n         <!--Optional:-->\r\n          <bses:MobileNo></bses:MobileNo>\r\n         <!--Optional:-->\r\n         <bses:EmailID></bses:EmailID>\r\n         <!--Optional:-->\r\n          <bses:Filler1></bses:Filler1>\r\n         <!--Optional:-->\r\n         <bses:Filler2></bses:Filler2>\r\n         <!--Optional:-->\r\n         <bses:Filler3></bses:Filler3>\r\n         <!--Optional:-->\r\n          <bses:Filler4></bses:Filler4>\r\n         <!--Optional:-->\r\n         <bses:Filler5></bses:Filler5>\r\n         <!--Optional:-->\r\n         <bses:Filler6></bses:Filler6>\r\n      </bses:spreadOrderEntryParam>\r\n   </soap:Body>\r\n</soap:Envelope>"
+				},
+				"url": {
+					"raw": "https://bsestarmfdemo.bseindia.com/MFOrderEntry/MFOrder.svc/Secure",
+					"protocol": "https",
+					"host": [
+						"bsestarmfdemo",
+						"bseindia",
+						"com"
+					],
+					"path": [
+						"MFOrderEntry",
+						"MFOrder.svc",
+						"Secure"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Switch mfd Copy",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/soap+xml"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "<soap:Envelope xmlns:soap=\"http://www.w3.org/2003/05/soap-envelope\" xmlns:bses=\"http://bsestarmf.in/\">\r\n   <soap:Header xmlns:wsa=\"http://www.w3.org/2005/08/addressing\">\r\n   <wsa:Action>http://bsestarmf.in/MFOrderEntry/switchOrderEntryParam</wsa:Action>\r\n   <wsa:To>https://bsestarmfdemo.bseindia.com/MFOrderEntry/MFOrder.svc/Secure</wsa:To>\r\n   </soap:Header>\r\n   <soap:Body>\r\n      <bses:switchOrderEntryParam>\r\n         <!--Optional:-->\r\n         <bses:TransCode> </bses:TransCode>\r\n         <!--Optional:-->\r\n         <bses:TransNo> </bses:TransNo>\r\n         <!--Optional:-->\r\n         <bses:OrderId></bses:OrderId>\r\n         <!--Optional:-->\r\n         <bses:UserId> </bses:UserId>\r\n         <!--Optional:-->\r\n         <bses:MemberId> </bses:MemberId>\r\n         <!--Optional:-->\r\n         <bses:ClientCode> </bses:ClientCode>\r\n         <!--Optional:-->\r\n         <bses:FromSchemeCd> </bses:FromSchemeCd>\r\n         <!--Optional:-->\r\n         <bses:ToSchemeCd> </bses:ToSchemeCd>\t\r\n         <!--Optional:-->\r\n         <bses:BuySell> </bses:BuySell>\r\n         <!--Optional:-->\r\n         <bses:BuySellType> </bses:BuySellType>\r\n         <!--Optional:-->\r\n         <bses:DPTxn> </bses:DPTxn>\r\n         <!--Optional:-->\r\n         <bses:OrderVal></bses:OrderVal>\r\n         <!--Optional:-->\r\n         <bses:SwitchUnits></bses:SwitchUnits>\r\n         <!--Optional:-->\r\n         <bses:AllUnitsFlag> </bses:AllUnitsFlag>\r\n         <!--Optional:-->\r\n         <bses:FolioNo> </bses:FolioNo>\r\n         <!--Optional:-->\r\n         <bses:Remarks></bses:Remarks>\r\n         <!--Optional:-->\r\n         <bses:KYCStatus>Y</bses:KYCStatus>\r\n         <!--Optional:-->\r\n         <bses:SubBrCode></bses:SubBrCode>\r\n         <!--Optional:-->\r\n         <bses:EUIN></bses:EUIN>\r\n         <!--Optional:-->\r\n         <bses:EUINVal> </bses:EUINVal>\r\n         <!--Optional:-->\r\n         <bses:MinRedeem> </bses:MinRedeem>\r\n         <!--Optional:-->\r\n         <bses:IPAdd></bses:IPAdd>\r\n         <!--Optional:-->\r\n         <bses:Password> </bses:Password>\r\n         <!--Optional:-->\r\n         <bses:PassKey> </bses:PassKey>\r\n         <!--Optional:-->\r\n         <bses:Parma1></bses:Parma1>\r\n         <!--Optional:-->\r\n         <bses:Param2></bses:Param2>\r\n         <!--Optional:-->\r\n         <bses:Param3></bses:Param3>\r\n         <!--Optional:-->\r\n          <bses:Filler1></bses:Filler1>\r\n         <!--Optional:-->\r\n         <bses:Filler2></bses:Filler2>\r\n         <!--Optional:-->\r\n         <bses:Filler3></bses:Filler3>\r\n         <!--Optional:-->\r\n          <bses:Filler4></bses:Filler4>\r\n         <!--Optional:-->\r\n         <bses:Filler5></bses:Filler5>\r\n         <!--Optional:-->\r\n         <bses:Filler6></bses:Filler6>\r\n      </bses:switchOrderEntryParam>\r\n   </soap:Body>\r\n</soap:Envelope>"
+				},
+				"url": {
+					"raw": "https://bsestarmfdemo.bseindia.com/MFOrderEntry/MFOrder.svc/Secure",
+					"protocol": "https",
+					"host": [
+						"bsestarmfdemo",
+						"bseindia",
+						"com"
+					],
+					"path": [
+						"MFOrderEntry",
+						"MFOrder.svc",
+						"Secure"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

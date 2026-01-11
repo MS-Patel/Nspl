@@ -1,0 +1,41 @@
+{
+	"info": {
+		"_postman_id": "0d7c96be-77b7-4631-acc6-2eda8bf0b6fe",
+		"name": "E-NACH AUTH API -loopback UAT",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "10086648"
+	},
+	"item": [
+		{
+			"name": "EnachAuthURL Json loopback UAT",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "    {\n    \"MemberCode\": \"{{MemberID}}\",  \n    \"Password\": \"{{Password}}\",\n    \"ClientCode\": \"{{ClientCode1}}\",\n    \"UserId\": \"{{UserID}}\", \n    \"MandateID\": \"{{MandateID1}}\",\n    \"LoopBackUrl\": \"{{loopbackurl}}\"\n    }\n\n"
+				},
+				"url": {
+					"raw": "https://bsestarmfdemo.bseindia.com/StarMFWebService/StarMFWebService.svc/EMandateAuthURL",
+					"protocol": "https",
+					"host": [
+						"bsestarmfdemo",
+						"bseindia",
+						"com"
+					],
+					"path": [
+						"StarMFWebService",
+						"StarMFWebService.svc",
+						"EMandateAuthURL"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

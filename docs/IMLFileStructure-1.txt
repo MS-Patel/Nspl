@@ -1,0 +1,4197 @@
+BSE StAR-MF
+Message
+Interface
+Structures
+
+11th Nov
+2017
+
+Table of Contents
+LOGON REQUEST........................................................................................................................................... 4
+LOGON RESPONSE......................................................................................................................................... 5
+LOGOFF REQUEST ......................................................................................................................................... 6
+LOGOFF RESPONSE........................................................................................................................................ 6
+ADD / MODIFY / CANCEL ORDER................................................................................................................... 7
+ADD / MODIFY / CANCEL RESPONSE ........................................................................................................... 11
+DELTA DOWNLOAD REQUEST ..................................................................................................................... 16
+DELTA DOWNLOAD RESPONSE ................................................................................................................... 17
+SWITCH MESSAGE STRUCTURE ................................................................................................................... 20
+SWITCH RETURN MESSAGE STRUCTURE .................................................................................................... 22
+SPREAD/OVERNIGHT ORDER STRUCTURE .................................................................................................. 24
+SPREAD RESPONSE STRUCTURE.................................................................................................................. 27
+SIP REGISTRATION MESSAGE STRUCTURE .................................................................................................. 29
+SIP REGISTRATION RETURN MESSAGE:....................................................................................................... 32
+XSIP REGISTRATION MESSAGE: ................................................................................................................... 34
+XSIP RETURN MESSAGE STRUCTURE: ......................................................................................................... 36
+SWP REGISTRATION MESSAGE ................................................................................................................... 38
+SWP REGISTRATION RETURN MESSAGE ..................................................................................................... 39
+STP REGISTRATION MESSAGE ..................................................................................................................... 41
+STP REGISTRATION RETURN MESSAGE ....................................................................................................... 42
+HEARTBEAT MESSAGES ............................................................................................................................... 44
+HEARTBEAT REQUEST ............................................................................................................................. 44
+HEARTBEAT RESPONSE ........................................................................................................................... 44
+GENERAL ..................................................................................................................................................... 44
+
+BSE StAR-MF IML API Structures (Rev 1.6)
+
+2
+
+REVISION HISTORY ...................................................................................................................................... 45
+Revision 1.7 ................................................................................................................................................. 45
+Changes in Order Entry Logic .................................................................................................................. 45
+SIP ORDER Structure Change .............................................................................................................. 45
+Revision 1.6 ................................................................................................................................................. 45
+Additional Formats added for ................................................................................................................. 45
+Changes in Order Entry Logic .................................................................................................................. 45
+ADD / MODIFY / CANCEL ORDER Structure Change ........................................................................... 46
+SIP ORDER Structure Change .............................................................................................................. 46
+XSIP / ISIP ORDER Structure Change ................................................................................................... 46
+SPREAD ORDER Structure Change ...................................................................................................... 47
+SWITCH ORDER Structure Change ...................................................................................................... 47
+
+BSE StAR-MF IML API Structures (Rev 1.6)
+
+3
+
+LOGON REQUEST
+VALUES / MEANINGS /
+FIELD DESCRIPTION
+
+TYPE
+
+DESCRIPTION
+
+TRANSACTION CODE
+LOGINID
+
+CHAR(4)
+CHAR(25)
+
+MEMBERID
+
+CHAR(10)
+
+PASSWORD
+
+CHAR(8)
+
+TYPE OF MESSAGE
+1130 – LOGON REQUEST
+THIS FIELD SHOULD CONTAIN
+LOGIN ID OF USER / BROKER
+THIS FIELD SHOULD CONTAIN
+THE MEMBER ID.
+THIS FIELD SHOULD CONTAIN
+THE PASSWORD ENTERED BY
+THE USER.
+
+NEW PASSWORD
+
+CHAR(8)
+
+VALIDATIONS
+
+THE PASSWORD SHOULD BE A
+MINIMUM OF SIX CHARACTERS
+AND MAXIMUM OF EIGHT
+CHARACTERS IN LENGTH.
+A
+COMBINATION OF ALPHABET
+AND NUMBERS ARE ALLOWED IN
+THE PASSWORD.
+THIS FIELD SHOULD CONTAIN
+THE PASSWORD ENTERED BY
+THE USER.
+THE PASSWORD SHOULD BE A
+MINIMUM OF SIX CHARACTERS
+AND MAXIMUM OF EIGHT
+CHARACTERS IN LENGTH.
+A
+COMBINATION OF ALPHABET
+AND NUMBERS ARE ALLOWED IN
+THE PASSWORD.
+
+STARMFID
+
+CHAR(30)
+
+SHOULD NOT BE SAME AS
+PASSWORD
+UNIQUE ID PROVIDED BY THE
+EXCHANGE FOR ACCESSING THE
+SYSTEM
+
+BSE StAR-MF IML API Structures (Rev 1.6)
+
+4
+
+LOGON RESPONSE
+
+FIELD DESCRIPTION
+
+TYPE
+
+DESCRIPTION
+
+TRANSACTION CODE
+
+CHAR(4)
+
+TYPE OF MESSAGE
+
+LOGINID
+
+CHAR(25)
+
+MEMBERID
+
+CHAR(10)
+
+DEALERID
+
+CHAR(12)
+
+THIS FIELD CONTAINS LOGIN ID
+OF USER / BROKER
+THIS FIELD CONTAINS THE
+MEMBER ID.
+DEALER ID.
+
+BRANCHCODE
+
+CHAR(10)
+
+REPLYCODE
+
+CHAR(3)
+
+SESSION
+SETT NO
+TRADE DATE
+CURRENT TIME
+MESSAGE
+
+CHAR(50)
+CHAR(7)
+CHAR(11)
+CHAR(8)
+CHAR(250)
+
+VALUES / MEANINGS /
+VALIDATIONS
+1131 – LOGON
+RESPONSE/1132-LOGON
+REJECTION
+
+SHOULD
+CONTAIN
+ONLY
+NUMBERS
+BRANCH CODE OF THE DEALER
+ID
+CODE INDICATING SUCCESS /
+FAILURE OF LOGON
+0 – LOGIN SUCCESSFUL
+OTHERS – FAILURE
+LOGIN SESSION
+APPLICABLE SETTLEMENT NO.
+APPLICABLE TRADING DATE
+DD MMM YYYY FORMAT
+CURRENT TIME
+HH24:MI:SS FORMAT
+IF REPLY CODE IS ZERO THEN
+MESSAGE WILL BE BLANK
+OTHERWISE IT CONTAIN ERROR
+MESSAGE
+
+BSE StAR-MF IML API Structures (Rev 1.6)
+
+5
+
+LOGOFF REQUEST
+
+FIELD DESCRIPTION
+
+TYPE
+
+DESCRIPTION
+
+TRANSACTION CODE
+
+CHAR(4)
+
+TYPE OF MESSAGE
+
+LOGINID
+
+CHAR(25)
+
+MEMBERID
+
+CHAR(10)
+
+DEALERID
+
+CHAR(12)
+
+THIS FIELD CONTAINS LOGIN ID
+OF USER / BROKER
+THIS FIELD CONTAINS THE
+MEMBER ID.
+DEALER ID.
+
+BRANCHCODE
+
+CHAR(10)
+
+SESSION
+
+CHAR(50)
+
+VALUES / MEANINGS /
+VALIDATIONS
+2130 – LOGOFF
+REQUEST
+
+SHOULD
+CONTAIN
+ONLY
+NUMBERS
+BRANCH CODE OF THE DEALER
+ID
+LOGIN SESSION
+
+LOGOFF RESPONSE
+FIELD DESCRIPTION
+
+TYPE
+
+TRANSACTION CODE
+
+CHAR(4)
+
+REPLYCODE
+
+CHAR(3)
+
+TRADEDATE
+CURRENTTIME
+MESSAGE
+
+CHAR(11)
+CHAR(8)
+CHAR(100)
+
+DESCRIPTION
+
+VALUES / MEANINGS /
+VALIDATIONS
+
+TYPE OF MESSAGE
+
+2131 – LOGOFF
+RESPONSE/2132
+LOGOFF REJECTION
+
+0 – SUCCESS
+OTHERS – FAILURE
+DATE
+CURRENT TIME
+SUCCESS / ERROR MESSAGE
+
+DD MMM YYYY FORMAT
+HH24:MI:SS FORMAT
+
+BSE StAR-MF IML API Structures (Rev 1.6)
+
+6
+
+ADD / MODIFY / CANCEL ORDER
+
+FIELD DESCRIPTION
+
+TRANSACTION CODE
+
+TYPE
+
+CHAR(4)
+
+SCRIPID
+
+CHAR(5)
+
+SCRIPCODE
+
+CHAR(20)
+
+BUYSELL
+
+CHAR(1)
+
+BUYSELLTYPE
+
+CHAR(10)
+
+CLIENTCODE
+
+CHAR(10)
+
+MEMBERID
+
+CHAR(10)
+
+DPTXNTYPE
+
+CHAR(1)
+
+AMOUNT
+
+CHAR(17)
+
+DESCRIPTION
+
+VALUES /
+MEANINGS /
+VALIDATIONS
+
+TYPE OF MESSAGE
+
+1000 – NEW
+ORDER
+2000 – MODIFY
+ORDER
+3000 – CANCEL
+ORDER
+
+UNIQUE NO OF SCHEME MASTER (SCHEME
+TOKEN)
+SHOULD CONTAIN ONLY NUMBERS
+SCRIP CODE AS GIVEN BY THE EXCHANGE
+THIS SHOULD CONTAIN PURCHASE OR
+REDEMPTION FLAG
+P – PURCHASE
+R – REDEMPTION
+THIS SHOULD CONTAIN TYPE OF BUY
+FRESH – FOR FRESH PURCHASE
+ADDITIONAL - FOR ADDITIONAL PURCHASE
+FOR REDEMPTION, IT SHOULD ALWAYS BE
+FRESH
+THIS SHOULD CONTAIN THE CLIENT CODE
+FOR WHOM THE TRANSACTION IS ENTERED
+THIS FIELD SHOULD CONTAIN THE
+MEMBER CODE.
+THIS SHOULD CONTAIN THE SOURCE FOR
+REDEMPTION/ DESTINATION FOR PURCHASE
+P – PHYSICAL
+N – NSDL
+C – CDSL
+MANDATORY IN CASE OF PURCHASE. IN CASE
+OF REDEMPTION EITHER AMOUNT OR UNITS
+HAVE TO BE SPECIFIED OR ALL UNITS FLAG
+HAS TO BE "Y".
+
+BSE StAR-MF IML API Structures (Rev 1.6)
+
+7
+
+THE FIELD SHOULD CONTAIN ONLY NUMBERS
+MULTIPLIED BY 10000.FOR. E.G., IF THE
+PURCHASE AMT IS 10001.25 THE FIELD
+SHOULD CONTAIN THE VALUE 100012500
+
+ORIGPURCHASEAMT
+
+CHAR(17)
+
+THIS SHOULD CONTAIN THE LAST MODIFIED
+PURCHASE
+AMONT
+(IN
+CASE
+OF
+MODIFICATION)
+IN CASE OF FRESH ORDER THIS VALUE
+SHOULD BE 0
+IN CASE OF REDEMPTION TRANSACTION
+THIS VALUE SHOULD BE 0
+THE
+FIELD SHOULD CONTAIN
+NUMBERS MULTIPLIED BY 10000.
+
+REDEEMQTY
+
+CHAR(17)
+
+FOR. E.G., IF THE ORIGINAL PURCHASE AMT IS
+10001.25 THE FIELD SHOULD CONTAIN THE
+VALUE 100012500
+THIS SHOULD CONTAIN THE REDEMPTION
+QUANTITY.
+IN CASE OF PURCHASE
+TRANSACTION THIS VALUE SHOULD BE 0
+THE
+FIELD SHOULD CONTAIN
+NUMBERS MULTIPLIED BY 10000.
+
+ORIGREDEEMQTY
+
+CHAR(17)
+
+ONLY
+
+ONLY
+
+FOR. E.G., IF THE REDEEM QTY IS 101.023
+THE FIELD SHOULD CONTAIN THE VALUE
+1010230
+THIS SHOULD CONTAIN LAST MODIFIED
+REDEMPTION QUANTITY.
+(IN CASE OF
+MODIFICATION / CANCELLATION)
+IN CASE OF FRESH ORDER THIS VALUE
+SHOULD BE 0
+IN CASE OF PURCHASE TRANSACTION THIS
+VALUE SHOULD BE 0
+THE
+FIELD SHOULD CONTAIN
+NUMBERS MULTIPLIED BY 10000.
+
+ONLY
+
+BSE StAR-MF IML API Structures (Rev 1.6)
+
+8
+
+FOLIONO
+
+CHAR(16)
+
+KYCSTATUS
+
+CHAR(1)
+
+REMARKS
+
+CHAR(200)
+
+LOGINID
+
+CHAR(25)
+
+BRANCHCODE
+
+CHAR(10)
+
+DEALERID
+
+CHAR(12)
+
+REFERENCENO
+SESSION
+
+CHAR(30)
+CHAR(50)
+
+ORDERNO
+
+CHAR(16)
+
+LASTMODIFIEDDATE
+
+CHAR(11)
+
+LASTMODIFIEDTIME
+
+CHAR(8)
+
+FOR. E.G., IF THE ORIGINAL REDEEM QTY IS
+101.023 THE FIELD SHOULD CONTAIN THE
+VALUE 1010230
+THIS FIELD IS MANDATORY IN CASE OF
+ADDITIONAL PURCHASES AND IN CASE OF
+REDEMPTIONS. IN CASE OF FRESH
+PURCHASES, THIS FIELD HAS TO BE LEFT
+BLANK.
+THIS CAN CONTAIN ALPHANUMERIC
+CHARACTERS ONLY.
+VALID VALUES ARE
+Y – YES N – NO
+THIS FIELD MAY CONTAIN REMARKS THAT
+THE USER CAN ENTER AGAINST THE ORDER
+THIS FIELD SHOULD CONTAIN LOGIN ID OF
+USER / BROKER
+THIS FIELD SHOULD CONTAIN THE
+BRANCH CODE.
+DEALER ID.
+SHOULD CONTAIN ONLY NUMBERS
+REF NO FROM IML
+LOGIN SESSION
+SHOULD CONTAIN 0 FOR FRESH ORDER.
+IN
+CASE
+OF
+MODIFICATION /
+CANCELLATION,
+THIS FIELD
+SHOULD
+CONTAIN THE ORDER NO.
+IN CASE OF ORDER ENTRY, THIS FIELD
+SHOULD CONTAIN THE CURRENT DATE
+IN CASE
+OF ORDER MODIFICATION /
+CANCELLATION,
+THIS FIELD SHOULD
+CONTAIN, LAST MODIFIED DATE
+IN CASE OF ORDER ENTRY, THIS FIELD
+SHOULD CONTAIN THE CURRENT TIME
+IN CASE
+OF ORDER MODIFICATION /
+CANCELLATION,
+THIS FIELD SHOULD
+CONTAIN, LAST MODIFIED TIME
+
+DD MMM YYYY
+FORMAT
+
+HH24:MI:SS
+FORMAT
+
+BSE StAR-MF IML API Structures (Rev 1.6)
+
+9
+
+SUBBROKERCODE
+
+CHAR(20)
+
+THIS FIELD SHOULD
+CONTAIN SUBBROKERCODE
+
+EUIN
+
+CHAR(20)
+
+THIS FIELD SHOULD CONTAIN EUIN
+
+EUINDECLARATION
+
+CHAR(1)
+
+THIS FIELD SHOULD CONTAIN EUIN FLAG
+
+‘Y’ OR ’N’
+
+MINREDEMPTIONFLAG CHAR(25)
+
+THIS FIELD SHOULD CONTAIN MINIMUM
+REDEMPTION FLAG
+
+‘Y’ OR ’N’
+
+DPC FLAG(FILLER2)
+
+CHAR(25)
+
+DPC flag. Mandatory in case of purchase
+
+‘Y’ OR ’N’
+
+ALL UNITS FLAG
+(FILLER3)
+
+CHAR(25)
+
+All units flag. Mandatory in case of
+redemption transaction. If the units or
+amount is specified then this flag has be "N"
+and if this flag is "Y" then the amount and
+units has to be 0
+
+‘Y’ OR ’N’
+
+Sub broker Arn code
+
+CHAR(20)
+
+sub broker ARN code
+
+FILLER 4
+
+CHAR(20)
+
+FILLER 5
+
+CHAR(20)
+
+FILLER 6
+
+CHAR(20)
+
+BSE StAR-MF IML API Structures (Rev 1.6)
+
+10
+
+ADD / MODIFY / CANCEL RESPONSE
+
+FIELD DESCRIPTION
+
+TYPE
+
+TRANSACTION CODE
+
+CHAR(4)
+
+SCRIPID
+
+CHAR(5)
+
+SCRIPCODE
+
+CHAR(20)
+
+BUYSELL
+
+BUYSELLTYPE
+
+CHAR(1)
+
+CHAR(10)
+
+CLIENTCODE
+
+CHAR(10)
+
+MEMBERID
+
+CHAR(10)
+
+DPTXNTYPE
+
+CHAR(1)
+
+DESCRIPTION
+
+VALUES /
+MEANINGS /
+VALIDATIONS
+
+TYPE OF MESSAGE
+
+1001 – NEW
+ORDER RESPONSE
+2001 – MODIFY
+ORDER RESPONSE
+3001 – CANCEL
+ORDER RESPONSE
+1002-NEW ORDER
+REJECTION
+2002-MODIFY
+ORDER REJECTION
+3002-CANCEL
+ORDER REJECTION
+
+UNIQUE NO OF SCHEME MASTER (SCHEME
+TOKEN)
+SHOULD CONTAIN ONLY NUMBERS
+SCRIP CODE AS GIVEN BY THE EXCHANGE
+THIS SHOULD CONTAIN PURCHASE OR
+REDEMPTION FLAG P – PURCHASE
+R – REDEMPTION
+THIS SHOULD CONTAIN TYPE OF BUY
+FRESH – FOR FRESH PURCHASE
+ADDITIONAL - FOR ADDITIONAL PURCHASE
+FOR REDEMPTION, IT SHOULD ALWAYS BE
+FRESH
+THIS SHOULD CONTAIN THE CLIENT CODE
+FOR WHOM THE TRANSACTION IS ENTERED
+THIS FIELD SHOULD CONTAIN THE
+MEMBER ID.
+THIS SHOULD CONTAIN THE SOURCE FOR
+REDEMPTION
+/
+DESTINATION FOR
+PURCHASE
+
+BSE StAR-MF IML API Structures (Rev 1.6)
+
+11
+
+P – PHYSICAL
+N – NSDL C – CDSL
+
+AMOUNT
+
+CHAR(17)
+
+MANDATORY IN CASE OF PURCHASE. IN
+CASE OF REDEMPTION EITHER AMOUNT OR
+UNITS HAVE TO BE SPECIFIED OR ALL UNITS
+FLAG HAS TO BE "Y".
+THE FIELD WOULD CONTAIN ONLY
+NUMBERS MULTIPLIED BY 10000.
+FOR. E.G., IF THE PURCHASE AMT IS
+10001.25 THE FIELD SHOULD CONTAIN THE
+VALUE 100012500
+THIS
+SHOULD CONTAIN THE LAST
+MODIFIED PURCHASE AMONT (IN CASE OF
+MODIFICATION)
+IN CASE OF FRESH ORDER THIS VALUE
+SHOULD BE 0
+
+ORIGPURCHASEAMT
+
+CHAR(17)
+
+IN CASE OF REDEMPTION TRANSACTION
+THIS VALUE SHOULD BE 0
+THE FIELD WOULD CONTAIN
+NUMBERS MULTIPLIED BY 10000.
+
+ONLY
+
+FOR. E.G., IF THE ORIGINAL PURCHASE AMT
+IS 10001.25 THE FIELD SHOULD CONTAIN
+THE VALUE 100012500
+THIS SHOULD CONTAIN THE REDEMPTION
+QUANTITY.
+IN CASE OF PURCHASE
+TRANSACTION THIS VALUE SHOULD BE 0
+REDEEMQTY
+
+ORIGREDEEMQTY
+
+CHAR(17)
+
+CHAR(17)
+
+THE FIELD WOULD CONTAIN
+NUMBERS MULTIPLIED BY 10000.
+
+ONLY
+
+FOR. E.G., IF THE REDEEM QTY IS 101.023
+THE FIELD SHOULD CONTAIN THE VALUE
+1010230
+THIS SHOULD CONTAIN LAST MODIFIED
+REDEMPTION QUANTITY. (IN CASE OF
+MODIFICATION / CANCELLATION)
+IN CASE OF FRESH ORDER THIS VALUE
+
+BSE StAR-MF IML API Structures (Rev 1.6)
+
+12
+
+SHOULD BE 0
+IN CASE OF PURCHASE TRANSACTION THIS
+VALUE SHOULD BE 0
+THE FIELD WOULD CONTAIN
+NUMBERS MULTIPLIED BY 10000.
+
+FOLIONO
+
+CHAR(16)
+
+KYCSTATUS
+
+CHAR(1)
+
+REMARKS
+
+CHAR(200)
+
+LOGINID
+
+CHAR(25)
+
+REFERENCENO
+
+CHAR(30)
+
+DEALERID
+
+CHAR(12)
+
+BRANCHCODE
+SESSION
+
+CHAR(10)
+CHAR(50)
+
+ORDERNO
+
+CHAR(16)
+
+CHAR(11)
+LASTMODIFIEDDATE
+LASTMODIFIEDTIME
+
+CHAR(8)
+
+ONLY
+
+FOR. E.G., IF THE ORIGINAL REDEEM QTY IS
+101.023 THE FIELD SHOULD CONTAIN THE
+VALUE 1010230
+THIS FIELD IS MANDATORY IN CASE OF
+ADDITIONAL PURCHASES AND IN CASE OF
+REDEMPTIONS.
+IN CASE OF FRESH
+PURCHASES, THIS FIELD HAS TO BE LEFT
+BLANK
+WOULD CONTAIN ONLY NUMERIC VALUES
+VALID VALUES ARE
+Y – YES
+N – NO
+THIS FIELD MAY CONTAIN REMARKS THAT
+THE USER CAN ENTER AGAINST THE ORDER
+THIS FIELD SHOULD CONTAIN LOGIN ID OF
+USER / BROKER
+REF NO FROM IML
+DEALER ID.
+SHOULD CONTAIN ONLY NUMBERS
+BRANCH CODE OF THE DEALER ID
+LOGIN SESSION
+IN CASE OF ORDER ENTRY, THE SYSTEM
+WILL RETURN THE ORDER NO. ASSIGNED
+TO THE ORDER
+IN
+CASE
+OF
+MODIFICATION /
+CANCELLATION, THE SYSTEM WILL RETURN
+THE VALUE PROVIDED AT THE TIME OF
+REQUEST
+THE
+SYSTEM WILL
+RETURN THE
+DD MMM YYYY
+PROCESSING DATE OF THE ORDER ENTERED
+FORMAT
+/ MODIFIED / CANCELLED
+THE
+SYSTEM WILL
+RETURN THE HH24:MI:SS
+
+BSE StAR-MF IML API Structures (Rev 1.6)
+
+13
+
+PROCESSING TIME OF THE ORDER ENTERED /
+FORMAT
+MODIFIED / CANCELLED
+
+SUBBROKERCODE
+
+CHAR(20)
+
+THIS FIELD CONTAIN SUBBROKERCODE
+
+EUIN
+
+CHAR(20)
+
+THIS FIELD CONTAIN EUIN
+
+EUINDECLARATION
+
+CHAR(1)
+
+THIS FIELD CONTAIN EUIN FLAG ‘Y’ OR ’N’
+
+CHAR(25)
+
+THIS FIELD CONTAIN PROVIDED MINIMUM
+REDEMPTION FLAG ‘Y’ OR ‘N’
+
+CHAR(25)
+
+DPC flag. Mandatory in case of purchase
+
+‘Y’ OR ’N’
+
+ALL UNITS FLAG
+(FILLER3)
+
+CHAR(25)
+
+All units flag. Mandatory in case of
+redemption transaction. If the units or
+amount is specified then this flag has be "N"
+and if this flag is "Y" then the amount and
+units has to be 0
+
+‘Y’ OR ’N’
+
+REPLYCODE
+
+CHAR(3)
+
+0 – SUCCESS
+OTHERS – FAILURE
+
+MINREDEMPTIONFLAG
+DPC FLAG(FILLER2)
+
+MESSAGE
+
+CHAR(1000)
+
+SYSTEM WOULD RETURN ‘SUCCESS’ IN
+CASE OF THE REQUEST GETTING
+COMPLETED SUCCESSFULLY
+IN CASE OF ERROR, THE SYSTEM WOULD
+RETURN THE ERROR MESSAGE
+
+ACTION
+
+CHAR(3)
+
+NEW – NEW ORDER
+MOD – ORDER MODIFIED
+CXL – ORDER CANCELLED
+
+Sub broker Arn code
+
+CHAR(20)
+
+sub broker ARN code
+
+BSE StAR-MF IML API Structures (Rev 1.6)
+
+14
+
+FILLER 4
+
+CHAR(20)
+
+FILLER 5
+
+CHAR(20)
+
+FILLER 6
+
+CHAR(20)
+
+BSE StAR-MF IML API Structures (Rev 1.6)
+
+15
+
+DELTA DOWNLOAD REQUEST
+FIELD DESCRIPTION TYPE
+
+DESCRIPTION
+
+VALUES /
+MEANINGS /
+VALIDATIONS
+
+TRANSACTION CODE
+
+CHAR(4)
+
+TYPE OF MESSAGE
+
+LOGINID
+
+CHAR(25)
+
+THIS FIELD SHOULD CONTAIN LOGIN ID OF
+USER / BROKER
+
+MEMBERID
+
+CHAR(10)
+
+THIS FIELD SHOULD CONTAIN THE MEMBER ID.
+
+4130– TXN CODE
+REQUEST
+
+DEALER ID.
+DEALERID
+BRANCHCODE
+SESSION
+LASTDATE
+LASTTIME
+SUBBROKERCODE
+
+CHAR(12)
+SHOULD CONTAIN ONLY NUMBERS
+CHAR(10) BRANCH CODE OF THE DEALER ID
+CHAR(50) LOGIN SESSION
+THE LAST DATE FROM WHICH THE DATA IS
+CHAR(11)
+REQUIRED TO BE FETCHED
+THE LAST TIME FROM WHICH THE DATA IS
+CHAR(8)
+REQUIRED TO BE FETHCED
+THIS
+FIELD
+SHOULD CONTAIN
+CHAR(20)
+SUBBROKERCODE
+
+EUIN
+
+CHAR(20) THIS FIELD SHOULD CONTAIN EUIN
+
+EUINDECLARATION
+
+CHAR(1)
+
+FILLER1
+
+CHAR(25) FOR FUTURE PURPOSE
+
+FILLER2
+
+CHAR(25) FOR FUTURE PURPOSE
+
+FILLER3
+
+CHAR(25) FOR FUTURE PURPOSE
+
+THIS FIELD SHOULD CONTAIN EUIN FLAG
+
+DD MMM YYYY
+FORMAT
+HH24:MI:SS
+FORMAT
+
+‘Y’ OR ’N’
+
+BSE StAR-MF IML API Structures (Rev 1.6)
+
+16
+
+DELTA DOWNLOAD RESPONSE
+
+FIELD DESCRIPTION
+
+TYPE
+
+TRANSACTION CODE
+
+CHAR(4)
+
+SCRIPID
+
+CHAR(5)
+
+SCRIPCODE
+
+CHAR(20)
+
+BUYSELL
+
+CHAR(1)
+
+BUYSELLTYPE
+
+CHAR(10)
+
+CLIENTCODE
+
+CHAR(10)
+
+MEMBERID
+
+CHAR(10)
+
+DPTXNTYPE
+
+CHAR(1)
+
+VALUES /
+MEANINGS /
+VALIDATIONS
+
+DESCRIPTION
+
+4131 – DELTA
+DOWNLOAD
+TYPE OF MESSAGE
+RESPONSE
+4132 -REJECTION
+UNIQUE NO OF SCHEME MASTER (SCHEME
+TOKEN)
+SHOULD CONTAIN ONLY NUMBERS
+SCRIP CODE AS GIVEN BY THE EXCHANGE
+THIS
+CONTAINS
+PURCHASE
+OR
+REDEMPTION FLAG
+P – PURCHASE
+R – REDEMPTION
+THIS CONTAINS TYPE OF BUY
+FRESH – FOR FRESH PURCHASE
+ADDITIONAL - FOR ADDITIONAL PURCHASE
+FOR REDEMPTION, IT WILL ALWAYS BE
+FRESH
+THIS CONTAINS THE CLIENT CODE FOR
+WHOM THE TRANSACTION IS ENTERED
+THIS FIELD CONTAINS THE MEMBER ID.
+THIS CONTAINS THE SOURCE FOR
+REDEMPTION / DESTINATION FOR
+PURCHASE
+P – PHYSICAL
+N – NSDL
+C – CDSL
+
+PURCHASEAMT
+
+CHAR(17)
+
+THIS CONTAINS THE PURCHASE AMONT. IN
+CASE OF REDEMPTION TRANSACTION THIS
+VALUE WOULD BE 0
+THE VALUE WILL BE MULTIPLIED WITH
+10000
+
+BSE StAR-MF IML API Structures (Rev 1.6)
+
+17
+
+FOR. E.G., IF THE PURCHASE AMT IS
+10001.25 THE FIELD SHOULD CONTAIN THE
+VALUE 100012500
+THIS CONTAINS THE REDEMPTION
+QUANTITY. IN CASE OF PURCHASE
+TRANSACTION THIS VALUE WOULD BE 0
+REDEEMQTY
+
+FOLIONO
+
+CHAR(17)
+
+CHAR(16)
+
+KYCSTATUS
+
+CHAR(1)
+
+REMARKS
+
+CHAR(200)
+
+LOGINID
+
+CHAR(25)
+
+MEMBERID
+
+CHAR(10)
+
+DEALERID
+
+CHAR(12)
+
+BRANCHCODE
+SESSION
+
+CHAR(10)
+CHAR(50)
+
+ORDERNO
+
+CHAR(16)
+
+LASTMODIFIEDDATE
+
+CHAR(11)
+
+LASTMODIFIEDTIME
+
+CHAR(8)
+
+THE VALUE WILL BE MULTIPLIED WITH
+10000
+FOR. E.G., IF THE REDEEM QTY IS 101.023
+THE FIELD SHOULD CONTAIN THE VALUE
+1010230
+THIS FIELD IS MANDATORY IN CASE OF
+ADDITIONAL PURCHASES AND IN CASE OF
+REDEMPTIONS. IN CASE OF FRESH
+PURCHASES, THIS FIELD WOULD BE LEFT
+BLANK
+WOULD CONTAIN ONLY NUMERIC VALUES
+VALID VALUES ARE
+Y – YES
+N – NO
+THIS FIELD MAY CONTAIN REMARKS THAT
+THE USER CAN ENTER AGAINST THE ORDER
+THIS FIELD SHOULD CONTAIN LOGIN ID OF
+USER / BROKER
+THIS FIELD SHOULD CONTAIN THE MEMBER
+ID.
+DEALER ID.
+SHOULD CONTAIN ONLY NUMBERS
+BRANCH CODE OF THE DEALER ID
+LOGIN SESSION
+THE SYSTEM WILL RETURN THE ORDER NO.
+ASSIGNED TO THE ORDER
+THE SYSTEM WILL
+RETURN
+THE
+PROCESSING DATE OF THE ORDER ENTERED
+/ MODIFIED / CANCELLED
+THE SYSTEM WILL
+RETURN
+THE
+PROCESSING TIME OF THE ORDER ENTERED
+/ MODIFIED / CANCELLED
+
+DD MMM YYYY
+FORMAT
+
+HH24:MI:SS
+FORMAT
+
+BSE StAR-MF IML API Structures (Rev 1.6)
+
+18
+
+SUBBROKERCODE
+
+CHAR(20)
+
+THIS FIELD CONTAIN SUBBROKERCODE
+
+EUIN
+
+CHAR(20)
+
+THIS FIELD CONTAIN EUIN
+
+EUINDECLARATION
+
+CHAR(1)
+
+THIS FIELD CONTAIN EUIN FLAG ‘Y’ OR ’N’
+
+CHAR(25)
+
+THIS FIELD CONTAIN PROVIDED MINIMUM
+REDEMPTION FLAG ‘Y’ OR ‘N’
+
+FILLER2
+
+CHAR(25)
+
+FOR FUTURE PURPOSE
+
+FILLER3
+
+CHAR(25)
+
+FOR FUTURE PURPOSE
+
+ACTION
+
+CHAR(3)
+
+NEW – NEW ORDER
+MOD – ORDER MODIFIED
+CXL – ORDER CANCELLED
+
+REFERENCENO
+
+CHAR(30)
+
+REF NO FROM IML
+
+REPLYCODE
+
+CHAR(3)
+
+0 – SUCCESS
+OTHERS – FAILURE
+
+MINREDEMPTIONFLAG
+
+ERRORMESSAGE
+
+CHAR(1000)
+
+SYSTEM WOULD RETURN ‘SUCCESS’ IN
+CASE OF THE REQUEST GETTING
+COMPLETED SUCCESSFULLY
+IN CASE OF ERROR, THE SYSTEM WOULD
+RETURN THE ERROR MESSAGE
+
+BSE StAR-MF IML API Structures (Rev 1.6)
+
+19
+
+SWITCH MESSAGE STRUCTURE
+
+SWITCH
+
+FIELD
+TYPE
+
+DESCRIPTION
+
+VALUES THAT
+CAN COME
+Switch Order
+Request: 6001
+Switch ORDER
+CACELLATION
+Request:6007
+
+Transaction Code
+
+char(4)
+
+Type of message
+
+From AMC Code
+To AMC Code
+From Scheme Code
+To Scheme Code
+Client id
+Txn type
+Demat/physical
+
+char(50)
+char(50)
+char(20)
+char(20)
+char(10)
+char(10)
+char(1)
+
+Folio number
+
+char(10)
+
+Units
+
+char(17)
+
+Original units
+
+char(17)
+
+Amount
+
+char(17)
+
+From AMC
+To AMC
+From BSE Scheme Code
+To BSE Scheme Code
+BSE client Code
+Fresh or additional
+CDSL or NSDL or physical
+Folio number will be mandatory in
+case of physical transactions
+Here the member has to enter the
+quantity in units. (This field should
+be 0 if the member has entered
+amount or selected all units flag)
+This should contain last modified
+redemption quantity. (In case
+of modification / cancellation and
+incase of fresh entry member
+should enter 0)
+Here the member has to enter the
+purchase amount or redemption
+amount. (This field should have 0 if
+the member has entered quantity
+or selected all units flag)
+
+Original amount
+
+char(17)
+
+This should contain the last
+modified purchase amount or
+redemption (in case of
+modification)
+
+fresh or additional
+C/N/P
+
+Mandatory
+or nonmandatory
+mandatory
+
+mandatory
+mandatory
+mandatory
+mandatory
+mandatory
+mandatory
+mandatory
+nonmandatory
+mandatory
+
+mandatory
+
+mandatory
+
+mandatory
+
+In case of fresh order this value
+should be 0
+Sub broker Code
+EUIN
+
+char(10)
+char(10)
+
+Sub- broker Code
+EUIN number
+
+mandatory
+
+BSE StAR-MF IML API Structures (Rev 1.6)
+
+20
+
+EUIN decl
+KYC flag
+
+char(1)
+char(1)
+
+Remarks
+
+char(100)
+
+All units flag
+
+char(1)
+
+Member ID
+Login ID
+
+char(10)
+char(25)
+
+Session
+
+char(50)
+
+Order no
+
+char(20)
+
+Branch Code
+
+char(10)
+
+Dealer ID
+
+char(12)
+
+Last modified date
+
+char(10)
+
+Last modified time
+
+char(8)
+
+Reference no
+
+char(30)
+
+Filler 1(Sub Broker
+ARN)
+Filler 2
+Filler3
+Filler 4
+
+EUIN deceleration
+KYC status of client
+Here member can enter the
+remarks for his reference
+All units flag. If all units flag is Y
+then the amount and units column
+should be 0
+Member Code
+Login ID of the member/user
+Login session (this will
+automatically be captured through
+IML exe which is installed on client
+side)
+In case of fresh order this field
+should contain 0. And in case of
+modification or cancellation BSE
+unique order number has to be
+given in this field
+Branch Code of Dealer ID
+Dealer ID (should contain only
+numeric value)
+The system will return the
+processing date of the order
+entered
+/ modified / cancelled
+The system will return the
+processing time of the order
+entered
+/ modified / cancelled
+In this the member can enter his
+reference number
+
+Y/N
+Y/N
+
+mandatory
+mandatory
+nonmandatory
+
+Y/N
+
+mandatory
+mandatory
+mandatory
+mandatory
+
+mandatory
+
+mandatory
+mandatory
+
+DD/MM/YYYY
+
+mandatory
+
+HH:MM:SS
+
+mandatory
+Nonmandatory
+
+char(20)
+char(20)
+char(20)
+char(20)
+
+Total Message Length Should be 621 Characters
+
+BSE StAR-MF IML API Structures (Rev 1.6)
+
+21
+
+SWITCH RETURN MESSAGE STRUCTURE
+
+SWITCH
+
+FIELD
+TYPE
+
+DESCRIPTION
+Switch Order Response:6002
+
+Transaction Code
+
+char(4)
+
+From AMC Code
+To AMC Code
+From Scheme Code
+To Scheme Code
+Client id
+Txn type
+Demat/physical
+
+char(50)
+char(50)
+char(20)
+char(20)
+char(10)
+char(10)
+char(1)
+
+Folio number
+
+char(10)
+
+Units
+Original units
+Amount
+Original amount
+Sub- broker Code
+EUIN
+EUIN decl
+KYC flag
+
+char(17)
+char(17)
+char(17)
+char(17)
+char(10)
+char(10)
+char(1)
+char(1)
+
+Remarks
+
+char(100)
+
+All units flag
+Member ID
+Login ID
+
+char(1)
+char(10)
+char(25)
+
+Session
+
+char(50)
+
+Order no
+
+char(20)
+
+Branch Code
+
+char(10)
+
+Dealer ID
+
+char(12)
+
+Switch ORDER CACELLATION
+Response:6008
+From AMC
+To AMC
+From Scheme Code
+To Scheme Code
+BSE client Code
+Fresh or additional
+CDSL or NSDL or physical
+Folio number will be mandatory in case of
+physical transactions
+Units
+Original units in case of modification
+Amount
+Original amount in case of modification
+EUIN number
+EUIN declaration
+KYC flag
+Here the remarks which member has
+entered will be viewed
+Member Code
+Login ID of the member/user
+Login session(this will automatically be
+captured through IML exe which is installed
+on client side)
+In this exchange will send the unique order
+number assigned to the transaction.. And
+in case of modification or cancellation BSE
+unique order number has to be given in
+this field
+Branch Code of Dealer ID
+Dealer ID (should contain only numeric
+value)
+
+BSE StAR-MF IML API Structures (Rev 1.6)
+
+22
+
+The system will return the
+processing date of the order entered
+/ modified / cancelled
+
+Last modified date
+
+char(10)
+
+Last modified time
+
+char(8)
+
+Reference no
+
+char(30)
+
+Reply Code
+
+char(3)
+
+The system will return the
+processing time of the order entered
+/ modified / cancelled
+Iml reference number (this will
+automatically be captured through IML exe
+which is installed on client side)
+0 – SUCCESS ; 1 – FAILURE
+
+char(1000)
+
+System would send "success" in case of
+transaction is successfully accepted on BSE
+StAR MF.
+
+Message
+
+In case of error, the system would return
+the error message
+Filler 1(Sub Broker
+ARN)
+
+char(20)
+
+Filler 2
+
+char(20)
+
+Filler 3
+
+char(20)
+
+Filler 4
+
+char(20)
+
+Total Message Length Should be 1624 Characters
+
+BSE StAR-MF IML API Structures (Rev 1.6)
+
+23
+
+SPREAD/OVERNIGHT ORDER STRUCTURE
+SPREAD
+ORDER
+MESSAGE
+
+FIELD
+TYPE
+
+VALUES THAT CAN
+COME
+
+DESCRIPTION
+
+Mandatory
+or nonmandatory
+
+Spread Order
+Request:5001
+
+Transaction Code char(4)
+
+Type of message
+
+AMC Code
+Scheme Code
+Client Code
+Txn type
+Demat/physical
+
+char(50)
+char(20)
+char(10)
+char(10)
+char(1)
+
+AMC Code
+Scheme Code
+BSE client Code
+Additional or Fresh
+CDSL or NSDL or physical
+
+Folio number
+
+char(10)
+
+Folio number
+
+Purchase amount
+
+char(17)
+
+Purchase amount
+
+Original purchase
+amount
+
+char(17)
+
+Spread ORDER
+CACELLATION
+Request:5007
+
+additional or fresh
+N/C/P
+
+This should contain the last
+modified purchase amount
+(in case of modification)
+
+mandatory
+mandatory
+mandatory
+mandatory
+mandatory
+nonmandatory
+mandatory
+
+mandatory
+
+In case of fresh order this
+value should be 0
+Sub broker Code
+
+char(10)
+
+EUIN
+EUIN decl
+KYC flag
+DPC
+
+char(10)
+char(1)
+char(1)
+char(1)
+
+All units flag
+
+char(1)
+
+Redemption date
+
+char(10)
+
+Original
+redemption date
+
+char(10)
+
+EUIN number
+EUIN declaration
+KYC flag
+DPC flag
+If all units flag is Y then the
+redemption amount will be 0
+Date on which member
+wants redeem the units
+In case of fresh order this
+field will be 0 and in case of
+modification of date original
+date will be entered here
+
+Y/N
+Y/N
+Y/N
+
+nonmandatory
+mandatory
+mandatory
+mandatory
+mandatory
+
+Y/N
+
+mandatory
+
+DD/MM/YYYY
+
+mandatory
+
+DD/MM/YYYY
+
+mandatory
+
+BSE StAR-MF IML API Structures (Rev 1.6)
+
+24
+
+Redemption
+amount
+
+Original
+redemption
+amount
+
+char(17)
+
+char(17)
+
+Redemption amount. if all
+units flag is Y then the
+amount will be 0
+
+mandatory
+
+This should contain the last
+modified redemption
+amount (in case of
+modification)
+
+mandatory
+
+In case of fresh order this
+value should be 0
+Remarks
+
+char(100)
+
+Member ID
+Login ID
+
+char(20)
+char(25)
+
+Session
+
+char(50)
+
+Order no
+
+char(20)
+
+Branch Code
+
+char(10)
+
+Dealer ID
+
+char(12)
+
+Here the member can enter
+his remarks
+Member Code
+Login ID of the member/user
+Login session(this will
+automatically be captured
+through IML exe which is
+installed on client side)
+In case of fresh order this
+field should contain 0. And in
+case of modification or
+cancellation BSE unique
+order number has to be
+given in this field
+Branch Code of Dealer ID
+Dealer ID (should contain
+only numeric value)
+
+mandatory
+mandatory
+mandatory
+mandatory
+
+mandatory
+
+mandatory
+mandatory
+
+char(10)
+
+The system will return the
+processing date of the order
+entered
+/ modified / cancelled
+
+DD/MM/YYYY
+
+mandatory
+
+Last modified time
+
+char(8)
+
+The system will return the
+processing date of the order
+entered
+/ modified / cancelled
+
+Hh:MM:ss
+
+mandatory
+
+Reference no
+
+char(30)
+
+Here member can enter his
+reference number.
+
+Filler 1(Sub Broker
+ARN)
+
+char(20)
+
+Last modified date
+
+Nonmandatory
+
+BSE StAR-MF IML API Structures (Rev 1.6)
+
+25
+
+Filler 2
+char(20)
+Filler 3
+char(20)
+Filler 4
+char(20)
+Total Message Length Should be 582 Characters
+
+mandatory
+mandatory
+mandatory
+
+BSE StAR-MF IML API Structures (Rev 1.6)
+
+26
+
+SPREAD RESPONSE STRUCTURE
+SPREAD ORDER
+MESSAGE
+Transaction
+Code
+AMC Code
+Scheme Code
+Client Code
+Txn type
+Demat/physical
+Folio number
+Purchase amount
+
+Original purchase
+amount
+
+FIELD TYPE
+char(4)
+char(50)
+char(20)
+char(10)
+char(10)
+char(1)
+char(10)
+char(17)
+
+char(17)
+
+DESCRIPTION
+Spread Order Response:5002
+Spread ORDER CACELLATION Response:5008
+AMC Code
+Scheme Code
+BSE client Code
+additional or fresh
+CDSL or NSDL or physical
+Folio number
+Purchase amount
+
+This should contain the last modified purchase
+amount (in case of modification)
+In case of fresh order this value should be 0
+
+Sub broker Code
+EUIN
+EUIN decl
+KYC flag
+DPC
+
+char(10)
+char(10)
+char(1)
+char(1)
+char(1)
+
+All units flag
+
+char(1)
+
+Redemption date
+
+char(10)
+
+EUIN number
+EUIN declaration
+KYC flag
+DPC flag
+if all units flag is Y then the redemption amount will
+be 0
+date on which member wants redeem the units
+
+Original
+redemption date
+
+char(10)
+
+In case of fresh order this field will be 0 and in case
+of modification of date original date will be entered
+here
+
+Redemption
+amount
+
+char(17)
+
+If all units flag is Y then the amount will be 0
+
+Original
+redemption
+amount
+
+char(17)
+
+Remarks
+
+char(100)
+
+Member ID
+Login ID
+
+char(10)
+char(25)
+
+Here the remarks which member has entered will
+be viewed
+Member Code
+Login ID of the member/user
+
+BSE StAR-MF IML API Structures (Rev 1.6)
+
+27
+
+Session
+
+char(50)
+
+Login session
+
+Order no
+
+char(20)
+
+In case of fresh order this field should contain 0.
+And in case of modification or cancellation BSE
+unique order number has to be given in this field
+
+Branch Code
+Dealer ID
+
+char(10)
+char(12)
+
+Branch Code of Dealer ID
+Dealer ID (should contain only numeric value)
+
+Last modified date
+
+char(10)
+
+The system will return the
+processing date of the order entered
+/ modified / cancelled
+
+Last modified time
+
+char(8)
+
+The system will return the
+processing date of the order entered
+/ modified / cancelled
+
+Reference no
+Reply Code
+
+char(30)
+char(3)
+
+Message
+
+char(1000)
+
+Filler 1(Sub Broker
+ARN)
+Filler 2
+Filler 3
+Filler 4
+
+Member reference number
+0 – SUCCESS ; 1 – FAILURE
+System would send "success" in case of transaction
+is successfully accepted on BSE StAR MF. And also
+the success message for redemption order will be
+sent here
+in case of error, the system would return the error
+message
+
+char(20)
+char(20)
+char(20)
+char(20)
+
+Total Message Length Should be 1575 Characters
+
+BSE StAR-MF IML API Structures (Rev 1.6)
+
+28
+
+SIP REGISTRATION MESSAGE STRUCTURE
+
+SIP
+registration
+
+FIELD
+TYPE
+
+DESCRIPTION
+
+VALUES THAT CAN COME
+
+mandatory
+or nonmandatory
+
+SIP Order Request:7001
+
+Transaction
+Code
+
+char(4)
+
+Type of message
+
+Client Code
+AMC
+Scheme Code
+
+char(10)
+char(50)
+char(20)
+
+Internal ref no
+
+char(10)
+
+Transaction
+mode
+
+char(1)
+
+DP transaction
+mode
+
+char(1)
+
+Folio number
+
+char (20)
+
+BSE StAR MF UCC
+AMC Code
+BSE Scheme Code
+Ref No. for member if
+he wants to enter
+In which mode the
+member wants to
+register the SIP
+If the member selects
+trans mode as D then
+here either member
+can enter Codes for
+CDSL(C) or NSDL(N) and
+if the member selects
+trans mode as Physical
+(P), then the member
+will enter (P)
+This will be only valid
+for physical SIP. if
+member already has a
+folio number for that
+particular AMC and he
+wants to enter he enter
+it here
+
+Frequency type
+
+char(20)
+
+Type of SIP the member
+wants to enter i.e.
+monthly, quarterly etc.
+
+WEEKLY/MONTHLY/QUARTERLY/SEMImandatory
+ANNUALLY/ANNUALLY.
+
+Int(1)
+
+Here the frequency
+Type will be rolling for
+which Code 1 is
+
+1
+
+Frequency
+allowed
+
+SIP ORDER CACELLATION
+Request:7006
+mandatory
+mandatory
+mandatory
+non
+mandatory
+D/P
+
+mandatory
+
+C/N/P
+
+mandatory
+
+non
+mandatory
+
+mandatory
+
+BSE StAR-MF IML API Structures (Rev 1.6)
+
+29
+
+assigned and member
+has to enter that
+Installment
+amount
+
+Int(8)
+
+Installment amount
+
+mandatory
+
+Start date
+Number of
+installments
+EUIN
+EUIN decl
+
+char(10)
+
+If the member wants to
+trigger the installment
+on the same day of
+registration then he has
+to enter as Y else N
+Start date of the SIP
+
+Int(8)
+
+Number of installments
+
+mandatory
+
+char(10)
+char(1)
+
+mandatory
+mandatory
+
+Remarks
+
+char (100)
+
+DPC
+Member ID
+
+char(1)
+char(10)
+
+Login ID
+
+char(25)
+
+Session
+
+char(50)
+
+SIP registration
+number
+
+char(10)
+
+Branch Code
+
+char(10)
+
+Dealer ID
+
+char(12)
+
+EUIN No
+EUIN declaration
+Here member can enter
+the remarks
+DPC flag
+Member Code
+Login ID of the
+member/user
+Login session(this will
+automatically be
+captured through IML
+exe which is installed
+on client side)
+In case of fresh SIP this
+field should contain 0.
+Branch Code of Dealer
+ID
+Dealer ID (should
+contain only numeric
+value)
+
+Generate 1st
+order today
+
+Last modified
+date
+
+Last modified
+time
+
+char(1)
+
+Y/N
+
+mandatory
+
+DD/MM/YYYY
+
+mandatory
+
+Y/N
+
+Y/N
+
+mandatory
+mandatory
+mandatory
+
+mandatory
+
+mandatory
+mandatory
+mandatory
+
+char(10)
+
+The system will return
+the
+processing date of the
+order entered
+/ modified / cancelled
+
+DD/MM/YY
+
+mandatory
+
+char(8)
+
+The system will return
+the
+processing time of the
+order entered
+/ modified / cancelled
+
+HH:MM:SS
+
+mandatory
+
+BSE StAR-MF IML API Structures (Rev 1.6)
+
+30
+
+Sub Broker
+Code (Filler 1)
+Filler 2(Sub
+Broker ARN)
+
+char(20)
+char(20)
+
+Filler 3 (END
+DATE)
+
+char(20)
+
+Filler 4
+
+char(20)
+
+DD/MM/YY
+
+Nonmandatory
+Nonmandatory
+Mandatory in
+case of daily
+SIP only for
+MFI/RFI
+Mandatory
+
+Total Message Length Should be 491 Characters
+
+BSE StAR-MF IML API Structures (Rev 1.6)
+
+31
+
+SIP REGISTRATION RETURN MESSAGE:
+SIP REGISTRATION
+RETURN MESSAGE
+
+FIELD TYPE
+
+Transaction Code
+
+char(4)
+
+Client Code
+Scheme Code
+Internal ref No.
+
+char(10)
+char(20)
+char(10)
+
+Folio number
+
+char (20)
+
+This will be only valid for physical SIP. if member
+already has a folio number for that particular
+AMC and he wants to enter he enter it here
+
+Registration date
+Start date
+Installment
+numbers
+
+DATE(10)
+DATE(10)
+
+The date on which SIP is registered(dd/mm/yyyy)
+Start date of the SIP (dd/mm/yyyy)
+
+Int(8)
+
+Installment numbers
+
+End date
+
+DATE(10)
+
+End date will be calculated on the basis of start
+date and No. of installments (dd/mm/yyyy)
+
+Int(8)
+
+Installment amount
+
+char(1)
+
+1st order today flag
+
+Installment
+amount
+1st order today
+flag
+Remarks
+
+char (100)
+
+DPC flag
+Member ID
+Login ID
+
+char(1)
+char(10)
+char(25)
+
+Session
+
+char(50)
+
+SIP registration
+number
+Branch Code
+Dealer ID
+
+char(7)
+char(10)
+char(12)
+
+Last modified date
+
+char(10)
+
+Last modified time
+Reply Code
+
+char(8)
+char(3)
+
+DESCRIPTION
+SIP Order Response:7002
+SIP ORDER CACELLATION Response:7007
+Client Code
+BSE Scheme Code
+Ref No. for member if he wants to enter
+
+Here the remarks which member has entered will
+be viewed
+DPC flag
+Member Code
+Login ID of the member/user
+Login session(this will automatically be captured
+through IML exe which is installed on client side)
+Here the SIP registration will be given which has
+been generated by system
+Branch Code of Dealer ID
+Dealer ID (should contain only numeric value)
+The system will return the
+processing date of the order entered
+/ modified / cancelled
+
+0 – SUCCESS
+
+; 1 – FAILURE
+
+BSE StAR-MF IML API Structures (Rev 1.6)
+
+32
+
+Message
+
+char(1000)
+
+System would send "success" in case of
+transaction is successfully accepted on BSE StAR
+MF.
+IN CASE OF ERROR, THE SYSTEM WOULD RETURN
+THE ERROR MESSAGE
+
+Sub Broker Code
+(Filler 1)
+Filler 2(Sub Broker
+ARN)
+Filler 3 (END DATE)
+Filler 4
+
+char(20)
+char(20)
+char(20)
+char(20)
+
+DD/MM/YY
+
+Total Message Length Should be 1427 Characters
+
+BSE StAR-MF IML API Structures (Rev 1.6)
+
+33
+
+XSIP REGISTRATION MESSAGE:
+
+XSIP registration
+
+FIELD
+TYPE
+
+DESCRIPTION
+
+SAMPLE VALUE
+
+mandatory
+or nonmandatory
+
+XSIP Order
+Request:8001
+Transaction Code
+
+char(4)
+
+Type of message
+
+XSIP ORDER
+CACELLATION
+Request:8007
+
+mandatory
+
+Client Code
+
+char(10)
+
+BSE StARMF UCC
+
+mandatory
+
+AMC
+
+char(50)
+
+AMC Code
+
+Scheme Code
+
+char(20)
+
+Internal ref No.
+
+char(10)
+
+BSE Scheme Code
+ref No. for member if he wants to
+enter
+
+258258
+RelianceMutualFund_
+MF
+RMFAF-GR
+
+Transaction mode
+
+char(1)
+
+in which mode the member wants to
+register the SIP
+
+D
+
+mandatory
+
+char(1)
+
+if the member selects trans mode as
+D then here either member can
+enter Codes for CDSL(C) or NSDL(N)
+and if the member selects trans
+mode as Physical (P), then the
+member will enter (P)
+
+N
+
+mandatory
+
+Folio number
+
+char (20)
+
+This will be only valid for physical
+SIP. if member already has a folio
+number for that particular AMC and
+he wants to enter he enter it here
+
+145236
+
+non
+mandatory
+
+Frequency type
+
+char(20)
+
+MONTHLY
+
+mandatory
+
+Frequency allowed
+
+Int(1)
+
+1
+
+mandatory
+
+Installment amount
+
+Int(8)
+Money(8
+)
+
+1000
+
+mandatory
+
+10
+
+mandatory
+
+12345652
+
+Either xsip
+mandate id or
+isip mandate
+id is
+mandatory
+
+DP transaction
+mode
+
+Brokerage
+
+XSIP Mandate ID
+
+Int(8)
+
+Type of SIP the member wants to
+enter i.e. monthly, quarterly etc.
+Here the frequency type will be
+rolling for which Code 1 is assigned
+and member has to enter that
+Installment amount
+Brokerage amount. Here the value
+can be zero
+
+BSE mandate ID
+
+123456
+
+mandatory
+mandatory
+non
+mandatory
+
+BSE StAR-MF IML API Structures (Rev 1.6)
+
+34
+
+char(1)
+
+if the member wants to trigger the
+installment on the same day of
+registration then he has to enter as Y
+
+Y
+
+mandatory
+
+char(10)
+
+Start date of the SIP
+
+12/5/2015
+
+mandatory
+
+Int(8)
+
+Number of installments
+
+20
+
+mandatory
+
+EUIN No.
+EUIN declaration
+
+E123456
+Y
+
+DPC
+Member ID
+Login ID
+
+char(10)
+char(1)
+Varchar
+(100)
+char(1)
+char(10)
+char(25)
+
+mandatory
+mandatory
+non
+mandatory
+mandatory
+mandatory
+mandatory
+
+Session
+
+char(50)
+
+Generate 1st order
+today
+Start date
+Number of
+installments
+EUIN
+EUIN decl
+Remarks
+
+XSIP registration
+number
+Branch Code
+
+char(10)
+char(10)
+
+Here member can enter his remarks
+DPC flag
+Member Code
+Login ID of the member/user
+Login session(this will automatically
+be captured through IML exe which
+is installed on client side)
+In case of fresh SIP this field should
+contain 0.
+Branch Code of Dealer ID
+Dealer ID (should contain only
+numeric value)
+
+Y
+
+mandatory
+mandatory
+mandatory
+
+Dealer ID
+
+char(12)
+
+Last modified date
+
+char(10)
+
+The system will return the
+processing date of the order entered
+/ modified / cancelled
+
+DD/MM/YYYY
+
+mandatory
+
+Last modified time
+
+char(8)
+
+The system will return the
+processing time of the order entered
+/ modified / cancelled
+
+HH:MM:SS
+
+mandatory
+
+Sub Broker Code
+(Filler 1)
+Filler 2(Sub Broker
+ARN)
+
+char(20)
+char(20)
+
+filler 2 will be used as sub broker
+ARN code
+
+Filler 3(ISIP
+Mandate)
+
+char(20)
+
+filler 3 will be user the ISIP mandate
+ID
+
+Filler 4
+
+char(20)
+
+mandatory
+
+Nonmandatory
+Nonmandatory
+Either xsip
+mandate id or
+isip mandate
+id is
+mandatory
+mandatory
+
+Total Message Length Should be 507 Characters
+
+BSE StAR-MF IML API Structures (Rev 1.6)
+
+35
+
+XSIP RETURN MESSAGE STRUCTURE:
+XSIP REGISTRATION
+RETURN MESSAGE
+
+FIELD TYPE
+
+Transaction Code
+
+char(4)
+
+Client Code
+Scheme Code
+Internal ref no
+
+char(10)
+char(20)
+char(10)
+
+XSIP Order Response:8002
+XSIP ORDER CACELLATION Response:8008
+client Code
+BSE Scheme Code
+Ref No. for member if he wants to enter
+
+SIP reg number
+
+char(10)
+
+System generated unique SIP registration number
+
+Folio number
+Registration date
+Start date
+Installment numbers
+
+char (20)
+DATE(10)
+DATE(10)
+Int(8)
+
+End date
+
+DATE(10)
+
+Installment amount
+1st order today flag
+
+Int(8)
+char(1)
+
+Remarks
+
+char (100)
+
+DPC flag
+Member ID
+Login ID
+
+char(1)
+char(10)
+char(25)
+
+Session
+
+char(50)
+
+XSIP registration no
+
+char(10)
+
+Branch Code
+Dealer ID
+
+char(10)
+char(12)
+
+Last modified date
+
+char(10)
+
+Last modified time
+
+char(8)
+
+Reply Code
+
+char(3)
+
+Message
+
+char(1000)
+
+DESCRIPTION
+
+The date on which SIP is registered
+Start date of the SIP
+installment numbers
+End date will be calculated on the basis of start
+date and No. of installments
+Installment amount
+1st order today flag
+Here the remarks which member has entered will
+be viewed
+DPC flag
+Member Code
+Login ID of the member/user
+Login session(this will automatically be captured
+through IML exe which is installed on client side)
+Here the SIP registration will be given which has
+been generated by system
+Branch Code of Dealer ID
+Dealer ID (should contain only numeric value)
+The system will return the
+processing date of the order entered
+/ modified / cancelled
+The system will return the
+processing time of the order entered
+/ modified / cancelled
+0 – SUCCESS ; 1 – FAILURE
+System would send "success" in case of
+transaction is successfully accepted on BSE StAR
+MF.
+
+BSE StAR-MF IML API Structures (Rev 1.6)
+
+36
+
+In case of error, the system would return the error
+message
+Sub Broker Code (Filler 1)
+Filler 2(sub broker arn)
+Filler 3(isip mandate id)
+Filler 4
+
+char(20)
+char(20)
+char(20)
+char(20)
+
+Total Message Length Should be 1440 Characters
+
+BSE StAR-MF IML API Structures (Rev 1.6)
+
+37
+
+SWP REGISTRATION MESSAGE
+SWP REGISTRATION
+MESSAGE
+
+Field Type
+
+Field
+Length
+
+Transaction code
+
+Varchar
+
+4
+
+Description
+Swp registration request :9001
+Swp request Modification Request:9003
+Swp registration cancellatio :9005
+
+Client code
+
+Varchar
+
+10
+
+Bse scheme code
+
+Varchar
+
+20
+
+Transaction mode
+
+Varchar
+
+1 D- demat, p- physical
+
+Folio number
+
+Varchar
+
+15
+
+Internal ref number
+
+Varchar
+
+10
+
+Start date
+Number of
+withdrawls
+
+Date
+
+10 Dd/mm/yyyy
+
+Int
+
+8
+
+Frequency type
+
+Varchar
+
+20 Weekly / monthly / quarterly
+
+Installment amount
+
+Numeric
+
+25
+
+Installment units
+
+Numeric
+
+25
+
+First order today
+
+Varchar
+
+1 Y/N
+
+Sub broker code
+
+Varchar
+
+15
+
+EUIN decleration
+
+Varchar
+
+1 Y/N
+
+EUIN number
+
+Varchar
+
+7
+
+Remarks
+
+Varchar
+
+100
+
+Sub broker - arn
+Member ID
+
+Varchar
+Char
+
+20
+
+Login ID
+
+Char
+
+25
+
+Session
+
+Char
+
+50
+
+Swp registration
+number
+
+Char
+
+In case of fresh swp this field should
+10 contain 0.
+
+Branch code
+
+Char
+
+10
+
+Dealer ID
+
+Char
+
+12
+
+Last modified date
+
+Char
+
+10 DD/MM/YYYY
+
+Last modified time
+
+Char
+
+8 HH:MM:SS
+
+Filler 1
+
+Char
+
+20
+
+Filler 2
+
+Char
+
+20
+
+Filler 3
+
+Char
+
+20
+
+10
+
+Filler 4
+Char
+20
+Total Message Length Should be 507 Characters
+
+BSE StAR-MF IML API Structures (Rev 1.6)
+
+38
+
+SWP REGISTRATION RETURN MESSAGE
+SWP REGISTRATION
+RETURN MESSAGE
+
+Field Type
+
+Field
+Length
+
+sample
+swp registration response :9002
+
+Transaction code
+
+VARCHAR
+
+swp request Modification Response :9004
+
+4
+
+swp registration cancellatio response :9006
+Client code
+
+VARCHAR
+
+10
+
+Bse scheme code
+
+VARCHAR
+
+20
+
+Transaction mode
+
+VARCHAR
+
+1 D- demat, P- physical
+
+Folio number
+
+VARCHAR
+
+15
+
+Internal ref number
+
+VARCHAR
+
+10
+
+Start date
+
+DATE
+
+10 DD/MM/YYYY
+
+Number of
+withdrawls
+
+INT
+
+8
+
+Frequency type
+
+VARCHAR
+
+20 Weekly / Monthly / Quarterly
+
+Installment amount
+
+NUMERIC
+
+25
+
+Installment units
+
+NUMERIC
+
+25
+
+First order today
+
+VARCHAR
+
+1 Y/N
+
+End date
+
+VARCHAR
+
+10 DD/MM/YYYY
+
+Sub broker code
+
+VARCHAR
+
+15
+
+EUIN decleration
+
+VARCHAR
+
+1 Y/N
+
+EUIN number
+
+VARCHAR
+
+7
+
+Remarks
+
+VARCHAR
+
+100
+
+Sub broker - arn
+Member ID
+
+VARCHAR
+CHAR
+
+20
+
+Login ID
+
+CHAR
+
+25
+
+Session
+
+CHAR
+
+50
+
+Swp registration
+number
+
+CHAR
+
+Here the SwP registration will be given
+10 which has been generated by system
+
+Branch code
+
+CHAR
+
+10
+
+Dealer ID
+
+CHAR
+
+12
+
+Last modified date
+
+CHAR
+
+10 DD/MM/YYYY
+
+Last modified time
+
+CHAR
+
+8 HH:MM:SS
+
+Reply code
+
+CHAR
+
+10
+
+BSE StAR-MF IML API Structures (Rev 1.6)
+
+39
+
+Message
+
+System would send "success" in case of
+transaction is successfully accepted on BSE
+StAR MF.
+
+CHAR
+
+IN CASE OF ERROR, THE SYSTEM WOULD
+RETURN THE ERROR MESSAGE
+
+1000
+Filler 1
+
+CHAR
+
+20
+
+Filler 2
+
+CHAR
+
+20
+
+Filler 3
+
+CHAR
+
+20
+
+Filler 4
+
+CHAR
+
+20
+
+Total Message Length Should be 1517 Characters
+
+BSE StAR-MF IML API Structures (Rev 1.6)
+
+40
+
+STP REGISTRATION MESSAGE
+STP Registration
+Request
+
+Field
+Type
+
+Field
+Length
+
+Description
+stp registration request : 9010
+
+transaction code
+
+varchar
+
+4
+
+stp request Modification Request:9013
+stp registration cancellation: 9015
+
+client code
+
+varchar
+
+10
+
+from bse scheme code
+
+varchar
+
+20
+
+to bse scheme code
+Buy / Sell Type
+
+varchar
+varChar
+
+20
+10 Fresh/Additional
+
+transaction mode
+
+varchar
+
+1
+
+folio number
+
+varchar
+
+15
+
+internal ref number
+
+varchar
+
+10
+
+start date
+
+date
+
+10 DD/MM/YYYY
+
+frequency type
+
+varchar
+
+20 Weekly / Monthly / Quarterly
+
+no of transfers
+
+int
+
+8
+
+installment amount
+
+numeric
+
+25
+
+First order today
+
+varchar
+
+1 Y/N
+
+sub broker code
+
+varchar
+
+15
+
+EUIN decleration
+
+varchar
+
+1 Y/N
+
+EUIN number
+
+varchar
+
+7
+
+remarks
+
+varchar
+
+100
+
+SUB BROKER - ARN
+Member ID
+
+varchar
+char
+
+20
+
+Login ID
+
+char
+
+25
+
+Session
+STP registration number
+Branch Code
+
+char
+char
+char
+
+50
+
+Dealer ID
+
+char
+
+12
+
+Last modified date
+
+char
+
+10 DD/MM/YYYY
+
+Last modified time
+
+char
+
+8 HH:MM:SS
+
+Filler 1
+
+char
+
+20
+
+Filler 2
+
+char
+
+20
+
+Filler 3
+
+char
+
+20
+
+Filler 4
+
+char
+
+20
+
+P- physical
+
+10
+
+In case of fresh SwP this field should contain 0.
+
+10
+10
+
+Total Message Length Should be 512 Characters
+
+BSE StAR-MF IML API Structures (Rev 1.6)
+
+41
+
+STP REGISTRATION RETURN MESSAGE
+STP Registration
+Response Message
+
+Field Type
+
+Field Length
+
+Description
+
+transaction code
+
+varchar
+
+4
+
+stp registration request : 9011
+stp request Modification Request:9014
+STP registration cancellation: 9016
+
+client code
+
+varchar
+
+10
+
+from bse scheme code
+
+varchar
+
+20
+
+to bse scheme code
+
+varchar
+
+20
+
+Buy / Sell Type
+
+varChar
+
+10
+
+Fresh/Additional
+
+transaction mode
+
+varchar
+
+1
+
+P- physical
+
+folio number
+
+varchar
+
+15
+
+internal ref number
+
+varchar
+
+10
+
+start date
+
+date
+
+10
+
+frequency type
+
+varchar
+
+20
+
+no of transfers
+
+int
+
+8
+
+installment amount
+
+numeric
+
+25
+
+First order today
+
+varchar
+
+1
+
+Y/N
+
+10
+
+DD/MM/YYYY
+
+end date
+
+DD/MM/YYYY
+Weekly / Monthly / Quarterly
+
+sub broker code
+
+varchar
+
+15
+
+EUIN decleration
+
+varchar
+
+1
+
+EUIN number
+
+varchar
+
+7
+
+remarks
+
+varchar
+
+100
+
+SUB BROKER - ARN
+
+varchar
+
+20
+
+Member ID
+
+char
+
+10
+
+Login ID
+
+char
+
+25
+
+Session
+
+char
+
+50
+
+STP registration number
+
+char
+
+10
+
+Branch Code
+
+char
+
+10
+
+Dealer ID
+
+char
+
+12
+
+Last modified date
+
+char
+
+10
+
+DD/MM/YYYY
+
+Last modified time
+
+char
+
+8
+
+HH:MM:SS
+
+Reply Code
+
+char
+
+Y/N
+
+In case of fresh SwP this field should
+contain 0.
+
+BSE StAR-MF IML API Structures (Rev 1.6)
+
+42
+
+Message
+
+char
+
+1000
+
+System would send "success" in case of
+transaction is successfully accepted on
+BSE StAR MF.
+IN CASE OF ERROR, THE SYSTEM
+WOULD RETURN THE ERROR MESSAGE
+
+Filler 1
+
+char
+
+20
+
+Filler 2
+
+char
+
+20
+
+Filler 3
+
+char
+
+20
+
+Filler 4
+
+char
+
+20
+
+Total Message Length Should be 1522 Characters
+
+BSE StAR-MF IML API Structures (Rev 1.6)
+
+43
+
+HEARTBEAT MESSAGES
+HEARTBEAT REQUEST
+
+FIELD DESCRIPTION
+
+TYPE
+
+DESCRIPTION
+
+VALUES / MEANINGS /
+VALIDATIONS
+
+TRANSACTION CODE
+
+CHAR(4)
+
+TYPE OF MESSAGE
+
+1905
+
+TAG
+
+CHAR(4)
+
+DEFAULT VALUE WILL BE HBRQ
+
+HEARTBEAT RESPONSE
+
+FIELD DESCRIPTION
+
+TYPE
+
+DESCRIPTION
+
+VALUES / MEANINGS /
+VALIDATIONS
+
+TRANSACTION CODE
+
+CHAR(4)
+
+TYPE OF MESSAGE
+
+1906
+
+TAG
+
+CHAR(4)
+
+VALUE WILL BE HBRP
+
+GENERAL
+1. RECORD SEPARATOR WILL BE ~#~ FOR DELTA DOWNLOAD
+2. ALL REQUESTS FOR IML SHOULD BE ENDED BY NEW LINE CHARACTER.
+3. ALL RESPONSES FROM IML WOULD BE ENDED BY NEW LINE CHARACTER.
+
+BSE StAR-MF IML API Structures (Rev 1.6)
+
+44
+
+REVISION HISTORY
+
+SR. NO.
+1
+2
+3
+4
+5
+6
+7
+8
+9
+
+DATE
+DEC 29 2009
+JAN 07 2010
+APR 15 2010
+JUL 06 2010
+MAR 29 2012
+AUG 20 2015
+JUL 29 2016
+Nov 19 2016
+Nov 11 2017
+
+DESCRIPTION
+BASE VERSION
+REVISION 1
+REVISION 1.1
+REVISION 1.2
+REVISION 1.3
+REVISION 1.4
+REVISION 1.5
+REVISION 1.6
+REVISION 1.7
+
+Revision 1.7
+Changes in Order Entry Logic
+SIP ORDER Structure Change
+SIP Order Entry Request
+1.) END DATE Added in Filler 3
+SIP Order Entry Response
+1.) END DATE Added in Filler 3
+
+Revision 1.6
+Additional Formats added for
+1.) STP REGISTRATION
+2.) SWP REGISTRATION
+
+Changes in Order Entry Logic
+
+BSE StAR-MF IML API Structures (Rev 1.6)
+
+45
+
+ADD / MODIFY / CANCEL ORDER Structure Change
+Normal Order Request
+1.) Sub Broker ARN after Filler 3
+a. Field Size of 20 Characters
+2.) Filler 4 Added
+a. Field Size of 20 Characters
+3.) Filler 5 Added
+a. Field Size of 20 Characters
+4.) Filler 6 Added
+a. Field Size of 20 Characters
+Normal Order Response
+1.) Sub Broker ARN after Filler 3
+a. Field Size of 20 Characters
+2.) Filler 4 Added
+a. Field Size of 20 Characters
+3.) Filler 5 Added
+a. Field Size of 20 Characters
+4.) Filler 6 Added
+a. Field Size of 20 Characters
+
+SIP ORDER Structure Change
+SIP Order Entry Request
+1.) Sub Broker ARN Added in Filler 2
+SIP Order Entry Response
+1.) Sub Broker ARN Added in Filler 2
+
+XSIP / ISIP ORDER Structure Change
+ISIP has been introduced as a part of the Existing XSIP Order Structure
+
+XSIP/ISP Order Entry Request
+1.) MANDATE ID changed to XSIP Mandate ID,
+a. Validation : Either XSIP mandate ID or ISIP Mandate ID is required
+2.) Sub Broker ARN Added in Filler 2,
+3.) ISIP MANDATE ID Added in Filler 3,
+a. Validation : Either XSIP mandate ID or ISIP Mandate ID is required
+
+BSE StAR-MF IML API Structures (Rev 1.6)
+
+46
+
+XSIP/ISP Order Entry Request
+1.) Sub Broker ARN Added in Filler 2,
+2.) ISIP MANDATE ID Added in Filler 3,
+
+SPREAD ORDER Structure Change
+SPREAD Order Entry Request
+1.) Sub Broker ARN Added in Filler 1
+SPREAD Order Entry Response
+1.) Sub Broker ARN Added in Filler 1
+
+SWITCH ORDER Structure Change
+SWITCH Order Entry Request
+1.) Sub Broker ARN Added in Filler 1
+SWITCH Order Entry Response
+1.) Sub Broker ARN Added in Filler 1
+
+BSE StAR-MF IML API Structures (Rev 1.6)
+
+47
+
+PAGE – INTENTIONALLY LEFT BLANK
+
+BSE StAR-MF IML API Structures (Rev 1.6)
+
+48
+
+
