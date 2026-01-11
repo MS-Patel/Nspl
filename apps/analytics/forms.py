@@ -1,7 +1,8 @@
 from django import forms
 from django.forms import inlineformset_factory, BaseInlineFormSet
-from .models import Goal, GoalMapping
+from .models import Goal, GoalMapping, CASUpload
 from apps.reconciliation.models import Holding
+from apps.users.models import User
 
 class GoalForm(forms.ModelForm):
     class Meta:
@@ -56,3 +57,35 @@ GoalMappingFormSet = inlineformset_factory(
     extra=1,
     can_delete=True
 )
+
+class CASUploadForm(forms.ModelForm):
+    password = forms.CharField(
+        widget=forms.PasswordInput(attrs={'class': 'form-input', 'placeholder': 'PDF Password (usually PAN)'}),
+        required=True,
+        help_text="Enter the password to open the CAS PDF (usually your PAN)."
+    )
+
+    class Meta:
+        model = CASUpload
+        fields = ['file', 'investor']
+        widgets = {
+            'file': forms.FileInput(attrs={'class': 'form-input file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20'}),
+            'investor': forms.Select(attrs={'class': 'form-select'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+
+        # By default hide investor, we show it only if needed
+        # But fields are declarative.
+
+        if user:
+            if user.user_type == 'INVESTOR':
+                self.fields.pop('investor')
+            elif user.user_type == 'DISTRIBUTOR':
+                self.fields['investor'].queryset = user.distributor_profile.investors.all()
+            # Admin sees all (default queryset)
+        else:
+            # Fallback if no user passed, hide to be safe or show empty
+            self.fields.pop('investor', None)
