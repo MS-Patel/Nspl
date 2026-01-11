@@ -1,15 +1,91 @@
 {% extends 'layout/base.html' %}
+{% load static %}
 
 {% block content %}
 <div class="flex items-center space-x-4 py-5 lg:py-6">
     <h2 class="text-xl font-medium text-slate-800 dark:text-navy-50 lg:text-2xl">
-      Investor Dashboard
+      My Portfolio
     </h2>
 </div>
-<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-    <div class="card p-4">
-        <h3 class="font-medium text-slate-700 dark:text-navy-100">Welcome Investor</h3>
-        <p class="mt-2 text-slate-500">View your portfolio here.</p>
+
+<!-- Summary Cards -->
+<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 mb-6">
+    <div class="card p-4 flex flex-col justify-between">
+        <div>
+            <h3 class="text-base font-medium text-slate-700 dark:text-navy-100">Current Value</h3>
+            <p class="mt-2 text-2xl font-bold text-primary dark:text-accent-light">
+                ₹ {{ valuation.total_current_value|floatformat:2 }}
+            </p>
+        </div>
+        <div class="mt-2 text-xs text-slate-400">
+            As of Today
+        </div>
+    </div>
+
+    <div class="card p-4 flex flex-col justify-between">
+        <div>
+            <h3 class="text-base font-medium text-slate-700 dark:text-navy-100">Total Invested</h3>
+            <p class="mt-2 text-2xl font-bold text-slate-700 dark:text-navy-100">
+                ₹ {{ valuation.total_invested_value|floatformat:2 }}
+            </p>
+        </div>
+    </div>
+
+    <div class="card p-4 flex flex-col justify-between">
+        <div>
+            <h3 class="text-base font-medium text-slate-700 dark:text-navy-100">Unrealized Gain/Loss</h3>
+            <p class="mt-2 text-2xl font-bold {% if valuation.total_gain_loss >= 0 %}text-success{% else %}text-error{% endif %}">
+                ₹ {{ valuation.total_gain_loss|floatformat:2 }}
+            </p>
+        </div>
     </div>
 </div>
+
+<!-- Holdings Table -->
+<div class="card pb-4">
+    <div class="my-3 flex h-8 items-center justify-between px-4 sm:px-5">
+        <h2 class="font-medium tracking-wide text-slate-700 line-clamp-1 dark:text-navy-100 lg:text-base">
+            Holdings
+        </h2>
+    </div>
+    <div id="holdings-table"></div>
+</div>
+
+{% endblock %}
+
+{% block javascript %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const gridData = JSON.parse('{{ grid_data_json|default:"[]"|escapejs }}');
+
+        if (document.getElementById("holdings-table")) {
+            new Gridjs.Grid({
+                columns: [
+                    { name: "Scheme", id: "scheme_name", width: '25%' },
+                    { name: "Folio", id: "folio" },
+                    { name: "Units", id: "units", formatter: (cell) => parseFloat(cell).toFixed(3) },
+                    { name: "Avg Cost", id: "average_cost", formatter: (cell) => parseFloat(cell).toFixed(2) },
+                    { name: "NAV", id: "current_nav", formatter: (cell) => parseFloat(cell).toFixed(4) },
+                    { name: "Cur. Value", id: "current_value", formatter: (cell) => `₹ ${parseFloat(cell).toFixed(2)}` },
+                    { name: "Gain/Loss", id: "gain_loss",
+                      formatter: (cell) => Gridjs.html(`<span class="${cell >= 0 ? 'text-success' : 'text-error'} font-medium">₹ ${parseFloat(cell).toFixed(2)}</span>`)
+                    },
+                    { name: "NAV Date", id: "nav_date" }
+                ],
+                data: gridData,
+                search: true,
+                pagination: {
+                    limit: 10
+                },
+                sort: true,
+                className: {
+                    table: 'table',
+                    thead: 'bg-slate-50 dark:bg-navy-700',
+                    th: 'px-4 py-3 font-semibold uppercase text-slate-800 dark:text-navy-100 border-b border-slate-200 dark:border-navy-500',
+                    td: 'px-4 py-3 border-b border-slate-200 dark:border-navy-500'
+                }
+            }).render(document.getElementById("holdings-table"));
+        }
+    });
+</script>
 {% endblock %}
