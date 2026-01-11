@@ -6,11 +6,19 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib import messages
 from django.db import transaction
 from django.db.models import Sum, F
+from apps.analytics.models import CASUpload, ExternalHolding
+from apps.analytics.forms import CASUploadForm
+from apps.analytics.services.cas_parser import CASParser
 
 from .models import Goal, GoalMapping
 from .forms import GoalForm, GoalMappingFormSet
-from apps.users.models import User
+from apps.users.models import User, InvestorProfile
 from apps.reconciliation.models import Holding
+
+import logging
+logger = logging.getLogger(__name__)
+
+# --- Goal Views (Restored) ---
 
 class GoalListView(LoginRequiredMixin, ListView):
     model = Goal
@@ -235,3 +243,91 @@ class GoalDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     def delete(self, request, *args, **kwargs):
         messages.success(self.request, "Goal deleted successfully.")
         return super().delete(request, *args, **kwargs)
+
+# --- CAS Views (Added) ---
+
+class CASUploadView(LoginRequiredMixin, CreateView):
+    model = CASUpload
+    form_class = CASUploadForm
+    template_name = 'analytics/cas_upload.html'
+    success_url = reverse_lazy('cas_list')
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
+    def form_valid(self, form):
+        password = form.cleaned_data['password']
+
+        user = self.request.user
+        investor_profile = None
+
+        if hasattr(user, 'investor_profile'):
+            investor_profile = user.investor_profile
+        else:
+            # For Admin/Distributor, investor is selected in the form
+            investor_profile = form.cleaned_data.get('investor')
+            if not investor_profile:
+                 # Fallback if form field missing or empty (should be required by Django form if field exists)
+                 form.add_error('investor', "Please select an investor.")
+                 return self.form_invalid(form)
+
+        self.object = form.save(commit=False)
+        self.object.uploaded_by = user
+        self.object.investor = investor_profile
+        self.object.save()
+
+        # Trigger Parsing
+        try:
+            parser = CASParser(self.object.file.path, password=password)
+            holdings_data = parser.parse()
+
+            for data in holdings_data:
+                ExternalHolding.objects.create(
+                    cas_upload=self.object,
+                    investor=investor_profile,
+                    **data
+                )
+
+            self.object.status = CASUpload.STATUS_PROCESSED
+            self.object.save()
+            messages.success(self.request, "CAS uploaded and parsed successfully.")
+
+        except Exception as e:
+            self.object.status = CASUpload.STATUS_FAILED
+            self.object.error_log = str(e)
+            self.object.save()
+            messages.error(self.request, f"Failed to parse CAS: {str(e)}")
+
+        return redirect(self.success_url)
+
+class CASListView(LoginRequiredMixin, ListView):
+    model = CASUpload
+    template_name = 'analytics/cas_list.html'
+    context_object_name = 'cas_uploads'
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.user_type == 'INVESTOR':
+            return CASUpload.objects.filter(investor=user.investor_profile)
+        elif user.user_type == 'DISTRIBUTOR':
+            return CASUpload.objects.filter(investor__distributor__user=user)
+        elif user.user_type == 'RM':
+             return CASUpload.objects.filter(investor__distributor__rm__user=user)
+        return CASUpload.objects.all()
+
+class ExternalHoldingListView(LoginRequiredMixin, ListView):
+    model = ExternalHolding
+    template_name = 'analytics/external_holdings.html'
+    context_object_name = 'holdings'
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.user_type == 'INVESTOR':
+            return ExternalHolding.objects.filter(investor=user.investor_profile)
+        elif user.user_type == 'DISTRIBUTOR':
+            return ExternalHolding.objects.filter(investor__distributor__user=user)
+        elif user.user_type == 'RM':
+             return ExternalHolding.objects.filter(investor__distributor__rm__user=user)
+        return ExternalHolding.objects.all()
