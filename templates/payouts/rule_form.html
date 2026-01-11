@@ -1,0 +1,122 @@
+{% extends 'layout/base.html' %}
+{% load static widget_tweaks %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<main class="main-content w-full px-[var(--margin-x)] pb-8">
+    <div class="flex items-center space-x-4 py-5 lg:py-6">
+        <h2 class="text-xl font-medium text-slate-800 dark:text-navy-50 lg:text-2xl">
+            {{ title }}
+        </h2>
+    </div>
+
+    <div class="grid grid-cols-12 gap-4 sm:gap-5 lg:gap-6">
+        <div class="col-span-12">
+            <div class="card p-4 sm:p-5">
+                <form method="post">
+                    {% csrf_token %}
+
+                    <!-- Rule Details -->
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <label class="block">
+                            <span class="font-medium text-slate-600 dark:text-navy-100">Scheme Category</span>
+                            {{ form.category }}
+                            {{ form.category.errors }}
+                        </label>
+                        <label class="block">
+                            <span class="font-medium text-slate-600 dark:text-navy-100">AMC (Optional)</span>
+                            {{ form.amc }}
+                            {{ form.amc.errors }}
+                        </label>
+                    </div>
+
+                    <div class="my-4 h-px bg-slate-200 dark:bg-navy-500"></div>
+
+                    <!-- Tiers -->
+                    <h3 class="text-lg font-medium text-slate-800 dark:text-navy-50 mb-4">Commission Tiers</h3>
+
+                    {{ tiers.management_form }}
+                    <div id="tiers-container">
+                        {% for tier_form in tiers %}
+                        <div class="tier-row grid grid-cols-1 gap-4 sm:grid-cols-4 items-end mb-4 border-b border-slate-100 pb-4 last:border-0">
+                            {% for hidden in tier_form.hidden_fields %}
+                                {{ hidden }}
+                            {% endfor %}
+
+                            <label class="block">
+                                <span class="font-medium text-slate-600 dark:text-navy-100 text-sm">Min AUM</span>
+                                {{ tier_form.min_aum }}
+                                {{ tier_form.min_aum.errors }}
+                            </label>
+
+                            <label class="block">
+                                <span class="font-medium text-slate-600 dark:text-navy-100 text-sm">Max AUM (Blank for Infinite)</span>
+                                {{ tier_form.max_aum }}
+                                {{ tier_form.max_aum.errors }}
+                            </label>
+
+                            <label class="block">
+                                <span class="font-medium text-slate-600 dark:text-navy-100 text-sm">Rate (%)</span>
+                                {{ tier_form.rate }}
+                                {{ tier_form.rate.errors }}
+                            </label>
+
+                            <div class="flex items-center pb-2">
+                                {% if tiers.can_delete %}
+                                    <label class="inline-flex items-center space-x-2">
+                                        {{ tier_form.DELETE }}
+                                        <span class="text-error text-sm">Delete</span>
+                                    </label>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mt-6 flex justify-end space-x-2">
+                         <a href="{% url 'payout_rule_list' %}" class="btn border border-slate-300 font-medium text-slate-800 hover:bg-slate-150 focus:bg-slate-150 active:bg-slate-150/80 dark:border-navy-450 dark:text-navy-50 dark:hover:bg-navy-500 dark:focus:bg-navy-500 dark:active:bg-navy-500/90">
+                            Cancel
+                        </a>
+                        <button type="submit" class="btn bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90">
+                            Save Rule
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}
+
+{% block javascript %}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const addBtn = document.createElement('button');
+        addBtn.type = 'button';
+        addBtn.className = 'btn mt-2 border border-slate-300 font-medium text-slate-800 hover:bg-slate-150 focus:bg-slate-150 active:bg-slate-150/80 dark:border-navy-450 dark:text-navy-50 dark:hover:bg-navy-500 dark:focus:bg-navy-500 dark:active:bg-navy-500/90';
+        addBtn.innerHTML = '<i class="fa fa-plus mr-1"></i> Add Tier';
+
+        const container = document.getElementById('tiers-container');
+        const totalForms = document.getElementById('id_tiers-TOTAL_FORMS');
+
+        addBtn.addEventListener('click', function() {
+            const currentForms = parseInt(totalForms.value);
+            const emptyFormHtml = container.children[0].outerHTML.replace(/tiers-\d+/g, `tiers-${currentForms}`);
+            container.insertAdjacentHTML('beforeend', emptyFormHtml);
+
+            // Clear values in new row
+            const newRow = container.lastElementChild;
+            newRow.querySelectorAll('input').forEach(input => {
+                if(input.type !== 'hidden') input.value = '';
+                if(input.type === 'checkbox') input.checked = false;
+            });
+
+            totalForms.value = currentForms + 1;
+        });
+
+        // Insert button after container
+        container.parentNode.insertBefore(addBtn, container.nextSibling);
+    });
+</script>
+{% endblock %}

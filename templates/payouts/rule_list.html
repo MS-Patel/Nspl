@@ -1,0 +1,68 @@
+{% extends 'layout/base.html' %}
+{% load static %}
+
+{% block title %}Commission Structures{% endblock %}
+
+{% block content %}
+<main class="main-content w-full px-[var(--margin-x)] pb-8">
+    <div class="flex items-center justify-between py-5 lg:py-6">
+        <div class="flex items-center gap-1">
+            <h2 class="text-xl font-medium text-slate-800 dark:text-navy-50 lg:text-2xl">
+                Commission Structures
+            </h2>
+            <div class="badge rounded-full bg-primary/10 text-primary dark:bg-primary/15">
+                {{ rules|length }} Rules
+            </div>
+        </div>
+        <div class="flex items-center gap-2">
+            <a href="{% url 'payout_rule_create' %}" class="btn bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90">
+                <i class="fa-solid fa-plus mr-2"></i> New Rule
+            </a>
+        </div>
+    </div>
+
+    <div class="card pb-4">
+        <div class="flex items-center justify-between p-4 sm:p-5">
+            <h2 class="font-medium tracking-wide text-slate-700 line-clamp-1 dark:text-navy-100 lg:text-base">
+                Commission Rules
+            </h2>
+        </div>
+        <div class="px-4 sm:px-5">
+            <div id="rules-table"></div>
+        </div>
+    </div>
+</main>
+{% endblock %}
+
+{% block javascript %}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const gridData = JSON.parse('{{ grid_data_json|escapejs }}');
+
+        if (document.getElementById("rules-table")) {
+            new window.Gridjs.Grid({
+                columns: [
+                    { name: "Category", id: "category" },
+                    { name: "AMC", id: "amc" },
+                    { name: "Tiers Summary", id: "tiers", width: "40%" },
+                    {
+                        name: "Actions",
+                        id: "action_url",
+                        formatter: (cell) => window.Gridjs.html(`<a href="${cell}" class="btn h-8 w-8 rounded-full p-0 hover:bg-slate-300/20 focus:bg-slate-300/20 active:bg-slate-300/25 dark:hover:bg-navy-300/20 dark:focus:bg-navy-300/20 dark:active:bg-navy-300/25"><i class="fa fa-edit"></i></a>`)
+                    }
+                ],
+                data: gridData,
+                sort: true,
+                search: true,
+                pagination: {
+                    enabled: true,
+                    limit: 10
+                },
+                className: {
+                    table: "table w-full",
+                }
+            }).render(document.getElementById("rules-table"));
+        }
+    });
+</script>
+{% endblock %}
