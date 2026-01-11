@@ -26,6 +26,7 @@ urlpatterns = [
     path('', include('apps.products.urls')),
     path('', include('apps.investments.urls')),
     path('', include('apps.reconciliation.urls')),
+    path('', include('apps.payouts.urls')),
 ]
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
