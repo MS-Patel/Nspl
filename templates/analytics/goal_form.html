@@ -1,0 +1,123 @@
+{% extends "layout/base.html" %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-between py-5 lg:py-6">
+    <div class="flex items-center gap-4">
+        <h2 class="text-xl font-medium text-slate-800 dark:text-navy-50 lg:text-2xl">
+            {{ title }}
+        </h2>
+    </div>
+</div>
+
+<div class="card p-4 lg:p-6">
+    <form method="post" id="goal-form">
+        {% csrf_token %}
+
+        <h3 class="text-base font-medium text-slate-700 dark:text-navy-100 mb-4">Goal Details</h3>
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+                <label class="label">Name</label>
+                {{ form.name }}
+                {{ form.name.errors }}
+            </div>
+            <div>
+                <label class="label">Category</label>
+                {{ form.category }}
+                {{ form.category.errors }}
+            </div>
+            <div>
+                <label class="label">Target Amount</label>
+                {{ form.target_amount }}
+                {{ form.target_amount.errors }}
+            </div>
+            <div>
+                <label class="label">Target Date</label>
+                {{ form.target_date }}
+                {{ form.target_date.errors }}
+            </div>
+            {% if form.investor %}
+            <div>
+                <label class="label">Investor</label>
+                {{ form.investor }}
+                {{ form.investor.errors }}
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="my-6 border-t border-slate-200 dark:border-navy-500"></div>
+
+        <h3 class="text-base font-medium text-slate-700 dark:text-navy-100 mb-4">Map Investments</h3>
+        <p class="text-xs text-slate-500 mb-4">Select existing holdings to link to this goal. You can allocate a percentage of each holding.</p>
+
+        {{ mappings.management_form }}
+
+        <div id="mappings-container">
+            {% for form in mappings %}
+            <div class="mapping-row grid grid-cols-1 sm:grid-cols-12 gap-4 items-end mb-4 border p-3 rounded-lg border-slate-150 dark:border-navy-500">
+                {{ form.id }}
+
+                <div class="sm:col-span-8">
+                    <label class="label">Holding (Scheme - Folio)</label>
+                    {{ form.holding }}
+                </div>
+
+                <div class="sm:col-span-3">
+                    <label class="label">Allocation %</label>
+                    {{ form.allocation_percentage }}
+                </div>
+
+                <div class="sm:col-span-1 flex justify-center pb-2">
+                    {% if mappings.can_delete %}
+                        <div class="hidden">{{ form.DELETE }}</div>
+                        <button type="button" class="btn h-8 w-8 rounded-full p-0 text-error hover:bg-error/20 focus:bg-error/20 active:bg-error/25 delete-row-btn">
+                            <i class="fa fa-trash"></i>
+                        </button>
+                    {% endif %}
+                </div>
+
+                {{ form.errors }}
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Hidden template for new rows if we were using JS (simplified for now to standard Django formset behavior) -->
+
+        <div class="flex justify-end gap-2 mt-6">
+            <a href="{% url 'goal_list' %}" class="btn border border-slate-300 font-medium text-slate-700 hover:bg-slate-300/20 active:bg-slate-300/25 dark:border-navy-450 dark:text-navy-100 dark:hover:bg-navy-450/20 dark:active:bg-navy-450/25">
+                Cancel
+            </a>
+            <button type="submit" class="btn bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90">
+                Save Goal
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block javascript %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize Flatpickr for date inputs
+        if (window.initFlatpickr) {
+             const dateInput = document.querySelector('input[type="date"]');
+             if(dateInput) window.initFlatpickr(dateInput);
+        }
+
+        // Simple delete row handler
+        document.querySelectorAll('.delete-row-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const row = this.closest('.mapping-row');
+                const deleteInput = row.querySelector('input[name$="-DELETE"]');
+                if (deleteInput) {
+                    deleteInput.checked = true;
+                    row.style.display = 'none';
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,112 @@
+{% extends "layout/base.html" %}
+{% load static %}
+{% load humanize %}
+{% load mathfilters %}
+
+{% block title %}Goal Details: {{ goal.name }}{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-between py-5 lg:py-6">
+    <div class="flex items-center gap-4">
+        <a href="{% url 'goal_list' %}" class="btn h-8 w-8 rounded-full p-0 hover:bg-slate-300/20 focus:bg-slate-300/20 active:bg-slate-300/25 dark:hover:bg-navy-300/20 dark:focus:bg-navy-300/20 dark:active:bg-navy-300/25">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+        </a>
+        <h2 class="text-xl font-medium text-slate-800 dark:text-navy-50 lg:text-2xl">
+            {{ goal.name }}
+        </h2>
+    </div>
+    <div class="flex items-center gap-2">
+        <a href="{% url 'goal_update' goal.pk %}" class="btn bg-primary/10 font-medium text-primary hover:bg-primary/20 focus:bg-primary/20 active:bg-primary/25 dark:bg-accent-light/10 dark:text-accent-light dark:hover:bg-accent-light/20 dark:focus:bg-accent-light/20 dark:active:bg-accent-light/25">
+            Edit Goal
+        </a>
+        <a href="{% url 'goal_delete' goal.pk %}" class="btn bg-error/10 font-medium text-error hover:bg-error/20 focus:bg-error/20 active:bg-error/25">
+            Delete
+        </a>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-6">
+    <!-- Goal Summary Card -->
+    <div class="card p-4 lg:p-6 lg:col-span-1">
+        <div class="flex flex-col items-center text-center">
+            <div class="avatar h-20 w-20 mb-4">
+                 <div class="is-initial rounded-full bg-primary/10 text-3xl text-primary dark:bg-accent-light/10 dark:text-accent-light">
+                    <i class="fa fa-bullseye"></i>
+                 </div>
+            </div>
+            <h3 class="text-lg font-medium text-slate-700 dark:text-navy-100">{{ goal.name }}</h3>
+            <p class="text-slate-500">{{ goal.get_category_display }}</p>
+
+            <div class="mt-6 w-full">
+                <div class="flex justify-between text-xs font-medium text-slate-500 dark:text-navy-200">
+                    <span>Progress</span>
+                    <span>{{ goal.achievement_percentage|floatformat:1 }}%</span>
+                </div>
+                <div class="progress mt-2 h-2.5 w-full bg-slate-150 dark:bg-navy-500 rounded-full overflow-hidden">
+                    <div class="rounded-full bg-primary dark:bg-accent" style="width: {{ goal.achievement_percentage }}%"></div>
+                </div>
+            </div>
+
+            <div class="mt-6 grid grid-cols-2 gap-4 w-full text-left">
+                <div>
+                    <p class="text-xs text-slate-400">Target Amount</p>
+                    <p class="text-base font-medium text-slate-700 dark:text-navy-100">₹ {{ goal.target_amount|intcomma }}</p>
+                </div>
+                 <div>
+                    <p class="text-xs text-slate-400">Current Value</p>
+                    <p class="text-base font-medium text-slate-700 dark:text-navy-100">₹ {{ goal.current_value|intcomma }}</p>
+                </div>
+                <div>
+                    <p class="text-xs text-slate-400">Target Date</p>
+                    <p class="text-base font-medium text-slate-700 dark:text-navy-100">{{ goal.target_date }}</p>
+                </div>
+                <div>
+                    <p class="text-xs text-slate-400">Shortfall</p>
+                    {% with shortfall=goal.target_amount|sub:goal.current_value %}
+                    <p class="text-base font-medium text-error">
+                         {% if shortfall > 0 %}₹ {{ shortfall|intcomma }}{% else %}₹ 0{% endif %}
+                    </p>
+                    {% endwith %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mapped Investments -->
+    <div class="card p-4 lg:p-6 lg:col-span-2">
+        <h3 class="text-base font-medium text-slate-700 dark:text-navy-100 mb-4">Mapped Investments</h3>
+        <div id="mapping-grid"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascript %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const mappingData = {{ mapping_grid_json|safe }};
+
+        if (document.getElementById('mapping-grid')) {
+            new window.Gridjs.Grid({
+                columns: [
+                    { name: 'Scheme', id: 'scheme' },
+                    { name: 'Folio', id: 'folio' },
+                    { name: 'Holding Value', id: 'holding_value',
+                      formatter: (cell) => `₹ ${parseFloat(cell).toLocaleString('en-IN', {minimumFractionDigits: 2})}`
+                    },
+                    { name: 'Alloc. %', id: 'allocation_pct',
+                       formatter: (cell) => `${cell}%`
+                    },
+                    { name: 'Allocated Value', id: 'allocated_value',
+                      formatter: (cell) => `₹ ${parseFloat(cell).toLocaleString('en-IN', {minimumFractionDigits: 2})}`
+                    }
+                ],
+                data: mappingData,
+                pagination: { limit: 5 },
+                className: { table: 'table-auto w-full' }
+            }).render(document.getElementById('mapping-grid'));
+        }
+    });
+</script>
+{% endblock %}
