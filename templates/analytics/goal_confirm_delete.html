@@ -1,0 +1,30 @@
+{% extends "layout/base.html" %}
+{% load static %}
+
+{% block title %}Delete Goal{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-center py-12">
+    <div class="card p-6 max-w-lg w-full text-center">
+        <div class="avatar h-20 w-20 mb-4 mx-auto">
+             <div class="is-initial rounded-full bg-error/10 text-3xl text-error">
+                <i class="fa fa-trash"></i>
+             </div>
+        </div>
+        <h2 class="text-xl font-medium text-slate-800 dark:text-navy-50 mb-2">Delete Goal?</h2>
+        <p class="text-slate-500 mb-6">Are you sure you want to delete the goal "<strong>{{ object.name }}</strong>"? This action cannot be undone.</p>
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="flex justify-center gap-4">
+                <a href="{% url 'goal_detail' object.pk %}" class="btn border border-slate-300 font-medium text-slate-700 hover:bg-slate-300/20 active:bg-slate-300/25 dark:border-navy-450 dark:text-navy-100 dark:hover:bg-navy-450/20 dark:active:bg-navy-450/25">
+                    Cancel
+                </a>
+                <button type="submit" class="btn bg-error font-medium text-white hover:bg-error-focus focus:bg-error-focus active:bg-error-focus/90">
+                    Delete
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

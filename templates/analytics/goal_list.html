@@ -1,0 +1,95 @@
+{% extends "layout/base.html" %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}My Goals{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-between py-5 lg:py-6">
+    <div class="flex items-center gap-4">
+        <h2 class="text-xl font-medium text-slate-800 dark:text-navy-50 lg:text-2xl">
+            My Goals
+        </h2>
+    </div>
+    <div class="flex items-center gap-2">
+        <a href="{% url 'goal_create' %}" class="btn bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            Create Goal
+        </a>
+    </div>
+</div>
+
+<div class="card p-4">
+    <div id="goal-grid"></div>
+</div>
+{% endblock %}
+
+{% block javascript %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const goalData = {{ grid_data_json|safe }};
+
+        if (document.getElementById('goal-grid')) {
+            new window.Gridjs.Grid({
+                columns: [
+                    { name: 'Name', id: 'name',
+                      formatter: (cell, row) => {
+                          return window.Gridjs.html(`<a href="${row.cells[7].data}" class="font-medium text-primary hover:underline">${cell}</a>`);
+                      }
+                    },
+                    { name: 'Category', id: 'category' },
+                    { name: 'Target Date', id: 'target_date' },
+                    { name: 'Target Amount', id: 'target_amount',
+                      formatter: (cell) => `₹ ${parseFloat(cell).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`
+                    },
+                    { name: 'Current Value', id: 'current_value',
+                      formatter: (cell) => `₹ ${parseFloat(cell).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`
+                    },
+                    { name: 'Progress', id: 'achieved_pct',
+                      formatter: (cell) => {
+                          let color = 'bg-error';
+                          if (cell > 75) color = 'bg-success';
+                          else if (cell > 40) color = 'bg-warning';
+
+                          return window.Gridjs.html(`
+                            <div class="flex items-center gap-2">
+                                <div class="progress h-2 w-24 bg-slate-150 dark:bg-navy-500 rounded-full overflow-hidden">
+                                    <div class="rounded-full ${color}" style="width: ${cell}%"></div>
+                                </div>
+                                <span class="text-xs font-medium">${cell.toFixed(1)}%</span>
+                            </div>
+                          `);
+                      }
+                    },
+                    { name: 'Investor', id: 'investor', hidden: false }, // Useful for distributors
+                    { name: 'Details URL', id: 'action_url', hidden: true },
+                    { name: 'Edit URL', id: 'edit_url', hidden: true },
+                    {
+                        name: 'Actions',
+                        formatter: (cell, row) => {
+                            return window.Gridjs.html(`
+                                <div class="flex justify-center space-x-2">
+                                    <a href="${row.cells[8].data}" class="btn h-8 w-8 rounded-full p-0 hover:bg-slate-300/20 focus:bg-slate-300/20 active:bg-slate-300/25 dark:hover:bg-navy-300/20 dark:focus:bg-navy-300/20 dark:active:bg-navy-300/25">
+                                        <i class="fa fa-edit"></i>
+                                    </a>
+                                </div>
+                            `);
+                        }
+                    }
+                ],
+                data: goalData,
+                search: true,
+                sort: true,
+                pagination: {
+                    limit: 10
+                },
+                className: {
+                    table: 'table-auto w-full',
+                }
+            }).render(document.getElementById('goal-grid'));
+        }
+    });
+</script>
+{% endblock %}
