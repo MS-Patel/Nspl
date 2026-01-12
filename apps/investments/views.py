@@ -180,6 +180,9 @@ def order_create(request):
         else:
             messages.error(request, "Please correct the errors below.")
     else:
+        # Default to PURCHASE if not specified
+        if 'transaction_type' not in initial_data:
+            initial_data['transaction_type'] = Order.PURCHASE
         form = OrderForm(initial=initial_data, user=user)
 
     return render_order_form(request, form)
