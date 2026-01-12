@@ -1,3 +1,4 @@
+{% load static %}
 <!-- App Header Wrapper-->
 <nav class="header print:hidden">
   <!-- App Header  -->
@@ -16,8 +17,8 @@
 
       <div class="hidden items-center space-x-2 sm:flex">
         <a href="/">
-          <img class="size-10 transition-transform duration-500 ease-in-out hover:rotate-[360deg]"
-            src="images/logo12.png" alt="logo" />
+          <img class="h-12"
+            src="{% static 'images/logo12.png' %}" alt="logo" />
         </a>
         <span class="text-xl font-semibold uppercase text-slate-700 dark:text-navy-100">
           BuybestFin
@@ -243,7 +244,7 @@
         <!-- User Menu Dropdown -->
         <div id="user-menu-wrapper" class="flex">
           <button id="user-menu-ref" class="avatar size-8 popper-ref">
-            <img class="rounded-full" src="images/user.png" alt="avatar" />
+            <img class="rounded-full" src="{% static 'images/user.png' %}" alt="avatar" />
             <span class="absolute -right-px -bottom-px flex size-3">
               <span class="flex size-full animate-ping rounded-full bg-success opacity-80"></span>
               <span class="inline-flex size-full rounded-full bg-success"></span>
@@ -253,7 +254,7 @@
             <div class="popper-box w-64 rounded-lg border border-slate-150 bg-white shadow-soft dark:border-navy-800 dark:bg-navy-700">
               <div class="flex items-center space-x-4 rounded-t-lg bg-slate-100 py-5 px-4 dark:bg-navy-800">
                 <div class="avatar size-14">
-                  <img class="rounded-full" src="images/user.png" alt="avatar" />
+                  <img class="rounded-full" src="{% static 'images/user.png' %}" alt="avatar" />
                 </div>
                 <div>
                   <a href="#" class="text-base font-medium text-slate-700 hover:text-primary focus:text-primary dark:text-navy-100 dark:hover:text-accent-light dark:focus:text-accent-light">
