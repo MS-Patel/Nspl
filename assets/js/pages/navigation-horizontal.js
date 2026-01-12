@@ -1,1 +1,20 @@
-window.addEventListener("app:mounted",function(){var o={placement:"bottom-start",modifiers:[{name:"offset",options:{offset:[0,4]}}]};new Popper("#navigation-dropdown-1",".popper-ref",".popper-root",o),new Popper("#navigation-dropdown-2",".popper-ref",".popper-root",o),new Popper("#navigation-dropdown-3",".popper-ref",".popper-root",o),new Popper("#navigation-dropdown-4",".popper-ref",".popper-root",o),new Popper("#navigation-dropdown-5",".popper-ref",".popper-root",o)},{once:!0});
+/******/ (() => { // webpackBootstrap
+/*!***********************************************!*\
+  !*** ./src/js/pages/navigation-horizontal.js ***!
+  \***********************************************/
+window.addEventListener("app:mounted", function () {
+  var o = {
+    placement: "bottom-start",
+    modifiers: [{
+      name: "offset",
+      options: {
+        offset: [0, 4]
+      }
+    }]
+  };
+  new Popper("#navigation-dropdown-1", ".popper-ref", ".popper-root", o), new Popper("#navigation-dropdown-2", ".popper-ref", ".popper-root", o), new Popper("#navigation-dropdown-3", ".popper-ref", ".popper-root", o), new Popper("#navigation-dropdown-4", ".popper-ref", ".popper-root", o), new Popper("#navigation-dropdown-5", ".popper-ref", ".popper-root", o);
+}, {
+  once: !0
+});
+/******/ })()
+;
