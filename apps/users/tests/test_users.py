@@ -15,7 +15,7 @@ class TestUserCreation:
         admin = User.objects.create_superuser(username='admin', password='password', user_type=User.Types.ADMIN)
         client.force_login(admin)
 
-        url = reverse('rm_create')
+        url = reverse('users:rm_create')
         data = {
             'username': 'rm1',
             'email': 'rm1@example.com',
@@ -33,7 +33,7 @@ class TestUserCreation:
         rm_profile = RMProfileFactory()
         client.force_login(rm_profile.user)
 
-        url = reverse('distributor_create')
+        url = reverse('users:distributor_create')
         data = {
             'username': 'dist1',
             'email': 'dist1@example.com',
@@ -54,7 +54,7 @@ class TestUserCreation:
         dist_profile = DistributorProfileFactory()
         client.force_login(dist_profile.user)
 
-        url = reverse('investor_create')
+        url = reverse('users:investor_create')
 
         # New Wizard Form Data requires formset management forms
         data = {
@@ -117,9 +117,9 @@ class TestAccessControl:
         dist_profile = DistributorProfileFactory()
 
         client.force_login(rm_profile.user)
-        response = client.get(reverse('rm_dashboard'))
+        response = client.get(reverse('users:rm_dashboard'))
         assert response.status_code == 200
 
         client.force_login(dist_profile.user)
-        response = client.get(reverse('rm_dashboard'))
+        response = client.get(reverse('users:rm_dashboard'))
         assert response.status_code == 403

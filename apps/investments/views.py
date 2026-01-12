@@ -23,7 +23,7 @@ class MandateCreateView(CreateView):
     model = Mandate
     form_class = MandateForm
     template_name = 'investments/mandate_form.html'
-    success_url = reverse_lazy('order_list') # Redirect to list for now
+    success_url = reverse_lazy('investments:order_list') # Redirect to list for now
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -176,7 +176,7 @@ def order_create(request):
                     order.save()
                     messages.error(request, f"Order saved but failed to push to BSE: {str(e)}")
 
-            return redirect('order_list') # Redirect to order list
+            return redirect('investments:order_list') # Redirect to order list
         else:
             messages.error(request, "Please correct the errors below.")
     else:

@@ -375,7 +375,7 @@
                 return;
             }
 
-            fetch(`{% url 'api_order_metadata' %}?scheme_id=${value}`)
+            fetch(`{% url 'investments:api_order_metadata' %}?scheme_id=${value}`)
                 .then(response => response.json())
                 .then(data => {
                     if (data.scheme_details) {
@@ -444,7 +444,7 @@
                 folioSelect.clear();
                 folioSelect.clearOptions();
                 folioSelect.load(function(callback) {
-                     fetch(`{% url 'api_folios' %}?investor_id=${investorId}`)
+                     fetch(`{% url 'investments:api_folios' %}?investor_id=${investorId}`)
                         .then(r => r.json())
                         .then(data => callback(data.folios || []))
                         .catch(() => callback());
@@ -454,7 +454,7 @@
                 mandateSelect.clear();
                 mandateSelect.clearOptions();
                 mandateSelect.load(function(callback) {
-                    fetch(`{% url 'api_order_metadata' %}?investor_id=${investorId}`)
+                    fetch(`{% url 'investments:api_order_metadata' %}?investor_id=${investorId}`)
                         .then(r => r.json())
                         .then(data => {
                              const mapped = (data.mandates || []).map(m => ({

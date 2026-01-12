@@ -49,7 +49,7 @@ class TestPayoutViews:
 
     def test_payout_list_view(self, client, distributor_user, payout):
         client.force_login(distributor_user)
-        url = reverse('payout_list')
+        url = reverse('payouts:payout_list')
         response = client.get(url)
         assert response.status_code == 200
         assert 'grid_data_json' in response.context
@@ -57,7 +57,7 @@ class TestPayoutViews:
 
     def test_payout_detail_view(self, client, distributor_user, payout):
         client.force_login(distributor_user)
-        url = reverse('payout_detail', kwargs={'pk': payout.pk})
+        url = reverse('payouts:payout_detail', kwargs={'pk': payout.pk})
         response = client.get(url)
         assert response.status_code == 200
         assert 'grid_data_json' in response.context
@@ -65,7 +65,7 @@ class TestPayoutViews:
 
     def test_payout_export_view(self, client, distributor_user, payout):
         client.force_login(distributor_user)
-        url = reverse('payout_export', kwargs={'pk': payout.pk})
+        url = reverse('payouts:payout_export', kwargs={'pk': payout.pk})
         response = client.get(url)
         assert response.status_code == 200
         assert response['Content-Type'] == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
@@ -74,20 +74,20 @@ class TestPayoutViews:
     def test_access_denied_for_other_distributor(self, client, other_distributor_user, payout):
         client.force_login(other_distributor_user)
         # Try to access detail of first distributor's payout
-        url = reverse('payout_detail', kwargs={'pk': payout.pk})
+        url = reverse('payouts:payout_detail', kwargs={'pk': payout.pk})
         response = client.get(url)
         assert response.status_code == 404  # Should be 404 because of filter in get_queryset
 
         # Try to export
-        url = reverse('payout_export', kwargs={'pk': payout.pk})
+        url = reverse('payouts:payout_export', kwargs={'pk': payout.pk})
         response = client.get(url)
         assert response.status_code == 404
 
     def test_access_denied_for_anonymous(self, client, payout):
-        url = reverse('payout_list')
+        url = reverse('payouts:payout_list')
         response = client.get(url)
         assert response.status_code == 302 # Redirect to login
 
-        url = reverse('payout_detail', kwargs={'pk': payout.pk})
+        url = reverse('payouts:payout_detail', kwargs={'pk': payout.pk})
         response = client.get(url)
         assert response.status_code == 302

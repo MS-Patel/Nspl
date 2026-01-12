@@ -257,16 +257,16 @@
       <!-- Dashboard -->
       <div class="inline-flex">
         {% if user.user_type == 'RM' %}
-        <a href="{% url 'rm_dashboard' %}"
+        <a href="{% url 'users:rm_dashboard' %}"
           class="btn space-x-2 px-2 py-1.5 text-xs-plus font-medium leading-none text-slate-600 hover:bg-slate-300/20 hover:text-slate-800 active:bg-slate-300/25 dark:text-navy-200 dark:hover:bg-navy-300/20 dark:hover:text-navy-100 dark:active:bg-navy-300/25">
           {% elif user.user_type == 'DISTRIBUTOR' %}
-          <a href="{% url 'distributor_dashboard' %}"
+          <a href="{% url 'users:distributor_dashboard' %}"
             class="btn space-x-2 px-2 py-1.5 text-xs-plus font-medium leading-none text-slate-600 hover:bg-slate-300/20 hover:text-slate-800 active:bg-slate-300/25 dark:text-navy-200 dark:hover:bg-navy-300/20 dark:hover:text-navy-100 dark:active:bg-navy-300/25">
             {% elif user.user_type == 'INVESTOR' %}
-            <a href="{% url 'investor_dashboard' %}"
+            <a href="{% url 'users:investor_dashboard' %}"
               class="btn space-x-2 px-2 py-1.5 text-xs-plus font-medium leading-none text-slate-600 hover:bg-slate-300/20 hover:text-slate-800 active:bg-slate-300/25 dark:text-navy-200 dark:hover:bg-navy-300/20 dark:hover:text-navy-100 dark:active:bg-navy-300/25">
               {% else %}
-              <a href="{% url 'admin_dashboard' %}"
+              <a href="{% url 'users:admin_dashboard' %}"
                 class="btn space-x-2 px-2 py-1.5 text-xs-plus font-medium leading-none text-slate-600 hover:bg-slate-300/20 hover:text-slate-800 active:bg-slate-300/25 dark:text-navy-200 dark:hover:bg-navy-300/20 dark:hover:text-navy-100 dark:active:bg-navy-300/25">
                 {% endif %}
                 <svg class="size-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -288,7 +288,7 @@
       <!-- Payouts (Distributor only) -->
       {% if user.user_type == 'DISTRIBUTOR' %}
       <div class="inline-flex">
-        <a href="{% url 'payout_list' %}"
+        <a href="{% url 'payouts:payout_list' %}"
           class="btn space-x-2 px-2 py-1.5 text-xs-plus font-medium leading-none text-slate-600 hover:bg-slate-300/20 hover:text-slate-800 active:bg-slate-300/25 dark:text-navy-200 dark:hover:bg-navy-300/20 dark:hover:text-navy-100 dark:active:bg-navy-300/25">
           <svg xmlns="http://www.w3.org/2000/svg" class="size-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -319,13 +319,13 @@
             class="popper-box max-h-[calc(100vh-120px)] overflow-y-auto rounded-md border border-slate-150 bg-white py-1.5 font-inter dark:border-navy-500 dark:bg-navy-700">
             <ul>
               <li>
-                <a href="{% url 'order_list' %}"
+                <a href="{% url 'investments:order_list' %}"
                   class="flex h-8 items-center px-3 pr-8 font-medium tracking-wide outline-hidden transition-all hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100">
                   Order Book
                 </a>
               </li>
               <li>
-                <a href="{% url 'scheme_list' %}"
+                <a href="{% url 'products:scheme_list' %}"
                   class="flex h-8 items-center px-3 pr-8 font-medium tracking-wide outline-hidden transition-all hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100">
                   Scheme Explorer
                 </a>
@@ -358,20 +358,20 @@
             <ul>
               {% if user.is_staff or user.user_type == 'ADMIN' %}
               <li>
-                <a href="{% url 'rm_list' %}"
+                <a href="{% url 'users:rm_list' %}"
                   class="flex h-8 items-center px-3 pr-8 font-medium tracking-wide outline-hidden transition-all hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100">
                   Employee (RM)
                 </a>
               </li>
               {% endif %}
               <li>
-                <a href="{% url 'distributor_list' %}"
+                <a href="{% url 'users:distributor_list' %}"
                   class="flex h-8 items-center px-3 pr-8 font-medium tracking-wide outline-hidden transition-all hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100">
                   Distributor
                 </a>
               </li>
               <li>
-                <a href="{% url 'scheme_list' %}"
+                <a href="{% url 'products:scheme_list' %}"
                   class="flex h-8 items-center px-3 pr-8 font-medium tracking-wide outline-hidden transition-all hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100">
                   Scheme Master
                 </a>
@@ -384,7 +384,7 @@
 
       <!-- Investor -->
       <div class="inline-flex">
-        <a href="{% url 'investor_list' %}"
+        <a href="{% url 'users:investor_list' %}"
           class="btn space-x-2 px-2 py-1.5 text-xs-plus font-medium leading-none text-slate-600 hover:bg-slate-300/20 hover:text-slate-800 active:bg-slate-300/25 dark:text-navy-200 dark:hover:bg-navy-300/20 dark:hover:text-navy-100 dark:active:bg-navy-300/25">
           <svg xmlns="http://www.w3.org/2000/svg" class="size-4.5" fill="none" viewBox="0 0 24 24"
             stroke="currentColor">

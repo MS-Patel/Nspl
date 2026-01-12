@@ -17,7 +17,7 @@
           <li class="flex items-center space-x-2">
             <a
               class="text-primary transition-colors hover:text-primary-focus dark:text-accent-light dark:hover:text-accent"
-              href="{% url 'payout_list' %}"
+              href="{% url 'payouts:payout_list' %}"
               >Payouts</a
             >
             <svg
@@ -39,7 +39,7 @@
         </ul>
       </div>
       <div>
-        <a href="{% url 'payout_export' payout.pk %}" class="btn bg-success font-medium text-white hover:bg-success-focus focus:bg-success-focus active:bg-success-focus/90">
+        <a href="{% url 'payouts:payout_export' payout.pk %}" class="btn bg-success font-medium text-white hover:bg-success-focus focus:bg-success-focus active:bg-success-focus/90">
             <i class="fa-solid fa-file-excel mr-2"></i> Export to Excel
         </a>
       </div>

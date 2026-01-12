@@ -15,7 +15,7 @@ def upload_rta_file(request):
     # Only Admin or Operations (assuming Admin for now)
     if request.user.user_type != 'ADMIN':
         messages.error(request, "Access Denied")
-        return redirect('dashboard')
+        return redirect('users:login')
 
     if request.method == 'POST':
         form = RTAUploadForm(request.POST, request.FILES)
@@ -47,7 +47,7 @@ def upload_rta_file(request):
             else:
                 messages.warning(request, "File uploaded but processing status is pending.")
 
-            return redirect('rta_upload')
+            return redirect('reconciliation:rta_upload')
     else:
         form = RTAUploadForm()
 

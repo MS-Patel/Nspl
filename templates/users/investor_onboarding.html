@@ -361,11 +361,11 @@
                         title: 'Success',
                         text: 'Investor Profile Created Successfully'
                     }).then(() => {
-                        window.location.href = "{% url 'investor_list' %}";
+                        window.location.href = "{% url 'users:investor_list' %}";
                     });
                  } else {
                      alert('Success');
-                     window.location.href = "{% url 'investor_list' %}";
+                     window.location.href = "{% url 'users:investor_list' %}";
                  }
             }
         });
