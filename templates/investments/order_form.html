@@ -308,14 +308,22 @@
 
         // --- SIP Toggle Logic ---
         function toggleSipSection() {
-            let selectedType = document.querySelector('input[name="transaction_type"]:checked').value;
+            let selectedType = null;
+            // Robustly get checked value
+            const checkedRadio = document.querySelector('input[name="transaction_type"]:checked');
+            if (checkedRadio) {
+                selectedType = checkedRadio.value;
+            }
+
             if (selectedType === 'SIP') {
                 sipSection.style.display = 'grid';
                 // Validate SIP Allowed
                 if(currentSchemeDetails && !currentSchemeDetails.is_sip_allowed) {
                     alert('Selected scheme does not support SIP.');
-                    // Optionally revert to Purchase or clear scheme
                 }
+                // Refresh hidden TomSelects to calculate correct width
+                mandateSelect.sync();
+                frequencySelect.sync();
             } else {
                 sipSection.style.display = 'none';
             }
@@ -336,35 +344,37 @@
             const catId = categorySelect.getValue();
             const typeVal = typeSelect.getValue();
 
-            schemeSelect.clear();
-            schemeSelect.clearOptions();
-            schemeSelect.load(function(callback) {
-                const params = new URLSearchParams({
-                    fetch_schemes: 'true',
-                    amc_id: amcId,
-                    category_id: catId,
-                    scheme_type: typeVal
-                });
-
-                fetch(`{% url 'investments:api_order_metadata' %}?${params.toString()}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        callback(data.schemes);
-                    })
-                    .catch(() => {
-                        callback();
-                    });
+            // Use fetch and addOption/refreshOptions
+            const params = new URLSearchParams({
+                fetch_schemes: 'true',
+                amc_id: amcId,
+                category_id: catId,
+                scheme_type: typeVal
             });
+
+            schemeSelect.lock(); // Prevent interaction while loading
+
+            fetch(`{% url 'investments:api_order_metadata' %}?${params.toString()}`)
+                .then(response => response.json())
+                .then(data => {
+                    schemeSelect.clearOptions();
+                    if (data.schemes && data.schemes.length > 0) {
+                        schemeSelect.addOption(data.schemes);
+                    }
+                    schemeSelect.refreshOptions(false); // Update the dropdown
+                    schemeSelect.unlock();
+                })
+                .catch(err => {
+                    console.error("Scheme fetch failed", err);
+                    schemeSelect.unlock();
+                });
         }
 
         amcSelect.on('change', fetchSchemes);
         categorySelect.on('change', fetchSchemes);
         typeSelect.on('change', fetchSchemes);
 
-        // Load initial schemes (or wait for user filter?)
-        // Let's load all initially if list isn't huge, or wait.
-        // Given typically thousands, better to wait or load default.
-        // Let's trigger one load.
+        // Load initial schemes
         fetchSchemes();
 
         // --- Scheme Details & Validation ---
@@ -383,7 +393,7 @@
                         currentSchemeDetails = s;
 
                         // Check SIP constraint immediately
-                        let selectedType = document.querySelector('input[name="transaction_type"]:checked').value;
+                        let selectedType = document.querySelector('input[name="transaction_type"]:checked')?.value;
                         let sipWarning = '';
                         if (selectedType === 'SIP' && !s.is_sip_allowed) {
                             sipWarning = '<div class="text-error text-xs mt-1">SIP Not Allowed for this scheme!</div>';
@@ -443,28 +453,37 @@
                 // Fetch Folios
                 folioSelect.clear();
                 folioSelect.clearOptions();
-                folioSelect.load(function(callback) {
-                     fetch(`{% url 'investments:api_folios' %}?investor_id=${investorId}`)
-                        .then(r => r.json())
-                        .then(data => callback(data.folios || []))
-                        .catch(() => callback());
-                });
+
+                // For Folios, we can use simple fetch too for consistency
+                fetch(`{% url 'investments:api_folios' %}?investor_id=${investorId}`)
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.folios && data.folios.length > 0) {
+                            data.folios.forEach(f => {
+                                folioSelect.addOption({value: f.id, text: f.display});
+                            });
+                        }
+                        folioSelect.refreshOptions(false);
+                    })
+                    .catch(() => {});
+
 
                 // Fetch Mandates
                 mandateSelect.clear();
                 mandateSelect.clearOptions();
-                mandateSelect.load(function(callback) {
-                    fetch(`{% url 'investments:api_order_metadata' %}?investor_id=${investorId}`)
-                        .then(r => r.json())
-                        .then(data => {
-                             const mapped = (data.mandates || []).map(m => ({
+                fetch(`{% url 'investments:api_order_metadata' %}?investor_id=${investorId}`)
+                    .then(r => r.json())
+                    .then(data => {
+                         if (data.mandates) {
+                             const mapped = data.mandates.map(m => ({
                                  value: m.id,
                                  text: `${m.mandate_id} - Limit: ${m.amount_limit} (${m.bank_account__bank_name})`
                              }));
-                             callback(mapped);
-                        })
-                        .catch(() => callback());
-                });
+                             mandateSelect.addOption(mapped);
+                         }
+                         mandateSelect.refreshOptions(false);
+                    })
+                    .catch(() => {});
             });
         }
     };
