@@ -34,6 +34,9 @@ class OrderForm(forms.ModelForm):
     class Meta:
         model = Order
         fields = ['investor', 'scheme', 'amount', 'folio_selection', 'payment_mode', 'transaction_type', 'mandate']
+        widgets = {
+            'transaction_type': forms.RadioSelect,
+        }
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user', None) # Pass user explicitly
@@ -80,6 +83,8 @@ class OrderForm(forms.ModelForm):
 
         # Style widgets
         for field in self.fields:
+            if field == 'transaction_type':
+                continue
             if field != 'investor' or (self.user and self.user.user_type != 'INVESTOR'):
                  if not 'class' in self.fields[field].widget.attrs:
                     self.fields[field].widget.attrs.update({'class': 'form-select'})
