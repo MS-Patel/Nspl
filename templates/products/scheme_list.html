@@ -186,7 +186,7 @@ const GridJSExportUtils = (() => {
   document.addEventListener('DOMContentLoaded', () => {
     const tableData = {{ grid_data_json|safe }};
     const gridContainer = document.querySelector("#scheme_list");
-    const investUrl = "{% url 'order_create' %}";
+    const investUrl = "{% url 'investments:order_create' %}";
 
     const gridConfig = {
       columns: [

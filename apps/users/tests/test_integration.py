@@ -10,40 +10,40 @@ class TestAuthenticationIntegration:
     def test_login_redirects(self, client):
         # Admin Login
         admin = User.objects.create_superuser(username='admin', password='password', user_type=User.Types.ADMIN)
-        response = client.post(reverse('login'), {'username': 'admin', 'password': 'password'})
+        response = client.post(reverse('users:login'), {'username': 'admin', 'password': 'password'})
         assert response.status_code == 302
-        assert response.url == reverse('admin_dashboard')
+        assert response.url == reverse('users:admin_dashboard')
         client.logout()
 
         # RM Login
         rm_profile = RMProfileFactory(user__password='password')
-        response = client.post(reverse('login'), {'username': rm_profile.user.username, 'password': 'password'})
+        response = client.post(reverse('users:login'), {'username': rm_profile.user.username, 'password': 'password'})
         assert response.status_code == 302
-        assert response.url == reverse('rm_dashboard')
+        assert response.url == reverse('users:rm_dashboard')
         client.logout()
 
         # Distributor Login
         dist_profile = DistributorProfileFactory(user__password='password')
-        response = client.post(reverse('login'), {'username': dist_profile.user.username, 'password': 'password'})
+        response = client.post(reverse('users:login'), {'username': dist_profile.user.username, 'password': 'password'})
         assert response.status_code == 302
-        assert response.url == reverse('distributor_dashboard')
+        assert response.url == reverse('users:distributor_dashboard')
         client.logout()
 
         # Investor Login
         investor_user = InvestorUserFactory(password='password')
-        response = client.post(reverse('login'), {'username': investor_user.username, 'password': 'password'})
+        response = client.post(reverse('users:login'), {'username': investor_user.username, 'password': 'password'})
         assert response.status_code == 302
-        assert response.url == reverse('investor_dashboard')
+        assert response.url == reverse('users:investor_dashboard')
         client.logout()
 
     def test_navigation_menu_visibility(self, client):
         # Admin should see RM and Distributor links
         admin = User.objects.create_superuser(username='admin', password='password', user_type=User.Types.ADMIN)
         client.force_login(admin)
-        response = client.get(reverse('admin_dashboard'))
+        response = client.get(reverse('users:admin_dashboard'))
         assert response.status_code == 200
         assert b'Masters' in response.content
-        assert reverse('rm_list') in str(response.content)
+        assert reverse('users:rm_list') in str(response.content)
 
         # Distributor should NOT see Masters dropdown
         dist_profile = DistributorProfileFactory()
@@ -51,7 +51,7 @@ class TestAuthenticationIntegration:
         assert dist_profile.user.is_staff is False
 
         client.force_login(dist_profile.user)
-        response = client.get(reverse('distributor_dashboard'))
+        response = client.get(reverse('users:distributor_dashboard'))
 
         # Ensure the menu item "Masters" (the dropdown toggle) is not present
         assert b'<span class="text-xs-plus">Masters</span>' not in response.content
@@ -63,7 +63,7 @@ class TestFormValidation:
         admin = User.objects.create_superuser(username='admin', password='password', user_type=User.Types.ADMIN)
         client.force_login(admin)
 
-        url = reverse('rm_create')
+        url = reverse('users:rm_create')
         data = {
             'username': 'rm_fail',
             'email': 'rm_fail@example.com',
@@ -82,7 +82,7 @@ class TestFormValidation:
         admin = User.objects.create_superuser(username='admin', password='password', user_type=User.Types.ADMIN)
         client.force_login(admin)
 
-        url = reverse('distributor_create')
+        url = reverse('users:distributor_create')
         data = {
             'username': 'dist_fail',
             # Missing fields

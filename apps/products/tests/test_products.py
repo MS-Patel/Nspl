@@ -58,7 +58,7 @@ class TestSchemeView:
 
         scheme = SchemeFactory(name="Test Scheme 1", scheme_code="S001")
 
-        response = client.get(reverse('scheme_list'))
+        response = client.get(reverse('products:scheme_list'))
         assert response.status_code == 200
         assert 'grid_data_json' in response.context
 

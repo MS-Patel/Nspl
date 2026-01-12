@@ -38,7 +38,7 @@ def holding(investor_user):
 @pytest.mark.django_db
 def test_create_goal(client, investor_user):
     client.force_login(investor_user)
-    url = reverse('goal_create')
+    url = reverse('analytics:goal_create')
     data = {
         'name': 'Retirement Fund',
         'target_amount': 1000000,
@@ -65,7 +65,7 @@ def test_create_goal(client, investor_user):
 @pytest.mark.django_db
 def test_create_goal_with_mapping(client, investor_user, holding):
     client.force_login(investor_user)
-    url = reverse('goal_create')
+    url = reverse('analytics:goal_create')
     data = {
         'name': 'Education',
         'target_amount': 500000,
@@ -99,13 +99,13 @@ def test_goal_list_permissions(client, investor_user, distributor_user):
 
     # Investor should see it
     client.force_login(investor_user)
-    response = client.get(reverse('goal_list'))
+    response = client.get(reverse('analytics:goal_list'))
     content = response.content.decode()
     assert "Specific Unique Goal Name" in content
 
     # Random distributor should NOT see it
     client.force_login(distributor_user)
-    response = client.get(reverse('goal_list'))
+    response = client.get(reverse('analytics:goal_list'))
     content = response.content.decode()
     # Ensure we are checking the Grid JS data, not the title
     assert "Specific Unique Goal Name" not in content
@@ -115,6 +115,6 @@ def test_goal_list_permissions(client, investor_user, distributor_user):
     investor_user.investor_profile.save()
 
     # Now distributor should see it
-    response = client.get(reverse('goal_list'))
+    response = client.get(reverse('analytics:goal_list'))
     content = response.content.decode()
     assert "Specific Unique Goal Name" in content

@@ -9,14 +9,14 @@ class TestCommissionRuleViews:
     def test_list_view_access(self, client):
         admin = UserFactory(user_type='ADMIN')
         client.force_login(admin)
-        url = reverse('payout_rule_list')
+        url = reverse('payouts:payout_rule_list')
         response = client.get(url)
         assert response.status_code == 200
 
     def test_list_view_forbidden(self, client):
         user = UserFactory(user_type='DISTRIBUTOR')
         client.force_login(user)
-        url = reverse('payout_rule_list')
+        url = reverse('payouts:payout_rule_list')
         response = client.get(url)
         assert response.status_code == 403
 
@@ -25,7 +25,7 @@ class TestCommissionRuleViews:
         category = SchemeCategoryFactory()
         client.force_login(admin)
 
-        url = reverse('payout_rule_create')
+        url = reverse('payouts:payout_rule_create')
         data = {
             'category': category.id,
             'tiers-TOTAL_FORMS': 1,
@@ -47,7 +47,7 @@ class TestCommissionRuleViews:
         rule = CommissionRule.objects.create(category=category)
         client.force_login(admin)
 
-        url = reverse('payout_rule_update', args=[rule.id])
+        url = reverse('payouts:payout_rule_update', args=[rule.id])
         data = {
             'category': category.id,
             'tiers-TOTAL_FORMS': 1,

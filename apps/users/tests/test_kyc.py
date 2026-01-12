@@ -14,7 +14,7 @@ class TestKYCDocument:
         client.force_login(rm_profile.user)
 
         investor_profile = InvestorProfileFactory()
-        url = reverse('investor_detail', args=[investor_profile.pk])
+        url = reverse('users:investor_detail', args=[investor_profile.pk])
 
         file_content = b"dummy pdf content"
         test_file = SimpleUploadedFile("test.pdf", file_content, content_type="application/pdf")
@@ -34,7 +34,7 @@ class TestKYCDocument:
         client.force_login(rm_profile.user)
 
         investor_profile = InvestorProfileFactory(kyc_status=False)
-        url = reverse('toggle_kyc', args=[investor_profile.pk])
+        url = reverse('users:toggle_kyc', args=[investor_profile.pk])
 
         # Toggle ON
         response = client.post(url)

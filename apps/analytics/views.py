@@ -56,8 +56,8 @@ class GoalListView(LoginRequiredMixin, ListView):
                 'achieved_pct': float(achieved),
                 'target_date': goal.target_date.strftime('%Y-%m-%d'),
                 'category': goal.get_category_display(),
-                'action_url': str(reverse_lazy('goal_detail', kwargs={'pk': goal.pk})),
-                'edit_url': str(reverse_lazy('goal_update', kwargs={'pk': goal.pk}))
+                'action_url': str(reverse_lazy('analytics:goal_detail', kwargs={'pk': goal.pk})),
+                'edit_url': str(reverse_lazy('analytics:goal_update', kwargs={'pk': goal.pk}))
             })
 
         context['grid_data_json'] = json.dumps(data)
@@ -67,7 +67,7 @@ class GoalCreateView(LoginRequiredMixin, CreateView):
     model = Goal
     form_class = GoalForm
     template_name = 'analytics/goal_form.html'
-    success_url = reverse_lazy('goal_list')
+    success_url = reverse_lazy('analytics:goal_list')
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -143,7 +143,7 @@ class GoalUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Goal
     form_class = GoalForm
     template_name = 'analytics/goal_form.html'
-    success_url = reverse_lazy('goal_list')
+    success_url = reverse_lazy('analytics:goal_list')
 
     def test_func(self):
         goal = self.get_object()
@@ -229,7 +229,7 @@ class GoalDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
 
 class GoalDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Goal
-    success_url = reverse_lazy('goal_list')
+    success_url = reverse_lazy('analytics:goal_list')
     template_name = 'analytics/goal_confirm_delete.html'
 
     def test_func(self):
@@ -250,7 +250,7 @@ class CASUploadView(LoginRequiredMixin, CreateView):
     model = CASUpload
     form_class = CASUploadForm
     template_name = 'analytics/cas_upload.html'
-    success_url = reverse_lazy('cas_list')
+    success_url = reverse_lazy('analytics:cas_list')
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()

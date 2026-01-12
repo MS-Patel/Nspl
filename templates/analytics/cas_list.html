@@ -4,7 +4,7 @@
 <div class="flex flex-col space-y-4">
     <div class="flex items-center justify-between">
         <h2 class="text-xl font-medium text-slate-800 dark:text-navy-50">Uploaded CAS Files</h2>
-        <a href="{% url 'cas_upload' %}" class="btn bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90">
+        <a href="{% url 'analytics:cas_upload' %}" class="btn bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90">
             Upload New CAS
         </a>
     </div>
@@ -36,7 +36,7 @@
                         </td>
                         <td class="whitespace-nowrap px-4 py-3 sm:px-5">
                             {% if cas.status == 'PROCESSED' %}
-                            <a href="{% url 'external_holdings' %}?cas_id={{ cas.id }}" class="btn h-8 rounded-full bg-info/10 px-3 text-xs+ font-medium text-info hover:bg-info/20 focus:bg-info/20 active:bg-info/25">
+                            <a href="{% url 'analytics:external_holdings' %}?cas_id={{ cas.id }}" class="btn h-8 rounded-full bg-info/10 px-3 text-xs+ font-medium text-info hover:bg-info/20 focus:bg-info/20 active:bg-info/25">
                                 View Holdings
                             </a>
                             {% endif %}

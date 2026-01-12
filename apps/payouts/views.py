@@ -39,7 +39,7 @@ class CommissionRuleListView(LoginRequiredMixin, IsAdminMixin, ListView):
                 'category': rule.category.name,
                 'amc': rule.amc.name if rule.amc else 'All AMCs',
                 'tiers': tiers_str,
-                'action_url': str(reverse_lazy('payout_rule_update', kwargs={'pk': rule.pk}))
+                'action_url': str(reverse_lazy('payouts:payout_rule_update', kwargs={'pk': rule.pk}))
             })
         context['grid_data_json'] = json.dumps(data)
         return context
@@ -48,7 +48,7 @@ class CommissionRuleCreateView(LoginRequiredMixin, IsAdminMixin, CreateView):
     model = CommissionRule
     form_class = CommissionRuleForm
     template_name = 'payouts/rule_form.html'
-    success_url = reverse_lazy('payout_rule_list')
+    success_url = reverse_lazy('payouts:payout_rule_list')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -76,7 +76,7 @@ class CommissionRuleUpdateView(LoginRequiredMixin, IsAdminMixin, UpdateView):
     model = CommissionRule
     form_class = CommissionRuleForm
     template_name = 'payouts/rule_form.html'
-    success_url = reverse_lazy('payout_rule_list')
+    success_url = reverse_lazy('payouts:payout_rule_list')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -116,7 +116,7 @@ class PayoutListView(LoginRequiredMixin, IsDistributorMixin, ListView):
                 'total_aum': float(payout.total_aum),
                 'total_commission': float(payout.total_commission),
                 'status': payout.get_status_display(),
-                'action_url': str(reverse_lazy('payout_detail', kwargs={'pk': payout.pk}))
+                'action_url': str(reverse_lazy('payouts:payout_detail', kwargs={'pk': payout.pk}))
             })
         context['grid_data_json'] = json.dumps(data)
         return context

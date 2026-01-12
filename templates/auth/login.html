@@ -97,7 +97,7 @@
             </div>
           </div>
           <div class="mt-16">
-            <form method="post" action="{% url 'login' %}">
+            <form method="post" action="{% url 'users:login' %}">
                 {% csrf_token %}
                 {% if form.non_field_errors %}
                 <div class="mb-4 text-center text-error text-red-500">

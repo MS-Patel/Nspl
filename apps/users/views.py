@@ -27,15 +27,15 @@ class CustomLoginView(LoginView):
     def get_success_url(self):
         user = self.request.user
         if user.user_type == User.Types.RM:
-            return reverse_lazy('rm_dashboard')
+            return reverse_lazy('users:rm_dashboard')
         elif user.user_type == User.Types.DISTRIBUTOR:
-            return reverse_lazy('distributor_dashboard')
+            return reverse_lazy('users:distributor_dashboard')
         elif user.user_type == User.Types.INVESTOR:
-            return reverse_lazy('investor_dashboard')
-        return reverse_lazy('admin_dashboard')
+            return reverse_lazy('users:investor_dashboard')
+        return reverse_lazy('users:admin_dashboard')
 
 class CustomLogoutView(LogoutView):
-    next_page = reverse_lazy('login')
+    next_page = reverse_lazy('users:login')
 
 # --- Mixins for Role-Based Access ---
 
@@ -119,7 +119,7 @@ class RMCreateView(LoginRequiredMixin, IsAdminMixin, CreateView):
     model = User # Form handles User + Profile
     form_class = RMCreationForm
     template_name = 'users/user_form.html'
-    success_url = reverse_lazy('rm_list')
+    success_url = reverse_lazy('users:rm_list')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -159,7 +159,7 @@ class DistributorListView(LoginRequiredMixin, IsAdminOrRMMixin, ListView):
 class DistributorCreateView(LoginRequiredMixin, IsAdminOrRMMixin, CreateView):
     form_class = DistributorCreationForm
     template_name = 'users/user_form.html'
-    success_url = reverse_lazy('distributor_list')
+    success_url = reverse_lazy('users:distributor_list')
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -201,8 +201,8 @@ class InvestorListView(LoginRequiredMixin, ListView):
                 'mobile': inv.mobile,
                 'distributor_name': inv.distributor.user.name if inv.distributor and inv.distributor.user.name else (inv.distributor.user.username if inv.distributor else ''),
                 'status': 'Active' if inv.user.is_active else 'Inactive',
-                'detail_url': reverse('investor_detail', args=[inv.pk]),
-                'action_url': reverse('investor_update', args=[inv.pk])
+                'detail_url': reverse('users:investor_detail', args=[inv.pk]),
+                'action_url': reverse('users:investor_update', args=[inv.pk])
             })
         context['grid_data_json'] = json.dumps(data)
         return context
@@ -213,7 +213,7 @@ class InvestorCreateView(LoginRequiredMixin, CreateView):
     model = InvestorProfile
     form_class = InvestorProfileForm
     template_name = 'users/investor_onboarding.html'
-    success_url = reverse_lazy('investor_list')
+    success_url = reverse_lazy('users:investor_list')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -274,7 +274,7 @@ class InvestorUpdateView(LoginRequiredMixin, UpdateView):
     model = InvestorProfile
     form_class = InvestorProfileForm
     template_name = 'users/investor_onboarding.html'
-    success_url = reverse_lazy('investor_list')
+    success_url = reverse_lazy('users:investor_list')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -333,7 +333,7 @@ class InvestorDetailView(LoginRequiredMixin, DetailView):
 
         if request.user.user_type not in [User.Types.RM, User.Types.DISTRIBUTOR, User.Types.ADMIN]:
              messages.error(request, "Permission denied.")
-             return redirect('investor_detail', pk=self.object.pk)
+             return redirect('users:investor_detail', pk=self.object.pk)
 
         form = DocumentForm(request.POST, request.FILES)
         if form.is_valid():
@@ -341,7 +341,7 @@ class InvestorDetailView(LoginRequiredMixin, DetailView):
             document.investor = self.object
             document.save()
             messages.success(request, "Document uploaded successfully.")
-            return redirect('investor_detail', pk=self.object.pk)
+            return redirect('users:investor_detail', pk=self.object.pk)
         else:
              messages.error(request, "Error uploading document.")
              context = self.get_context_data()
@@ -354,13 +354,13 @@ class PushToBSEView(LoginRequiredMixin, View):
 
         if request.user.user_type not in [User.Types.RM, User.Types.DISTRIBUTOR, User.Types.ADMIN]:
              messages.error(request, "Permission denied.")
-             return redirect('investor_detail', pk=pk)
+             return redirect('users:investor_detail', pk=pk)
 
         try:
             param_string = map_investor_to_bse_param_string(investor)
         except Exception as e:
             messages.error(request, f"Data Mapping Error: {str(e)}")
-            return redirect('investor_detail', pk=pk)
+            return redirect('users:investor_detail', pk=pk)
 
         client = BSEStarMFClient()
         try:
@@ -376,7 +376,7 @@ class PushToBSEView(LoginRequiredMixin, View):
         except Exception as e:
              messages.error(request, f"API Call Failed: {str(e)}")
 
-        return redirect('investor_detail', pk=pk)
+        return redirect('users:investor_detail', pk=pk)
 
 class ToggleKYCView(LoginRequiredMixin, View):
     def post(self, request, pk):
@@ -384,7 +384,7 @@ class ToggleKYCView(LoginRequiredMixin, View):
 
         if request.user.user_type not in [User.Types.RM, User.Types.DISTRIBUTOR, User.Types.ADMIN]:
              messages.error(request, "Permission denied.")
-             return redirect('investor_detail', pk=pk)
+             return redirect('users:investor_detail', pk=pk)
 
         investor.kyc_status = not investor.kyc_status
         investor.save()
@@ -392,4 +392,4 @@ class ToggleKYCView(LoginRequiredMixin, View):
         status_msg = "Verified" if investor.kyc_status else "Revoked"
         messages.success(request, f"KYC Status {status_msg}.")
 
-        return redirect('investor_detail', pk=pk)
+        return redirect('users:investor_detail', pk=pk)
