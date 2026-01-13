@@ -6,6 +6,7 @@ from django.views.generic import TemplateView, ListView, CreateView, DetailView
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.contrib import messages
+from django.http import JsonResponse
 from django.urls import reverse
 from django.views import View
 from django.shortcuts import get_object_or_404
@@ -269,6 +270,9 @@ class InvestorCreateView(LoginRequiredMixin, CreateView):
             else:
                 return self.form_invalid(form)
 
+        if self.request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({'status': 'success', 'message': 'Investor Profile Created Successfully'})
+
         return super().form_valid(form)
 
 class InvestorUpdateView(LoginRequiredMixin, UpdateView):
@@ -313,6 +317,9 @@ class InvestorUpdateView(LoginRequiredMixin, UpdateView):
             else:
                 # If formsets are invalid, render the form again with errors
                 return self.form_invalid(form)
+
+        if self.request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({'status': 'success', 'message': 'Investor Profile Updated Successfully'})
 
         return super().form_valid(form)
 
