@@ -239,11 +239,23 @@
                                         {% render_field nom_form.percentage class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" step="0.01" %}
                                     </label>
                                     <label class="block">
-                                        <span>Guardian (If Minor)</span>
+                                        <span>Date of Birth</span>
+                                        {% render_field nom_form.date_of_birth class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" type="date" %}
+                                    </label>
+                                    <label class="block">
+                                        <span>Guardian Name (If Minor)</span>
                                         {% render_field nom_form.guardian_name class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" %}
+                                    </label>
+                                    <label class="block">
+                                        <span>Guardian PAN (If Minor)</span>
+                                        {% render_field nom_form.guardian_pan class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" %}
                                     </label>
                                 </div>
                             {% endfor %}
+                            <div class="mt-2 text-warning text-sm">
+                                * Total Percentage must be 100%. <br>
+                                * Guardian Details are mandatory if Nominee is a Minor (<18 Years).
+                            </div>
 
                             <div class="flex justify-between pt-4">
                                 <button type="button" class="btn btn-prev bg-slate-150 font-medium text-slate-800 hover:bg-slate-200"

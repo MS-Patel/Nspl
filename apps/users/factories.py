@@ -1,6 +1,6 @@
 import factory
 from django.contrib.auth import get_user_model
-from apps.users.models import RMProfile, DistributorProfile, InvestorProfile, BankAccount
+from apps.users.models import RMProfile, DistributorProfile, InvestorProfile, BankAccount, Nominee
 
 User = get_user_model()
 
@@ -64,3 +64,12 @@ class BankAccountFactory(factory.django.DjangoModelFactory):
     ifsc_code = factory.Faker('bothify', text='????0######')
     bank_name = factory.Faker('company')
     branch_name = factory.Faker('city')
+
+class NomineeFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Nominee
+
+    investor = factory.SubFactory(InvestorProfileFactory)
+    name = factory.Faker('name')
+    relationship = 'Spouse'
+    percentage = 100.00

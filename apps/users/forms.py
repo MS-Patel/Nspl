@@ -1,10 +1,33 @@
 from django import forms
 from django.contrib.auth import get_user_model
 from django.db import transaction
-from django.forms import inlineformset_factory
+from django.forms import inlineformset_factory, BaseInlineFormSet
+from django.core.validators import RegexValidator
 from .models import RMProfile, DistributorProfile, InvestorProfile, BankAccount, Nominee, Document
+from datetime import date
 
 User = get_user_model()
+
+# --- Validators ---
+pan_validator = RegexValidator(
+    regex=r'^[A-Z]{5}[0-9]{4}[A-Z]{1}$',
+    message="Enter a valid PAN (e.g., ABCDE1234F)."
+)
+
+mobile_validator = RegexValidator(
+    regex=r'^[6-9]\d{9}$',
+    message="Enter a valid 10-digit mobile number starting with 6-9."
+)
+
+pincode_validator = RegexValidator(
+    regex=r'^[1-9][0-9]{5}$',
+    message="Enter a valid 6-digit Pincode."
+)
+
+ifsc_validator = RegexValidator(
+    regex=r'^[A-Z]{4}0[A-Z0-9]{6}$',
+    message="Enter a valid IFSC Code (e.g., HDFC0001234)."
+)
 
 class UserCreationForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput)
@@ -89,10 +112,10 @@ class InvestorCreationForm(UserCreationForm):
     """
     Simple form for basic investor creation. Kept for backward compatibility or simple adds.
     """
-    pan = forms.CharField(max_length=10)
+    pan = forms.CharField(max_length=10, validators=[pan_validator])
     dob = forms.DateField(required=False, widget=forms.DateInput(attrs={'type': 'date'}))
     gender = forms.ChoiceField(choices=[('M', 'Male'), ('F', 'Female'), ('O', 'Other')], required=False)
-    mobile = forms.CharField(max_length=15, required=False)
+    mobile = forms.CharField(max_length=15, required=False, validators=[mobile_validator])
     address = forms.CharField(widget=forms.Textarea, required=False)
 
     def __init__(self, *args, **kwargs):
@@ -130,6 +153,11 @@ class InvestorProfileForm(forms.ModelForm):
     name = forms.CharField(max_length=255, label="Full Name")
     email = forms.EmailField(label="Email Address")
 
+    # Validated fields
+    pan = forms.CharField(max_length=10, validators=[pan_validator])
+    mobile = forms.CharField(max_length=15, validators=[mobile_validator])
+    pincode = forms.CharField(max_length=6, validators=[pincode_validator])
+
     # Date widget override
     dob = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), required=True)
 
@@ -152,14 +180,54 @@ class InvestorProfileForm(forms.ModelForm):
             self.fields['email'].initial = self.instance.user.email
 
 class BankAccountForm(forms.ModelForm):
+    ifsc_code = forms.CharField(max_length=11, validators=[ifsc_validator])
+
     class Meta:
         model = BankAccount
         fields = ['ifsc_code', 'account_number', 'account_type', 'bank_name', 'branch_name', 'is_default']
 
 class NomineeForm(forms.ModelForm):
+    date_of_birth = forms.DateField(
+        required=False,
+        widget=forms.DateInput(attrs={'type': 'date'}),
+        label="Date of Birth (Required if Minor)"
+    )
+    guardian_pan = forms.CharField(max_length=10, required=False, validators=[pan_validator])
+
     class Meta:
         model = Nominee
-        fields = ['name', 'relationship', 'percentage', 'guardian_name']
+        fields = ['name', 'relationship', 'percentage', 'date_of_birth', 'guardian_name', 'guardian_pan']
+
+class BaseNomineeFormSet(BaseInlineFormSet):
+    def clean(self):
+        super().clean()
+        if any(self.errors):
+            return
+
+        total_percentage = 0
+        has_forms = False
+
+        for form in self.forms:
+            if not form.cleaned_data or form.cleaned_data.get('DELETE'):
+                continue
+
+            has_forms = True
+            percentage = form.cleaned_data.get('percentage', 0)
+            total_percentage += percentage
+
+            # Check for Minor
+            dob = form.cleaned_data.get('date_of_birth')
+            if dob:
+                today = date.today()
+                age = today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
+                if age < 18:
+                    if not form.cleaned_data.get('guardian_name'):
+                        form.add_error('guardian_name', "Guardian Name is required for minor nominee.")
+                    if not form.cleaned_data.get('guardian_pan'):
+                        form.add_error('guardian_pan', "Guardian PAN is required for minor nominee.")
+
+        if has_forms and total_percentage != 100:
+             raise forms.ValidationError(f"Total Nominee Percentage must be 100%. Currently it is {total_percentage}%.")
 
 class DocumentForm(forms.ModelForm):
     class Meta:
@@ -179,6 +247,7 @@ NomineeFormSet = inlineformset_factory(
     InvestorProfile,
     Nominee,
     form=NomineeForm,
+    formset=BaseNomineeFormSet,
     extra=1,
     can_delete=True
 )

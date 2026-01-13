@@ -11,6 +11,7 @@ from django.views import View
 from django.shortcuts import get_object_or_404
 from .models import RMProfile, DistributorProfile, InvestorProfile, BankAccount, Nominee, Document
 from .forms import RMCreationForm, DistributorCreationForm, InvestorCreationForm, InvestorProfileForm, BankAccountFormSet, NomineeFormSet, DocumentForm
+from .services import validate_investor_for_bse
 from apps.integration.bse_client import BSEStarMFClient
 from apps.integration.utils import map_investor_to_bse_param_string
 from apps.reconciliation.utils.valuation import calculate_portfolio_valuation
@@ -356,12 +357,21 @@ class PushToBSEView(LoginRequiredMixin, View):
              messages.error(request, "Permission denied.")
              return redirect('users:investor_detail', pk=pk)
 
+        # 1. Strict Pre-Validation
+        validation_errors = validate_investor_for_bse(investor)
+        if validation_errors:
+            for err in validation_errors:
+                messages.error(request, err)
+            return redirect('users:investor_detail', pk=pk)
+
+        # 2. Map Data
         try:
             param_string = map_investor_to_bse_param_string(investor)
         except Exception as e:
             messages.error(request, f"Data Mapping Error: {str(e)}")
             return redirect('users:investor_detail', pk=pk)
 
+        # 3. Call API
         client = BSEStarMFClient()
         try:
             response = client.register_client({'Param': param_string})
