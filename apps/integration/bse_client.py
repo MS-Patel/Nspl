@@ -32,7 +32,7 @@ class BSEStarMFClient:
         # UAT Endpoints
         self.order_wsdl = "https://bsestarmfdemo.bseindia.com/MFOrderEntry/MFOrder.svc?wsdl"
         self.upload_service_url = "https://bsestarmfdemo.bseindia.com/StarMFFileUploadService/StarMFFileUploadService.svc/Secure/UploadFile"
-        self.common_api_url = "https://bsestarmfdemo.bseindia.com/StarMFCommonAPI/ClientMaster/Registration"
+        self.common_api_url = "https://bsestarmfdemo.bseindia.com/BSEMFWEBAPI/UCCAPI/UCCRegistrationV183"
 
     def _generate_pass_key(self):
         """Generates a random 10-character alphanumeric pass key."""
@@ -223,7 +223,7 @@ class BSEStarMFClient:
             "Filler1": "",
             "Filler2": ""
         }
-
+        bse_logger.info(f"API: {self.common_api_url} | REQUEST BODY: {request_body}")
         try:
             response = requests.post(self.common_api_url, json=request_body, verify=False) # verify=False for UAT often needed
             response.raise_for_status()
