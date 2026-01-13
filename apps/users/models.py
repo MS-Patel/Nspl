@@ -95,6 +95,22 @@ class InvestorProfile(models.Model):
         (ANYONE_SURVIVOR, 'Anyone or Survivor'),
     ]
 
+    # Client Type / Mode
+    PHYSICAL = 'P'
+    DEMAT = 'D'
+    CLIENT_TYPE_CHOICES = [
+        (PHYSICAL, 'Physical'),
+        (DEMAT, 'Demat'),
+    ]
+
+    # Depository
+    CDSL = 'C'
+    NSDL = 'N'
+    DEPOSITORY_CHOICES = [
+        (CDSL, 'CDSL'),
+        (NSDL, 'NSDL'),
+    ]
+
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='investor_profile')
     distributor = models.ForeignKey(DistributorProfile, on_delete=models.SET_NULL, null=True, blank=True, related_name='investors')
 
@@ -118,6 +134,12 @@ class InvestorProfile(models.Model):
     tax_status = models.CharField(max_length=2, choices=TAX_STATUS_CHOICES, default=INDIVIDUAL)
     occupation = models.CharField(max_length=2, choices=OCCUPATION_CHOICES, default=SERVICE)
     holding_nature = models.CharField(max_length=2, choices=HOLDING_CHOICES, default=SINGLE)
+
+    # Demat Details
+    client_type = models.CharField(max_length=1, choices=CLIENT_TYPE_CHOICES, default=PHYSICAL)
+    depository = models.CharField(max_length=1, choices=DEPOSITORY_CHOICES, blank=True)
+    dp_id = models.CharField(max_length=20, blank=True, help_text="Depository Participant ID")
+    client_id = models.CharField(max_length=20, blank=True, help_text="Beneficiary ID / Client ID")
 
     # Optional/Conditional Fields
     second_applicant_name = models.CharField(max_length=70, blank=True)
@@ -171,6 +193,7 @@ class Nominee(models.Model):
     date_of_birth = models.DateField(null=True, blank=True, help_text="Required if nominee is a minor")
     guardian_name = models.CharField(max_length=100, blank=True, help_text="If nominee is a minor")
     guardian_pan = models.CharField(max_length=10, blank=True, help_text="If nominee is a minor")
+    pan = models.CharField(max_length=10, blank=True, help_text="Nominee PAN (Optional)")
 
     def __str__(self):
         return f"{self.name} ({self.percentage}%)"
