@@ -4,7 +4,6 @@ def map_state_to_code(state_name):
     """
     Maps state names to BSE State Codes.
     Defaults to 'MA' (Maharashtra) or 'XX' (Others) if not found.
-    This is a basic mapping, ideally should be a ChoiceField in the model.
     """
     mapping = {
         'ANDAMAN & NICOBAR': 'AN', 'ANDHRA PRADESH': 'AP', 'ARUNACHAL PRADESH': 'AR',
@@ -24,15 +23,12 @@ def map_state_to_code(state_name):
         return ""
 
     normalized = state_name.strip().upper()
-    return mapping.get(normalized, 'XX') # Default to Others if not found
+    return mapping.get(normalized, 'XX')
 
 def map_investor_to_bse_param_string(investor):
     """
-    Maps an InvestorProfile object to the pipe-separated string required by BSE Enhanced UCC Registration.
-
-    Format (based on MFI/MFD New Common Client Registration Parameter Structure):
-    Client Code | First Name | Middle Name | Last Name | Tax Status | Gender | DOB | Occupation |
-    Holding Nature | Second Holder First Name | ... (many fields)
+    Maps an InvestorProfile object to the pipe-separated string required by BSE Enhanced UCC Registration V183.
+    Total Fields: 183
     """
 
     # Helper to get value or empty string
@@ -46,206 +42,193 @@ def map_investor_to_bse_param_string(investor):
     # 1. Client Code (UCC)
     client_code = investor.ucc_code if investor.ucc_code else investor.pan
 
-    # Name splitting (Naive assumption: First Last or First Middle Last)
-    full_name = investor.user.first_name + " " + investor.user.last_name
+    # Name splitting
+    # Safe access to name field if it exists, else fallback to first+last
+    user_name = getattr(investor.user, 'name', '')
+    full_name = user_name if user_name else (investor.user.first_name + " " + investor.user.last_name)
     parts = full_name.split()
     first_name = parts[0] if parts else ""
     last_name = parts[-1] if len(parts) > 1 else ""
     middle_name = " ".join(parts[1:-1]) if len(parts) > 2 else ""
 
-    # Primary Holder Info
-    p_first_name = first_name
-    p_middle_name = middle_name
-    p_last_name = last_name
+    # 0-8: Basic Details
+    f0_8 = [
+        client_code,
+        first_name, middle_name, last_name,
+        investor.tax_status,
+        investor.gender,
+        date_fmt(investor.dob),
+        investor.occupation,
+        investor.holding_nature
+    ]
 
-    tax_status = investor.tax_status
-    gender = investor.gender
-    dob = date_fmt(investor.dob)
-    occupation = investor.occupation
-    holding = investor.holding_nature
+    # 9-20: Second/Third Holder Details (12 Empty Fields)
+    # Note: If we supported joint holders, we would fill this. Currently supporting Single.
+    f9_20 = [""] * 12
 
-    # Second/Third Holder (Not implemented in model yet, sending blank)
-    sec_h_fname = ""
-    sec_h_mname = ""
-    sec_h_lname = ""
-    thd_h_fname = ""
-    thd_h_mname = ""
-    thd_h_lname = ""
-    sec_h_dob = ""
-    thd_h_dob = ""
+    # 21: Guardian Exempt / Holder 1 Exempt Flag? (Sample has 'N')
+    f21 = ["N"]
 
-    # Guardian (Only if Minor)
-    guardian_fname = ""
-    guardian_mname = ""
-    guardian_lname = ""
-    guardian_dob = ""
+    # 22-24: Exempt Flags for 2nd, 3rd, Guardian (Empty)
+    f22_24 = ["", "", ""]
 
-    if tax_status == InvestorProfile.MINOR:
-        # Split guardian name
-        g_parts = investor.guardian_name.split()
-        guardian_fname = g_parts[0] if g_parts else ""
-        guardian_lname = g_parts[-1] if len(g_parts) > 1 else ""
-        guardian_mname = " ".join(g_parts[1:-1]) if len(g_parts) > 2 else ""
+    # 25-28: PANs (P, S, T, G)
+    # If Minor, Guardian PAN is required.
+    g_pan = investor.guardian_pan if investor.tax_status == InvestorProfile.MINOR else ""
+    f25_28 = [investor.pan, "", "", g_pan]
 
-    # PAN Exempt Flags
-    p_pan_exempt = "N"
-    s_pan_exempt = "N"
-    t_pan_exempt = "N"
-    g_pan_exempt = "N"
+    # 29-32: Exempt Categories (Empty)
+    f29_32 = ["", "", "", ""]
 
-    # PANs
-    p_pan = investor.pan
-    s_pan = investor.second_applicant_pan
-    t_pan = investor.third_applicant_pan
-    g_pan = investor.guardian_pan
+    # 33: Client Type (P=Physical)
+    f33 = ["P"]
 
-    # Exempt Categories (Blank if Exempt is N)
-    p_exempt_cat = ""
-    s_exempt_cat = ""
-    t_exempt_cat = ""
-    g_exempt_cat = ""
+    # 34-40: Demat Details (Empty)
+    f34_40 = [""] * 7
 
-    # Client Type (P=Physical)
-    client_type = "P"
-
-    # Demat Details
-    pms_code = ""
-    default_dp = ""
-    cdsl_dp_id = ""
-    cdsl_clt_id = ""
-    cmbp_id = ""
-    nsdl_dp_id = ""
-    nsdl_clt_id = ""
-
-    # Bank Details
+    # 41-45: Bank 1 Details
     bank = investor.bank_accounts.filter(is_default=True).first()
     if not bank:
         bank = investor.bank_accounts.first()
 
-    acc_type_1 = bank.account_type if bank else "SB"
-    acc_no_1 = bank.account_number if bank else ""
-    micr_1 = ""
-    ifsc_1 = bank.ifsc_code if bank else ""
-    default_bank_flag_1 = "Y"
+    acc_type = bank.account_type if bank else "SB"
+    acc_no = bank.account_number if bank else ""
+    ifsc = bank.ifsc_code if bank else ""
 
-    # Other banks (2-5) - sending blank
+    f41_45 = [acc_type, acc_no, "", ifsc, "Y"]
 
-    # Cheque Name
-    cheque_name = full_name
+    # 46-65: Banks 2-5 (20 Empty Fields)
+    f46_65 = [""] * 20
 
-    # Div Pay Mode
-    div_pay_mode = "02"
+    # 66-67: Cheque Name & Div Pay Mode
+    f66_67 = [full_name, "01"] # 01=Payout? Sample had 01.
 
-    # Address
-    addr1 = investor.address_1
-    addr2 = investor.address_2
-    addr3 = investor.address_3
-    city = investor.city
+    # 68-74: Address
     state_code = map_state_to_code(investor.state)
-    pincode = investor.pincode
-    country = investor.country
-
-    # Contact
-    resi_phone = ""
-    resi_fax = ""
-    off_phone = ""
-    off_fax = ""
-    email = investor.email
-    comm_mode = "M" # Mobile
-
-    # Foreign Addr (For NRI)
-    f_addr1 = ""
-    f_addr2 = ""
-    f_addr3 = ""
-    f_city = ""
-    f_pin = ""
-    f_state = ""
-    f_country = ""
-    f_resi = ""
-    f_fax = ""
-    f_off = ""
-    f_off_fax = ""
-
-    indian_mobile = investor.mobile
-
-    # Nominees
-    nominee = investor.nominees.first()
-    n1_name = nominee.name if nominee else ""
-    n1_rel = nominee.relationship if nominee else ""
-    n1_perc = str(nominee.percentage) if nominee else ""
-    n1_minor_flag = "N"
-    n1_dob = ""
-    n1_guardian = nominee.guardian_name if nominee else ""
-
-    # Nominees 2 & 3 (Blank)
-
-    # KYC Details
-    p_kyc_type = "K"
-    p_ckyc = ""
-    s_kyc_type = ""
-    s_ckyc = ""
-    t_kyc_type = ""
-    t_ckyc = ""
-    g_kyc_type = ""
-    g_ckyc = ""
-
-    # KRA Exempt Ref No
-    p_kra_ex_ref = ""
-    s_kra_ex_ref = ""
-    t_kra_ex_ref = ""
-    g_kra_ex_ref = ""
-
-    # Misc
-    aadhaar_updated = "N"
-    mapin_id = ""
-    paperless_flag = "Z" # Z=Paperless
-    lei_no = ""
-    lei_validity = ""
-
-    mobile_decl_flag = "SE" # Self
-    email_decl_flag = "SE" # Self
-
-    # Construct the list of values
-    fields = [
-        client_code,
-        p_first_name, p_middle_name, p_last_name,
-        tax_status, gender, dob, occupation, holding,
-        sec_h_fname, sec_h_mname, sec_h_lname,
-        thd_h_fname, thd_h_mname, thd_h_lname,
-        sec_h_dob, thd_h_dob,
-        guardian_fname, guardian_mname, guardian_lname, guardian_dob,
-        p_pan_exempt, s_pan_exempt, t_pan_exempt, g_pan_exempt,
-        p_pan, s_pan, t_pan, g_pan,
-        p_exempt_cat, s_exempt_cat, t_exempt_cat, g_exempt_cat,
-        client_type,
-        pms_code, default_dp, cdsl_dp_id, cdsl_clt_id, cmbp_id, nsdl_dp_id, nsdl_clt_id,
-        acc_type_1, acc_no_1, micr_1, ifsc_1, default_bank_flag_1,
-        "", "", "", "", "", # Bank 2
-        "", "", "", "", "", # Bank 3
-        "", "", "", "", "", # Bank 4
-        "", "", "", "", "", # Bank 5
-        cheque_name, div_pay_mode,
-        addr1, addr2, addr3, city, state_code, pincode, country,
-        resi_phone, resi_fax, off_phone, off_fax, email,
-        comm_mode,
-        f_addr1, f_addr2, f_addr3, f_city, f_pin, f_state, f_country,
-        f_resi, f_fax, f_off, f_off_fax,
-        indian_mobile,
-        n1_name, n1_rel, n1_perc, n1_minor_flag, n1_dob, n1_guardian,
-        "", "", "", "", "", "", # Nominee 2
-        "", "", "", "", "", "", # Nominee 3
-        p_kyc_type, p_ckyc,
-        s_kyc_type, s_ckyc,
-        t_kyc_type, t_ckyc,
-        g_kyc_type, g_ckyc,
-        p_kra_ex_ref, s_kra_ex_ref, t_kra_ex_ref, g_kra_ex_ref,
-        aadhaar_updated, mapin_id, paperless_flag,
-        lei_no, lei_validity,
-        mobile_decl_flag, email_decl_flag
+    f68_74 = [
+        investor.address_1,
+        investor.address_2,
+        investor.address_3,
+        investor.city,
+        state_code,
+        investor.pincode,
+        investor.country
     ]
 
-    # Join with pipe
-    return "|".join([str(f) for f in fields])
+    # 75-78: Contact (Resi/Off Phone/Fax) - Empty
+    f75_78 = ["", "", "", ""]
+
+    # 79: Email
+    f79 = [investor.email]
+
+    # 80: Comm Mode (P=Physical, M=Mobile, E=Electronic)
+    # Sample uses P.
+    f80 = ["P"]
+
+    # 81-91: Foreign Address (11 Empty Fields)
+    f81_91 = [""] * 11
+
+    # 92: Mobile
+    f92 = [investor.mobile]
+
+    # 93: KYC Type (K=KYC Compliant?) - Sample 'K'
+    f93 = ["K"]
+
+    # 94-100: Other KYC Types (7 Empty)
+    f94_100 = [""] * 7
+
+    # 101-104: KRA Exempt Refs (4 Empty)
+    f101_104 = [""] * 4
+
+    # 105-106: Aadhaar/Mapin (Empty)
+    f105_106 = ["", ""]
+
+    # 107: Paperless Flag (Sample P)
+    f107 = ["P"]
+
+    # 108-109: LEI (Empty)
+    f108_109 = ["", ""]
+
+    # 110-111: Mobile/Email Declaration (SE=Self)
+    f110_111 = ["SE", "SE"]
+
+    # 112-120: Reserved/Empty (9 Fields)
+    f112_120 = [""] * 9
+
+    # --- Nominee Section ---
+    nominees = list(investor.nominees.all())
+
+    # 121: Nominee Opted (Y/N)
+    f121 = ["Y"] if nominees else ["N"]
+
+    # 122: Nominee Reg Type (O=Ordinary?) - Only if opted
+    f122 = ["O"] if nominees else [""]
+
+    # Helper for Relation Code Mapping
+    def get_rel_code(rel_name):
+        r = rel_name.lower()
+        if 'spouse' in r or 'wife' in r or 'husband' in r: return '01'
+        if 'father' in r: return '07'
+        if 'mother' in r: return '08'
+        if 'son' in r: return '11'
+        if 'daughter' in r: return '12'
+        return '15' # Others
+
+    nom_blocks = []
+    # Loop for 3 possible nominees
+    for i in range(3):
+        if i < len(nominees):
+            n = nominees[i]
+
+            # Fields
+            nm_name = n.name
+            nm_rel = get_rel_code(n.relationship)
+            # Format percentage (e.g., 100.00 -> 100)
+            nm_perc = str(int(n.percentage)) if n.percentage % 1 == 0 else str(n.percentage)
+            nm_minor = "Y" if n.guardian_name else "N"
+            nm_dob = "" # Not captured
+            nm_g_name = n.guardian_name
+            nm_g_pan = "" # Not captured
+            nm_alloc = str(i + 1)
+            nm_pan = "" # Not captured
+
+            # Use Investor Contact/Addr as fallback
+            nm_email = investor.email
+            nm_mobile = investor.mobile
+            nm_addr1 = investor.address_1
+            nm_addr2 = investor.address_2
+            nm_addr3 = investor.address_3
+            nm_city = investor.city
+            nm_pin = investor.pincode
+            nm_country = investor.country
+
+            block = [
+                nm_name, nm_rel, nm_perc, nm_minor, nm_dob,
+                nm_g_name, nm_g_pan, nm_alloc, nm_pan,
+                nm_email, nm_mobile,
+                nm_addr1, nm_addr2, nm_addr3, nm_city, nm_pin, nm_country
+            ]
+        else:
+            block = [""] * 17
+
+        nom_blocks.extend(block)
+
+    # 174: Declaration Flag? (Sample Y)
+    f174 = ["Y"]
+
+    # 175-182: Empty (8 Fields)
+    f175_182 = [""] * 8
+
+    # Combine all
+    all_fields = (
+        f0_8 + f9_20 + f21 + f22_24 + f25_28 + f29_32 + f33 + f34_40 +
+        f41_45 + f46_65 + f66_67 + f68_74 + f75_78 + f79 + f80 +
+        f81_91 + f92 + f93 + f94_100 + f101_104 + f105_106 + f107 +
+        f108_109 + f110_111 + f112_120 + f121 + f122 + nom_blocks +
+        f174 + f175_182
+    )
+
+    return "|".join([str(f) for f in all_fields])
 
 
 def get_bse_order_params(order, member_id, user_id, password, pass_key):
@@ -263,53 +246,24 @@ def get_bse_order_params(order, member_id, user_id, password, pass_key):
         dict: Parameters to be passed to client.service.orderEntryParam()
     """
 
-    # Map Order fields to BSE fields
-
-    # 1. Transaction Code & BuySell
-    # Order.PURCHASE ('P') -> BuySell 'P'
-    # Order.REDEMPTION ('R') -> BuySell 'R'
-    # Order.SWITCH ('S') -> BuySell 'S'
-    # Order.SIP ('SIP') -> Handled separately usually, but for Lumpsum API it might be 'P' with SIP flag or separate API.
-    # Current task is Lumpsum.
-
     buy_sell = order.transaction_type
     if buy_sell == 'SIP':
-        # Default to P for now if it gets here, but SIP usually uses different logic
         buy_sell = 'P'
 
-    # 2. BuySellType (FRESH vs ADDITIONAL)
     buy_sell_type = "FRESH" if order.is_new_folio else "ADDITIONAL"
-
-    # 3. Client Code
     client_code = order.investor.ucc_code if order.investor.ucc_code else order.investor.pan
 
-    # 4. EUIN
     euin = order.euin if order.euin else ""
     euin_flag = "Y" if euin else "N"
-
-    # 5. Folio
     folio_no = order.folio.folio_number if order.folio else ""
-
-    # 6. DPC (Depository Participant Charge) - Physical is usually 'N'
     dpc = "N"
-
-    # 7. Transaction Mode - Physical 'P', Demat 'D'
     trans_mode = "P"
 
-    # 8. Amount & Units
-    # Format amount to 2 decimal places usually required, or simple string.
     txt_amount = f"{order.amount:.2f}" if order.amount else "0"
-    # Format quantity to 4 decimal places (standard for MF units)
     txt_quantity = f"{order.units:.4f}" if order.units else "0"
 
-    if buy_sell == 'R' or buy_sell == 'S':
-        # For Redemption/Switch, amount might be 0 if units are specified
-        # But our order model has both.
-        pass
-
-    # Construct the dictionary based on standard orderEntryParam signature
     params = {
-        'TransactionCode': 'NEW', # Always NEW for entry
+        'TransactionCode': 'NEW',
         'UniqueRefNo': str(order.unique_ref_no),
         'SchemeCode': order.scheme.scheme_code,
         'MemberCode': member_id,
@@ -330,7 +284,7 @@ def get_bse_order_params(order, member_id, user_id, password, pass_key):
         'AllRedeem': 'N',
         'FolioNo': folio_no,
         'Remarks': '',
-        'KYCStatus': 'Y', # Assuming compliant
+        'KYCStatus': 'Y',
         'SubMemberCode': '',
         'Password': password,
         'PassKey': pass_key,
@@ -344,53 +298,37 @@ def get_bse_order_params(order, member_id, user_id, password, pass_key):
 def get_bse_xsip_order_params(sip, member_id, user_id, password, pass_key):
     """
     Constructs the parameter dictionary for BSE StarMF xsipOrderEntryParam API (SOAP).
-
-    Args:
-        sip (SIP): The sip object.
-        member_id (str): BSE Member ID.
-        user_id (str): BSE User ID.
-        password (str): Encrypted Session Password.
-        pass_key (str): Random Pass Key used for encryption.
-
-    Returns:
-        dict: Parameters to be passed to client.service.xsipOrderEntryParam()
     """
 
-    # Client Code
     client_code = sip.investor.ucc_code if sip.investor.ucc_code else sip.investor.pan
 
-    # EUIN - SIP doesn't have direct distributor link, but we can traverse
-    # We should probably store EUIN on SIP model too, but for now grab from investor's distributor
     euin = ""
     if sip.investor.distributor:
         euin = sip.investor.distributor.euin
 
-    # Folio
     folio_no = sip.folio.folio_number if sip.folio else ""
-    buy_sell_type = "FRESH" if not folio_no else "ADDITIONAL" # Simple logic
+    buy_sell_type = "FRESH" if not folio_no else "ADDITIONAL"
 
-    # Frequency Code Map
     freq_map = {
         'MONTHLY': 'MONTHLY',
         'WEEKLY': 'WEEKLY',
         'QUARTERLY': 'QUARTERLY'
     }
 
-    # Start Date (DD/MM/YYYY)
     start_date = sip.start_date.strftime("%d/%m/%Y")
 
     params = {
         'TransactionCode': 'NEW',
-        'UniqueRefNo': f"SIP-{sip.id}", # Or generate a unique string
+        'UniqueRefNo': f"SIP-{sip.id}",
         'SchemeCode': sip.scheme.scheme_code,
         'MemberCode': member_id,
         'ClientCode': client_code,
         'UserId': user_id,
-        'TransMode': 'P', # Physical
+        'TransMode': 'P',
         'DPC': 'N',
         'MandateID': sip.mandate.mandate_id,
-        'FirstOrderFlag': 'Y', # Assuming XSIP generates first order
-        'Brokerage': '', # Default
+        'FirstOrderFlag': 'Y',
+        'Brokerage': '',
         'FrequencyType': freq_map.get(sip.frequency, 'MONTHLY'),
         'StartDate': start_date,
         'InstallmentAmount': f"{sip.amount:.2f}",
@@ -417,23 +355,21 @@ def get_bse_mandate_params(mandate, member_id, user_id, password, pass_key):
     """
     client_code = mandate.investor.ucc_code if mandate.investor.ucc_code else mandate.investor.pan
 
-    # Bank info from mandate.bank_account
     bank = mandate.bank_account
     if not bank:
-        # Fallback to default
         bank = mandate.investor.bank_accounts.filter(is_default=True).first()
 
     params = {
         'MemberCode': member_id,
         'ClientCode': client_code,
         'UserId': user_id,
-        'MandateType': 'XSIP', # Or 'ISIP', 'E-MANDATE'
+        'MandateType': 'XSIP',
         'MandateAmount': f"{mandate.amount_limit:.2f}",
         'StartDate': mandate.start_date.strftime("%d/%m/%Y"),
         'EndDate': mandate.end_date.strftime("%d/%m/%Y") if mandate.end_date else "31/12/2099",
         'BankAccountNo': bank.account_number if bank else "",
         'IFSC': bank.ifsc_code if bank else "",
-        'BankName': bank.bank_name if bank else "", # Optional
+        'BankName': bank.bank_name if bank else "",
         'AccountType': bank.account_type if bank else "SB",
         'Password': password,
         'PassKey': pass_key,
