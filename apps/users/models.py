@@ -159,7 +159,9 @@ class Nominee(models.Model):
     name = models.CharField(max_length=100)
     relationship = models.CharField(max_length=50)
     percentage = models.DecimalField(max_digits=5, decimal_places=2, help_text="Percentage of allocation")
+    date_of_birth = models.DateField(null=True, blank=True, help_text="Required if nominee is a minor")
     guardian_name = models.CharField(max_length=100, blank=True, help_text="If nominee is a minor")
+    guardian_pan = models.CharField(max_length=10, blank=True, help_text="If nominee is a minor")
 
     def __str__(self):
         return f"{self.name} ({self.percentage}%)"

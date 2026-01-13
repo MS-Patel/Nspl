@@ -161,8 +161,9 @@ def map_investor_to_bse_param_string(investor):
     # 121: Nominee Opted (Y/N)
     f121 = ["Y"] if nominees else ["N"]
 
-    # 122: Nominee Reg Type (O=Ordinary?) - Only if opted
-    f122 = ["O"] if nominees else [""]
+    # 122: Nominee Reg Type / SOA Flag
+    # If no nominees, this must be "N" (Nominee SOA Flag mentioned as N error)
+    f122 = ["O"] if nominees else ["N"]
 
     # Helper for Relation Code Mapping
     def get_rel_code(rel_name):
@@ -186,9 +187,9 @@ def map_investor_to_bse_param_string(investor):
             # Format percentage (e.g., 100.00 -> 100)
             nm_perc = str(int(n.percentage)) if n.percentage % 1 == 0 else str(n.percentage)
             nm_minor = "Y" if n.guardian_name else "N"
-            nm_dob = "" # Not captured
+            nm_dob = date_fmt(n.date_of_birth)
             nm_g_name = n.guardian_name
-            nm_g_pan = "" # Not captured
+            nm_g_pan = n.guardian_pan
             nm_alloc = str(i + 1)
             nm_pan = "" # Not captured
 
