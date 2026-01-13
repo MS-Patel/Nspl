@@ -119,7 +119,8 @@ def map_investor_to_bse_param_string(investor):
     f75_78 = ["", "", "", ""]
 
     # 79: Email
-    f79 = [investor.email]
+    email_to_use = investor.email if investor.email else investor.user.email
+    f79 = [email_to_use]
 
     # 80: Comm Mode (P=Physical, M=Mobile, E=Electronic)
     # Sample uses P.
@@ -194,7 +195,7 @@ def map_investor_to_bse_param_string(investor):
             nm_pan = "" # Not captured
 
             # Use Investor Contact/Addr as fallback
-            nm_email = investor.email
+            nm_email = investor.email if investor.email else investor.user.email
             nm_mobile = investor.mobile
             nm_addr1 = investor.address_1
             nm_addr2 = investor.address_2

@@ -19,7 +19,7 @@ def validate_investor_for_bse(investor: InvestorProfile) -> list[str]:
     elif not re.match(r'^[6-9]\d{9}$', investor.mobile):
         errors.append(f"Invalid Mobile number: {investor.mobile}")
 
-    if not investor.email:
+    if not investor.email and not investor.user.email:
         errors.append("Email is missing.")
 
     # 2. Address Details

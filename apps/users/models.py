@@ -155,9 +155,18 @@ class BankAccount(models.Model):
         return f"{self.bank_name} - {self.account_number}"
 
 class Nominee(models.Model):
+    RELATIONSHIP_CHOICES = [
+        ('Spouse', 'Spouse'),
+        ('Father', 'Father'),
+        ('Mother', 'Mother'),
+        ('Son', 'Son'),
+        ('Daughter', 'Daughter'),
+        ('Others', 'Others'),
+    ]
+
     investor = models.ForeignKey(InvestorProfile, on_delete=models.CASCADE, related_name='nominees')
     name = models.CharField(max_length=100)
-    relationship = models.CharField(max_length=50)
+    relationship = models.CharField(max_length=50, choices=RELATIONSHIP_CHOICES, default='Others')
     percentage = models.DecimalField(max_digits=5, decimal_places=2, help_text="Percentage of allocation")
     date_of_birth = models.DateField(null=True, blank=True, help_text="Required if nominee is a minor")
     guardian_name = models.CharField(max_length=100, blank=True, help_text="If nominee is a minor")

@@ -197,6 +197,9 @@ class NomineeForm(forms.ModelForm):
     class Meta:
         model = Nominee
         fields = ['name', 'relationship', 'percentage', 'date_of_birth', 'guardian_name', 'guardian_pan']
+        widgets = {
+            'relationship': forms.Select(),
+        }
 
 class BaseNomineeFormSet(BaseInlineFormSet):
     def clean(self):
