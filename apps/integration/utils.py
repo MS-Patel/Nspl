@@ -80,32 +80,46 @@ def map_investor_to_bse_param_string(investor):
     # 29-32: Exempt Categories (Empty)
     f29_32 = ["", "", "", ""]
 
-    # 33: Client Type (P=Physical)
-    f33 = ["P"]
+    # 33: Client Type (P=Physical, D=Demat)
+    f33 = [investor.client_type]
 
-    # 34-40: Demat Details (Empty)
-    f34_40 = [""] * 7
+    # 34-39: Demat Details (6 Fields: 35-40)
+    # Corrected alignment: Fields 35, 36, 37, 38, 39, 40.
+    if investor.client_type == InvestorProfile.DEMAT:
+        dep = investor.depository
+        dp_id = investor.dp_id
+        cl_id = investor.client_id
 
-    # 41-45: Bank 1 Details
+        f34_39 = [dep, dp_id, cl_id, "", "", ""]
+    else:
+        f34_39 = [""] * 6
+
+    # 40-44: Bank 1 Details (Fields 41-45)
+    # 41: Acc Type (Index 40)
+    # 42: Acc No (Index 41)
+    # 43: MICR (Index 42) - Empty
+    # 44: IFSC (Index 43)
+    # 45: Default Bank Flag (Index 44) - "Y"
+
     bank = investor.bank_accounts.filter(is_default=True).first()
     if not bank:
         bank = investor.bank_accounts.first()
 
     acc_type = bank.account_type if bank else "SB"
     acc_no = bank.account_number if bank else ""
-    ifsc = bank.ifsc_code if bank else ""
+    ifsc = bank.ifsc_code.strip() if bank and bank.ifsc_code else ""
 
-    f41_45 = [acc_type, acc_no, "", ifsc, "Y"]
+    f40_44 = [acc_type, acc_no, "", ifsc, "Y"]
 
-    # 46-65: Banks 2-5 (20 Empty Fields)
-    f46_65 = [""] * 20
+    # 45-64: Banks 2-5 (20 Empty Fields) - Fields 46-65
+    f45_64 = [""] * 20
 
-    # 66-67: Cheque Name & Div Pay Mode
-    f66_67 = [full_name, "01"] # 01=Payout? Sample had 01.
+    # 65-66: Cheque Name & Div Pay Mode (Fields 66-67)
+    f65_66 = [full_name, "01"] # 01=Payout? Sample had 01.
 
-    # 68-74: Address
+    # 67-73: Address (Fields 68-74)
     state_code = map_state_to_code(investor.state)
-    f68_74 = [
+    f67_73 = [
         investor.address_1,
         investor.address_2,
         investor.address_3,
@@ -115,56 +129,56 @@ def map_investor_to_bse_param_string(investor):
         investor.country
     ]
 
-    # 75-78: Contact (Resi/Off Phone/Fax) - Empty
-    f75_78 = ["", "", "", ""]
+    # 74-77: Contact (Resi/Off Phone/Fax) - Empty (Fields 75-78)
+    f74_77 = ["", "", "", ""]
 
-    # 79: Email
+    # 78: Email (Field 79)
     email_to_use = investor.email if investor.email else investor.user.email
-    f79 = [email_to_use]
+    f78 = [email_to_use]
 
-    # 80: Comm Mode (P=Physical, M=Mobile, E=Electronic)
+    # 79: Comm Mode (P=Physical, M=Mobile, E=Electronic) (Field 80)
     # Sample uses P.
-    f80 = ["P"]
+    f79 = ["P"]
 
-    # 81-91: Foreign Address (11 Empty Fields)
-    f81_91 = [""] * 11
+    # 80-90: Foreign Address (11 Empty Fields) (Fields 81-91)
+    f80_90 = [""] * 11
 
-    # 92: Mobile
-    f92 = [investor.mobile]
+    # 91: Mobile (Field 92)
+    f91 = [investor.mobile]
 
-    # 93: KYC Type (K=KYC Compliant?) - Sample 'K'
-    f93 = ["K"]
+    # 92: KYC Type (K=KYC Compliant?) - Sample 'K' (Field 93)
+    f92 = ["K"]
 
-    # 94-100: Other KYC Types (7 Empty)
-    f94_100 = [""] * 7
+    # 93-99: Other KYC Types (7 Empty) (Fields 94-100)
+    f93_99 = [""] * 7
 
-    # 101-104: KRA Exempt Refs (4 Empty)
-    f101_104 = [""] * 4
+    # 100-103: KRA Exempt Refs (4 Empty) (Fields 101-104)
+    f100_103 = [""] * 4
 
-    # 105-106: Aadhaar/Mapin (Empty)
-    f105_106 = ["", ""]
+    # 104-105: Aadhaar/Mapin (Empty) (Fields 105-106)
+    f104_105 = ["", ""]
 
-    # 107: Paperless Flag (Sample P)
-    f107 = ["P"]
+    # 106: Paperless Flag (Sample P) (Field 107)
+    f106 = ["P"]
 
-    # 108-109: LEI (Empty)
-    f108_109 = ["", ""]
+    # 107-108: LEI (Empty) (Fields 108-109)
+    f107_108 = ["", ""]
 
-    # 110-111: Mobile/Email Declaration (SE=Self)
-    f110_111 = ["SE", "SE"]
+    # 109-110: Mobile/Email Declaration (SE=Self) (Fields 110-111)
+    f109_110 = ["SE", "SE"]
 
-    # 112-120: Reserved/Empty (9 Fields)
-    f112_120 = [""] * 9
+    # 111-119: Reserved/Empty (9 Fields) (Fields 112-120)
+    f111_119 = [""] * 9
 
     # --- Nominee Section ---
     nominees = list(investor.nominees.all())
 
-    # 121: Nominee Opted (Y/N)
-    f121 = ["Y"] if nominees else ["N"]
+    # 120: Nominee Opted (Y/N) (Field 121)
+    f120 = ["Y"] if nominees else ["N"]
 
-    # 122: Nominee Reg Type / SOA Flag
+    # 121: Nominee Reg Type / SOA Flag (Field 122)
     # If no nominees, this must be "N" (Nominee SOA Flag mentioned as N error)
-    f122 = ["O"] if nominees else ["N"]
+    f121 = ["O"] if nominees else ["N"]
 
     # Helper for Relation Code Mapping
     def get_rel_code(rel_name):
@@ -192,7 +206,7 @@ def map_investor_to_bse_param_string(investor):
             nm_g_name = n.guardian_name
             nm_g_pan = n.guardian_pan
             nm_alloc = str(i + 1)
-            nm_pan = "" # Not captured
+            nm_pan = n.pan if n.pan else ""
 
             # Use Investor Contact/Addr as fallback
             nm_email = investor.email if investor.email else investor.user.email
@@ -215,19 +229,21 @@ def map_investor_to_bse_param_string(investor):
 
         nom_blocks.extend(block)
 
-    # 174: Declaration Flag? (Sample Y)
-    f174 = ["Y"]
+    # 173: Declaration Flag? (Sample Y) (Field 174)
+    # Previously mapped as f174
+    f173 = ["Y"]
 
-    # 175-182: Empty (8 Fields)
-    f175_182 = [""] * 8
+    # 174-182: Empty (9 Fields) (Fields 175-183)
+    # Adjusted to ensure total 183 fields.
+    f174_182 = [""] * 9
 
     # Combine all
     all_fields = (
-        f0_8 + f9_20 + f21 + f22_24 + f25_28 + f29_32 + f33 + f34_40 +
-        f41_45 + f46_65 + f66_67 + f68_74 + f75_78 + f79 + f80 +
-        f81_91 + f92 + f93 + f94_100 + f101_104 + f105_106 + f107 +
-        f108_109 + f110_111 + f112_120 + f121 + f122 + nom_blocks +
-        f174 + f175_182
+        f0_8 + f9_20 + f21 + f22_24 + f25_28 + f29_32 + f33 + f34_39 +
+        f40_44 + f45_64 + f65_66 + f67_73 + f74_77 + f78 + f79 +
+        f80_90 + f91 + f92 + f93_99 + f100_103 + f104_105 + f106 +
+        f107_108 + f109_110 + f111_119 + f120 + f121 + nom_blocks +
+        f173 + f174_182
     )
 
     return "|".join([str(f) for f in all_fields])
