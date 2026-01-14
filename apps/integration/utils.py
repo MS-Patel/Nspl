@@ -215,14 +215,14 @@ def map_investor_to_bse_param_string(investor):
             nm_addr2 = investor.address_2
             nm_addr3 = investor.address_3
             nm_city = investor.city
+            nm_state = map_state_to_code(investor.state)
             nm_pin = investor.pincode
-            nm_country = investor.country
 
             block = [
                 nm_name, nm_rel, nm_perc, nm_minor, nm_dob,
                 nm_g_name, nm_g_pan, nm_alloc, nm_pan,
-                nm_email, nm_mobile,
-                nm_addr1, nm_addr2, nm_addr3, nm_city, nm_pin, nm_country
+                nm_addr1, nm_addr2, nm_addr3, nm_city, nm_state, nm_pin,
+                nm_mobile, nm_email
             ]
         else:
             block = [""] * 17
