@@ -222,10 +222,11 @@ def map_investor_to_bse_param_string(investor):
                 nm_name, nm_rel, nm_perc, nm_minor, nm_dob,
                 nm_g_name, nm_g_pan, nm_alloc, nm_pan,
                 nm_addr1, nm_addr2, nm_addr3, nm_city, nm_state, nm_pin,
+                "", # Telephone
                 nm_mobile, nm_email
             ]
         else:
-            block = [""] * 17
+            block = [""] * 18
 
         nom_blocks.extend(block)
 
@@ -233,9 +234,9 @@ def map_investor_to_bse_param_string(investor):
     # Previously mapped as f174
     f173 = ["Y"]
 
-    # 174-182: Empty (9 Fields) (Fields 175-183)
+    # 174-182: Empty (6 Fields) (Fields 178-183)
     # Adjusted to ensure total 183 fields.
-    f174_182 = [""] * 9
+    f174_182 = [""] * 6
 
     # Combine all
     all_fields = (
