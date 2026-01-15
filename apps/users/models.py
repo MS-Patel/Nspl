@@ -130,6 +130,19 @@ class InvestorProfile(models.Model):
     pincode = models.CharField(max_length=6, blank=True)
     country = models.CharField(max_length=35, default='India', blank=True)
 
+    # Foreign Address Details (For NRI)
+    foreign_address_1 = models.CharField(max_length=40, blank=True, default='')
+    foreign_address_2 = models.CharField(max_length=40, blank=True, default='')
+    foreign_address_3 = models.CharField(max_length=40, blank=True, default='')
+    foreign_city = models.CharField(max_length=35, blank=True, default='')
+    foreign_state = models.CharField(max_length=35, blank=True, default='')
+    foreign_pincode = models.CharField(max_length=10, blank=True, default='')
+    foreign_country = models.CharField(max_length=35, blank=True, default='')
+    foreign_resi_phone = models.CharField(max_length=15, blank=True, default='')
+    foreign_res_fax = models.CharField(max_length=15, blank=True, default='')
+    foreign_off_phone = models.CharField(max_length=15, blank=True, default='')
+    foreign_off_fax = models.CharField(max_length=15, blank=True, default='')
+
     # BSE Specific Fields
     tax_status = models.CharField(max_length=2, choices=TAX_STATUS_CHOICES, default=INDIVIDUAL)
     occupation = models.CharField(max_length=2, choices=OCCUPATION_CHOICES, default=SERVICE)
@@ -141,14 +154,23 @@ class InvestorProfile(models.Model):
     dp_id = models.CharField(max_length=20, blank=True, help_text="Depository Participant ID")
     client_id = models.CharField(max_length=20, blank=True, help_text="Beneficiary ID / Client ID")
 
-    # Optional/Conditional Fields
+    # Joint Holders Details
     second_applicant_name = models.CharField(max_length=70, blank=True)
     second_applicant_pan = models.CharField(max_length=10, blank=True)
+    second_applicant_dob = models.DateField(null=True, blank=True)
+
     third_applicant_name = models.CharField(max_length=70, blank=True)
     third_applicant_pan = models.CharField(max_length=10, blank=True)
+    third_applicant_dob = models.DateField(null=True, blank=True)
 
     guardian_name = models.CharField(max_length=70, blank=True, help_text="Required if Tax Status is Minor")
     guardian_pan = models.CharField(max_length=10, blank=True, help_text="Required if Tax Status is Minor")
+
+    # Additional BSE 183 Fields
+    paperless_flag = models.CharField(max_length=1, default='P', choices=[('P', 'Physical'), ('Z', 'Paperless')])
+    lei_no = models.CharField(max_length=20, blank=True, default='')
+    lei_validity = models.DateField(null=True, blank=True)
+    mapin_id = models.CharField(max_length=20, blank=True, default='')
 
     # Status Flags
     kyc_status = models.BooleanField(default=False)
@@ -194,6 +216,16 @@ class Nominee(models.Model):
     guardian_name = models.CharField(max_length=100, blank=True, help_text="If nominee is a minor")
     guardian_pan = models.CharField(max_length=10, blank=True, help_text="If nominee is a minor")
     pan = models.CharField(max_length=10, blank=True, help_text="Nominee PAN (Optional)")
+
+    # Address & Contact
+    address_1 = models.CharField(max_length=40, blank=True, default='')
+    address_2 = models.CharField(max_length=40, blank=True, default='')
+    address_3 = models.CharField(max_length=40, blank=True, default='')
+    city = models.CharField(max_length=35, blank=True, default='')
+    state = models.CharField(max_length=30, blank=True, default='')
+    pincode = models.CharField(max_length=6, blank=True, default='')
+    mobile = models.CharField(max_length=15, blank=True, default='')
+    email = models.EmailField(blank=True)
 
     def __str__(self):
         return f"{self.name} ({self.percentage}%)"

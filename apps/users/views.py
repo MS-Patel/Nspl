@@ -380,14 +380,18 @@ class PushToBSEView(LoginRequiredMixin, View):
 
         # 3. Call API
         client = BSEStarMFClient()
+
+        # Determine Registration Type: NEW or MOD
+        regn_type = "MOD" if investor.ucc_code else "NEW"
+
         try:
-            response = client.register_client({'Param': param_string})
+            response = client.register_client({'Param': param_string}, regn_type=regn_type)
             if response['status'] == 'success':
                 # If success, the UCC we sent (which defaults to PAN) is now valid.
                 if not investor.ucc_code:
                     investor.ucc_code = investor.pan
                     investor.save()
-                messages.success(request, f"BSE Registration Successful: {response.get('remarks')}")
+                messages.success(request, f"BSE {regn_type} Registration Successful: {response.get('remarks')}")
             else:
                 messages.error(request, f"BSE Error: {response.get('remarks')}")
         except Exception as e:

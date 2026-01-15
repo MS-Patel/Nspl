@@ -207,23 +207,29 @@ class BSEStarMFClient:
             bse_logger.error(f"MANDATE REG ERROR: {str(e)}")
             return {'status': 'error', 'remarks': str(e)}
 
-    def register_client(self, payload):
+    def register_client(self, payload, regn_type="NEW"):
         """
         Registers a new client (UCC) using the JSON API (Enhanced UCC Registration).
 
         Args:
             payload (dict): The dictionary containing the client details (Param).
+            regn_type (str): "NEW" for registration, "MOD" for modification.
         """
         request_body = {
             "UserId": self.user_id,
             "MemberCode": self.member_id,
             "Password": self.password, # Sending raw password as per JSON doc example
-            "RegnType": "NEW",
+            "RegnType": regn_type,
             "Param": payload['Param'], # The pipe-separated string
             "Filler1": "",
             "Filler2": ""
         }
-        bse_logger.info(f"API: {self.common_api_url} | REQUEST BODY: {request_body}")
+
+        # Mask password for logging
+        log_body = request_body.copy()
+        log_body['Password'] = '********'
+
+        bse_logger.info(f"API: {self.common_api_url} | REGN TYPE: {regn_type} | REQUEST BODY: {log_body}")
         try:
             response = requests.post(self.common_api_url, json=request_body, verify=False) # verify=False for UAT often needed
             response.raise_for_status()
