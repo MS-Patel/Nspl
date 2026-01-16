@@ -25,6 +25,20 @@ def map_state_to_code(state_name):
     normalized = state_name.strip().upper()
     return mapping.get(normalized, 'XX')
 
+def get_rel_code(rel_name):
+    """
+    Maps relationship names to BSE Relationship Codes.
+    """
+    if not rel_name:
+        return ""
+    r = rel_name.lower()
+    if 'spouse' in r or 'wife' in r or 'husband' in r: return '01'
+    if 'father' in r: return '07'
+    if 'mother' in r: return '08'
+    if 'son' in r: return '11'
+    if 'daughter' in r: return '12'
+    return '15' # Others
+
 def map_investor_to_bse_param_string(investor):
     """
     Maps an InvestorProfile object to the pipe-separated string required by BSE Enhanced UCC Registration V183.
@@ -52,124 +66,112 @@ def map_investor_to_bse_param_string(investor):
     client_code = investor.ucc_code if investor.ucc_code else investor.pan
 
     # Name splitting
-    # Safe access to name field if it exists, else fallback to first+last
     user_name = getattr(investor.user, 'name', '')
     full_name = user_name if user_name else (investor.user.first_name + " " + investor.user.last_name)
     first_name, middle_name, last_name = split_name(full_name)
 
-    # 0-8: Basic Details (Indices 0-8)
-    f0_8 = [
-        client_code,
-        first_name, middle_name, last_name,
-        investor.tax_status,
-        investor.gender,
-        date_fmt(investor.dob),
-        investor.occupation,
-        investor.holding_nature
+    # 1-9: Basic Details
+    f01_09 = [
+        client_code,                        # 1: Client Code (UCC)
+        first_name,                         # 2: Primary Holder First Name
+        middle_name,                        # 3: Primary Holder Middle Name
+        last_name,                          # 4: Primary Holder Last Name
+        investor.tax_status,                # 5: Tax Status
+        investor.gender,                    # 6: Gender
+        date_fmt(investor.dob),             # 7: Primary Holder DOB/Incorporation
+        investor.occupation,                # 8: Occupation Code
+        investor.holding_nature             # 9: Holding Nature
     ]
 
-    # 9-20: Second/Third Holder Details (Indices 9-20)
-    # Fields:
-    # 9: 2nd First Name
-    # 10: 2nd Middle
-    # 11: 2nd Last
-    # 12: 3rd First
-    # 13: 3rd Middle
-    # 14: 3rd Last
-    # 15: 2nd DOB
-    # 16: 3rd DOB
-    # 17: Guardian First (if Minor)
-    # 18: Guardian Middle (if Minor)
-    # 19: Guardian Last (if Minor)
-    # 20: Guardian DOB
-
+    # 10-21: Joint Holders & Guardian
     sec_first, sec_middle, sec_last = split_name(investor.second_applicant_name)
     thd_first, thd_middle, thd_last = split_name(investor.third_applicant_name)
     g_first, g_middle, g_last = split_name(investor.guardian_name)
 
-    f9_20 = [
-        sec_first, sec_middle, sec_last,
-        thd_first, thd_middle, thd_last,
-        date_fmt(investor.second_applicant_dob),
-        date_fmt(investor.third_applicant_dob),
-        g_first, g_middle, g_last,
-        "" # Guardian DOB not stored in InvestorProfile currently (only name/pan), so sending blank or need to add field? Assuming blank for now as it wasn't requested explicitly beyond "details".
+    f10_21 = [
+        sec_first, sec_middle, sec_last,    # 10-12: Second Holder Name
+        thd_first, thd_middle, thd_last,    # 13-15: Third Holder Name
+        date_fmt(investor.second_applicant_dob), # 16: Second Holder DOB
+        date_fmt(investor.third_applicant_dob),  # 17: Third Holder DOB
+        g_first, g_middle, g_last,          # 18-20: Guardian Name
+        ""                                  # 21: Guardian DOB
     ]
 
-    # 21: Guardian Exempt / Holder 1 Exempt Flag (Sample 'N')
-    # If Primary PAN is Exempt, Y, else N. Currently defaulting to N unless we check PAN format.
-    # Assuming 'N' as per previous implementation unless we have exempt flag field.
-    # We do have specific exempt flags added now? No, we added them to model? No, I added them.
-    # Wait, did I add PAN Exempt flags? No, I added Joint Holder DOBs.
-    # Let's check model update again. I did not add PAN Exempt flags. I'll stick to 'N' default or infer.
-    f21 = ["N"]
-
-    # 22-24: Exempt Flags for 2nd, 3rd, Guardian
-    f22_24 = ["N", "N", "N"]
-
-    # 25-28: PANs (P, S, T, G)
-    g_pan = investor.guardian_pan if investor.tax_status == InvestorProfile.MINOR else ""
-    f25_28 = [
-        investor.pan,
-        investor.second_applicant_pan,
-        investor.third_applicant_pan,
-        g_pan
+    # 22-25: PAN Exempt Flags (Defaulting to 'N' if PAN is present)
+    f22_25 = [
+        "N", # 22: Primary Exempt
+        "N", # 23: Second Exempt
+        "N", # 24: Third Exempt
+        "N"  # 25: Guardian Exempt
     ]
 
-    # 29-32: Exempt Categories (Empty for now)
-    f29_32 = ["", "", "", ""]
+    # 26-29: PANs
+    f26_29 = [
+        investor.pan,                       # 26
+        investor.second_applicant_pan,      # 27
+        investor.third_applicant_pan,       # 28
+        investor.guardian_pan               # 29
+    ]
 
-    # 33: Client Type (P=Physical, D=Demat)
-    f33 = [investor.client_type]
+    # 30-33: Exempt Categories
+    f30_33 = ["", "", "", ""]               # 30, 31, 32, 33
 
-    # 34-39: Demat Details (6 Fields)
+    # 34: Client Type
+    f34 = [investor.client_type]            # 34
+
+    # 35: PMS (Optional)
+    f35 = [""]                              # 35
+
+    # 36-41: Demat Details
+    dep = ""
+    cdsl_dp = ""
+    cdsl_cl = ""
+    cmbp = ""
+    nsdl_dp = ""
+    nsdl_cl = ""
+
     if investor.client_type == InvestorProfile.DEMAT:
-        dep = investor.depository
-        dp_id = investor.dp_id
-        cl_id = investor.client_id
-        f34_39 = [dep, dp_id, cl_id, "", "", ""]
-    else:
-        f34_39 = [""] * 6
+        if investor.depository == 'C': # CDSL
+            dep = "CDSL"
+            cdsl_dp = investor.dp_id
+            cdsl_cl = investor.client_id
+        elif investor.depository == 'N': # NSDL
+            dep = "NSDL"
+            nsdl_dp = investor.dp_id
+            nsdl_cl = investor.client_id
 
-    # 40-44: Bank 1 Details (Fields 41-45)
-    # Sorted by ID (creation order) but prioritize default.
+    f36_41 = [dep, cdsl_dp, cdsl_cl, cmbp, nsdl_dp, nsdl_cl] # 36-41
+
+    # 42-66: Bank Accounts (5 Banks x 5 Fields)
     all_banks = list(investor.bank_accounts.all())
-    # Sort: Default first, then others
-    all_banks.sort(key=lambda b: not b.is_default)
+    all_banks.sort(key=lambda b: not b.is_default) # Default first
 
-    # Pad to 5 banks
-    banks = all_banks[:5]
-    while len(banks) < 5:
-        banks.append(None)
+    bank_fields = []
+    for i in range(5):
+        if i < len(all_banks):
+            b = all_banks[i]
+            bank_fields.extend([
+                b.account_type,                     # Acc Type
+                b.account_number,                   # Acc No
+                "",                                 # MICR
+                b.ifsc_code.strip(),                # IFSC
+                "Y" if i == 0 else "N"              # Default Flag (Only 1st is Y)
+            ])
+        else:
+            bank_fields.extend(["", "", "", "", "N"]) # Empty bank block
 
-    # Bank 1
-    b1 = banks[0]
-    f40_44 = [
-        b1.account_type if b1 else "SB",
-        b1.account_number if b1 else "",
-        "", # MICR
-        b1.ifsc_code.strip() if b1 and b1.ifsc_code else "",
-        "Y" if b1 else "N" # Default Flag
-    ]
+    f42_66 = bank_fields
 
-    # 45-64: Banks 2-5 (4 banks * 5 fields = 20 fields)
-    f45_64 = []
-    for i in range(1, 5):
-        bk = banks[i]
-        f45_64.extend([
-            bk.account_type if bk else "",
-            bk.account_number if bk else "",
-            "", # MICR
-            bk.ifsc_code.strip() if bk and bk.ifsc_code else "",
-            "N" # Not default
-        ])
+    # 67: Cheque Name
+    f67 = [full_name]
 
-    # 65-66: Cheque Name & Div Pay Mode
-    f65_66 = [full_name, "01"] # 01=Payout
+    # 68: Div Pay Mode
+    div_mode = "04" if (all_banks and all_banks[0].ifsc_code) else "01"
+    f68 = [div_mode]
 
-    # 67-73: Address (Fields 68-74)
+    # 69-75: Address Details
     state_code = map_state_to_code(investor.state)
-    f67_73 = [
+    f69_75 = [
         investor.address_1,
         investor.address_2,
         investor.address_3,
@@ -179,20 +181,24 @@ def map_investor_to_bse_param_string(investor):
         investor.country
     ]
 
-    # 74-77: Contact (Resi/Off Phone/Fax) - Using Mobile for Resi Phone as fallback
-    f74_77 = [investor.mobile, "", "", ""]
+    # 76-79: Contact
+    f76_79 = [
+        "",                     # 76: Resi Phone
+        "",                     # 77: Resi Fax
+        "",                     # 78: Off Phone
+        ""                      # 79: Off Fax
+    ]
 
-    # 78: Email
+    # 80: Email
     email_to_use = investor.email if investor.email else investor.user.email
-    f78 = [email_to_use]
+    f80 = [email_to_use]
 
-    # 79: Comm Mode (P=Physical, M=Mobile, E=Electronic)
-    f79 = ["M"] # Use Mobile/Email as preferred
+    # 81: Comm Mode (P/E/M)
+    f81 = ["M"]
 
-    # 80-90: Foreign Address (11 Fields) (Indices 80-90)
-    # Fields: Add1, Add2, Add3, City, Pin, State, Country, ResPhone, ResFax, OffPhone, OffFax
+    # 82-92: Foreign Address
     f_state_code = map_state_to_code(investor.foreign_state)
-    f80_90 = [
+    f82_92 = [
         investor.foreign_address_1,
         investor.foreign_address_2,
         investor.foreign_address_3,
@@ -206,151 +212,105 @@ def map_investor_to_bse_param_string(investor):
         investor.foreign_off_fax
     ]
 
-    # 91: Mobile
-    f91 = [investor.mobile]
+    # 93: Indian Mobile
+    f93 = [investor.mobile]
 
-    # 92: KYC Type (K=KYC Compliant)
-    f92 = ["K"]
+    # 94-123: KYC, CKYC, KRA Exempt, Contact, Dec, Guardian Rel, Nom Opt, Auth Mode
+    # Aligned with V183 structure where detailed Nominee block starts at 124.
 
-    # 93-99: Other KYC Types (7 Empty)
-    f93_99 = [""] * 7
+    # 94-101: KYC/CKYC
+    f94_101 = [
+        investor.kyc_type,                      # 94: Prim KYC Type
+        investor.ckyc_number,                   # 95: Prim CKYC
+        investor.second_applicant_kyc_type,     # 96: Sec KYC Type
+        investor.second_applicant_ckyc_number,  # 97: Sec CKYC
+        investor.third_applicant_kyc_type,      # 98: Thd KYC Type
+        investor.third_applicant_ckyc_number,   # 99: Thd CKYC
+        investor.guardian_kyc_type,             # 100: Guard KYC Type
+        investor.guardian_ckyc_number           # 101: Guard CKYC
+    ]
 
-    # 100-103: KRA Exempt Refs (4 Empty)
-    f100_103 = [""] * 4
+    # 102-105: KRA Exempt Ref
+    f102_105 = [
+        investor.kra_exempt_ref_no,                 # 102
+        investor.second_applicant_kra_exempt_ref_no,# 103
+        investor.third_applicant_kra_exempt_ref_no, # 104
+        investor.guardian_kra_exempt_ref_no         # 105
+    ]
 
-    # 104-105: Aadhaar/Mapin
-    f104_105 = ["", investor.mapin_id]
+    # 106-110: Misc
+    f106_110 = [
+        "",                                     # 106: Aadhaar Updated
+        investor.mapin_id,                      # 107: Mapin ID
+        investor.paperless_flag,                # 108: Paperless Flag
+        investor.lei_no,                        # 109: LEI
+        date_fmt(investor.lei_validity)         # 110: LEI Validity
+    ]
 
-    # 106: Paperless Flag
-    f106 = [investor.paperless_flag]
+    # 111-120: Contact Declarations
+    f111_120 = [
+        investor.mobile_declaration,            # 111: Prim Mob Dec
+        investor.email_declaration,             # 112: Prim Email Dec
+        investor.second_applicant_email,        # 113: Sec Email
+        investor.second_applicant_email_declaration, # 114: Sec Email Dec
+        investor.second_applicant_mobile,       # 115: Sec Mobile
+        investor.second_applicant_mobile_declaration, # 116: Sec Mob Dec
+        investor.third_applicant_email,         # 117: Thd Email
+        investor.third_applicant_email_declaration,   # 118: Thd Email Dec
+        investor.third_applicant_mobile,        # 119: Thd Mobile
+        investor.third_applicant_mobile_declaration   # 120: Thd Mob Dec
+    ]
 
-    # 107-108: LEI
-    f107_108 = [investor.lei_no, date_fmt(investor.lei_validity)]
+    # 121-123: Guardian Rel, Nom Opt, Auth Mode
+    f121_123 = [
+        investor.guardian_relationship,         # 121
+        investor.nomination_opt,                # 122
+        investor.nomination_auth_mode           # 123
+    ]
 
-    # 109-110: Mobile/Email Declaration (SE=Self)
-    f109_110 = ["SE", "SE"]
-
-    # 111-119: Reserved/Empty (9 Fields)
-    f111_119 = [""] * 9
-
-    # --- Nominee Section ---
+    # 124-174: Detailed Nominee Blocks (3 x 17 fields)
     nominees = list(investor.nominees.all())
+    f_nom_detailed = []
 
-    # 120: Nominee Opted (Y/N)
-    f120 = ["Y"] if nominees else ["N"]
-
-    # 121: Nominee Reg Type / SOA Flag
-    f121 = ["O"] if nominees else ["N"]
-
-    # Helper for Relation Code Mapping
-    def get_rel_code(rel_name):
-        r = rel_name.lower()
-        if 'spouse' in r or 'wife' in r or 'husband' in r: return '01'
-        if 'father' in r: return '07'
-        if 'mother' in r: return '08'
-        if 'son' in r: return '11'
-        if 'daughter' in r: return '12'
-        return '15' # Others
-
-    nom_blocks = []
-    # Loop for 3 possible nominees
     for i in range(3):
         if i < len(nominees):
             n = nominees[i]
+            minor_flag = "Y" if n.guardian_name else "N"
+            perc = str(int(n.percentage)) if n.percentage % 1 == 0 else str(n.percentage)
 
-            # Fields
-            nm_name = n.name
-            nm_rel = get_rel_code(n.relationship)
-            # Format percentage (e.g., 100.00 -> 100)
-            nm_perc = str(int(n.percentage)) if n.percentage % 1 == 0 else str(n.percentage)
-            nm_minor = "Y" if n.guardian_name else "N"
-            nm_dob = date_fmt(n.date_of_birth)
-            nm_g_name = n.guardian_name
-            nm_g_pan = n.guardian_pan
-            nm_alloc = str(i + 1)
-            nm_pan = n.pan if n.pan else ""
-
-            # Use Nominee specific Address/Contact
-            nm_email = n.email
-            nm_mobile = n.mobile
-            nm_addr1 = n.address_1
-            nm_addr2 = n.address_2
-            nm_addr3 = n.address_3
-            nm_city = n.city
-            nm_state = map_state_to_code(n.state)
-            nm_pin = n.pincode
-
-            block = [
-                nm_name, nm_rel, nm_perc, nm_minor, nm_dob,
-                nm_g_name, nm_g_pan, nm_alloc, nm_pan,
-                nm_addr1, nm_addr2, nm_addr3, nm_city, nm_state, nm_pin,
-                "", # Telephone
-                nm_mobile, nm_email
-            ]
+            f_nom_detailed.extend([
+                n.name,                     # Name
+                get_rel_code(n.relationship), # Relationship (using code)
+                perc,                       # %
+                minor_flag,                 # Minor
+                date_fmt(n.date_of_birth),  # DOB
+                n.guardian_name,            # Guardian
+                n.guardian_pan,             # Guardian PAN
+                n.id_type,                  # ID Type
+                n.id_number,                # ID No
+                n.email,                    # Email
+                n.mobile,                   # Mobile
+                n.address_1,                # Addr 1
+                n.address_2,                # Addr 2
+                n.address_3,                # Addr 3
+                n.city,                     # City
+                n.pincode,                  # Pin
+                ""                          # Contact/Tel
+            ])
         else:
-            block = [""] * 18
+            f_nom_detailed.extend([""] * 17)
 
-        nom_blocks.extend(block)
+    # 175: Nominee SOA Flag
+    f175 = ["N"]
 
-    # 173: Declaration Flag
-    f173 = ["Y"]
+    # 176-183: Fillers
+    f176_183 = [""] * 8
 
-    # 174-182: Empty (6 Fields for now, check exact count)
-    # Total fields check:
-    # 0-8: 9
-    # 9-20: 12
-    # 21: 1
-    # 22-24: 3
-    # 25-28: 4
-    # 29-32: 4
-    # 33: 1
-    # 34-39: 6
-    # 40-44: 5
-    # 45-64: 20
-    # 65-66: 2
-    # 67-73: 7
-    # 74-77: 4
-    # 78: 1
-    # 79: 1
-    # 80-90: 11
-    # 91: 1
-    # 92: 1
-    # 93-99: 7
-    # 100-103: 4
-    # 104-105: 2
-    # 106: 1
-    # 107-108: 2
-    # 109-110: 2
-    # 111-119: 9
-    # 120: 1
-    # 121: 1
-    # 122-139 (Nom1): 18
-    # 140-157 (Nom2): 18
-    # 158-175 (Nom3): 18
-    # 176 (Dec Flag): 1
-    # Total so far: 9+12+1+3+4+4+1+6+5+20+2+7+4+1+1+11+1+1+7+4+2+1+2+2+9+1+1+18+18+18+1 = 176
-    # 183 - 176 = 7 fields remaining.
-
-    # Wait, my previous index calculation had 173 as Dec Flag.
-    # Start of Nominee Block is after Index 121.
-    # Nom1: 122..139
-    # Nom2: 140..157
-    # Nom3: 158..175
-    # Next Index is 176.
-    # So f176 is "Y".
-    # Remaining indices: 177, 178, 179, 180, 181, 182. (6 fields).
-    # So f177_182 = [""] * 6.
-
-    f176 = ["Y"]
-    f177_182 = [""] * 6
-
-    # Combine all
     all_fields = (
-        f0_8 + f9_20 + f21 + f22_24 + f25_28 + f29_32 + f33 + f34_39 +
-        f40_44 + f45_64 + f65_66 + f67_73 + f74_77 + f78 + f79 +
-        f80_90 + f91 + f92 + f93_99 + f100_103 + f104_105 + f106 +
-        f107_108 + f109_110 + f111_119 + f120 + f121 + nom_blocks +
-        f176 + f177_182
+        f01_09 + f10_21 + f22_25 + f26_29 + f30_33 + f34 + f35 + f36_41 +
+        f42_66 + f67 + f68 + f69_75 + f76_79 + f80 + f81 + f82_92 + f93 +
+        f94_101 + f102_105 + f106_110 + f111_120 + f121_123 +
+        f_nom_detailed + f175 + f176_183
     )
 
     return "|".join([str(f) for f in all_fields])
@@ -359,16 +319,6 @@ def map_investor_to_bse_param_string(investor):
 def get_bse_order_params(order, member_id, user_id, password, pass_key):
     """
     Constructs the parameter dictionary for BSE StarMF orderEntryParam API (SOAP).
-
-    Args:
-        order (Order): The order object.
-        member_id (str): BSE Member ID.
-        user_id (str): BSE User ID.
-        password (str): Encrypted Session Password.
-        pass_key (str): Random Pass Key used for encryption.
-
-    Returns:
-        dict: Parameters to be passed to client.service.orderEntryParam()
     """
 
     buy_sell = order.transaction_type
