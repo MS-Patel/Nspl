@@ -111,6 +111,42 @@ class InvestorProfile(models.Model):
         (NSDL, 'NSDL'),
     ]
 
+    # KYC Types
+    KRA_COMPLIANT = 'K'
+    CKYC_COMPLIANT = 'C'
+    BIOMETRIC = 'B'
+    AADHAAR_EKYC = 'E'
+
+    KYC_TYPE_CHOICES = [
+        (KRA_COMPLIANT, 'KRA Compliant'),
+        (CKYC_COMPLIANT, 'CKYC Compliant'),
+        (BIOMETRIC, 'Biometric KYC'),
+        (AADHAAR_EKYC, 'Aadhaar E-KYC'),
+    ]
+
+    # Declaration Choices
+    SELF = 'SE'
+    SPOUSE = 'SP'
+    DEPENDENT_CHILDREN = 'DC'
+    DEPENDENT_SIBLINGS = 'DS'
+    DEPENDENT_PARENTS = 'DP'
+    GUARDIAN = 'GD'
+    PMS = 'PM'
+    CUSTODIAN = 'CD'
+    POA = 'PO'
+
+    DECLARATION_CHOICES = [
+        (SELF, 'Self'),
+        (SPOUSE, 'Spouse'),
+        (DEPENDENT_CHILDREN, 'Dependent Children'),
+        (DEPENDENT_SIBLINGS, 'Dependent Siblings'),
+        (DEPENDENT_PARENTS, 'Dependent Parents'),
+        (GUARDIAN, 'Guardian'),
+        (PMS, 'PMS'),
+        (CUSTODIAN, 'Custodian'),
+        (POA, 'POA'),
+    ]
+
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='investor_profile')
     distributor = models.ForeignKey(DistributorProfile, on_delete=models.SET_NULL, null=True, blank=True, related_name='investors')
 
@@ -158,19 +194,47 @@ class InvestorProfile(models.Model):
     second_applicant_name = models.CharField(max_length=70, blank=True)
     second_applicant_pan = models.CharField(max_length=10, blank=True)
     second_applicant_dob = models.DateField(null=True, blank=True)
+    second_applicant_email = models.EmailField(blank=True)
+    second_applicant_mobile = models.CharField(max_length=15, blank=True)
+    second_applicant_kyc_type = models.CharField(max_length=1, choices=KYC_TYPE_CHOICES, blank=True)
+    second_applicant_ckyc_number = models.CharField(max_length=14, blank=True)
+    second_applicant_kra_exempt_ref_no = models.CharField(max_length=10, blank=True)
+    second_applicant_email_declaration = models.CharField(max_length=2, choices=DECLARATION_CHOICES, default=SELF)
+    second_applicant_mobile_declaration = models.CharField(max_length=2, choices=DECLARATION_CHOICES, default=SELF)
 
     third_applicant_name = models.CharField(max_length=70, blank=True)
     third_applicant_pan = models.CharField(max_length=10, blank=True)
     third_applicant_dob = models.DateField(null=True, blank=True)
+    third_applicant_email = models.EmailField(blank=True)
+    third_applicant_mobile = models.CharField(max_length=15, blank=True)
+    third_applicant_kyc_type = models.CharField(max_length=1, choices=KYC_TYPE_CHOICES, blank=True)
+    third_applicant_ckyc_number = models.CharField(max_length=14, blank=True)
+    third_applicant_kra_exempt_ref_no = models.CharField(max_length=10, blank=True)
+    third_applicant_email_declaration = models.CharField(max_length=2, choices=DECLARATION_CHOICES, default=SELF)
+    third_applicant_mobile_declaration = models.CharField(max_length=2, choices=DECLARATION_CHOICES, default=SELF)
 
+    # Guardian Details
     guardian_name = models.CharField(max_length=70, blank=True, help_text="Required if Tax Status is Minor")
     guardian_pan = models.CharField(max_length=10, blank=True, help_text="Required if Tax Status is Minor")
+    guardian_kyc_type = models.CharField(max_length=1, choices=KYC_TYPE_CHOICES, blank=True)
+    guardian_ckyc_number = models.CharField(max_length=14, blank=True)
+    guardian_kra_exempt_ref_no = models.CharField(max_length=10, blank=True)
+    guardian_relationship = models.CharField(max_length=50, blank=True) # Could be choice field later
 
     # Additional BSE 183 Fields
     paperless_flag = models.CharField(max_length=1, default='P', choices=[('P', 'Physical'), ('Z', 'Paperless')])
     lei_no = models.CharField(max_length=20, blank=True, default='')
     lei_validity = models.DateField(null=True, blank=True)
     mapin_id = models.CharField(max_length=20, blank=True, default='')
+
+    # New Fields for V183
+    kyc_type = models.CharField(max_length=1, choices=KYC_TYPE_CHOICES, default=KRA_COMPLIANT)
+    ckyc_number = models.CharField(max_length=14, blank=True)
+    kra_exempt_ref_no = models.CharField(max_length=10, blank=True)
+    mobile_declaration = models.CharField(max_length=2, choices=DECLARATION_CHOICES, default=SELF)
+    email_declaration = models.CharField(max_length=2, choices=DECLARATION_CHOICES, default=SELF)
+    nomination_opt = models.CharField(max_length=1, choices=[('Y', 'Yes'), ('N', 'No')], default='N')
+    nomination_auth_mode = models.CharField(max_length=1, blank=True) # e.g. 'O' for Online
 
     # Status Flags
     kyc_status = models.BooleanField(default=False)
@@ -208,6 +272,22 @@ class Nominee(models.Model):
         ('Others', 'Others'),
     ]
 
+    ID_TYPE_CHOICES = [
+        ('A', 'Passport'),
+        ('B', 'Election ID Card'),
+        ('C', 'PAN Card'),
+        ('D', 'ID Card'),
+        ('E', 'Driving License'),
+        ('G', 'UIDIA / Aadhar letter'),
+        ('H', 'NREGA Job Card'),
+        ('O', 'Others'),
+        ('X', 'Not categorized'),
+        ('T', 'TIN'),
+        ('C1', 'Company Identification Number'),
+        ('G1', 'US GIIN'),
+        ('E1', 'Global Entity Identification Number'),
+    ]
+
     investor = models.ForeignKey(InvestorProfile, on_delete=models.CASCADE, related_name='nominees')
     name = models.CharField(max_length=100)
     relationship = models.CharField(max_length=50, choices=RELATIONSHIP_CHOICES, default='Others')
@@ -226,6 +306,10 @@ class Nominee(models.Model):
     pincode = models.CharField(max_length=6, blank=True, default='')
     mobile = models.CharField(max_length=15, blank=True, default='')
     email = models.EmailField(blank=True)
+
+    # New Fields for V183
+    id_type = models.CharField(max_length=2, choices=ID_TYPE_CHOICES, blank=True)
+    id_number = models.CharField(max_length=20, blank=True)
 
     def __str__(self):
         return f"{self.name} ({self.percentage}%)"
