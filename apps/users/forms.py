@@ -4,6 +4,7 @@ from django.db import transaction
 from django.forms import inlineformset_factory, BaseInlineFormSet
 from django.core.validators import RegexValidator
 from .models import RMProfile, DistributorProfile, InvestorProfile, BankAccount, Nominee, Document
+from .constants import STATE_CHOICES
 from datetime import date
 
 User = get_user_model()
@@ -161,16 +162,51 @@ class InvestorProfileForm(forms.ModelForm):
     # Date widget override
     dob = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}), required=True)
 
+    # State Dropdown
+    state = forms.ChoiceField(choices=STATE_CHOICES, required=False)
+    foreign_state = forms.ChoiceField(choices=STATE_CHOICES, required=False, label="Foreign State")
+
     class Meta:
         model = InvestorProfile
         fields = [
             'pan', 'dob', 'gender', 'mobile',
             'tax_status', 'occupation', 'holding_nature',
             'address_1', 'address_2', 'address_3', 'city', 'state', 'pincode', 'country',
-            'guardian_name', 'guardian_pan',
-            'second_applicant_name', 'second_applicant_pan',
-            'third_applicant_name', 'third_applicant_pan',
+
+            # Foreign Address
+            'foreign_address_1', 'foreign_address_2', 'foreign_address_3',
+            'foreign_city', 'foreign_state', 'foreign_pincode', 'foreign_country',
+            'foreign_resi_phone', 'foreign_res_fax', 'foreign_off_phone', 'foreign_off_fax',
+
+            # Guardian
+            'guardian_name', 'guardian_pan', 'guardian_kyc_type', 'guardian_ckyc_number',
+            'guardian_relationship', 'guardian_kra_exempt_ref_no',
+
+            # Joint Holders
+            'second_applicant_name', 'second_applicant_pan', 'second_applicant_dob',
+            'second_applicant_email', 'second_applicant_mobile', 'second_applicant_kyc_type',
+            'second_applicant_ckyc_number', 'second_applicant_kra_exempt_ref_no',
+            'second_applicant_email_declaration', 'second_applicant_mobile_declaration',
+
+            'third_applicant_name', 'third_applicant_pan', 'third_applicant_dob',
+            'third_applicant_email', 'third_applicant_mobile', 'third_applicant_kyc_type',
+            'third_applicant_ckyc_number', 'third_applicant_kra_exempt_ref_no',
+            'third_applicant_email_declaration', 'third_applicant_mobile_declaration',
+
+            # Demat
+            'client_type', 'depository', 'dp_id', 'client_id',
+
+            # Misc V183
+            'kyc_type', 'ckyc_number', 'kra_exempt_ref_no',
+            'mobile_declaration', 'email_declaration',
+            'nomination_opt', 'nomination_auth_mode',
+            'lei_no', 'lei_validity', 'mapin_id', 'paperless_flag'
         ]
+        widgets = {
+            'lei_validity': forms.DateInput(attrs={'type': 'date'}),
+            'second_applicant_dob': forms.DateInput(attrs={'type': 'date'}),
+            'third_applicant_dob': forms.DateInput(attrs={'type': 'date'}),
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -194,9 +230,17 @@ class NomineeForm(forms.ModelForm):
     )
     guardian_pan = forms.CharField(max_length=10, required=False, validators=[pan_validator])
 
+    # State Dropdown
+    state = forms.ChoiceField(choices=STATE_CHOICES, required=False)
+
     class Meta:
         model = Nominee
-        fields = ['name', 'relationship', 'percentage', 'date_of_birth', 'guardian_name', 'guardian_pan']
+        fields = [
+            'name', 'relationship', 'percentage', 'date_of_birth',
+            'guardian_name', 'guardian_pan', 'pan',
+            'address_1', 'address_2', 'address_3', 'city', 'state', 'pincode', 'mobile', 'email',
+            'id_type', 'id_number'
+        ]
         widgets = {
             'relationship': forms.Select(),
         }

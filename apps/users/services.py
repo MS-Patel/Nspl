@@ -32,6 +32,29 @@ def validate_investor_for_bse(investor: InvestorProfile) -> list[str]:
     elif not re.match(r'^[1-9][0-9]{5}$', investor.pincode):
         errors.append(f"Invalid Pincode: {investor.pincode}")
 
+    # NRI Check (Tax Status: 21, 24)
+    if investor.tax_status in [InvestorProfile.NRI_REPATRIABLE, InvestorProfile.NRI_NON_REPATRIABLE]:
+        if not investor.foreign_address_1:
+            errors.append("Foreign Address Line 1 is missing for NRI Investor.")
+        if not investor.foreign_city:
+            errors.append("Foreign City is missing for NRI Investor.")
+        if not investor.foreign_country:
+            errors.append("Foreign Country is missing for NRI Investor.")
+        if not investor.foreign_pincode:
+            errors.append("Foreign Pincode is missing for NRI Investor.")
+
+    # Demat Check
+    if investor.client_type == InvestorProfile.DEMAT:
+        if not investor.depository:
+            errors.append("Depository (CDSL/NSDL) must be selected for Demat Client Type.")
+        if investor.depository == InvestorProfile.CDSL:
+            if not investor.dp_id: errors.append("DP ID is required for CDSL.")
+            if not investor.client_id: errors.append("Client ID is required for CDSL.")
+        elif investor.depository == InvestorProfile.NSDL:
+            if not investor.dp_id: errors.append("DP ID is required for NSDL.")
+            if not investor.client_id: errors.append("Client ID is required for NSDL.")
+
+
     # 3. Bank Account
     # Must have at least one account. We prioritize default, then first.
     bank = investor.bank_accounts.filter(is_default=True).first() or investor.bank_accounts.first()
@@ -53,6 +76,15 @@ def validate_investor_for_bse(investor: InvestorProfile) -> list[str]:
             errors.append(f"Total Nominee Percentage must be 100%. Current total: {total_percentage}%")
 
         for i, n in enumerate(nominees, 1):
+            if not n.address_1:
+                errors.append(f"Nominee {i} ({n.name}): Address Line 1 is missing.")
+            if not n.city:
+                errors.append(f"Nominee {i} ({n.name}): City is missing.")
+            if not n.pincode:
+                errors.append(f"Nominee {i} ({n.name}): Pincode is missing.")
+            if not n.relationship:
+                errors.append(f"Nominee {i} ({n.name}): Relationship is missing.")
+
             if n.date_of_birth:
                 # Check for Minor
                 from datetime import date
@@ -68,9 +100,11 @@ def validate_investor_for_bse(investor: InvestorProfile) -> list[str]:
 
     # 5. Minor Investor Check
     if investor.tax_status == InvestorProfile.MINOR:
-         if not investor.guardian_name:
-             errors.append("Investor is a Minor but Guardian Name is missing.")
-         if not investor.guardian_pan:
-             errors.append("Investor is a Minor but Guardian PAN is missing.")
+        if not investor.guardian_name:
+            errors.append("Investor is a Minor but Guardian Name is missing.")
+        if not investor.guardian_pan:
+            errors.append("Investor is a Minor but Guardian PAN is missing.")
+        if not investor.guardian_relationship:
+            errors.append("Investor is a Minor but Guardian Relationship is missing.")
 
     return errors
