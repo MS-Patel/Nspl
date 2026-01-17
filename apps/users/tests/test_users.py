@@ -69,8 +69,21 @@ class TestUserCreation:
             'holding_nature': 'SI',
             'address_1': 'Test Address',
             'city': 'Mumbai',
-            'state': 'Maharashtra',
+            'state': 'MAHARASHTRA',
             'pincode': '400001',
+            'country': 'India',
+
+            # Default V183 fields
+            'kyc_type': 'K',
+            'mobile_declaration': 'SE',
+            'email_declaration': 'SE',
+            'paperless_flag': 'P',
+            'second_applicant_email_declaration': 'SE',
+            'second_applicant_mobile_declaration': 'SE',
+            'third_applicant_email_declaration': 'SE',
+            'third_applicant_mobile_declaration': 'SE',
+            'client_type': 'P',
+            'nomination_opt': 'Y',
 
             # Management Forms for Formsets
             'bank_accounts-TOTAL_FORMS': '1',
@@ -94,15 +107,19 @@ class TestUserCreation:
             'nominees-0-name': 'Nominee One',
             'nominees-0-relationship': 'Spouse',
             'nominees-0-percentage': '100',
+            'nominees-0-address_1': 'Nominee Addr',
+            'nominees-0-city': 'Mumbai',
+            'nominees-0-state': 'MAHARASHTRA',
+            'nominees-0-pincode': '400001',
         }
 
         response = client.post(url, data)
 
         # Debugging output if validation fails
         if response.status_code == 200:
-             # Form errors are usually in context['form'].errors or context['<formset_name>'].errors
-             # Note: pytest captures stdout/stderr, use -s to see print or assertion message
-             pass
+             print(response.context['form'].errors)
+             # print(response.context['bank_accounts'].errors)
+             # print(response.context['nominees'].errors)
 
         assert response.status_code == 302
 

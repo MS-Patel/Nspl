@@ -1,29 +1,16 @@
 from apps.users.models import InvestorProfile, BankAccount, Nominee
+from apps.users.constants import STATE_MAPPING
 
 def map_state_to_code(state_name):
     """
     Maps state names to BSE State Codes.
     Defaults to 'MA' (Maharashtra) or 'XX' (Others) if not found.
     """
-    mapping = {
-        'ANDAMAN & NICOBAR': 'AN', 'ANDHRA PRADESH': 'AP', 'ARUNACHAL PRADESH': 'AR',
-        'ASSAM': 'AS', 'BIHAR': 'BH', 'CHANDIGARH': 'CH', 'CHHATTISGARH': 'CG',
-        'DADRA AND NAGAR HAVELI': 'DN', 'DAMAN AND DIU': 'DD', 'DELHI': 'DL',
-        'GOA': 'GO', 'GUJARAT': 'GU', 'HARYANA': 'HA', 'HIMACHAL PRADESH': 'HP',
-        'JAMMU & KASHMIR': 'JM', 'JHARKHAND': 'JK', 'KARNATAKA': 'KA', 'KERALA': 'KE',
-        'LAKSHADWEEP': 'LD', 'MADHYA PRADESH': 'MP', 'MAHARASHTRA': 'MA', 'MANIPUR': 'MN',
-        'MEGHALAYA': 'ME', 'MIZORAM': 'MI', 'NAGALAND': 'NA', 'NEW DELHI': 'ND',
-        'ODISHA': 'OR', 'ORISSA': 'OR', 'PUDUCHERRY': 'PO', 'PONDICHERRY': 'PO',
-        'PUNJAB': 'PU', 'RAJASTHAN': 'RA', 'SIKKIM': 'SI', 'TAMIL NADU': 'TN',
-        'TELANGANA': 'TG', 'TRIPURA': 'TR', 'UTTAR PRADESH': 'UP', 'UTTARAKHAND': 'UC',
-        'UTTARANCHAL': 'UC', 'WEST BENGAL': 'WB'
-    }
-
     if not state_name:
         return ""
 
     normalized = state_name.strip().upper()
-    return mapping.get(normalized, 'XX')
+    return STATE_MAPPING.get(normalized, 'XX')
 
 def get_rel_code(rel_name):
     """
