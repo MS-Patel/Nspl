@@ -118,6 +118,35 @@
                     <p>{{ investor.address_1 }}</p>
                     <p>{{ investor.address_2 }}</p>
                     <p>{{ investor.city }}, {{ investor.state }} - {{ investor.pincode }}</p>
+                    <p>{{ investor.country }}</p>
+
+                    {% if investor.foreign_address_1 %}
+                    <div class="my-4 h-px bg-slate-200 dark:bg-navy-500"></div>
+                    <h4 class="text-lg font-medium text-slate-700 dark:text-navy-100 mb-4">Foreign Address</h4>
+                    <p>{{ investor.foreign_address_1 }}</p>
+                    <p>{{ investor.foreign_address_2 }}</p>
+                    <p>{{ investor.foreign_city }}, {{ investor.foreign_state }} - {{ investor.foreign_pincode }}</p>
+                    <p>{{ investor.foreign_country }}</p>
+                    {% endif %}
+
+                    {% if investor.second_applicant_name %}
+                    <div class="my-4 h-px bg-slate-200 dark:bg-navy-500"></div>
+                    <h4 class="text-lg font-medium text-slate-700 dark:text-navy-100 mb-4">Joint Holders</h4>
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <div>
+                            <h5 class="font-medium">Second Applicant</h5>
+                            <p>Name: {{ investor.second_applicant_name }}</p>
+                            <p>PAN: {{ investor.second_applicant_pan }}</p>
+                        </div>
+                        {% if investor.third_applicant_name %}
+                        <div>
+                            <h5 class="font-medium">Third Applicant</h5>
+                            <p>Name: {{ investor.third_applicant_name }}</p>
+                            <p>PAN: {{ investor.third_applicant_pan }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
 
                     <div class="my-4 h-px bg-slate-200 dark:bg-navy-500"></div>
 
@@ -153,16 +182,34 @@
                             <thead>
                                 <tr>
                                     <th class="whitespace-nowrap rounded-tl-lg bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">Name</th>
-                                    <th class="whitespace-nowrap bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">Relationship</th>
-                                    <th class="whitespace-nowrap rounded-tr-lg bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">Percentage</th>
+                                    <th class="whitespace-nowrap bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">Rel / %</th>
+                                    <th class="whitespace-nowrap bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">Address</th>
+                                    <th class="whitespace-nowrap rounded-tr-lg bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">Guardian</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for nominee in nominees %}
                                 <tr class="border-y border-transparent border-b-slate-200 dark:border-b-navy-500">
-                                    <td class="whitespace-nowrap px-4 py-3 sm:px-5">{{ nominee.name }}</td>
-                                    <td class="whitespace-nowrap px-4 py-3 sm:px-5">{{ nominee.relationship }}</td>
-                                    <td class="whitespace-nowrap px-4 py-3 sm:px-5">{{ nominee.percentage }}%</td>
+                                    <td class="whitespace-nowrap px-4 py-3 sm:px-5">
+                                        {{ nominee.name }}
+                                        <div class="text-xs text-slate-400">PAN: {{ nominee.pan|default:"-" }}</div>
+                                    </td>
+                                    <td class="whitespace-nowrap px-4 py-3 sm:px-5">
+                                        {{ nominee.relationship }}
+                                        <span class="tag rounded-full bg-info/10 text-info ml-1">{{ nominee.percentage }}%</span>
+                                    </td>
+                                    <td class="whitespace-nowrap px-4 py-3 sm:px-5 text-xs">
+                                        {{ nominee.address_1 }}<br>
+                                        {{ nominee.city }}, {{ nominee.pincode }}
+                                    </td>
+                                    <td class="whitespace-nowrap px-4 py-3 sm:px-5 text-xs">
+                                        {% if nominee.guardian_name %}
+                                            {{ nominee.guardian_name }}<br>
+                                            <span class="text-slate-400">PAN: {{ nominee.guardian_pan }}</span>
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
                                 </tr>
                                 {% endfor %}
                             </tbody>

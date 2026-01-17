@@ -234,7 +234,7 @@ class InvestorProfile(models.Model):
     mobile_declaration = models.CharField(max_length=2, choices=DECLARATION_CHOICES, default=SELF)
     email_declaration = models.CharField(max_length=2, choices=DECLARATION_CHOICES, default=SELF)
     nomination_opt = models.CharField(max_length=1, choices=[('Y', 'Yes'), ('N', 'No')], default='N')
-    nomination_auth_mode = models.CharField(max_length=1, blank=True) # e.g. 'O' for Online
+    nomination_auth_mode = models.CharField(max_length=1, choices=[('O', 'Online'), ('P', 'Physical')], blank=True)
 
     # Status Flags
     kyc_status = models.BooleanField(default=False)

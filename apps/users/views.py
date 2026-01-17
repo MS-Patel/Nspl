@@ -275,6 +275,19 @@ class InvestorCreateView(LoginRequiredMixin, CreateView):
 
         return super().form_valid(form)
 
+    def form_invalid(self, form):
+        if self.request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            errors = dict(form.errors.items())
+            # Add formset errors if any
+            context = self.get_context_data()
+            if 'bank_accounts' in context and not context['bank_accounts'].is_valid():
+                errors['bank_accounts'] = context['bank_accounts'].errors
+            if 'nominees' in context and not context['nominees'].is_valid():
+                errors['nominees'] = context['nominees'].errors
+
+            return JsonResponse({'status': 'error', 'errors': errors}, status=400)
+        return super().form_invalid(form)
+
 class InvestorUpdateView(LoginRequiredMixin, UpdateView):
     model = InvestorProfile
     form_class = InvestorProfileForm
@@ -322,6 +335,19 @@ class InvestorUpdateView(LoginRequiredMixin, UpdateView):
             return JsonResponse({'status': 'success', 'message': 'Investor Profile Updated Successfully'})
 
         return super().form_valid(form)
+
+    def form_invalid(self, form):
+        if self.request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            errors = dict(form.errors.items())
+            # Add formset errors
+            context = self.get_context_data()
+            if 'bank_accounts' in context and not context['bank_accounts'].is_valid():
+                errors['bank_accounts'] = context['bank_accounts'].errors
+            if 'nominees' in context and not context['nominees'].is_valid():
+                errors['nominees'] = context['nominees'].errors
+
+            return JsonResponse({'status': 'error', 'errors': errors}, status=400)
+        return super().form_invalid(form)
 
 class InvestorDetailView(LoginRequiredMixin, DetailView):
     model = InvestorProfile
