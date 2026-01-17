@@ -206,6 +206,7 @@ class InvestorProfileForm(forms.ModelForm):
             'lei_validity': forms.DateInput(attrs={'type': 'date'}),
             'second_applicant_dob': forms.DateInput(attrs={'type': 'date'}),
             'third_applicant_dob': forms.DateInput(attrs={'type': 'date'}),
+            'nomination_auth_mode': forms.Select(),
         }
 
     def __init__(self, *args, **kwargs):
