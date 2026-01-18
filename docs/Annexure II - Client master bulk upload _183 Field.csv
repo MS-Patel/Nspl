@@ -1,0 +1,367 @@
+Sr. No.,Field Name,Data Type,Field Length,Remarks,Mandatory,Condition,
+1,Client Code (UCC),char,10,,Mandatory,,
+2,Primary Holder First Name,char,70,,Mandatory,,
+3,Primary Holder Middle Name,,,,Optional,,
+4,Primary Holder Last Name,,,,Optional,,
+5,Tax Status,char,2,,Mandatory,Refer Tax Status,
+6,Gender,char,1,M/F/O,Conditional Mandatory,"Mandatory for Individual , NRI and Minor clients",
+7,Primary Holder DOB/Incorporation,Date,10,DD/MM/YYYY,Mandatory,,
+8,Occupation Code,char,2,01/02/03/04 /05/06/07/08,Mandatory,Refer Occupation Code,
+9,Holding Nature,char,2,SI/ JO/ AS,Mandatory,Refer Holding,
+10,Second Holder First Name,char,70,,Conditional Mandatory,Mandatory if Mode of Holding JO/AS,
+11,Second Holder Middle Name,,,,Optional,,
+12,Second Holder Last Name,,,,Conditional Mandatory,Mandatory if Mode of Holding JO/AS,
+13,Third Holder First Name,char,70,,Optional,,
+14,Third Holder Middle Name,char,,,Optional,,
+15,Third Holder Last Name,char,,,Optional,Mandatory if Third Holder First Name mentioned,
+16,Second Holder DOB,,10,DD/MM/YYYY,Conditional Mandatory,Mandatory if Mode of Holding JO/AS,
+17,Third Holder DOB,Date,10,DD/MM/YYYY,Conditional Mandatory,Mandatory if Third holder available in UCC,
+18,Guardian First Name,char,120,,Conditional Mandatory,Mandatory for new folio creation with Minor investment,
+19,Guardian Middle Name,char,,,Conditional Mandatory,Mandatory for new folio creation with Minor investment,
+20,Guardian Last Name,char,,,Conditional Mandatory,Mandatory for new folio creation with Minor investment,
+21,Guardian DOB,Date,10,DD/MM/YYYY,Optional,Mandatory for Minor Clients DD/MM/YYYY,
+22,Primary Holder PAN Exempt,Varchar,1,,Mandatory,,
+23,Second Holder PAN Exempt,Varchar,1,,Mandatory,"Mandatory in Case of Joint Holding/Anyone or Survivor, and if Second Holder name mentioned",
+24,Third Holder PAN Exempt,Varchar,1,,Mandatory,Mandatory if Third Holder Name mentioned,
+25,Guardian PAN Exempt,Varchar,1,,Conditional Mandatory,"Conditional M ""Y/N"" (if Tax Status is RI Minor/NRI Minor/NRO Minor & Guardian name)",
+26,Primary Holder PAN,char,10,,Conditional Mandatory,"Mandatory if Primary Holder PAN Exempt flag N. Refer PAN Validation
+",
+27,Second Holder PAN,char,10,,Conditional Mandatory,"Mandatory if Second Holder PAN Exempt flag N. Refer PAN Validation
+
+Mandatory if Second Holder name is provided",
+28,Third Holder PAN,char,10,,Conditional Mandatory,"Mandatory if Third PAN Exempt flag N. Refer PAN Validation
+
+Mandatory if Third Holder name is provided",
+29,Guardian PAN,char,10,,Conditional Mandatory,This is applicable for Minor through Guardian ; Mandatory when Guardian Name is provided,
+30,Primary Holder-Exempt Category,Varchar,2,,Conditional Mandatory,Mandatory if PRIMARY Holder PAN Exempt flag Y. Refer PAN Exempt Category,
+31,Second Holder Exempt Category,Varchar,2,,Conditional Mandatory,Mandatory if SECOND HOLDER PAN Exempt flag Y. Refer PAN Exempt Category,
+32,Third Holder Exempt Category,Varchar,2,,Conditional Mandatory,Mandatory if THIRD HOLDER PAN Exempt flag Y. Refer PAN Exempt Category,
+33,Guardian Exempt Category,Varchar,2,,Conditional Mandatory,Mandatory if Guardian PAN Exempt flag Y. Refer PAN Exempt Category,
+34,Client Type,Varchar,1,D/P,Mandatory,,
+35,PMS,CHAR,1,Y/N,Optional,,
+36,Default DP,char,4,CDSL/NSDL,Conditional Mandatory,Mandatory if client type D,
+37,CDSL DPID,char,8,,Conditional Mandatory,Mandatory if Default DP if CDSL,
+38,CDSLCLTID,char,16,,Conditional Mandatory,Mandatory if Default DP if CDSL,
+39,CMBP Id,Numeric ,16,,Conditional Mandatory,Mandatory if PMS Flag 'Y' and Client Default DP is NSDL,
+40,NSDLDPID,char,8,,Conditional Mandatory,Mandatory if Default DP if NSDL,
+41,NSDLCLTID,char,8,,Conditional Mandatory,Mandatory if Default DP if NSDL,
+42,Account Type 1,varchar,2,SB/CB/NE/NO,Mandatory,Refer Account Type,
+43,Account No 1,varchar,40,,Mandatory,,
+44,MICR No 1,varchar,9,,Optional,,
+45,IFSC Code 1,varchar,11,,Mandatory,,
+46,Default Bank Flag,varchar,1,Y/N,Mandatory,,
+47,Account Type 2,varchar,2,SB/CB/NE/NO,Optional,,
+48,Account No 2,varchar,40,,Conditional Mandatory,Mandatory if Client Acctype 2 is available,
+49, MICR No 2,varchar,9,,Optional,,
+50,IFSC Code 2,varchar,11,,Conditional Mandatory,Mandatory if Client Acctype 2 is available,
+51,Default Bank Flag,varchar,1,Y/N,Conditional Mandatory,Mandatory if Client Acctype 2 is available,
+52, Account type 3,varchar,2,SB/CB/NE/NO,Optional,,
+53,Account No 3,varchar,40,,Conditional Mandatory,Mandatory if Client Acctype 3 is available,
+54,MICR No 3,varchar,9,,Optional,,
+55,IFSC Code 3,varchar,11,,Conditional Mandatory,Mandatory if Client Acctype 3 is available,
+56,Default Bank Flag,varchar,1,Y/N,Conditional Mandatory,Mandatory if Client Acctype 3 is available,
+57, Account type 4,varchar,2,SB/CB/NE/NO,Optional,,
+58,Account No 4,varchar,40,,Conditional Mandatory,Mandatory if Client Acctype 4 is available,
+59, MICR No 4,varchar,9,,Optional,,
+60,IFSC Code 4,varchar,11,,Conditional Mandatory,Mandatory if Client Acctype 4 is available,
+61,Default Bank Flag,varchar,1,Y/N,Conditional Mandatory,Mandatory if Client Acctype 4 is available,
+62, Account type 5,varchar,2,SB/CB/NE/NO,Optional,,
+63,Account No 5,varchar,40,,Conditional Mandatory,Mandatory if Client Acctype 5 is available,
+64, MICR No 5,varchar,9,,Optional,,
+65,IFSC Code 5,varchar,11,,Conditional Mandatory,Mandatory if Client Acctype 5 is available,
+66,Default Bank Flag,varchar,1,Y/N,Conditional Mandatory,Mandatory if Client Acctype 5 is available,
+67, Cheque name,varchar,Ê35,,Optional,,
+68, Div pay mode,varchar,2,01/02/03/04/05,Mandatory,,
+69,Address 1,varchar,40,(Special character (-/) Hyphen & Oblique,Mandatory,,
+70,Address 2,varchar,40,(Special character (-/) Hyphen & Oblique,Optional,,
+71,Address 3,varchar,40,(Special character (-/) Hyphen & Oblique,Optional,,
+72,City,varchar,35,,Mandatory,,
+73,State,varchar,2,,Mandatory,,
+74,Pincode,varchar,6,,Mandatory,,
+75,Country,varchar,35,,Mandatory,,
+76,Resi. Phone,varchar,15,,Optional,,
+77,Resi. Fax,varchar,15,,Optional,,
+78,Office Phone,varchar,15,,Optional,,
+79,Office Fax,varchar,15,,Optional,,
+80, Email,varchar,50,,Mandatory,,
+81, Communication Mode,varchar,1,P-Physical/E-Email/M-Mobile,Mandatory,,
+82,Foreign Address 1,varchar,40,(Special character (-/) Hyphen & Oblique,Conditional Mandatory,"Mandatory for NRI, Except for
+Seafarer. Refer Tax Status",
+83,Foreign Address 2,varchar,40,(Special character (-/) Hyphen & Oblique,Optional,NA,
+84,Foreign Address 3,varchar,40,(Special character (-/) Hyphen & Oblique,Optional,NA,
+85,Foreign Address City,varchar,35,,Conditional Mandatory,Mandatory for NRI,
+86,Foreign Address Pincode,varchar,10,,Conditional Mandatory,Mandatory for NRI,
+87,Foreign Address State,varchar,35,,Conditional Mandatory,Mandatory for NRI,
+88,Foreign Address Country,varchar,3,,Conditional Mandatory,Mandatory for NRI,
+89,Foreign Address Resi Phone,varchar,15,,Optional,,
+90,Foreign Address Fax,varchar,15,,Optional,,
+91,Foreign Address Off. Phone,varchar,15,,Optional,,
+92,Foreign Address Off. Fax,varchar,15,,Optional,,
+93,Indian Mobile No.,varchar,10,,Mandatory,,
+94,Primary Holder KYC Type,CHAR,1,(K/C/B/E) (K - KRA Compliant C- CKYC Compliant B-BIOMETRIC KYC E- Aadhhaar Ekyc PAN),Mandatory,,
+95,Primary Holder CKYC Number,Numeric ,14,,Conditional Mandatory,Mandatory if primary  holder KYC type 'C',
+96,Second Holder KYC Type,CHAR,1,(K/C/B/E) (K - KRA Compliant C- CKYC Compliant B-BIOMETRIC KYC E- Aadhhaar Ekyc PAN),Optional,,
+97,Second Holder CKYC Number,Numeric ,14,,Conditional Mandatory,Mandatory if second holder KYC type 'C',
+98,Third Holder KYC Type,CHAR,1,(K/C/B/E) (K - KRA Compliant C- CKYC Compliant B-BIOMETRIC KYC E- Aadhhaar Ekyc PAN),Optional,,
+99,Third Holder CKYC Number,Numeric ,14,,Conditional Mandatory,Mandatory if third holder KYC type 'C',
+100,Guardian KYC Type,CHAR,1,(K/C/B/E) (K - KRA Compliant C- CKYC Compliant B-BIOMETRIC KYC E- Aadhhaar Ekyc PAN),Optional,,
+101,Guardian CKYC Number,Numeric ,14,,Conditional Mandatory,"Mandatory for new folio creation If KYC_FLG is ""C"" & Tax status is Minor",
+102,Primary Holder KRA Exempt Ref. No.,Varchar,10,,Conditional Mandatory,Mandatory if Primary Holder Pan Exempt,
+103,Second Holder KRA Exempt Ref. No.,Varchar,10,,Conditional Mandatory,Mandatory if Second Holder Pan Exempt,
+104,Third Holder KRA Exempt Ref. No,Varchar,10,,Conditional Mandatory,Mandatory if Third Holder Pan Exempt,
+105,Guardian Exempt Ref. No,Varchar,10,,Conditional Mandatory,Mandatory if Guardian Pan Exempt,
+106,Aadhaar Updated,Char ,1,,Optional,Y/N,
+107,Mapin Id.,varchar,16,,Optional,,
+108,Paperless_flag,Char,1,,Mandatory,Investor onboarding P- Paper/ Z- paperless ,
+109,LEI No,Varchar,20,,Optional,,
+110,LEI Validity ,Date,,DD/MM/YYYY,Conditional Mandatory,DD/MM/YYYY,
+111,Mobile Declaration flag,Varchar,2,,Conditional Mandatory,Mandatory if Mobile no. provided,
+112,Email Declaration Flag,Varchar,2,,Conditional Mandatory,Mandatory if Email Id. provided,
+113,Second Holder Email,varchar,50,"Mandatory in case Mode of Holding JO/AS.
+Optional for Demat and NRI UCC",Mandatory in case Mode of Holding JO/AS.,,
+114,Second holder Email Declaration,Varchar,2,"Mandatory if Email Id. Provided
+Non Mandatory for Demat
+If Declaratio is PMS/Custoian/POA, Nomination Authentication mode to be 'W'
+SE - Self 
+SP - Spouse 
+DC - Dependent Children 
+DS - Dependent Siblings 
+DP - Dependent Parents 
+GD - Guardian 
+PM - PMS 
+CD - Custodian 
+PO - POA",Non-Mandatory for demat UCC,"Mandatory if Email Id. Provided
+Non Mandatory for Demat
+",
+115,Second holder Mobile,Numeric ,10,"Mandatory in case Mode of Holding JO/AS.
+Optional for Demat and NRI UCC",Mandatory in case Mode of Holding JO/AS,,
+116,Second holder Mobile Declaration,Varchar,2,"Mandatory if Mobile no. provided
+Non Mandatory for Demat
+If Declaratio is PMS/Custoian/POA, Nomination Authentication mode to be 'W'
+SE - Self 
+SP - Spouse 
+DC - Dependent Children 
+DS - Dependent Siblings 
+DP - Dependent Parents 
+GD - Guardian 
+PM - PMS 
+CD - Custodian 
+PO - POA",Conditional Mandatory,"Mandatory if Mobile no. provided
+Non Mandatory for Demat
+",
+117,Third Holder Email,varchar,50,"Mandatory in case Mode of Holding JO/AS.
+Optional for Demat and NRI UCC",Mandatory if Third holder available in UCC,Mandatory if Third holder available in UCC,
+118,Third Holder Email Declaration,Varchar,2,"Mandatory if Email Id. Provided
+Non Mandatory for Demat
+If Declaratio is PMS/Custoian/POA, Nomination Authentication mode to be 'W'
+SE - Self 
+SP - Spouse 
+DC - Dependent Children 
+DS - Dependent Siblings 
+DP - Dependent Parents 
+GD - Guardian 
+PM - PMS 
+CD - Custodian 
+PO - POA",Non-Mandatory for demat UCC,"Mandatory if Email Id. Provided
+Non Mandatory for Demat
+If Declaratio is PMS/Custoian/POA, Nomination Authentication mode to be 'W'",
+119,Third holder Mobile,Numeric ,10,"Mandatory in case Mode of Holding JO/AS.
+Optional for Demat and NRI UCC",Mandatory if Third holder available in UCC,,
+120,Third holder Mobile Declaration,Varchar,2,"Mandatory if Mobile no. provided
+Non Mandatory for Demat
+If Declaration is PMS/Custoian/POA, Nomination Authentication mode to be 'W'
+SE - Self 
+SP - Spouse 
+DC - Dependent Children 
+DS - Dependent Siblings 
+DP - Dependent Parents 
+GD - Guardian 
+PM - PMS 
+CD - Custodian 
+PO - POA",Conditional Mandatory,"Mandatory if Mobile no. provided
+Non Mandatory for Demat
+If Declaratio is PMS/Custoian/POA, Nomination Authentication mode to be 'W'",
+121,Guardian Relationship,Varchar,1,"23 - FATHER
+24 - MOTHER
+25 - COURT APPOINTED LEGAL GUARDIAN",Conditional Mandatory,,
+122,Nomination Opt,Varchar,1,"Y/N. Optional for Demat UCC & Non Demat JO & AS Holding UCC.
+Mandatory for Non Demat SI holding","Y/N. Optional for Demat UCC & Non Demat JO & AS Holding UCC.
+Mandatory for Non Demat SI holding",If Nominee name mentioned in UCC then 'Y ' Mandatory ,
+123,Nomination Authentication Mode,Varchar,1,"W - Wet Signature;
+E - Esign;
+O - OTP Authentication","W - Wet Signature;
+E - eSign;
+O - OTP authentication",,
+124,Nominee 1 Name,varchar,40,,Conditional Mandatory,If Nom Opt flag Y,
+125,Nominee 1 Relationship,varchar,2,"01 - AUNT
+02 - BROTHER-IN-LAW
+03 - BROTHER
+04 - DAUGHTER
+05 - DAUGHTER-IN-LAW
+06 - FATHER
+07 - FATHER-IN-LAW
+08 - GRAND DAUGHTER
+09 - GRAND FATHER
+10 - GRAND MOTHER
+11 - GRAND SON
+12 - MOTHER-IN-LAW
+13 - MOTHER
+14 - NEPHEW
+15 - NIECE
+16 - SISTER
+17 - SISTER-IN-LAW
+18 - SON
+19 - SON-IN-LAW
+20 - SPOUSE
+21 - UNCLE
+22 - OTHERS
+23 - COURT APPOINTED LEGAL GUARDIAN",Conditional Mandatory,Mandatory if client nominee available,
+126,Nominee 1 Applicable(%),Numeric ,"5,2",,Conditional Mandatory,Mandatory if client nominee available,
+127,Nominee 1 Minor Flag,Char ,1,,Conditional Mandatory,Mandatory if client nominee available,
+128,Nominee 1 DOB,Date,,DD/MM/YYYY,Conditional Mandatory,Mandatory if Nominee minor flag Y,
+129,Nominee 1 Guardian,Char ,35,,Optional,,
+130,Nominee 1 Guardian PAN,Varchar,10,Optional,Optional,,
+131,NOM1_ID_TYP,Char ,1,Nominee1 Identity Type,Conditional Mandatory,"Mandatory if Nominee1 Opt flag is ""Y"" and values should be in numeric
+1- PAN
+2- Adhaar
+3- Driving licence
+4-Passport Number",
+132,NOM1_IDNO,varchar,,Nominee 1 ID number,Conditional Mandatory,"For new folio creation
+Mandatory if nominee opt flag is Y and NOM1_ID_TY is selected as 1 (PAN Length 10 digit Alpha-numeric), 2 (Adhaar number, last 4 digits only, Length 4digit), 3(Driving licence number- Length max 20 digit), 4(Passport No. -Length max 9 varchar) ",
+133,NOM1_EMAIL,Char ,120,Nominee1 Email,Conditional Mandatory,"
+Mandatory if Nominee Opt flag is ""Y"" (Valid email for respective nominee)",
+134,NOM1_MOB,Char ,15,Nominee1 Mobile,Conditional Mandatory,"
+Mandatory if Nominee opt flag is ""Y"" (Valid mobile number for respective nominee)",
+135,NOM1_ADD1,Char ,40,Nominee1 Address1,Conditional Mandatory,"For new folio creation
+Mandatory if ""NOM_OPT"" flag is ""Y""
+If the address of Nominee as that of FH, specify as Same address of First Holder",
+136,NOM1_ADD2,Char ,40,Nominee1 Address2,Optional,,
+137,NOM1_ADD3,Char ,40,Nominee1 Address3,Optional,,
+138,NOM1_CITY,Char ,35,Nominee1 city,Conditional Mandatory,"For new folio creation
+Mandatory if ""NOM_OPT"" flag is ""Y""
+",
+139,NOM1_PIN,Char ,15,Nominee1 pin,Conditional Mandatory,"For new folio creation
+Mandatory if ""NOM_OPT"" flag is ""Y""
+",
+140,NOM1_CON,Char ,35,Nominee1 country,Conditional Mandatory,"For new folio creation
+Mandatory if ""NOM_OPT"" flag is ""Y""
+",
+141,Nominee 2 Name,Char ,40,,Conditional Mandatory,ÊIf Nom 1  is less than 100%,
+142,Nominee 2 Relationship,Char ,2,"01 - AUNT
+02 - BROTHER-IN-LAW
+03 - BROTHER
+04 - DAUGHTER
+05 - DAUGHTER-IN-LAW
+06 - FATHER
+07 - FATHER-IN-LAW
+08 - GRAND DAUGHTER
+09 - GRAND FATHER
+10 - GRAND MOTHER
+11 - GRAND SON
+12 - MOTHER-IN-LAW
+13 - MOTHER
+14 - NEPHEW
+15 - NIECE
+16 - SISTER
+17 - SISTER-IN-LAW
+18 - SON
+19 - SON-IN-LAW
+20 - SPOUSE
+21 - UNCLE
+22 - OTHERS
+23 - COURT APPOINTED LEGAL GUARDIAN",Conditional Mandatory,Mandatory if Nominee 2 available,
+143,Nominee 2 Applicable(%),Numeric ,"5,2",,Conditional Mandatory,Mandatory if Nominee 2 available,
+144,Nominee 2 Minor Flag,Varchar,1,,Conditional Mandatory,Mandatory if Nominee 2 available,
+145,Nominee 2 DOB,Date,,DD/MM/YYYY,Conditional Mandatory,Mandatory if Nominee 2 available,
+146,Nominee 2 Guardian,Char ,35,,Optional,,
+147,Nominee 2 Guardian PAN,Varchar,10,Optional,Optional,,
+148,NOM2_ID_TYP,Char ,1,Nominee2 Identity Type,Conditional Mandatory,"Mandatory if Nominee2 Opted and values should be in numeric
+1- PAN
+2- Adhaar
+3- Driving licence
+4-Passport Number",
+149,NOM2_IDNO,varchar,,Nominee 2 ID number,Conditional Mandatory,"For new folio creation
+Mandatory if nominee opt flag is Y and NOM2_ID_TY is selected as 1 (PAN Length 10 digit Alpha-numeric), 2 (Adhaar number, last 4 digits only, Length 4digit), 3(Driving licence number- Length max 20 digit), 4(Passport No. -Length max 9 varchar) ",
+150,NOM2_EMAIL,Char ,120,Nominee2 Email,Conditional Mandatory,"
+Mandatory if Nominee2 Opted (Valid email for respective nominee)",
+151,NOM2_MOB,Char ,15,Nominee2 Mobile,Conditional Mandatory,"
+Mandatory if Nominee2 name provided (Valid mobile number for respective nominee)",
+152,NOM2_ADD1,Char ,40,Nominee2 Address1,Conditional Mandatory,"For new folio creation
+Mandatory if nominee opt2
+If the address of Nominee as that of FH, specify as Same address of First Holder",
+153,NOM2_ADD2,Char ,40,Nominee2 Address2,Optional,,
+154,NOM2_ADD3,Char ,40,Nominee2 Address3,Optional,,
+155,NOM2_CITY,Char ,35,Nominee2 city,Conditional Mandatory,"For new folio creation
+Mandatory if nominee opt2
+",
+156,NOM2_PIN,Char ,15,Nominee2 pin,Conditional Mandatory,"For new folio creation
+Mandatory if nominee opt2
+",
+157,NOM2_CON,Char ,35,Nominee2 country,Conditional Mandatory,"For new folio creation
+Mandatory if nominee opt2
+",
+158,Nominee 3 Name,Char ,40,,Conditional Mandatory, If total percentage of nom 1 and 2 is less than 100%,
+159,Nominee 3 Relationship,Char ,2,"01 - AUNT
+02 - BROTHER-IN-LAW
+03 - BROTHER
+04 - DAUGHTER
+05 - DAUGHTER-IN-LAW
+06 - FATHER
+07 - FATHER-IN-LAW
+08 - GRAND DAUGHTER
+09 - GRAND FATHER
+10 - GRAND MOTHER
+11 - GRAND SON
+12 - MOTHER-IN-LAW
+13 - MOTHER
+14 - NEPHEW
+15 - NIECE
+16 - SISTER
+17 - SISTER-IN-LAW
+18 - SON
+19 - SON-IN-LAW
+20 - SPOUSE
+21 - UNCLE
+22 - OTHERS
+23 - COURT APPOINTED LEGAL GUARDIAN",Conditional Mandatory,Mandatory if Nominee 3 available,
+160,Nominee 3 Applicable(%),Numeric ,"5,2",,Conditional Mandatory,Mandatory if Nominee 3 available,
+161,Nominee3 Minor Flag,Varchar,1,,Conditional Mandatory,Mandatory if Nominee 3 available,
+162,Nominee 3 DOB,Date,,DD/MM/YYYY,Conditional Mandatory,Mandatory if Nominee 3 available,
+163,Nominee3 Guardian,Char ,35,,Optional,,
+164,Nominee 3 Guardian PAN,Varchar,10,Optional,Optional,,
+165,NOM3_ID_TYP,Char ,1,Nominee3 Identity Type,Conditional Mandatory,"Mandatory if Nominee3 Opted and values should be in numeric
+1- PAN
+2- Adhaar
+3- Driving licence
+4-Passport Number",
+166,NOM3_IDNO,varchar,,Nominee 3 ID number,Conditional Mandatory,"For new folio creation
+Mandatory if nominee opt flag is Y and NOM3_ID_TY is selected as 1 (PAN Length 10 digit Alpha-numeric), 2 (Adhaar number, last 4 digits only, Length 4digit), 3(Driving licence number- Length max 20 digit), 4(Passport No. -Length max 9 varchar) ",
+167,NOM3_EMAIL,Char ,120,Nominee3 Email,Conditional Mandatory,"
+Mandatory if Nominee Opted (Valid email for respective nominee)",
+168,NOM3_MOB,Char ,15,Nominee3 Mobile,Conditional Mandatory,"
+Mandatory if Nominee3 name provided (Valid mobile number for respective nominee)",
+169,NOM3_ADD1,Char ,40,Nominee3 Address1,Conditional Mandatory,"For new folio creation
+Mandatory if nominee opt3
+If the address of Nominee as that of FH, specify as Same address of First Holder",
+170,NOM3_ADD2,Char ,40,Nominee3 Address2,Optional,,
+171,NOM3_ADD3,Char ,40,Nominee3 Address3,Optional,,
+172,NOM3_CITY,Char ,35,Nominee3 city,Conditional Mandatory,"For new folio creation
+Mandatory if nominee opt3
+",
+173,NOM3_PIN,Char ,15,Nominee3 pin,Conditional Mandatory,"For new folio creation
+Mandatory if nominee opt3
+",
+174,NOM3_CON,Char ,35,Nominee3 country,Conditional Mandatory,"For new folio creation
+Mandatory if nominee opt3
+",
+175,NOM_SOA,Char ,1,Nominee names/Registration Status in SOA,Mandatory,"
+Mandatory if Nominee Opt flag is ""Y""
+Nominee registration display in SOA status should be Y/N, if it is N, then  only the registration status should be display and if it is ""Y"", then the name of all the nominees will be displayed",
+176,Filler1,,,,,,
+177,Filler2,,,,,,
+178,Filler3,,,,,,
+179,Filler4,,,,,,
+180,Filler5,,,,,,
+181,Filler6,,,,,,
+182,Filler7,,,,,,
+183,Filler8,,,,,,
