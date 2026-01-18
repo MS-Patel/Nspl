@@ -38,6 +38,21 @@ class BSEStarMFClient:
         """Generates a random 10-character alphanumeric pass key."""
         return ''.join(random.choices(string.ascii_letters + string.digits, k=10))
 
+    def _get_soap_client(self):
+        """
+        Initializes and returns a Zeep Client configured with the correct WSDL,
+        Settings, Service Name, and Port Name to enforce the Secure (HTTPS) endpoint.
+        """
+        zeep_settings = Settings(strict=False, xml_huge_tree=True)
+        # Explicitly selecting the HTTPS port 'WSHttpBinding_MFOrderEntry1'
+        # which maps to https://bsestarmfdemo.bseindia.com/MFOrderEntry/MFOrder.svc/Secure
+        return Client(
+            wsdl=self.order_wsdl,
+            settings=zeep_settings,
+            service_name='MFOrder',
+            port_name='WSHttpBinding_MFOrderEntry1'
+        )
+
     def _get_auth_details(self):
         """
         Authenticates with BSE StarMF SOAP API to get the session key (EncryptedPassword) and PassKey.
@@ -46,9 +61,8 @@ class BSEStarMFClient:
         """
         pass_key = self._generate_pass_key()
 
-        # Configure Zeep client
-        zeep_settings = Settings(strict=False, xml_huge_tree=True)
-        client = Client(wsdl=self.order_wsdl, settings=zeep_settings)
+        # Use the shared client initialization
+        client = self._get_soap_client()
 
         try:
             # The getPassword method in WSDL expects UserId, Password, PassKey
@@ -98,8 +112,7 @@ class BSEStarMFClient:
             )
 
             # 3. SOAP Call
-            zeep_settings = Settings(strict=False, xml_huge_tree=True)
-            client = Client(wsdl=self.order_wsdl, settings=zeep_settings)
+            client = self._get_soap_client()
 
             # Calling orderEntryParam with keyword arguments expanded from the dict
             response = client.service.orderEntryParam(**params)
@@ -143,8 +156,7 @@ class BSEStarMFClient:
                 pass_key
             )
 
-            zeep_settings = Settings(strict=False, xml_huge_tree=True)
-            client = Client(wsdl=self.order_wsdl, settings=zeep_settings)
+            client = self._get_soap_client()
 
             response = client.service.xsipOrderEntryParam(**params)
             bse_logger.info(f"SIP ENTRY: {sip.id} | RESPONSE: {response}")
@@ -183,8 +195,7 @@ class BSEStarMFClient:
                 pass_key
             )
 
-            zeep_settings = Settings(strict=False, xml_huge_tree=True)
-            client = Client(wsdl=self.order_wsdl, settings=zeep_settings)
+            client = self._get_soap_client()
 
             response = client.service.mandateRegistrationParam(**params)
             bse_logger.info(f"MANDATE REG: {mandate.id} | RESPONSE: {response}")
