@@ -16,8 +16,8 @@ def generate_order_unique_ref_no():
     """
     # 13 digits for millis timestamp
     timestamp = int(time.time() * 1000)
-    # 6 random chars/digits
-    suffix = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+    # 6 random digits
+    suffix = ''.join(random.choices(string.digits, k=6))
     return f"{timestamp}{suffix}"
 
 class Mandate(models.Model):
