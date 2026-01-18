@@ -1,5 +1,5 @@
 import factory
-from apps.investments.models import Order, Folio, SIP, Mandate
+from apps.investments.models import Order, Folio, SIP, Mandate, generate_order_unique_ref_no
 from apps.users.factories import InvestorProfileFactory, DistributorProfileFactory
 from apps.products.factories import SchemeFactory, AMCFactory
 
@@ -33,7 +33,7 @@ class OrderFactory(factory.django.DjangoModelFactory):
     scheme = factory.SubFactory(SchemeFactory)
     amount = 5000
     status = Order.PENDING
-    unique_ref_no = factory.Faker('uuid4')
+    unique_ref_no = factory.LazyFunction(generate_order_unique_ref_no)
 
 class SIPFactory(factory.django.DjangoModelFactory):
     class Meta:
