@@ -165,12 +165,13 @@ def map_investor_to_bse_param_string(investor):
         ""                                  # 21: Guardian DOB
     ]
 
-    # 22-25: PAN Exempt Flags (Defaulting to 'N' if PAN is present)
+    # 22-25: PAN Exempt Flags
+    # Spec: Mandatory in Case of Joint Holding/Anyone or Survivor, and if Second Holder name mentioned
     f22_25 = [
         "N", # 22: Primary Exempt
-        "N", # 23: Second Exempt
-        "N", # 24: Third Exempt
-        "N"  # 25: Guardian Exempt
+        "N" if investor.second_applicant_name else "", # 23: Second Exempt
+        "N" if investor.third_applicant_name else "", # 24: Third Exempt
+        "N" if investor.guardian_name else ""  # 25: Guardian Exempt
     ]
 
     # 26-29: PANs
@@ -226,7 +227,8 @@ def map_investor_to_bse_param_string(investor):
                 "Y" if i == 0 else "N"              # Default Flag (Only 1st is Y)
             ])
         else:
-            bank_fields.extend(["", "", "", "", "N"]) # Empty bank block
+            # Spec: Default Bank Flag 2 SHOULD BE BLANK, IF ACC TYPE BLANK
+            bank_fields.extend(["", "", "", "", ""]) # Empty bank block
 
     f42_66 = bank_fields
 
@@ -316,17 +318,18 @@ def map_investor_to_bse_param_string(investor):
     ]
 
     # 111-120: Contact Declarations
+    # Spec: CANT ENTER DECLARATION FLAG IF MOBILE NUMBER IS NOT MENTIONED (applies to Email too)
     f111_120 = [
-        investor.mobile_declaration,            # 111: Prim Mob Dec
-        investor.email_declaration,             # 112: Prim Email Dec
+        investor.mobile_declaration if investor.mobile else "",            # 111: Prim Mob Dec
+        investor.email_declaration if email_to_use else "",             # 112: Prim Email Dec
         investor.second_applicant_email,        # 113: Sec Email
-        investor.second_applicant_email_declaration, # 114: Sec Email Dec
+        investor.second_applicant_email_declaration if investor.second_applicant_email else "", # 114: Sec Email Dec
         investor.second_applicant_mobile,       # 115: Sec Mobile
-        investor.second_applicant_mobile_declaration, # 116: Sec Mob Dec
+        investor.second_applicant_mobile_declaration if investor.second_applicant_mobile else "", # 116: Sec Mob Dec
         investor.third_applicant_email,         # 117: Thd Email
-        investor.third_applicant_email_declaration,   # 118: Thd Email Dec
+        investor.third_applicant_email_declaration if investor.third_applicant_email else "",   # 118: Thd Email Dec
         investor.third_applicant_mobile,        # 119: Thd Mobile
-        investor.third_applicant_mobile_declaration   # 120: Thd Mob Dec
+        investor.third_applicant_mobile_declaration if investor.third_applicant_mobile else ""   # 120: Thd Mob Dec
     ]
 
     # 121-123: Guardian Rel, Nom Opt, Auth Mode
@@ -358,7 +361,7 @@ def map_investor_to_bse_param_string(investor):
                 get_rel_code(n.relationship), # 125 Relationship (using code)
                 perc,                       # 126 %
                 minor_flag,                 # 127 Minor
-                date_fmt(n.date_of_birth),  # 128 DOB
+                date_fmt(n.date_of_birth) if minor_flag == "Y" else "",  # 128 DOB (Only if minor)
                 n.guardian_name,            # 129 Guardian
                 n.guardian_pan,             # 130 Guardian PAN
                 bse_id_type,                # 131 ID Type
