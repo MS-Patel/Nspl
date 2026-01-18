@@ -185,7 +185,7 @@ class InvestorProfile(models.Model):
     holding_nature = models.CharField(max_length=2, choices=HOLDING_CHOICES, default=SINGLE)
 
     # Demat Details
-    client_type = models.CharField(max_length=1, choices=CLIENT_TYPE_CHOICES, default=PHYSICAL)
+    client_type = models.CharField(max_length=1, choices=CLIENT_TYPE_CHOICES, default=PHYSICAL, blank=True)
     depository = models.CharField(max_length=1, choices=DEPOSITORY_CHOICES, blank=True)
     dp_id = models.CharField(max_length=20, blank=True, help_text="Depository Participant ID")
     client_id = models.CharField(max_length=20, blank=True, help_text="Beneficiary ID / Client ID")
@@ -199,8 +199,8 @@ class InvestorProfile(models.Model):
     second_applicant_kyc_type = models.CharField(max_length=1, choices=KYC_TYPE_CHOICES, blank=True)
     second_applicant_ckyc_number = models.CharField(max_length=14, blank=True)
     second_applicant_kra_exempt_ref_no = models.CharField(max_length=10, blank=True)
-    second_applicant_email_declaration = models.CharField(max_length=2, choices=DECLARATION_CHOICES, default=SELF)
-    second_applicant_mobile_declaration = models.CharField(max_length=2, choices=DECLARATION_CHOICES, default=SELF)
+    second_applicant_email_declaration = models.CharField(max_length=2, choices=DECLARATION_CHOICES, default=SELF, blank=True)
+    second_applicant_mobile_declaration = models.CharField(max_length=2, choices=DECLARATION_CHOICES, default=SELF, blank=True)
 
     third_applicant_name = models.CharField(max_length=70, blank=True)
     third_applicant_pan = models.CharField(max_length=10, blank=True)
@@ -210,8 +210,8 @@ class InvestorProfile(models.Model):
     third_applicant_kyc_type = models.CharField(max_length=1, choices=KYC_TYPE_CHOICES, blank=True)
     third_applicant_ckyc_number = models.CharField(max_length=14, blank=True)
     third_applicant_kra_exempt_ref_no = models.CharField(max_length=10, blank=True)
-    third_applicant_email_declaration = models.CharField(max_length=2, choices=DECLARATION_CHOICES, default=SELF)
-    third_applicant_mobile_declaration = models.CharField(max_length=2, choices=DECLARATION_CHOICES, default=SELF)
+    third_applicant_email_declaration = models.CharField(max_length=2, choices=DECLARATION_CHOICES, default=SELF, blank=True)
+    third_applicant_mobile_declaration = models.CharField(max_length=2, choices=DECLARATION_CHOICES, default=SELF, blank=True)
 
     # Guardian Details
     guardian_name = models.CharField(max_length=70, blank=True, help_text="Required if Tax Status is Minor")
@@ -222,17 +222,17 @@ class InvestorProfile(models.Model):
     guardian_relationship = models.CharField(max_length=50, blank=True) # Could be choice field later
 
     # Additional BSE 183 Fields
-    paperless_flag = models.CharField(max_length=1, default='P', choices=[('P', 'Physical'), ('Z', 'Paperless')])
+    paperless_flag = models.CharField(max_length=1, default='P', choices=[('P', 'Physical'), ('Z', 'Paperless')], blank=True)
     lei_no = models.CharField(max_length=20, blank=True, default='')
     lei_validity = models.DateField(null=True, blank=True)
     mapin_id = models.CharField(max_length=20, blank=True, default='')
 
     # New Fields for V183
-    kyc_type = models.CharField(max_length=1, choices=KYC_TYPE_CHOICES, default=KRA_COMPLIANT)
+    kyc_type = models.CharField(max_length=1, choices=KYC_TYPE_CHOICES, default=KRA_COMPLIANT, blank=True)
     ckyc_number = models.CharField(max_length=14, blank=True)
     kra_exempt_ref_no = models.CharField(max_length=10, blank=True)
-    mobile_declaration = models.CharField(max_length=2, choices=DECLARATION_CHOICES, default=SELF)
-    email_declaration = models.CharField(max_length=2, choices=DECLARATION_CHOICES, default=SELF)
+    mobile_declaration = models.CharField(max_length=2, choices=DECLARATION_CHOICES, default=SELF, blank=True)
+    email_declaration = models.CharField(max_length=2, choices=DECLARATION_CHOICES, default=SELF, blank=True)
     nomination_opt = models.CharField(max_length=1, choices=[('Y', 'Yes'), ('N', 'No')], default='N')
     nomination_auth_mode = models.CharField(max_length=1, choices=[('O', 'Online'), ('P', 'Physical')], blank=True)
 
