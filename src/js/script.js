@@ -121,8 +121,50 @@ function handleErrorResponse(errorData) {
     // Clear existing custom error messages if any (JustValidate handles its own, but this is for extra ones)
     document.querySelectorAll('.error-message').forEach((el) => el.textContent = '');
 
-    if (errorData?.error?.errors?.length) {
-      // 1. Validation Errors (Field specific)
+    if (errorData.errors && !Array.isArray(errorData.errors)) {
+      // 1. Validation Errors (Django Dict Format: { field: [messages] })
+      Object.entries(errorData.errors).forEach(([field, messages]) => {
+          // If messages is an array (standard Django errors), join them
+          const message = Array.isArray(messages) ? messages.join(', ') : messages;
+
+          // Skip if it's a complex object (like formset errors) for now, or handle appropriately
+          if (typeof message !== 'string') return;
+
+          // Try to match field by ID first, then Name
+          let fieldSelector = `#${field}`;
+          let el = document.querySelector(fieldSelector);
+
+          // If not found by ID, try Django default ID format "id_field"
+          if (!el) {
+              fieldSelector = `#id_${field}`;
+              el = document.querySelector(fieldSelector);
+          }
+
+          if (el && validation) {
+               // Use JustValidate to show error if possible
+               validation.showErrors({ [fieldSelector]: message });
+          } else if (el) {
+              // Fallback manual error placement
+              let errorEl = el.parentNode.querySelector('.error-message');
+              if (!errorEl) {
+                  errorEl = document.createElement('div');
+                  errorEl.classList.add('text-tiny+', 'text-error', 'mt-1', 'error-message');
+                  el.parentNode.appendChild(errorEl);
+              }
+              errorEl.textContent = message;
+          }
+      });
+
+      if(window.Swal) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Validation Error',
+            text: 'Please correct the errors in the form.',
+          });
+      }
+
+    } else if (errorData?.error?.errors?.length) {
+      // 2. Validation Errors (API Standard Format)
       // Expected format: { error: { errors: [ { field: 'email', message: '...' } ] } }
       errorData.error.errors.forEach((err) => {
         // Try to match field by ID first, then Name
