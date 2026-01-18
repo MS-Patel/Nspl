@@ -14,17 +14,98 @@ def map_state_to_code(state_name):
 
 def get_rel_code(rel_name):
     """
-    Maps relationship names to BSE Relationship Codes.
+    Maps relationship names to BSE Relationship Codes based on V183 specs.
+    01 - AUNT, 02 - BROTHER-IN-LAW, 03 - BROTHER, 04 - DAUGHTER, 05 - DAUGHTER-IN-LAW,
+    06 - FATHER, 07 - FATHER-IN-LAW, 08 - GRAND DAUGHTER, 09 - GRAND FATHER,
+    10 - GRAND MOTHER, 11 - GRAND SON, 12 - MOTHER-IN-LAW, 13 - MOTHER,
+    14 - NEPHEW, 15 - NIECE, 16 - SISTER, 17 - SISTER-IN-LAW, 18 - SON,
+    19 - SON-IN-LAW, 20 - SPOUSE, 21 - UNCLE, 22 - OTHERS, 23 - COURT APPOINTED LEGAL GUARDIAN
     """
     if not rel_name:
-        return ""
-    r = rel_name.lower()
-    if 'spouse' in r or 'wife' in r or 'husband' in r: return '01'
-    if 'father' in r: return '07'
-    if 'mother' in r: return '08'
-    if 'son' in r: return '11'
-    if 'daughter' in r: return '12'
-    return '15' # Others
+        return "22" # Default to Others if empty but required
+
+    r = rel_name.strip().upper()
+
+    # Exact map for all standard choices provided
+    mapping = {
+        'AUNT': '01',
+        'BROTHER-IN-LAW': '02',
+        'BROTHER': '03',
+        'DAUGHTER': '04',
+        'DAUGHTER-IN-LAW': '05',
+        'FATHER': '06',
+        'FATHER-IN-LAW': '07',
+        'GRAND DAUGHTER': '08',
+        'GRAND FATHER': '09',
+        'GRAND MOTHER': '10',
+        'GRAND SON': '11',
+        'MOTHER-IN-LAW': '12',
+        'MOTHER': '13',
+        'NEPHEW': '14',
+        'NIECE': '15',
+        'SISTER': '16',
+        'SISTER-IN-LAW': '17',
+        'SON': '18',
+        'SON-IN-LAW': '19',
+        'SPOUSE': '20',
+        'UNCLE': '21',
+        'OTHERS': '22',
+        'COURT APPOINTED LEGAL GUARDIAN': '23'
+    }
+
+    # Direct lookup
+    if r in mapping:
+        return mapping[r]
+
+    # Heuristic Fallbacks (Handling variations)
+    if 'WIFE' in r or 'HUSBAND' in r: return '20'
+
+    return '22' # Fallback to Others
+
+def get_nominee_id_details(id_type_code, id_number):
+    """
+    Maps internal Nominee ID Type codes to BSE V183 integer codes and formats the ID number.
+    BSE Codes:
+    1 - PAN (10 chars)
+    2 - Aadhaar (Last 4 digits)
+    3 - Driving License (Max 20)
+    4 - Passport (Max 9)
+    """
+    if not id_type_code:
+        return "", ""
+
+    # Internal codes (from apps.users.models.Nominee.ID_TYPE_CHOICES)
+    # 'A': Passport -> 4
+    # 'C': PAN Card -> 1
+    # 'D': ID Card -> Others? Not in strict list 1-4.
+    # 'E': Driving License -> 3
+    # 'G': UIDIA / Aadhar letter -> 2
+
+    bse_type = ""
+    bse_number = str(id_number).strip() if id_number else ""
+
+    if id_type_code == 'C': # PAN
+        bse_type = "1"
+        # Ensure alphanumeric? BSE validation will handle, but we pass as is.
+    elif id_type_code == 'G': # Aadhaar
+        bse_type = "2"
+        # Last 4 digits only
+        if len(bse_number) > 4:
+            bse_number = bse_number[-4:]
+    elif id_type_code == 'E': # Driving License
+        bse_type = "3"
+    elif id_type_code == 'A': # Passport
+        bse_type = "4"
+    else:
+        # If type is not one of 1,2,3,4, what to do?
+        # The user said "Nominee 1 identity type must be 1, 2, 3 or 4".
+        # We will attempt to map 'B' (Voter ID) or others if possible, or just default to something safe?
+        # Since strict validation is on, sending an invalid code like 'B' or empty might fail.
+        # However, for now we map what we know. If unknown, we send what we have and let it fail or be empty if strictly required.
+        # But if we return empty type, BSE might complain if Opted=Y.
+        pass
+
+    return bse_type, bse_number
 
 def map_investor_to_bse_param_string(investor):
     """
@@ -265,6 +346,8 @@ def map_investor_to_bse_param_string(investor):
             minor_flag = "Y" if n.guardian_name else "N"
             perc = str(int(n.percentage)) if n.percentage % 1 == 0 else str(n.percentage)
 
+            bse_id_type, bse_id_number = get_nominee_id_details(n.id_type, n.id_number)
+
             f_nom_detailed.extend([
                 n.name,                     # Name
                 get_rel_code(n.relationship), # Relationship (using code)
@@ -273,8 +356,8 @@ def map_investor_to_bse_param_string(investor):
                 date_fmt(n.date_of_birth),  # DOB
                 n.guardian_name,            # Guardian
                 n.guardian_pan,             # Guardian PAN
-                n.id_type,                  # ID Type
-                n.id_number,                # ID No
+                bse_id_type,                # ID Type (1, 2, 3, or 4)
+                bse_id_number,              # ID No (Formatted)
                 n.email,                    # Email
                 n.mobile,                   # Mobile
                 n.address_1,                # Addr 1
