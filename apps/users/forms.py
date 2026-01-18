@@ -239,7 +239,7 @@ class NomineeForm(forms.ModelForm):
         fields = [
             'name', 'relationship', 'percentage', 'date_of_birth',
             'guardian_name', 'guardian_pan', 'pan',
-            'address_1', 'address_2', 'address_3', 'city', 'state', 'pincode', 'mobile', 'email',
+            'address_1', 'address_2', 'address_3', 'city', 'state', 'pincode', 'country', 'mobile', 'email',
             'id_type', 'id_number'
         ]
         widgets = {

@@ -234,7 +234,21 @@ class InvestorProfile(models.Model):
     mobile_declaration = models.CharField(max_length=2, choices=DECLARATION_CHOICES, default=SELF, blank=True)
     email_declaration = models.CharField(max_length=2, choices=DECLARATION_CHOICES, default=SELF, blank=True)
     nomination_opt = models.CharField(max_length=1, choices=[('Y', 'Yes'), ('N', 'No')], default='N')
-    nomination_auth_mode = models.CharField(max_length=1, choices=[('O', 'Online'), ('P', 'Physical')], blank=True)
+
+    # Updated Auth Mode Choices
+    WET_SIGNATURE = 'W'
+    ONLINE_OTP = 'O'
+    ESIGN = 'E'
+    PHYSICAL_LEGACY = 'P' # Keeping P for backward compatibility if needed, but labeled as Wet Signature?
+    # Spec says W, E, O.
+    # We will encourage W, O, E.
+    AUTH_MODE_CHOICES = [
+        (WET_SIGNATURE, 'Wet Signature'),
+        (ONLINE_OTP, 'Online/OTP'),
+        (ESIGN, 'eSign'),
+        (PHYSICAL_LEGACY, 'Physical (Legacy)'), # To avoid breaking existing 'P' rows immediately
+    ]
+    nomination_auth_mode = models.CharField(max_length=1, choices=AUTH_MODE_CHOICES, blank=True)
 
     # Status Flags
     kyc_status = models.BooleanField(default=False)
@@ -304,6 +318,10 @@ class Nominee(models.Model):
     city = models.CharField(max_length=35, blank=True, default='')
     state = models.CharField(max_length=30, blank=True, default='')
     pincode = models.CharField(max_length=6, blank=True, default='')
+
+    # New Country Field
+    country = models.CharField(max_length=35, blank=True, default='India')
+
     mobile = models.CharField(max_length=15, blank=True, default='')
     email = models.EmailField(blank=True)
 

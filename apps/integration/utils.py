@@ -330,10 +330,15 @@ def map_investor_to_bse_param_string(investor):
     ]
 
     # 121-123: Guardian Rel, Nom Opt, Auth Mode
+    # Handle 'P' -> 'W' mapping for legacy 'Physical' values
+    auth_mode = investor.nomination_auth_mode
+    if auth_mode == 'P':
+        auth_mode = 'W'
+
     f121_123 = [
         investor.guardian_relationship,         # 121
         investor.nomination_opt,                # 122
-        investor.nomination_auth_mode           # 123
+        auth_mode                               # 123
     ]
 
     # 124-174: Detailed Nominee Blocks (3 x 17 fields)
@@ -349,23 +354,23 @@ def map_investor_to_bse_param_string(investor):
             bse_id_type, bse_id_number = get_nominee_id_details(n.id_type, n.id_number)
 
             f_nom_detailed.extend([
-                n.name,                     # Name
-                get_rel_code(n.relationship), # Relationship (using code)
-                perc,                       # %
-                minor_flag,                 # Minor
-                date_fmt(n.date_of_birth),  # DOB
-                n.guardian_name,            # Guardian
-                n.guardian_pan,             # Guardian PAN
-                bse_id_type,                # ID Type (1, 2, 3, or 4)
-                bse_id_number,              # ID No (Formatted)
-                n.email,                    # Email
-                n.mobile,                   # Mobile
-                n.address_1,                # Addr 1
-                n.address_2,                # Addr 2
-                n.address_3,                # Addr 3
-                n.city,                     # City
-                n.pincode,                  # Pin
-                ""                          # Contact/Tel
+                n.name,                     # 124 Name
+                get_rel_code(n.relationship), # 125 Relationship (using code)
+                perc,                       # 126 %
+                minor_flag,                 # 127 Minor
+                date_fmt(n.date_of_birth),  # 128 DOB
+                n.guardian_name,            # 129 Guardian
+                n.guardian_pan,             # 130 Guardian PAN
+                bse_id_type,                # 131 ID Type
+                bse_id_number,              # 132 ID No
+                n.email,                    # 133 Email
+                n.mobile,                   # 134 Mobile
+                n.address_1,                # 135 Addr 1
+                n.address_2,                # 136 Addr 2
+                n.address_3,                # 137 Addr 3
+                n.city,                     # 138 City
+                n.pincode,                  # 139 Pin
+                n.country                   # 140 Country
             ])
         else:
             f_nom_detailed.extend([""] * 17)

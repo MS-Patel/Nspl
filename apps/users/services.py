@@ -69,6 +69,10 @@ def validate_investor_for_bse(investor: InvestorProfile) -> list[str]:
             errors.append(f"Invalid IFSC Code: {bank.ifsc_code}")
 
     # 4. Nominees
+    # Check Nomination Opt
+    if investor.nomination_opt == 'Y' and not investor.nomination_auth_mode:
+        errors.append("Nomination Authentication Mode is mandatory when Nomination is Opted.")
+
     nominees = list(investor.nominees.all())
     if nominees:
         total_percentage = sum(n.percentage for n in nominees)
@@ -82,8 +86,22 @@ def validate_investor_for_bse(investor: InvestorProfile) -> list[str]:
                 errors.append(f"Nominee {i} ({n.name}): City is missing.")
             if not n.pincode:
                 errors.append(f"Nominee {i} ({n.name}): Pincode is missing.")
+            if not n.country:
+                errors.append(f"Nominee {i} ({n.name}): Country is missing.")
             if not n.relationship:
                 errors.append(f"Nominee {i} ({n.name}): Relationship is missing.")
+
+            # BSE V183 Mandatory fields if Opted
+            if investor.nomination_opt == 'Y':
+                if not n.id_type:
+                     errors.append(f"Nominee {i} ({n.name}): ID Type is mandatory.")
+                if not n.id_number:
+                     errors.append(f"Nominee {i} ({n.name}): ID Number is mandatory.")
+                if not n.email:
+                     errors.append(f"Nominee {i} ({n.name}): Email is mandatory.")
+                if not n.mobile:
+                     errors.append(f"Nominee {i} ({n.name}): Mobile is mandatory.")
+
 
             if n.date_of_birth:
                 # Check for Minor
