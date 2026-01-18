@@ -155,8 +155,8 @@ class Order(models.Model):
     allotted_units = models.DecimalField(max_digits=15, decimal_places=4, null=True, blank=True)
 
     # BSE Specifics
-    unique_ref_no = models.CharField(max_length=50, unique=True, default=uuid.uuid4, editable=False)
-    bse_order_id = models.CharField(max_length=50, blank=True, null=True)
+    unique_ref_no = models.CharField(max_length=20, unique=True, default=uuid.uuid4, editable=False)
+    bse_order_id = models.CharField(max_length=20, blank=True, null=True)
     bse_remarks = models.TextField(blank=True, null=True)
 
     euin = models.CharField(max_length=50, blank=True, help_text="EUIN used for this transaction")
