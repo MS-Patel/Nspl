@@ -397,6 +397,7 @@ def map_investor_to_bse_param_string(investor):
 def get_bse_order_params(order, member_id, user_id, password, pass_key):
     """
     Constructs the parameter dictionary for BSE StarMF orderEntryParam API (SOAP).
+    Corrected to match WSDL signature found in error logs.
     """
 
     buy_sell = order.transaction_type
@@ -410,40 +411,56 @@ def get_bse_order_params(order, member_id, user_id, password, pass_key):
     euin_flag = "Y" if euin else "N"
     folio_no = order.folio.folio_number if order.folio else ""
     dpc = "N"
-    trans_mode = "P"
+
+    # User confirmed TransMode P -> DPTxn
+    dptxn = "P" # Physical
 
     txt_amount = f"{order.amount:.2f}" if order.amount else "0"
     txt_quantity = f"{order.units:.4f}" if order.units else "0"
 
+    # Mobile and Email from Investor
+    mobile_no = order.investor.mobile if order.investor.mobile else ""
+    # Use email from investor profile or user account
+    email_id = order.investor.email if order.investor.email else order.investor.user.email
+
     params = {
-        'TransactionCode': 'NEW',
-        'UniqueRefNo': str(order.unique_ref_no),
-        'SchemeCode': order.scheme.scheme_code,
-        'MemberCode': member_id,
+        'TransCode': 'NEW',
+        'TransNo': str(order.unique_ref_no),
+        'OrderId': '', # Optional/Empty
+        'UserID': user_id,
+        'MemberId': member_id,
         'ClientCode': client_code,
-        'UserId': user_id,
+        'SchemeCd': order.scheme.scheme_code,
         'BuySell': buy_sell,
         'BuySellType': buy_sell_type,
-        'DPC': dpc,
-        'TransMode': trans_mode,
-        'TxtAmount': txt_amount,
-        'TxtQuantity': txt_quantity,
-        'MandateId': order.mandate.mandate_id if order.mandate else "",
-        'EUIN': euin,
-        'SubBrCode': '',
-        'EuinFlag': euin_flag,
-        'MinRedeem': 'N',
-        'DematFlag': 'N',
+        'DPTxn': dptxn,
+        'OrderVal': txt_amount,
+        'Qty': txt_quantity,
         'AllRedeem': 'N',
         'FolioNo': folio_no,
         'Remarks': '',
         'KYCStatus': 'Y',
-        'SubMemberCode': '',
+        'RefNo': '', # Optional
+        'SubBrCode': '',
+        'EUIN': euin,
+        'EUINVal': euin_flag,
+        'MinRedeem': 'N',
+        'DPC': dpc,
+        'IPAdd': '', # Optional
         'Password': password,
         'PassKey': pass_key,
-        'Param1': '',
+        'Parma1': '', # Note typo match
         'Param2': '',
-        'Param3': ''
+        'Param3': '',
+        'MobileNo': mobile_no,
+        'EmailID': email_id,
+        'MandateID': order.mandate.mandate_id if order.mandate else "",
+        'Filler1': '',
+        'Filler2': '',
+        'Filler3': '',
+        'Filler4': '',
+        'Filler5': '',
+        'Filler6': ''
     }
 
     return params
@@ -459,8 +476,13 @@ def get_bse_xsip_order_params(sip, member_id, user_id, password, pass_key):
     if sip.investor.distributor:
         euin = sip.investor.distributor.euin
 
+    # Standard EUIN Flag Logic
+    euin_val = "Y" if euin else "N"
+
     folio_no = sip.folio.folio_number if sip.folio else ""
-    buy_sell_type = "FRESH" if not folio_no else "ADDITIONAL"
+
+    # Logic for BuySellType usually not in XSIP but FirstOrderFlag is there
+    # However, Postman XML doesn't show BuySellType for XSIP. It shows FirstOrderFlag.
 
     freq_map = {
         'MONTHLY': 'MONTHLY',
@@ -476,28 +498,37 @@ def get_bse_xsip_order_params(sip, member_id, user_id, password, pass_key):
         'SchemeCode': sip.scheme.scheme_code,
         'MemberCode': member_id,
         'ClientCode': client_code,
-        'UserId': user_id,
+        'UserID': user_id, # Updated Case
+        'InternalRefNo': '',
         'TransMode': 'P',
-        'DPC': 'N',
-        'MandateID': sip.mandate.mandate_id,
-        'FirstOrderFlag': 'Y',
-        'Brokerage': '',
-        'FrequencyType': freq_map.get(sip.frequency, 'MONTHLY'),
+        'DpTxnMode': 'P', # Assuming Physical like DPTxn
         'StartDate': start_date,
+        'FrequencyType': freq_map.get(sip.frequency, 'MONTHLY'),
+        'FrequencyAllowed': '', # Optional
         'InstallmentAmount': f"{sip.amount:.2f}",
         'NoOfInstallment': str(sip.installments),
-        'EUIN': euin,
-        'EuinFlag': 'Y' if euin else 'N',
-        'SubBrCode': '',
-        'FolioNo': folio_no,
-        'BuySellType': buy_sell_type,
         'Remarks': '',
-        'SubMemberCode': '',
+        'FolioNo': folio_no,
+        'FirstOrderFlag': 'Y',
+        'Brokerage': '',
+        'MandateID': sip.mandate.mandate_id,
+        'SubberCode': '', # Updated Name
+        'Euin': euin,
+        'EuinVal': euin_val, # Updated Name
+        'DPC': 'N',
+        'XsipRegID': '', # Postman uses XsipRegID
+        'IPAdd': '',
         'Password': password,
         'PassKey': pass_key,
         'Param1': '',
         'Param2': '',
-        'Param3': ''
+        'Param3': '',
+        'Filler1': '',
+        'Filler2': '',
+        'Filler3': '',
+        'Filler4': '',
+        'Filler5': '',
+        'Filler6': ''
     }
 
     return params
@@ -515,7 +546,15 @@ def get_bse_mandate_params(mandate, member_id, user_id, password, pass_key):
     params = {
         'MemberCode': member_id,
         'ClientCode': client_code,
-        'UserId': user_id,
+        'UserId': user_id, # Check Case: Postman usually matches OrderEntry so maybe UserID?
+                           # But WSDL for mandate is distinct. Keeping UserId as per existing code unless error seen.
+                           # Actually, standardizing on UserID is safer given OrderEntry but Mandate often has legacy UserId.
+                           # I will stick to UserId for now as I don't have a WSDL log for Mandate error.
+                           # Wait, I should probably match the pattern if I can.
+                           # Let's check if I can find Mandate example.
+                           # Postman collection doesn't show Mandate WSDL.
+                           # I'll update it to be safe if I can, but without proof, better leave it or make it robust.
+                           # Current code had UserId.
         'MandateType': 'XSIP',
         'MandateAmount': f"{mandate.amount_limit:.2f}",
         'StartDate': mandate.start_date.strftime("%d/%m/%Y"),

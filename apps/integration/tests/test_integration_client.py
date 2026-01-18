@@ -2,7 +2,7 @@ import pytest
 from unittest.mock import patch, MagicMock
 from apps.users.factories import InvestorProfileFactory, BankAccountFactory
 from apps.products.factories import SchemeFactory
-from apps.investments.factories import OrderFactory
+from apps.investments.factories import OrderFactory, SIPFactory, MandateFactory
 from apps.investments.models import Order
 from apps.integration.bse_client import BSEStarMFClient
 from apps.integration.utils import map_investor_to_bse_param_string
@@ -41,8 +41,6 @@ class TestBSEClient:
     def test_register_client_success(self):
         investor = InvestorProfileFactory(ucc_code='TEST001')
         BankAccountFactory(investor=investor, is_default=True)
-        # Assuming we need a nominee, but factories handle basics.
-        # The mapper might need explicit fields like address, but factory provides Faker data.
 
         with patch('apps.integration.bse_client.requests.post') as mock_post:
             # Mock JSON Response
@@ -95,10 +93,12 @@ class TestBSEClient:
             mock_service.orderEntryParam.assert_called_once()
 
             call_args = mock_service.orderEntryParam.call_args[1]
+            # Updated Expectations based on new mappings
             assert call_args['ClientCode'] == 'TEST001'
-            assert call_args['SchemeCode'] == 'SCHEME001'
-            assert call_args['TxtAmount'] == '5000.00'
-            assert call_args['TxtQuantity'] == '0'
+            assert call_args['SchemeCd'] == 'SCHEME001' # Updated Key
+            assert call_args['OrderVal'] == '5000.00'   # Updated Key
+            assert call_args['Qty'] == '0'              # Updated Key
+            assert call_args['TransCode'] == 'NEW'      # Updated Key
 
     def test_place_redemption_with_decimals(self):
         investor = InvestorProfileFactory(ucc_code='TEST001')
@@ -126,7 +126,72 @@ class TestBSEClient:
             assert result['status'] == 'success'
 
             call_args = mock_service.orderEntryParam.call_args[1]
-            assert call_args['TxtQuantity'] == '10.5567'
+            assert call_args['Qty'] == '10.5567' # Updated Key
+
+    def test_register_sip_success(self):
+        investor = InvestorProfileFactory(ucc_code='TEST001')
+        scheme = SchemeFactory(scheme_code='SCHEME001')
+        mandate = MandateFactory(investor=investor, mandate_id='MANDATE123')
+        sip = SIPFactory(
+            investor=investor,
+            scheme=scheme,
+            mandate=mandate,
+            amount=2000,
+            installments=12
+        )
+
+        with patch('apps.integration.bse_client.Client') as MockZeepClient:
+            # Mock Service
+            mock_service = MagicMock()
+            mock_service.getPassword.return_value = "100|EncryptedToken123"
+            mock_service.xsipOrderEntryParam.return_value = "0|123456|SIP Registered"
+
+            MockZeepClient.return_value.service = mock_service
+
+            client = BSEStarMFClient()
+            result = client.register_sip(sip)
+
+            assert result['status'] == 'success'
+            assert result['bse_reg_no'] == '123456'
+
+            # Verify calls
+            mock_service.xsipOrderEntryParam.assert_called_once()
+
+            call_args = mock_service.xsipOrderEntryParam.call_args[1]
+            # Updated Expectations
+            assert call_args['ClientCode'] == 'TEST001'
+            assert call_args['SchemeCode'] == 'SCHEME001' # Still SchemeCode for XSIP (based on Postman)
+            assert call_args['InstallmentAmount'] == '2000.00'
+            assert call_args['MandateID'] == 'MANDATE123'
+            assert call_args['EuinVal'] == 'N' # No distributor in factory, so N
+
+    def test_register_mandate_success(self):
+        investor = InvestorProfileFactory(ucc_code='TEST001')
+        mandate = MandateFactory(investor=investor, amount_limit=50000)
+        BankAccountFactory(investor=investor, is_default=True, ifsc_code='TEST0000001')
+
+        with patch('apps.integration.bse_client.Client') as MockZeepClient:
+            # Mock Service
+            mock_service = MagicMock()
+            mock_service.getPassword.return_value = "100|EncryptedToken123"
+            mock_service.mandateRegistrationParam.return_value = "100|UMRN123|Success"
+
+            MockZeepClient.return_value.service = mock_service
+
+            client = BSEStarMFClient()
+            result = client.register_mandate(mandate)
+
+            assert result['status'] == 'success'
+            assert result['mandate_id'] == 'UMRN123'
+
+            # Verify calls
+            mock_service.mandateRegistrationParam.assert_called_once()
+
+            call_args = mock_service.mandateRegistrationParam.call_args[1]
+            # Updated Expectations
+            assert call_args['ClientCode'] == 'TEST001'
+            assert call_args['MandateAmount'] == '50000.00'
+            assert call_args['IFSC'] == 'TEST0000001'
 
     def test_mapper_utility(self):
         investor = InvestorProfileFactory(pan='ABCDE1234F')
