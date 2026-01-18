@@ -3,6 +3,22 @@ from django.conf import settings
 from apps.users.models import InvestorProfile, DistributorProfile, BankAccount
 from apps.products.models import Scheme, AMC
 import uuid
+import time
+import random
+import string
+
+def generate_order_unique_ref_no():
+    """
+    Generates a unique reference number for orders, ensuring it is <= 20 characters
+    to comply with BSE requirements.
+    Format: {timestamp_ms}{random_6_chars}
+    Example: 1705622400123ABCDEF (13 + 6 = 19 chars)
+    """
+    # 13 digits for millis timestamp
+    timestamp = int(time.time() * 1000)
+    # 6 random chars/digits
+    suffix = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+    return f"{timestamp}{suffix}"
 
 class Mandate(models.Model):
     # Status Choices
@@ -155,7 +171,7 @@ class Order(models.Model):
     allotted_units = models.DecimalField(max_digits=15, decimal_places=4, null=True, blank=True)
 
     # BSE Specifics
-    unique_ref_no = models.CharField(max_length=20, unique=True, default=uuid.uuid4, editable=False)
+    unique_ref_no = models.CharField(max_length=20, unique=True, default=generate_order_unique_ref_no, editable=False)
     bse_order_id = models.CharField(max_length=20, blank=True, null=True)
     bse_remarks = models.TextField(blank=True, null=True)
 
