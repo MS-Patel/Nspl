@@ -125,6 +125,7 @@ class BSEStarMFClient:
             # 3. SOAP Call
             client = self._get_soap_client()
 
+            bse_logger.info(f"ORDER Request: {params}")
             # Calling orderEntryParam with keyword arguments expanded from the dict
             response = client.service.orderEntryParam(**params)
 
