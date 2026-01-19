@@ -158,7 +158,8 @@
             // Trigger a reload to filter bank accounts (Basic approach)
             // Or better, use JS to fetch accounts
              const url = new URL(window.location.href);
-             url.searchParams.set('investor', this.value);
+             // Use 'investor_id' to match View's get_initial logic
+             url.searchParams.set('investor_id', this.value);
              window.location.href = url.toString();
         });
     }

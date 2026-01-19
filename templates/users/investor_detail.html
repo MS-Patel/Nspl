@@ -223,6 +223,72 @@
 
                     <div class="my-4 h-px bg-slate-200 dark:bg-navy-500"></div>
 
+                    <div class="flex items-center justify-between mb-4">
+                        <h4 class="text-lg font-medium text-slate-700 dark:text-navy-100">Mandates</h4>
+                         {% if user.user_type == 'RM' or user.user_type == 'DISTRIBUTOR' or user.user_type == 'ADMIN' or user.user_type == 'INVESTOR' %}
+                        <a href="{% url 'investments:mandate_create' %}?investor_id={{ investor.id }}" class="btn h-8 rounded-full bg-primary/10 px-3 text-xs+ font-medium text-primary hover:bg-primary/20 focus:bg-primary/20 active:bg-primary/25 dark:bg-accent-light/10 dark:text-accent-light dark:hover:bg-accent-light/20 dark:focus:bg-accent-light/20 dark:active:bg-accent-light/25">
+                            Create Mandate
+                        </a>
+                        {% endif %}
+                    </div>
+
+                    <div class="is-scrollbar-hidden min-w-full overflow-x-auto mb-6">
+                        <table class="is-hoverable w-full text-left">
+                            <thead>
+                                <tr>
+                                    <th class="whitespace-nowrap rounded-tl-lg bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">Mandate ID</th>
+                                    <th class="whitespace-nowrap bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">Limit / Dates</th>
+                                    <th class="whitespace-nowrap bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">Bank</th>
+                                    <th class="whitespace-nowrap rounded-tr-lg bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for mandate in investor.mandates.all %}
+                                <tr class="border-y border-transparent border-b-slate-200 dark:border-b-navy-500">
+                                    <td class="whitespace-nowrap px-4 py-3 sm:px-5">
+                                        {{ mandate.mandate_id }}
+                                        <div class="text-xs text-slate-400">UMRN: {{ mandate.mandate_id }}</div>
+                                    </td>
+                                    <td class="whitespace-nowrap px-4 py-3 sm:px-5">
+                                        <div class="font-medium">{{ mandate.amount_limit }}</div>
+                                        <div class="text-xs text-slate-400">{{ mandate.start_date|date:"d M Y" }} - {% if mandate.end_date %}{{ mandate.end_date|date:"d M Y" }}{% else %}Perpetual{% endif %}</div>
+                                    </td>
+                                    <td class="whitespace-nowrap px-4 py-3 sm:px-5 text-xs">
+                                        {% if mandate.bank_account %}
+                                            {{ mandate.bank_account.bank_name }}<br>
+                                            {{ mandate.bank_account.account_number }}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td class="whitespace-nowrap px-4 py-3 sm:px-5">
+                                        <div class="flex items-center space-x-2">
+                                            {% if mandate.status == 'APPROVED' %}
+                                                <span class="tag rounded-full bg-success/10 text-success">Approved</span>
+                                            {% elif mandate.status == 'REJECTED' %}
+                                                <span class="tag rounded-full bg-error/10 text-error">Rejected</span>
+                                            {% else %}
+                                                <span class="tag rounded-full bg-warning/10 text-warning">Pending</span>
+                                                <!-- Authorization Action -->
+                                                <a href="{% url 'investments:mandate_auth' mandate.pk %}" target="_blank" class="btn h-6 px-2 bg-primary/10 text-xs text-primary hover:bg-primary/20 focus:bg-primary/20 active:bg-primary/25 ml-2" title="Authorize via Netbanking/Debit Card">
+                                                    Authorize
+                                                </a>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="px-4 py-3 text-center text-slate-400">No mandates found.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+
+                    <div class="my-4 h-px bg-slate-200 dark:bg-navy-500"></div>
+
                     <h4 class="text-lg font-medium text-slate-700 dark:text-navy-100 mb-4">Nominees</h4>
                     <div class="is-scrollbar-hidden min-w-full overflow-x-auto">
                         <table class="is-hoverable w-full text-left">

@@ -23,7 +23,18 @@ class MandateCreateView(CreateView):
     model = Mandate
     form_class = MandateForm
     template_name = 'investments/mandate_form.html'
-    success_url = reverse_lazy('investments:order_list') # Redirect to list for now
+
+    def get_initial(self):
+        initial = super().get_initial()
+        investor_id = self.request.GET.get('investor_id')
+        if investor_id:
+            try:
+                investor = InvestorProfile.objects.get(id=investor_id)
+                if has_access_to_investor(self.request.user, investor_id):
+                    initial['investor'] = investor
+            except InvestorProfile.DoesNotExist:
+                pass
+        return initial
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -37,9 +48,6 @@ class MandateCreateView(CreateView):
              return HttpResponseForbidden("You do not have access to this investor.")
 
         # Default Mandate ID (Will be updated by BSE)
-        # Ideally, we should generate a temporary one or wait for BSE
-        # For now, let's assume we save it locally then push
-        # But Mandate ID is unique. Let's create a temporary one.
         import uuid
         mandate.mandate_id = f"TEMP-{uuid.uuid4().hex[:8].upper()}"
         mandate.save()
@@ -51,10 +59,13 @@ class MandateCreateView(CreateView):
 
             if result['status'] == 'success':
                 mandate.mandate_id = result['mandate_id']
-                mandate.status = Mandate.APPROVED # Auto-approve for demo/UAT or set to PENDING
-                # In prod, it might stay PENDING until verified by Bank
+                mandate.status = Mandate.PENDING # Set to PENDING initially for E-Mandate
                 mandate.save()
-                messages.success(self.request, f"Mandate Registered successfully. UMRN: {result['mandate_id']}")
+
+                messages.success(self.request, f"Mandate Registered. Please authorize it via the link below.")
+
+                # Check if we should redirect to auth or list
+                # For now, redirect to investor detail where they can click "Authorize"
             else:
                 mandate.status = Mandate.REJECTED
                 mandate.save()
@@ -64,7 +75,39 @@ class MandateCreateView(CreateView):
             logger.exception("Mandate Registration Failed")
             messages.error(self.request, f"System Error: {str(e)}")
 
-        return super().form_valid(form)
+        # self.object might not be set if we are not calling super().form_valid(form)
+        self.object = mandate
+        return redirect(self.get_success_url())
+
+    def get_success_url(self):
+        investor = self.object.investor
+        return reverse('users:investor_detail', kwargs={'pk': investor.pk})
+
+@login_required
+def mandate_authorize(request, pk):
+    """
+    Redirects the user to the BSE E-Mandate Authorization Page.
+    """
+    mandate = get_object_or_404(Mandate, pk=pk)
+
+    # IDOR Check
+    if not has_access_to_investor(request.user, mandate.investor.id):
+        return HttpResponseForbidden("You do not have access to this mandate.")
+
+    # Only allow authorization for Pending mandates (or Approved if re-auth needed? usually Pending)
+    # Actually, if it's already approved, no need. But in UAT/Demo, we might want to test flow.
+    # Allowing it for now.
+
+    client_code = mandate.investor.ucc_code if mandate.investor.ucc_code else mandate.investor.pan
+
+    try:
+        client = BSEStarMFClient()
+        auth_url = client.get_mandate_auth_url(client_code, mandate.mandate_id)
+        return redirect(auth_url)
+    except Exception as e:
+        logger.error(f"Error generating auth URL: {e}")
+        messages.error(request, "Could not generate authorization URL.")
+        return redirect('users:investor_detail', pk=mandate.investor.pk)
 
 @login_required
 def order_create(request):

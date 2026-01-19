@@ -34,6 +34,7 @@ class BSEStarMFClient:
         self.order_wsdl = "https://bsestarmfdemo.bseindia.com/MFOrderEntry/MFOrder.svc?singleWsdl"
         self.upload_service_url = "https://bsestarmfdemo.bseindia.com/StarMFFileUploadService/StarMFFileUploadService.svc/Secure/UploadFile"
         self.common_api_url = "https://bsestarmfdemo.bseindia.com/BSEMFWEBAPI/UCCAPI/UCCRegistrationV183"
+        self.emandate_auth_url = "https://bsestarmfdemo.bseindia.com/Emandate/EmandateAuthURL.aspx"
 
     def _generate_pass_key(self):
         """Generates a random 10-character alphanumeric pass key."""
@@ -291,3 +292,12 @@ class BSEStarMFClient:
                 "status": "error",
                 "remarks": f"HTTP/Network Error: {str(e)}"
             }
+
+    def get_mandate_auth_url(self, client_code, mandate_id):
+        """
+        Generates the BSE E-Mandate Authentication URL.
+        Format: BaseURL?ClientCode=...&MandateID=...&MemberCode=...
+        """
+        # Ensure values are safe/encoded if needed, but they are usually alphanumeric
+        url = f"{self.emandate_auth_url}?ClientCode={client_code}&MandateID={mandate_id}&MemberCode={self.member_id}"
+        return url
