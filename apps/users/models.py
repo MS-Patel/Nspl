@@ -248,7 +248,7 @@ class InvestorProfile(models.Model):
         (ESIGN, 'eSign'),
         (PHYSICAL_LEGACY, 'Physical (Legacy)'), # To avoid breaking existing 'P' rows immediately
     ]
-    nomination_auth_mode = models.CharField(max_length=1, choices=AUTH_MODE_CHOICES, blank=True)
+    nomination_auth_mode = models.CharField(max_length=1, choices=AUTH_MODE_CHOICES, blank=True, default=WET_SIGNATURE)
 
     # Status Flags
     kyc_status = models.BooleanField(default=False)
