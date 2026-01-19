@@ -10,6 +10,7 @@ from django.http import JsonResponse
 from django.urls import reverse
 from django.views import View
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from .models import RMProfile, DistributorProfile, InvestorProfile, BankAccount, Nominee, Document
 from .forms import RMCreationForm, DistributorCreationForm, InvestorCreationForm, InvestorProfileForm, BankAccountFormSet, NomineeFormSet, DocumentForm
 from .services import validate_investor_for_bse
@@ -417,6 +418,19 @@ class PushToBSEView(LoginRequiredMixin, View):
                 if not investor.ucc_code:
                     investor.ucc_code = investor.pan
                     investor.save()
+
+                # Check for remarks to update nominee status
+                remarks = response.get('remarks', '').upper()
+                investor.bse_remarks = remarks
+                investor.last_verified_at = timezone.now()
+
+                if "AUTHENTICATED" in remarks or "ACTIVE" in remarks:
+                    investor.nominee_auth_status = InvestorProfile.AUTH_AUTHENTICATED
+                elif "PENDING" in remarks:
+                    investor.nominee_auth_status = InvestorProfile.AUTH_PENDING
+
+                investor.save()
+
                 messages.success(request, f"BSE {regn_type} Registration Successful: {response.get('remarks')}")
             else:
                 messages.error(request, f"BSE Error: {response.get('remarks')}")
@@ -424,6 +438,81 @@ class PushToBSEView(LoginRequiredMixin, View):
              messages.error(request, f"API Call Failed: {str(e)}")
 
         return redirect('users:investor_detail', pk=pk)
+
+class TriggerNomineeAuthView(LoginRequiredMixin, View):
+    """
+    Triggers Nominee Authentication via a BSE Modification (MOD) request.
+    It also acts as a Status Checker by parsing the response remarks.
+    """
+    def post(self, request, pk):
+        investor = get_object_or_404(InvestorProfile, pk=pk)
+
+        if request.user.user_type not in [User.Types.RM, User.Types.DISTRIBUTOR, User.Types.ADMIN]:
+             messages.error(request, "Permission denied.")
+             return redirect('users:investor_detail', pk=pk)
+
+        # Ensure we have a UCC Code before triggering modification
+        if not investor.ucc_code:
+            messages.error(request, "Investor must have a UCC Code (Registered on BSE) to trigger authentication.")
+            return redirect('users:investor_detail', pk=pk)
+
+        # 1. Validation
+        validation_errors = validate_investor_for_bse(investor)
+        if validation_errors:
+            for err in validation_errors:
+                messages.error(request, err)
+            return redirect('users:investor_detail', pk=pk)
+
+        # 2. Map Data
+        try:
+            param_string = map_investor_to_bse_param_string(investor)
+        except Exception as e:
+            messages.error(request, f"Data Mapping Error: {str(e)}")
+            return redirect('users:investor_detail', pk=pk)
+
+        # 3. Call API (MOD Request)
+        client = BSEStarMFClient()
+        try:
+            # We use MOD to trigger the auth email/sms or check status
+            response = client.register_client({'Param': param_string}, regn_type="MOD")
+
+            investor.bse_remarks = response.get('remarks', '')
+            investor.last_verified_at = timezone.now()
+
+            if response['status'] == 'success':
+                remarks = response.get('remarks', '').upper()
+
+                # Intelligent Status Parsing
+                if "AUTHENTICATED" in remarks or "ACTIVE" in remarks:
+                    investor.nominee_auth_status = InvestorProfile.AUTH_AUTHENTICATED
+                    msg_type = messages.success
+                elif "PENDING" in remarks:
+                    investor.nominee_auth_status = InvestorProfile.AUTH_PENDING
+                    msg_type = messages.warning
+                else:
+                    # Fallback if status is unclear but request succeeded
+                    # We might want to keep it as is or set to N if it was P
+                    # But safest is to trust the 'remarks' text if it mentions auth
+                    msg_type = messages.info
+
+                investor.save()
+                msg_type(request, f"Trigger/Check Successful: {response.get('remarks')}")
+
+            else:
+                # If error, it might be "Nominee Auth Pending" which is actually valuable info
+                remarks = response.get('remarks', '').upper()
+                if "PENDING" in remarks and "NOMINEE" in remarks:
+                    investor.nominee_auth_status = InvestorProfile.AUTH_PENDING
+                    investor.save()
+                    messages.warning(request, f"BSE Response: {response.get('remarks')}")
+                else:
+                    messages.error(request, f"BSE Error: {response.get('remarks')}")
+
+        except Exception as e:
+            messages.error(request, f"API Call Failed: {str(e)}")
+
+        return redirect('users:investor_detail', pk=pk)
+
 
 class ToggleKYCView(LoginRequiredMixin, View):
     def post(self, request, pk):

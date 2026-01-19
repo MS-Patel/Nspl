@@ -74,6 +74,43 @@
                         <span>UCC</span>
                         <span class="font-medium text-slate-700 dark:text-navy-100">{{ investor.ucc_code|default:"Not Generated" }}</span>
                     </div>
+
+                    <div class="my-2 h-px bg-slate-100 dark:bg-navy-600"></div>
+
+                    <div class="flex justify-between items-center">
+                        <span>Nominee Auth</span>
+                        <div class="flex items-center space-x-1">
+                            {% if investor.nominee_auth_status == 'A' %}
+                                <span class="tag rounded-full bg-success/10 text-success">Authenticated</span>
+                            {% elif investor.nominee_auth_status == 'P' %}
+                                <span class="tag rounded-full bg-warning/10 text-warning">Pending</span>
+                            {% else %}
+                                <span class="tag rounded-full bg-slate-150 text-slate-500 dark:bg-navy-500 dark:text-navy-100">N/A</span>
+                            {% endif %}
+
+                            <!-- Trigger Auth Button (Small) -->
+                            {% if investor.ucc_code and investor.nominee_auth_status != 'A' %}
+                                {% if user.user_type == 'RM' or user.user_type == 'DISTRIBUTOR' or user.user_type == 'ADMIN' %}
+                                <form action="{% url 'users:trigger_nominee_auth' investor.pk %}" method="post" class="ml-2">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn h-6 px-2 bg-primary/10 text-xs text-primary hover:bg-primary/20 focus:bg-primary/20 active:bg-primary/25" title="Trigger Auth / Check Status">
+                                        Check
+                                    </button>
+                                </form>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {% if investor.bse_remarks %}
+                    <div class="mt-2 rounded-lg bg-slate-50 p-2 text-xs text-slate-500 dark:bg-navy-900">
+                        <span class="font-semibold">BSE Remarks:</span> {{ investor.bse_remarks }}
+                        {% if investor.last_verified_at %}
+                        <div class="mt-1 text-tiny text-slate-400">Last Checked: {{ investor.last_verified_at }}</div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
                 </div>
 
                 <div class="mt-6 space-y-2">
@@ -98,6 +135,16 @@
                                 Approve & Push to BSE
                             </button>
                         </form>
+
+                        <!-- Distinct Button for Triggering Auth if Pending -->
+                        {% if investor.nominee_auth_status == 'P' and investor.ucc_code %}
+                         <form action="{% url 'users:trigger_nominee_auth' investor.pk %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="btn w-full bg-warning font-medium text-white hover:bg-warning-focus focus:bg-warning-focus active:bg-warning-focus/90">
+                                Trigger Nominee Auth / Check Status
+                            </button>
+                        </form>
+                        {% endif %}
                     {% endif %}
                 </div>
             </div>
