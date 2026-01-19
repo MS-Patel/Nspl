@@ -7,6 +7,7 @@ from django.conf import settings
 from zeep import Client, Settings
 import datetime
 from .utils import get_bse_order_params, get_bse_xsip_order_params, get_bse_mandate_params
+from apps.users.models import InvestorProfile
 
 # Configure a specific logger for BSE API
 # propagate=False ensures these logs don't bubble up to the root Django logger
@@ -98,6 +99,16 @@ class BSEStarMFClient:
         Returns:
             dict: {status: success/error, bse_order_id: ..., remarks: ...}
         """
+        # COMPLIANCE GUARD: Block if Nominee Auth is Pending
+        # Rule: Block all MF transactions unless nominee authenticated or opt-out completed
+        # Opt-out is handled by nomination_opt field ('N')
+        investor = order.investor
+        if investor.nominee_auth_status == InvestorProfile.AUTH_PENDING and investor.nomination_opt == 'Y':
+             return {
+                'status': 'error',
+                'remarks': 'COMPLIANCE BLOCK: Nominee Authentication is Pending. Please complete authentication or update UCC.'
+            }
+
         try:
             # 1. Get Session Password (using the new tuple method)
             encrypted_password, pass_key = self._get_auth_details()
@@ -146,6 +157,14 @@ class BSEStarMFClient:
         Returns:
             dict: {status: success/error, bse_reg_no: ..., remarks: ...}
         """
+        # COMPLIANCE GUARD
+        investor = sip.investor
+        if investor.nominee_auth_status == InvestorProfile.AUTH_PENDING and investor.nomination_opt == 'Y':
+             return {
+                'status': 'error',
+                'remarks': 'COMPLIANCE BLOCK: Nominee Authentication is Pending. Please complete authentication or update UCC.'
+            }
+
         try:
             encrypted_password, pass_key = self._get_auth_details()
             params = get_bse_xsip_order_params(

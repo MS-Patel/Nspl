@@ -147,6 +147,17 @@ class InvestorProfile(models.Model):
         (POA, 'POA'),
     ]
 
+    # Nominee Auth Status Choices
+    AUTH_AUTHENTICATED = 'A'
+    AUTH_PENDING = 'P'
+    AUTH_NOT_AVAILABLE = 'N'
+
+    NOMINEE_AUTH_STATUS_CHOICES = [
+        (AUTH_AUTHENTICATED, 'Authenticated'),
+        (AUTH_PENDING, 'Pending'),
+        (AUTH_NOT_AVAILABLE, 'Not Available'),
+    ]
+
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='investor_profile')
     distributor = models.ForeignKey(DistributorProfile, on_delete=models.SET_NULL, null=True, blank=True, related_name='investors')
 
@@ -253,6 +264,16 @@ class InvestorProfile(models.Model):
     # Status Flags
     kyc_status = models.BooleanField(default=False)
     ucc_code = models.CharField(max_length=20, blank=True, null=True, help_text="Unique Client Code from BSE")
+
+    # BSE Compliance & Audit
+    nominee_auth_status = models.CharField(
+        max_length=1,
+        choices=NOMINEE_AUTH_STATUS_CHOICES,
+        default=AUTH_NOT_AVAILABLE,
+        help_text="A: Authenticated, P: Pending, N: Not Available"
+    )
+    last_verified_at = models.DateTimeField(null=True, blank=True)
+    bse_remarks = models.TextField(blank=True, help_text="Response remarks from BSE")
 
     def __str__(self):
         return f"{self.user.username} (PAN-{self.pan})"
