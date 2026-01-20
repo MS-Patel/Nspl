@@ -297,8 +297,8 @@ class BSEStarMFClient:
             if parts[0] == '100':
                  return {
                     'status': 'success',
-                    'mandate_id': parts[1], # Returns the BSE UMRN/MandateID
-                    'remarks': parts[2] if len(parts) > 2 else 'Mandate Registered'
+                    'remarks': parts[1] if len(parts) > 1 else 'Mandate Registered',
+                    'mandate_id': parts[2] if len(parts) > 2 else None, # Returns the BSE UMRN/MandateID
                 }
             else:
                 return {
