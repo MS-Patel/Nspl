@@ -432,6 +432,14 @@ class PushToBSEView(LoginRequiredMixin, View):
                 investor.save()
 
                 messages.success(request, f"BSE {regn_type} Registration Successful: {response.get('remarks')}")
+
+                # 4. Trigger FATCA Upload automatically after successful registration
+                fatca_response = client.fatca_upload(investor)
+                if fatca_response['status'] == 'success':
+                    messages.success(request, f"FATCA Upload Successful: {fatca_response.get('remarks')}")
+                else:
+                    messages.warning(request, f"FATCA Upload Warning: {fatca_response.get('remarks')}")
+
             else:
                 messages.error(request, f"BSE Error: {response.get('remarks')}")
         except Exception as e:

@@ -173,6 +173,9 @@ class InvestorProfileForm(forms.ModelForm):
             'tax_status', 'occupation', 'holding_nature',
             'address_1', 'address_2', 'address_3', 'city', 'state', 'pincode', 'country',
 
+            # FATCA
+            'place_of_birth', 'country_of_birth', 'source_of_wealth', 'income_slab', 'pep_status', 'exemption_code',
+
             # Foreign Address
             'foreign_address_1', 'foreign_address_2', 'foreign_address_3',
             'foreign_city', 'foreign_state', 'foreign_pincode', 'foreign_country',

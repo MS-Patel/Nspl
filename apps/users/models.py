@@ -158,6 +158,73 @@ class InvestorProfile(models.Model):
         (AUTH_NOT_AVAILABLE, 'Not Available'),
     ]
 
+    # Source of Wealth Choices
+    SALARY = '01'
+    BUSINESS_INCOME = '02'
+    GIFT = '03'
+    ANCESTRAL_PROPERTY = '04'
+    RENTAL_INCOME = '05'
+    PRIZE_MONEY = '06'
+    ROYALTY = '07'
+    OTHERS_WEALTH = '08'
+
+    SOURCE_OF_WEALTH_CHOICES = [
+        (SALARY, 'Salary'),
+        (BUSINESS_INCOME, 'Business Income'),
+        (GIFT, 'Gift'),
+        (ANCESTRAL_PROPERTY, 'Ancestral Property'),
+        (RENTAL_INCOME, 'Rental Income'),
+        (PRIZE_MONEY, 'Prize Money'),
+        (ROYALTY, 'Royalty'),
+        (OTHERS_WEALTH, 'Others'),
+    ]
+
+    # Income Slab Choices
+    BELOW_1L = '31'
+    ONE_TO_5L = '32'
+    FIVE_TO_10L = '33'
+    TEN_TO_25L = '34'
+    TWENTYFIVE_TO_1CR = '35'
+    ABOVE_1CR = '36'
+
+    INCOME_SLAB_CHOICES = [
+        (BELOW_1L, 'Below 1 Lakh'),
+        (ONE_TO_5L, '> 1 <= 5 Lacs'),
+        (FIVE_TO_10L, '> 5 <= 10 Lacs'),
+        (TEN_TO_25L, '> 10 <= 25 Lacs'),
+        (TWENTYFIVE_TO_1CR, '> 25 Lacs <= 1 Crore'),
+        (ABOVE_1CR, 'Above 1 Crore'),
+    ]
+
+    # PEP Choices
+    PEP_YES = 'Y'
+    PEP_NO = 'N'
+    PEP_RELATIVE = 'R'
+
+    PEP_CHOICES = [
+        (PEP_YES, 'Yes'),
+        (PEP_NO, 'No'),
+        (PEP_RELATIVE, 'Relative'),
+    ]
+
+    # Exemption Code Choices
+    EXEMPTION_CODE_CHOICES = [
+        ('A', 'A - 501(a) Organization'),
+        ('B', 'B - US Government'),
+        ('C', 'C - State/US Possession'),
+        ('D', 'D - Publicly Traded Corp'),
+        ('E', 'E - Member of Expanded Affiliated Group'),
+        ('F', 'F - Dealer in Securities'),
+        ('G', 'G - REIT'),
+        ('H', 'H - Regulated Investment Company'),
+        ('I', 'I - Common Trust Fund'),
+        ('J', 'J - Bank'),
+        ('K', 'K - Broker'),
+        ('L', 'L - Exempt Trust'),
+        ('M', 'M - Tax Exempt Trust 403(b)/457(g)'),
+        ('N', 'N - Not Applicable'),
+    ]
+
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='investor_profile')
     distributor = models.ForeignKey(DistributorProfile, on_delete=models.SET_NULL, null=True, blank=True, related_name='investors')
 
@@ -194,6 +261,14 @@ class InvestorProfile(models.Model):
     tax_status = models.CharField(max_length=2, choices=TAX_STATUS_CHOICES, default=INDIVIDUAL)
     occupation = models.CharField(max_length=2, choices=OCCUPATION_CHOICES, default=SERVICE)
     holding_nature = models.CharField(max_length=2, choices=HOLDING_CHOICES, default=SINGLE)
+
+    # FATCA Fields
+    place_of_birth = models.CharField(max_length=50, default='India', blank=True)
+    country_of_birth = models.CharField(max_length=50, default='India', blank=True)
+    source_of_wealth = models.CharField(max_length=2, choices=SOURCE_OF_WEALTH_CHOICES, default=SALARY)
+    income_slab = models.CharField(max_length=2, choices=INCOME_SLAB_CHOICES, default=ONE_TO_5L)
+    pep_status = models.CharField(max_length=1, choices=PEP_CHOICES, default=PEP_NO)
+    exemption_code = models.CharField(max_length=1, choices=EXEMPTION_CODE_CHOICES, blank=True)
 
     # Demat Details
     client_type = models.CharField(max_length=1, choices=CLIENT_TYPE_CHOICES, default=PHYSICAL, blank=True)

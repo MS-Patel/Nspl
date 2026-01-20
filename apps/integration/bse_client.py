@@ -6,7 +6,7 @@ import logging
 from django.conf import settings
 from zeep import Client, Settings
 import datetime
-from .utils import get_bse_order_params, get_bse_xsip_order_params, get_bse_mandate_param_string
+from .utils import get_bse_order_params, get_bse_xsip_order_params, get_bse_mandate_param_string, map_investor_to_fatca_string
 from apps.users.models import InvestorProfile
 
 # Configure a specific logger for BSE API
@@ -363,6 +363,47 @@ class BSEStarMFClient:
                 "status": "error",
                 "remarks": f"HTTP/Network Error: {str(e)}"
             }
+
+    def fatca_upload(self, investor):
+        """
+        Uploads FATCA details using the SOAP MFAPI service (Flag 01).
+        Args:
+            investor (InvestorProfile): The investor object.
+        """
+        try:
+            encrypted_password, _ = self._get_upload_auth_details()
+            param_string = map_investor_to_fatca_string(investor)
+
+            # Use the upload client which supports MFAPI
+            _, service = self._get_upload_soap_client()
+
+            bse_logger.info(f"FATCA UPLOAD Request: Flag=01, Param={param_string}")
+
+            response = service.MFAPI(
+                Flag='01',
+                UserId=self.user_id,
+                EncryptedPassword=encrypted_password,
+                param=param_string
+            )
+
+            bse_logger.info(f"FATCA UPLOAD: {investor.pan} | RESPONSE: {response}")
+
+            # Response format: 100|Success or 101|Error
+            parts = str(response).split('|')
+            if parts[0] == '100':
+                 return {
+                    'status': 'success',
+                    'remarks': parts[1] if len(parts) > 1 else 'FATCA Uploaded'
+                }
+            else:
+                return {
+                    'status': 'error',
+                    'remarks': parts[1] if len(parts) > 1 else response
+                }
+
+        except Exception as e:
+            bse_logger.error(f"FATCA UPLOAD ERROR: {str(e)}")
+            return {'status': 'error', 'remarks': str(e)}
 
     def get_mandate_auth_url(self, client_code, mandate_id, loopback_url=""):
         """
