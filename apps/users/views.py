@@ -447,6 +447,34 @@ class PushToBSEView(LoginRequiredMixin, View):
 
         return redirect('users:investor_detail', pk=pk)
 
+class FATCAUploadView(LoginRequiredMixin, View):
+    """
+    Manually triggers FATCA Upload for an investor.
+    """
+    def post(self, request, pk):
+        investor = get_object_or_404(InvestorProfile, pk=pk)
+
+        if request.user.user_type not in [User.Types.RM, User.Types.DISTRIBUTOR, User.Types.ADMIN]:
+             messages.error(request, "Permission denied.")
+             return redirect('users:investor_detail', pk=pk)
+
+        # Ensure we have a UCC Code before triggering FATCA
+        if not investor.ucc_code:
+            messages.error(request, "Investor must have a UCC Code (Registered on BSE) to upload FATCA details.")
+            return redirect('users:investor_detail', pk=pk)
+
+        client = BSEStarMFClient()
+        try:
+            response = client.fatca_upload(investor)
+            if response['status'] == 'success':
+                messages.success(request, f"FATCA Upload Successful: {response.get('remarks')}")
+            else:
+                messages.error(request, f"FATCA Upload Failed: {response.get('remarks')}")
+        except Exception as e:
+            messages.error(request, f"FATCA API Error: {str(e)}")
+
+        return redirect('users:investor_detail', pk=pk)
+
 class TriggerNomineeAuthView(LoginRequiredMixin, View):
     """
     Triggers Nominee Authentication via a BSE Modification (MOD) request.
