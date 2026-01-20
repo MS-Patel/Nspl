@@ -174,8 +174,17 @@ class TestBSEClient:
             # Mock Service
             mock_service = MagicMock()
             mock_service.getPassword.return_value = "100|EncryptedToken123"
-            mock_service.mandateRegistrationParam.return_value = "100|UMRN123|Success"
+            # Updated Mock for MFAPI
+            mock_service.MFAPI.return_value = "100|UMRN123|Success"
 
+            # The code now creates a NEW service using create_service for Upload
+            # We need to ensure that when create_service is called, it returns our mock service
+            # OR just return the mock_service as the service attribute if create_service isn't mocked properly in the implementation logic.
+            # In bse_client.py: _, service = self._get_upload_soap_client()
+            # _get_upload_soap_client calls create_service on the client.
+
+            MockZeepClient.return_value.create_service.return_value = mock_service
+            # Also set service attribute just in case code falls back
             MockZeepClient.return_value.service = mock_service
 
             client = BSEStarMFClient()
@@ -185,13 +194,13 @@ class TestBSEClient:
             assert result['mandate_id'] == 'UMRN123'
 
             # Verify calls
-            mock_service.mandateRegistrationParam.assert_called_once()
+            # MFAPI is called on the service object returned by create_service
+            mock_service.MFAPI.assert_called_once()
 
-            call_args = mock_service.mandateRegistrationParam.call_args[1]
-            # Updated Expectations
-            assert call_args['ClientCode'] == 'TEST001'
-            assert call_args['MandateAmount'] == '50000.00'
-            assert call_args['IFSC'] == 'TEST0000001'
+            call_args = mock_service.MFAPI.call_args[1]
+            # Updated Expectations for Flag 06
+            assert call_args['Flag'] == '06'
+            assert 'TEST001|50000.00|X|' in call_args['param'] # Partial match on pipe string
 
     def test_mapper_utility(self):
         investor = InvestorProfileFactory(pan='ABCDE1234F')
@@ -200,4 +209,4 @@ class TestBSEClient:
         param_string = map_investor_to_bse_param_string(investor)
         assert isinstance(param_string, str)
         assert 'ABCDE1234F' in param_string # PAN
-        assert '|' in param_string
+        assert '|' in param_string # PAN

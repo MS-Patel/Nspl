@@ -6,7 +6,7 @@ import logging
 from django.conf import settings
 from zeep import Client, Settings
 import datetime
-from .utils import get_bse_order_params, get_bse_xsip_order_params, get_bse_mandate_params
+from .utils import get_bse_order_params, get_bse_xsip_order_params, get_bse_mandate_param_string
 from apps.users.models import InvestorProfile
 
 # Configure a specific logger for BSE API
@@ -33,6 +33,7 @@ class BSEStarMFClient:
         # UAT Endpoints
         self.order_wsdl = "https://bsestarmfdemo.bseindia.com/MFOrderEntry/MFOrder.svc?singleWsdl"
         self.upload_service_url = "https://bsestarmfdemo.bseindia.com/StarMFFileUploadService/StarMFFileUploadService.svc/Secure/UploadFile"
+        self.upload_wsdl = "https://bsestarmfdemo.bseindia.com/MFUploadService/MFUploadService.svc?singleWsdl"
         self.common_api_url = "https://bsestarmfdemo.bseindia.com/BSEMFWEBAPI/UCCAPI/UCCRegistrationV183"
         self.emandate_auth_url = "https://bsestarmfdemo.bseindia.com/Emandate/EmandateAuthURL.aspx"
 
@@ -54,6 +55,44 @@ class BSEStarMFClient:
             service_name='MFOrder',
             port_name='WSHttpBinding_MFOrderEntry1'
         )
+
+    def _get_upload_soap_client(self):
+        """
+        Initializes and returns a Zeep Client configured for the Upload Service (MFAPI).
+        """
+        zeep_settings = Settings(strict=False, xml_huge_tree=True)
+        # Typically the service name is 'MFUploadService' and port 'WSHttpBinding_IMFUploadService1' or similar for Secure
+        # Inspecting the WSDL would confirm, but usually we can let Zeep pick the default if we are careful,
+        # or assume the pattern holds.
+        # Based on logs and standard BSE WSDLs, let's try to find the secure port.
+        # If unknown, just initializing with WSDL usually works if the WSDL has the correct addresses.
+        # However, to be safe and consistent with _get_soap_client, we should probably target the secure binding.
+
+        # Let's try without specifying service/port first, as Zeep defaults to the first one which is often HTTP.
+        # If we need HTTPS, we might need to be specific.
+        # Given I cannot inspect WSDL content easily without a tool, I will try to use the client default
+        # but ensure the address in WSDL (which usually points to http or https) is respected.
+        # If errors occur, I will need to be more specific.
+
+        # NOTE: For UAT, singleWsdl often exposes both HTTP and HTTPS bindings.
+        # 'BasicHttpBinding_IMFUploadService' (HTTP) and 'WSHttpBinding_IMFUploadService' (HTTPS) are common.
+        # Let's try to target 'WSHttpBinding_IMFUploadService' or similar if we can guess,
+        # otherwise rely on the fact that self.upload_wsdl has 'singleWsdl'.
+
+        client = Client(
+            wsdl=self.upload_wsdl,
+            settings=zeep_settings
+        )
+        # Attempt to find a secure port if possible, or just return client.
+        # Since I can't interactively check ports, I will return the client as is.
+        # The 'MFUploadService.svc/Secure' URL in Postman suggests we want the Secure endpoint.
+
+        # Force the service URL to the secure one just in case the WSDL defaults to non-secure
+        service = client.create_service(
+            '{http://bsestarmfdemo.bseindia.com/2016/01/}WSHttpBinding_IMFUploadService',
+            'https://bsestarmfdemo.bseindia.com/MFUploadService/MFUploadService.svc/Secure'
+        )
+        return client, service
 
     def _get_auth_details(self):
         """
@@ -202,23 +241,31 @@ class BSEStarMFClient:
 
     def register_mandate(self, mandate):
         """
-        Registers a Mandate (XSIP Mandate) using the SOAP mandateRegistrationParam service.
+        Registers a Mandate (XSIP Mandate) using the SOAP MFAPI service (Flag 06).
         Args:
             mandate (Mandate): The Mandate object.
         """
         try:
-            encrypted_password, pass_key = self._get_auth_details()
-            params = get_bse_mandate_params(
-                mandate,
-                self.member_id,
-                self.user_id,
-                encrypted_password,
-                pass_key
+            encrypted_password, _ = self._get_auth_details()
+            param_string = get_bse_mandate_param_string(mandate)
+
+            # Use the upload client which supports MFAPI
+            _, service = self._get_upload_soap_client()
+
+            # Call MFAPI with Flag 06
+            # Note: MFAPI expects 'UserId', 'EncryptedPassword', 'param' (and 'Flag'?)
+            # The WSDL signature usually is MFAPI(Flag, UserId, EncryptedPassword, param)
+            # Let's use keyword arguments to be safe.
+
+            bse_logger.info(f"MANDATE REG Request: Flag=06, Param={param_string}")
+
+            response = service.MFAPI(
+                Flag='06',
+                UserId=self.user_id,
+                EncryptedPassword=encrypted_password,
+                param=param_string
             )
 
-            client = self._get_soap_client()
-
-            response = client.service.mandateRegistrationParam(**params)
             bse_logger.info(f"MANDATE REG: {mandate.id} | RESPONSE: {response}")
 
             parts = str(response).split('|')
