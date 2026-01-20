@@ -1,4 +1,5 @@
 import pytest
+from unittest.mock import patch, MagicMock
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 from apps.users.models import RMProfile, DistributorProfile, InvestorProfile
@@ -148,3 +149,55 @@ class TestAccessControl:
         client.force_login(dist_profile.user)
         response = client.get(reverse('users:rm_dashboard'))
         assert response.status_code == 403
+
+@pytest.mark.django_db
+class TestFATCAUpload:
+    def test_fatca_upload_view(self, client):
+        """
+        Test that FATCA Upload view works correctly and calls the BSE Client.
+        """
+        # 1. Setup Data
+        rm_profile = RMProfileFactory()
+        client.force_login(rm_profile.user)
+
+        investor = InvestorProfileFactory(ucc_code="12345678")
+        url = reverse('users:fatca_upload', args=[investor.pk])
+
+        # 2. Mock BSE Client
+        with patch('apps.users.views.BSEStarMFClient') as MockBSEClient:
+            mock_client_instance = MockBSEClient.return_value
+            mock_client_instance.fatca_upload.return_value = {
+                'status': 'success',
+                'remarks': 'FATCA Uploaded Successfully'
+            }
+
+            # 3. Perform Request
+            response = client.post(url)
+
+            # 4. Assertions
+            assert response.status_code == 302 # Redirects back
+            mock_client_instance.fatca_upload.assert_called_once_with(investor)
+
+            # Verify message (using django messages framework in test)
+            messages = list(response.wsgi_request._messages)
+            assert len(messages) == 1
+            assert str(messages[0]) == "FATCA Upload Successful: FATCA Uploaded Successfully"
+
+    def test_fatca_upload_no_ucc(self, client):
+        """
+        Test that FATCA Upload fails if UCC is missing.
+        """
+        rm_profile = RMProfileFactory()
+        client.force_login(rm_profile.user)
+
+        investor = InvestorProfileFactory(ucc_code=None)
+        url = reverse('users:fatca_upload', args=[investor.pk])
+
+        with patch('apps.users.views.BSEStarMFClient') as MockBSEClient:
+             response = client.post(url)
+
+             assert response.status_code == 302
+             MockBSEClient.return_value.fatca_upload.assert_not_called()
+
+             messages = list(response.wsgi_request._messages)
+             assert "Investor must have a UCC Code" in str(messages[0])
