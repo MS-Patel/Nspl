@@ -173,8 +173,10 @@ def map_investor_to_fatca_string(investor):
     tpin1 = investor.pan
 
     # 14. ID1_TYPE
-    # C - PAN Card
-    id1_type = "C"
+    # C - PAN Card. However, for domestic investors (Tax Res = IN), BSE requires this to be blank
+    # as the PAN (TPIN) acts as the implicit identification.
+    # Sending 'C' for India results in "INVALID TYPE OF IDENTIFICATION DOCUMENT"
+    id1_type = "" if tax_res1 == "IN" else "C"
 
     # 15-23: TAX_RES 2/3/4 etc.
     # Blank for standard domestic investor
