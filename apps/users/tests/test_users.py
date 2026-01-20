@@ -85,6 +85,14 @@ class TestUserCreation:
             'client_type': 'P',
             'nomination_opt': 'Y',
 
+            # FATCA Fields
+            'place_of_birth': 'Mumbai',
+            'country_of_birth': 'India',
+            'source_of_wealth': '01',
+            'income_slab': '32',
+            'pep_status': 'N',
+            'exemption_code': 'N',
+
             # Management Forms for Formsets
             'bank_accounts-TOTAL_FORMS': '1',
             'bank_accounts-INITIAL_FORMS': '0',

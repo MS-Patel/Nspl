@@ -77,6 +77,28 @@
 
                     <div class="my-2 h-px bg-slate-100 dark:bg-navy-600"></div>
 
+                    <div class="flex flex-col space-y-2">
+                        <span class="text-xs font-semibold uppercase text-slate-400 dark:text-navy-300">FATCA Details</span>
+                        <div class="flex justify-between text-xs">
+                            <span>Place/Country</span>
+                            <span>{{ investor.place_of_birth }}, {{ investor.country_of_birth }}</span>
+                        </div>
+                        <div class="flex justify-between text-xs">
+                            <span>Src Wealth</span>
+                            <span>{{ investor.get_source_of_wealth_display }}</span>
+                        </div>
+                        <div class="flex justify-between text-xs">
+                            <span>Income</span>
+                            <span>{{ investor.get_income_slab_display }}</span>
+                        </div>
+                        <div class="flex justify-between text-xs">
+                            <span>PEP</span>
+                            <span>{{ investor.get_pep_status_display }}</span>
+                        </div>
+                    </div>
+
+                    <div class="my-2 h-px bg-slate-100 dark:bg-navy-600"></div>
+
                     <div class="flex justify-between items-center">
                         <span>Nominee Auth</span>
                         <div class="flex items-center space-x-1">

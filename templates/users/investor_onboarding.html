@@ -164,6 +164,38 @@
                                     {% render_field form.holding_nature id="holding_nature" class="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" %}
                                 </label>
 
+                                <!-- FATCA Fields -->
+                                <div class="col-span-1 sm:col-span-2 my-2 h-px bg-slate-200 dark:bg-navy-500"></div>
+                                <h5 class="col-span-1 sm:col-span-2 font-medium text-slate-700">FATCA Details</h5>
+
+                                <label class="block">
+                                    <span>Place of Birth</span>
+                                    {% render_field form.place_of_birth id="place_of_birth" class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" %}
+                                </label>
+                                <label class="block">
+                                    <span>Country of Birth</span>
+                                    {% render_field form.country_of_birth id="country_of_birth" class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" %}
+                                </label>
+                                <label class="block">
+                                    <span>Source of Wealth</span>
+                                    {% render_field form.source_of_wealth id="source_of_wealth" class="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" %}
+                                </label>
+                                <label class="block">
+                                    <span>Income Slab</span>
+                                    {% render_field form.income_slab id="income_slab" class="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" %}
+                                </label>
+                                <label class="block">
+                                    <span>Politically Exposed Person (PEP)</span>
+                                    {% render_field form.pep_status id="pep_status" class="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" %}
+                                </label>
+                                <label class="block">
+                                    <span>Exemption Code (Optional)</span>
+                                    {% render_field form.exemption_code id="exemption_code" class="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" %}
+                                </label>
+
+                                <div class="col-span-1 sm:col-span-2 my-2 h-px bg-slate-200 dark:bg-navy-500"></div>
+                                <h5 class="col-span-1 sm:col-span-2 font-medium text-slate-700">KYC & Declarations</h5>
+
                                 <!-- New KYC Fields -->
                                 <label class="block">
                                     <span>KYC Type</span>
