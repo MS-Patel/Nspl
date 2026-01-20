@@ -81,18 +81,11 @@ class BSEStarMFClient:
 
         client = Client(
             wsdl=self.upload_wsdl,
-            settings=zeep_settings
+            settings=zeep_settings,
+            service_name='MFUploadService',
+            port_name='WSHttpBinding_IMFUploadService1'
         )
-        # Attempt to find a secure port if possible, or just return client.
-        # Since I can't interactively check ports, I will return the client as is.
-        # The 'MFUploadService.svc/Secure' URL in Postman suggests we want the Secure endpoint.
-
-        # Force the service URL to the secure one just in case the WSDL defaults to non-secure
-        service = client.create_service(
-            '{http://bsestarmfdemo.bseindia.com/2016/01/}WSHttpBinding_IMFUploadService',
-            'https://bsestarmfdemo.bseindia.com/MFUploadService/MFUploadService.svc/Secure'
-        )
-        return client, service
+        return client, client.service
 
     def _get_auth_details(self):
         """
