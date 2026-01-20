@@ -153,7 +153,7 @@ def map_investor_to_fatca_string(investor):
     addr_type = "1"
 
     # 10. PO_BIR_INC (Place of Birth / Incorporation)
-    po_bir_inc = investor.place_of_birth
+    po_bir_inc = "IN" #investor.place_of_birth
 
     # 11. CO_BIR_INC (Country of Birth / Incorporation)
     # Mapping to Country Code or Name? Spec says "Refer Country/Nationality master".
@@ -176,7 +176,7 @@ def map_investor_to_fatca_string(investor):
     # C - PAN Card. However, for domestic investors (Tax Res = IN), BSE requires this to be blank
     # as the PAN (TPIN) acts as the implicit identification.
     # Sending 'C' for India results in "INVALID TYPE OF IDENTIFICATION DOCUMENT"
-    id1_type = "" if tax_res1 == "IN" else "C"
+    id1_type = "C" if tax_res1 == "IN" else "C"
 
     # 15-23: TAX_RES 2/3/4 etc.
     # Blank for standard domestic investor
