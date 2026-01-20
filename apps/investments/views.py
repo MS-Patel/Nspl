@@ -102,7 +102,11 @@ def mandate_authorize(request, pk):
 
     try:
         client = BSEStarMFClient()
-        auth_url = client.get_mandate_auth_url(client_code, mandate.mandate_id)
+        # Generate absolute loopback URL for BSE to redirect back to
+        loopback_url = request.build_absolute_uri(
+            reverse('users:investor_detail', kwargs={'pk': mandate.investor.pk})
+        )
+        auth_url = client.get_mandate_auth_url(client_code, mandate.mandate_id, loopback_url)
         return redirect(auth_url)
     except Exception as e:
         logger.error(f"Error generating auth URL: {e}")

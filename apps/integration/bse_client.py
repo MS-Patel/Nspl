@@ -36,6 +36,7 @@ class BSEStarMFClient:
         self.upload_wsdl = "https://bsestarmfdemo.bseindia.com/MFUploadService/MFUploadService.svc?singleWsdl"
         self.common_api_url = "https://bsestarmfdemo.bseindia.com/BSEMFWEBAPI/UCCAPI/UCCRegistrationV183"
         self.emandate_auth_url = "https://bsestarmfdemo.bseindia.com/Emandate/EmandateAuthURL.aspx"
+        self.emandate_api_url = "https://bsestarmfdemo.bseindia.com/StarMFWebService/StarMFWebService.svc/EMandateAuthURL"
 
     def _generate_pass_key(self):
         """Generates a random 10-character alphanumeric pass key."""
@@ -363,11 +364,51 @@ class BSEStarMFClient:
                 "remarks": f"HTTP/Network Error: {str(e)}"
             }
 
-    def get_mandate_auth_url(self, client_code, mandate_id):
+    def get_mandate_auth_url(self, client_code, mandate_id, loopback_url=""):
         """
-        Generates the BSE E-Mandate Authentication URL.
-        Format: BaseURL?ClientCode=...&MandateID=...&MemberCode=...
+        Generates the BSE E-Mandate Authentication URL using the REST API.
+        Args:
+            client_code: The Investor's UCC.
+            mandate_id: The Mandate ID returned by register_mandate.
+            loopback_url: The absolute URL where BSE should redirect after auth (optional).
+        Returns:
+            str: The authorization URL.
         """
-        # Ensure values are safe/encoded if needed, but they are usually alphanumeric
-        url = f"{self.emandate_auth_url}?ClientCode={client_code}&MandateID={mandate_id}&MemberCode={self.member_id}"
-        return url
+        payload = {
+            "MemberCode": self.member_id,
+            "Password": self.password,
+            "ClientCode": client_code,
+            "UserId": self.user_id,
+            "MandateID": mandate_id,
+            "LoopBackUrl": loopback_url
+        }
+
+        # Log request (masking password)
+        log_body = payload.copy()
+        log_body['Password'] = '********'
+        bse_logger.info(f"API: {self.emandate_api_url} | REQUEST BODY: {log_body}")
+
+        try:
+            response = requests.post(self.emandate_api_url, json=payload, verify=False)
+            response.raise_for_status()
+
+            bse_logger.info(f"API: {self.emandate_api_url} | RESPONSE: {response.text}")
+
+            # Try parsing as JSON first
+            try:
+                data = response.json()
+                # If it's a JSON response like {Status: 0, ResponseString: 'http...'}
+                if isinstance(data, dict):
+                     return data.get('ResponseString', data.get('URL', response.text))
+                # If it's just a string in JSON
+                return str(data)
+            except ValueError:
+                # If not JSON, return text directly (assuming it's the URL)
+                return response.text.strip('"')
+
+        except Exception as e:
+            bse_logger.error(f"API Error (Emandate Auth): {str(e)}")
+            # Fallback to manual construction if API fails completely?
+            # Or just raise/return error.
+            # Returning existing fallback for safety might be misleading if the format changed.
+            raise e
