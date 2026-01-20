@@ -131,6 +131,7 @@ class BSEStarMFClient:
             # The getPassword method in Upload Service WSDL expects UserId, Password, PassKey
             response = service.getPassword(
                 UserId=self.user_id,
+                MemberId=self.member_id,
                 Password=self.password,
                 PassKey=pass_key
             )
