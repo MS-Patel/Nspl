@@ -115,9 +115,9 @@ def map_investor_to_fatca_string(investor):
     def val(v):
         return str(v) if v else ""
 
-    # Helper for dates (DD/MM/YYYY)
+    # Helper for dates (MM/DD/YYYY)
     def date_fmt(d):
-        return d.strftime("%d/%m/%Y") if d else ""
+        return d.strftime("%m/%d/%Y") if d else ""
 
     # 1. PAN_RP
     pan_rp = investor.pan
@@ -176,7 +176,7 @@ def map_investor_to_fatca_string(investor):
     # C - PAN Card. However, for domestic investors (Tax Res = IN), BSE requires this to be blank
     # as the PAN (TPIN) acts as the implicit identification.
     # Sending 'C' for India results in "INVALID TYPE OF IDENTIFICATION DOCUMENT"
-    id1_type = "C" if tax_res1 == "IN" else "C"
+    id1_type = "T" if tax_res1 == "IN" else "C"
 
     # 15-23: TAX_RES 2/3/4 etc.
     # Blank for standard domestic investor
