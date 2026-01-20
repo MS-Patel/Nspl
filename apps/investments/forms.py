@@ -3,6 +3,8 @@ from .models import Order, Folio, Mandate, SIP
 from apps.users.models import InvestorProfile, BankAccount
 from apps.products.models import Scheme
 from django.core.exceptions import ValidationError
+from datetime import date
+from dateutil.relativedelta import relativedelta
 
 class OrderForm(forms.ModelForm):
     # Field to select an existing folio or leave blank for new
@@ -129,16 +131,23 @@ class OrderForm(forms.ModelForm):
 class MandateForm(forms.ModelForm):
     class Meta:
         model = Mandate
-        fields = ['investor', 'bank_account', 'amount_limit', 'start_date', 'end_date']
+        fields = ['investor', 'mandate_type', 'bank_account', 'amount_limit', 'start_date', 'end_date']
         widgets = {
             'start_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-input'}),
             'end_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-input'}),
             'amount_limit': forms.NumberInput(attrs={'class': 'form-input'}),
+            'mandate_type': forms.Select(attrs={'class': 'form-select'}),
         }
 
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
+
+        # Prefill Dates: Current Date and Current Date + 39 Years
+        if not self.initial.get('start_date'):
+            self.initial['start_date'] = date.today()
+        if not self.initial.get('end_date'):
+            self.initial['end_date'] = date.today() + relativedelta(years=39)
 
         if self.user:
             if self.user.user_type == 'DISTRIBUTOR':

@@ -32,9 +32,22 @@ class Mandate(models.Model):
         (REJECTED, 'Rejected'),
     ]
 
+    # Mandate Type Choices
+    PHYSICAL = 'X'
+    ISIP = 'I'
+    NET_BANKING = 'N'
+
+    MANDATE_TYPE_CHOICES = [
+        (PHYSICAL, 'Physical (XSIP)'),
+        (ISIP, 'E-Mandate (ISIP)'),
+        (NET_BANKING, 'E-Mandate (Net Banking)'),
+    ]
+
     investor = models.ForeignKey(InvestorProfile, on_delete=models.CASCADE, related_name='mandates')
     bank_account = models.ForeignKey(BankAccount, on_delete=models.SET_NULL, null=True, blank=True, related_name='mandates')
     mandate_id = models.CharField(max_length=50, unique=True, help_text="UMRN or Mandate ID from BSE")
+
+    mandate_type = models.CharField(max_length=1, choices=MANDATE_TYPE_CHOICES, default='I', help_text="Type of Mandate")
 
     amount_limit = models.DecimalField(max_digits=15, decimal_places=2, help_text="Maximum amount allowed per transaction")
     start_date = models.DateField()

@@ -545,14 +545,7 @@ def get_bse_mandate_param_string(mandate):
     amount = f"{mandate.amount_limit:.2f}"
 
     # 3. Mandate Type
-    # Mapping based on typical logic: 'X' for XSIP, 'I' for ISIP, 'N' for Net Banking, 'E' for E-Mandate
-    # Assuming 'X' as default if not specified or inferred.
-    # If mandate_type is stored in model, use it. Else infer.
-    # The existing codebase passed 'XSIP' in the dict params, so we map that to 'X'.
-    mandate_type = 'X' # Defaulting to XSIP as per existing flow
-    # If you have specific logic to determine I or N, add it here.
-    # For E-Mandate (Net Banking Auth), it is often 'X' with online auth flow.
-    # The document says X / I / N.
+    mandate_type = mandate.mandate_type if hasattr(mandate, 'mandate_type') and mandate.mandate_type else 'X'
 
     # 4. Account No
     bank = mandate.bank_account
