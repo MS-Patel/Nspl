@@ -1,1 +1,5 @@
 2026-01-20 15:57:24,737 - MANDATE REG ERROR: SOAP Error during upload service authentication: The server was unable to process the request due to an internal error.  For more information about the error, either turn on IncludeExceptionDetailInFaults (either from ServiceBehaviorAttribute or from the <serviceDebug> configuration behavior) on the server in order to send the exception information back to the client, or turn on tracing as per the Microsoft .NET Framework SDK documentation and inspect the server trace logs.
+2026-01-20 17:09:48,135 - MANDATE REG Request: Flag=06, Param=BDAPK9533N|10000.00|X|521903721321|SB|SBIN0016053||20/01/2026|20/01/2036
+2026-01-20 17:09:48,474 - MANDATE REG: 15 | RESPONSE: 100|MANDATE REGISTRATION DONE SUCCESSFULLY|896132
+2026-01-20 17:10:42,647 - MANDATE REG Request: Flag=06, Param=EEFPP8024C|100000.00|X|3725123124312|SB|SBIN0016052||20/01/2026|20/01/2036
+2026-01-20 17:10:42,969 - MANDATE REG: 16 | RESPONSE: 100|MANDATE REGISTRATION DONE SUCCESSFULLY|896133
