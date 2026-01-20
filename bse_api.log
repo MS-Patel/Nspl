@@ -63,3 +63,15 @@
 2026-01-20 12:18:56,997 - MANDATE REG ERROR: HTTPSConnectionPool(host='bsestarmfdemo.bseindia.com', port=443): Max retries exceeded with url: /MFUploadService/MFUploadService.svc?singleWsdl (Caused by NewConnectionError("HTTPSConnection(host='bsestarmfdemo.bseindia.com', port=443): Failed to establish a new connection: [Errno 61] Connection refused"))
 2026-01-20 12:20:16,664 - MANDATE REG Request: Flag=06, Param=EEFPP8024C|100000.00|X|3725123124312|SB|SBIN0016052||20/01/2026|21/01/2030
 2026-01-20 12:20:19,144 - MANDATE REG: 7 | RESPONSE: 100|MANDATE REGISTRATION DONE SUCCESSFULLY|896120
+2026-01-20 07:00:55,210 - ORDER Request: {'param': 'value'}
+2026-01-20 07:00:55,210 - ORDER ENTRY: 123456 | RESPONSE: 0|OrderNo|Success
+2026-01-20 07:00:55,211 - MANDATE REG Request: Flag=06, Param=pipe|separated|string
+2026-01-20 07:00:55,212 - MANDATE REG: <MagicMock name='mock.id' id='140092796563104'> | RESPONSE: 100|MandateID|Success
+2026-01-20 12:31:09,045 - ORDER Request: {'param': 'value'}
+2026-01-20 12:31:09,046 - ORDER ENTRY: 123456 | RESPONSE: 0|OrderNo|Success
+2026-01-20 12:31:09,047 - MANDATE REG Request: Flag=06, Param=pipe|separated|string
+2026-01-20 12:31:09,047 - MANDATE REG: <MagicMock name='mock.id' id='140112779535728'> | RESPONSE: 100|MandateID|Success
+2026-01-20 12:31:52,161 - ORDER Request: {'param': 'value'}
+2026-01-20 12:31:52,161 - ORDER ENTRY: 123456 | RESPONSE: 0|OrderNo|Success
+2026-01-20 12:31:52,162 - MANDATE REG Request: Flag=06, Param=pipe|separated|string
+2026-01-20 12:31:52,163 - MANDATE REG: <MagicMock name='mock.id' id='140223804466112'> | RESPONSE: 100|MandateID|Success

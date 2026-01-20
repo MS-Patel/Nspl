@@ -123,6 +123,35 @@ class BSEStarMFClient:
         except Exception as e:
             raise Exception(f"SOAP Error during authentication: {str(e)}")
 
+    def _get_upload_auth_details(self):
+        """
+        Authenticates with BSE StarMF Upload Service to get the session key.
+        Returns:
+            tuple: (EncryptedPassword, PassKey)
+        """
+        pass_key = self._generate_pass_key()
+
+        # Use the upload service client
+        _, service = self._get_upload_soap_client()
+
+        try:
+            # The getPassword method in Upload Service WSDL expects UserId, Password, PassKey
+            response = service.getPassword(
+                UserId=self.user_id,
+                Password=self.password,
+                PassKey=pass_key
+            )
+
+            # Response format is "100|EncryptedPassword" or "101|Error"
+            result_str = response.split('|')
+            if result_str[0] == '100':
+                return result_str[1], pass_key
+            else:
+                raise Exception(f"BSE Upload Service Authentication Failed: {response}")
+
+        except Exception as e:
+            raise Exception(f"SOAP Error during upload service authentication: {str(e)}")
+
     def _get_password(self):
         """
         Wrapper to maintain backward compatibility.
@@ -246,7 +275,7 @@ class BSEStarMFClient:
             mandate (Mandate): The Mandate object.
         """
         try:
-            encrypted_password, _ = self._get_auth_details()
+            encrypted_password, _ = self._get_upload_auth_details()
             param_string = get_bse_mandate_param_string(mandate)
 
             # Use the upload client which supports MFAPI
