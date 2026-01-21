@@ -712,7 +712,7 @@ def get_bse_xsip_order_params(sip, member_id, user_id, password, pass_key):
         'DpTxnMode': 'P', # Assuming Physical like DPTxn
         'StartDate': start_date,
         'FrequencyType': freq_map.get(sip.frequency, 'MONTHLY'),
-        'FrequencyAllowed': '', # Optional
+        'FrequencyAllowed': '1', # Guideline mandates '1' (rolling)
         'InstallmentAmount': f"{sip.amount:.2f}",
         'NoOfInstallment': str(sip.installments),
         'Remarks': '',
@@ -723,7 +723,7 @@ def get_bse_xsip_order_params(sip, member_id, user_id, password, pass_key):
         'SubberCode': '', # Updated Name
         'Euin': euin,
         'EuinVal': euin_val, # Updated Name
-        'DPC': 'N',
+        'DPC': 'Y', # Guideline mandates 'Y'
         'XsipRegID': '', # Postman uses XsipRegID
         'IPAdd': '',
         'Password': password,
