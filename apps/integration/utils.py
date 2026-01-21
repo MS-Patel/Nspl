@@ -706,7 +706,7 @@ def get_bse_xsip_order_params(sip, member_id, user_id, password, pass_key):
         'SchemeCode': sip.scheme.scheme_code,
         'MemberCode': member_id,
         'ClientCode': client_code,
-        'UserID': user_id, # Updated Case
+        'UserId': user_id, # Updated Case
         'InternalRefNo': '',
         'TransMode': 'P',
         'DpTxnMode': 'P', # Assuming Physical like DPTxn
