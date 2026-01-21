@@ -239,6 +239,7 @@ class BSEStarMFClient:
                 encrypted_password,
                 pass_key
             )
+            bse_logger.info(f"SIP ENTRY: {sip.id} | Params: {params}")
 
             client = self._get_soap_client()
 
