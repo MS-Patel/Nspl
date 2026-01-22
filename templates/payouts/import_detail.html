@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <h1 class="h3 mb-4 text-gray-800">Import Details: {{ object.get_month_display }} {{ object.year }}</h1>
+
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Status Information</h6>
+                </div>
+                <div class="card-body">
+                    <p><strong>Status:</strong> {{ object.status }}</p>
+                    <p><strong>Uploaded At:</strong> {{ object.uploaded_at }}</p>
+                    <p><strong>Processed At:</strong> {{ object.processed_at }}</p>
+                    {% if object.error_log %}
+                    <div class="alert alert-danger">
+                        <strong>Error Log:</strong><br>
+                        <pre>{{ object.error_log }}</pre>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Files</h6>
+                </div>
+                <div class="card-body">
+                    <p><strong>CAMS File:</strong> {% if object.cams_file %}<a href="{{ object.cams_file.url }}">Download</a>{% else %}None{% endif %}</p>
+                    <p><strong>Karvy File:</strong> {% if object.karvy_file %}<a href="{{ object.karvy_file.url }}">Download</a>{% else %}None{% endif %}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payouts Generated -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Payouts Generated</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Distributor</th>
+                            <th>AUM</th>
+                            <th>Category</th>
+                            <th>Payable</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for payout in object.payouts.all %}
+                        <tr>
+                            <td>{{ payout.distributor }}</td>
+                            <td>₹{{ payout.total_aum }}</td>
+                            <td>{{ payout.category }}</td>
+                            <td>₹{{ payout.payable_amount }}</td>
+                            <td><a href="{% url 'payout_detail' payout.id %}" class="btn btn-sm btn-info">View</a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
