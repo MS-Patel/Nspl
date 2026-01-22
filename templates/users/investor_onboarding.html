@@ -92,7 +92,13 @@
                                 </label>
                                 <label class="block">
                                     <span>PAN</span>
-                                    {% render_field form.pan id="pan" class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" placeholder="PAN Number" %}
+                                    <div class="relative flex w-full">
+                                        {% render_field form.pan id="pan" class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" placeholder="PAN Number" %}
+                                        <button type="button" id="btnCheckPan" class="btn ml-2 mt-1.5 h-10 shrink-0 bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90">
+                                            Check
+                                        </button>
+                                    </div>
+                                    <span id="panCheckStatus" class="text-xs mt-1 block h-4"></span>
                                 </label>
                                 <label class="block">
                                     <span>Date of Birth</span>
@@ -592,6 +598,64 @@
                  }
             }
         });
+
+        // --- PAN Check Logic ---
+        const btnCheckPan = document.getElementById('btnCheckPan');
+        const panInput = document.getElementById('pan');
+        const panStatusSpan = document.getElementById('panCheckStatus');
+
+        if(btnCheckPan) {
+            btnCheckPan.addEventListener('click', async () => {
+                const pan = panInput.value.trim().toUpperCase();
+                // Basic Regex Check first
+                if(!/[A-Z]{5}[0-9]{4}[A-Z]{1}/.test(pan)) {
+                    if(window.Swal) Swal.fire('Invalid Format', 'Please enter a valid PAN format (ABCDE1234F)', 'warning');
+                    return;
+                }
+
+                btnCheckPan.disabled = true;
+                btnCheckPan.innerText = '...';
+                panStatusSpan.innerText = 'Checking with BSE...';
+                panStatusSpan.className = 'text-xs mt-1 block h-4 text-info';
+
+                try {
+                    const response = await fetch("{% url 'integration:api_pan_check' %}", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        },
+                        body: JSON.stringify({ pan: pan })
+                    });
+                    const data = await response.json();
+
+                    if(data.status === 'success') {
+                        const bse = data.data;
+                        const msg = `BSE Status: ${bse.status || 'N/A'} - ${bse.remarks || ''}`;
+                        panStatusSpan.innerText = msg;
+
+                        // Heuristic styling
+                        if((bse.status && bse.status.includes('VALID')) || (bse.remarks && bse.remarks.includes('VALID'))) {
+                             panStatusSpan.className = 'text-xs mt-1 block h-4 text-success font-medium';
+                        } else if (bse.remarks && bse.remarks.includes('NOT REGISTERED')) {
+                             panStatusSpan.className = 'text-xs mt-1 block h-4 text-warning font-medium';
+                        } else {
+                             panStatusSpan.className = 'text-xs mt-1 block h-4 text-slate-500';
+                        }
+
+                    } else {
+                        panStatusSpan.innerText = `Error: ${data.remarks}`;
+                        panStatusSpan.className = 'text-xs mt-1 block h-4 text-error';
+                    }
+                } catch (e) {
+                    panStatusSpan.innerText = 'Network Error';
+                    panStatusSpan.className = 'text-xs mt-1 block h-4 text-error';
+                } finally {
+                    btnCheckPan.disabled = false;
+                    btnCheckPan.innerText = 'Check';
+                }
+            });
+        }
 
         // --- 3. Step Buttons Event Listeners ---
 

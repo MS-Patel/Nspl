@@ -1,0 +1,116 @@
+{% extends 'layout/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="flex items-center space-x-4 py-5 lg:py-6">
+    <h2 class="text-xl font-medium text-slate-800 dark:text-navy-50 lg:text-2xl">
+        BSE PAN Status Check
+    </h2>
+</div>
+
+<div class="card p-4 sm:p-5">
+    <div class="max-w-xl">
+        <label class="block">
+            <span class="font-medium text-slate-600 dark:text-navy-100">Enter PAN Number</span>
+            <div class="relative mt-1.5 flex">
+                <input class="form-input peer w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 pl-3 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
+                       placeholder="ABCDE1234F"
+                       type="text"
+                       id="panInput"
+                       maxlength="10"
+                       style="text-transform: uppercase;"
+                />
+                <button class="btn ml-2 bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90"
+                        id="checkPanBtn">
+                    Check Status
+                </button>
+            </div>
+        </label>
+
+        <div id="resultArea" class="mt-6 hidden">
+            <div class="alert flex rounded-lg bg-info/10 p-4 text-info dark:bg-info/15" id="resultAlert">
+                <div class="w-full">
+                    <h3 class="text-base font-medium" id="resultStatus">Status</h3>
+                    <p class="mt-1" id="resultRemarks">Remarks</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const panInput = document.getElementById('panInput');
+        const checkBtn = document.getElementById('checkPanBtn');
+        const resultArea = document.getElementById('resultArea');
+        const resultAlert = document.getElementById('resultAlert');
+        const resultStatus = document.getElementById('resultStatus');
+        const resultRemarks = document.getElementById('resultRemarks');
+
+        checkBtn.addEventListener('click', async () => {
+            const pan = panInput.value.trim().toUpperCase();
+            if (!pan) {
+                if(window.Swal) Swal.fire('Error', 'Please enter a PAN number', 'error');
+                else alert('Please enter a PAN number');
+                return;
+            }
+
+            // Valid PAN Regex
+            const panRegex = /[A-Z]{5}[0-9]{4}[A-Z]{1}/;
+            if (!panRegex.test(pan)) {
+                if(window.Swal) Swal.fire('Error', 'Invalid PAN Format', 'error');
+                else alert('Invalid PAN Format');
+                return;
+            }
+
+            // Loading State
+            checkBtn.disabled = true;
+            checkBtn.innerText = 'Checking...';
+            resultArea.classList.add('hidden');
+
+            try {
+                const response = await fetch("{% url 'integration:api_pan_check' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({ pan: pan })
+                });
+
+                const data = await response.json();
+
+                resultArea.classList.remove('hidden');
+                checkBtn.disabled = false;
+                checkBtn.innerText = 'Check Status';
+
+                if (data.status === 'success') {
+                    const bseData = data.data;
+                    resultStatus.innerText = `Status: ${bseData.status}`;
+                    resultRemarks.innerText = `Remarks: ${bseData.remarks}`;
+
+                    // Style based on content
+                    if (bseData.status && bseData.status.includes("VALID")) {
+                         resultAlert.className = "alert flex rounded-lg bg-success/10 p-4 text-success dark:bg-success/15";
+                    } else if (bseData.remarks && bseData.remarks.includes("NOT")) {
+                         resultAlert.className = "alert flex rounded-lg bg-warning/10 p-4 text-warning dark:bg-warning/15";
+                    } else {
+                         resultAlert.className = "alert flex rounded-lg bg-info/10 p-4 text-info dark:bg-info/15";
+                    }
+
+                } else {
+                    resultStatus.innerText = "Error";
+                    resultRemarks.innerText = data.remarks || "Unknown error occurred";
+                    resultAlert.className = "alert flex rounded-lg bg-error/10 p-4 text-error dark:bg-error/15";
+                }
+
+            } catch (error) {
+                console.error(error);
+                checkBtn.disabled = false;
+                checkBtn.innerText = 'Check Status';
+                if(window.Swal) Swal.fire('Error', 'Network Error', 'error');
+            }
+        });
+    });
+</script>
+{% endblock %}

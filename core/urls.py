@@ -28,6 +28,7 @@ urlpatterns = [
     path('', include('apps.reconciliation.urls'), name="reconciliation"),
     path('', include('apps.payouts.urls'), name="payouts"),
     path('', include('apps.analytics.urls'), name="analytics"),
+    path('integration/', include('apps.integration.urls'), name="integration"),
 ]
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
