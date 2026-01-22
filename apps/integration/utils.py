@@ -615,6 +615,7 @@ def get_bse_order_params(order, member_id, user_id, password, pass_key):
     buy_sell_type = "FRESH" if order.is_new_folio else "ADDITIONAL"
     client_code = order.investor.ucc_code if order.investor.ucc_code else order.investor.pan
 
+    # Use the EUIN stored on the Order (which already handles the fallback logic)
     euin = order.euin if order.euin else ""
     euin_flag = "Y" if euin else "N"
     folio_no = order.folio.folio_number if order.folio else ""
@@ -680,17 +681,12 @@ def get_bse_xsip_order_params(sip, member_id, user_id, password, pass_key):
 
     client_code = sip.investor.ucc_code if sip.investor.ucc_code else sip.investor.pan
 
-    euin = ""
-    if sip.investor.distributor:
-        euin = sip.investor.distributor.euin
-
+    # Use the EUIN stored on the SIP (which already handles the fallback logic)
+    euin = sip.euin if sip.euin else ""
     # Standard EUIN Flag Logic
     euin_val = "Y" if euin else "N"
 
     folio_no = sip.folio.folio_number if sip.folio else ""
-
-    # Logic for BuySellType usually not in XSIP but FirstOrderFlag is there
-    # However, Postman XML doesn't show BuySellType for XSIP. It shows FirstOrderFlag.
 
     freq_map = {
         'MONTHLY': 'MONTHLY',
@@ -702,7 +698,7 @@ def get_bse_xsip_order_params(sip, member_id, user_id, password, pass_key):
 
     params = {
         'TransactionCode': 'NEW',
-        'UniqueRefNo': sip.id,
+        'UniqueRefNo': str(sip.unique_ref_no), # Changed from sip.id to unique_ref_no
         'SchemeCode': sip.scheme.scheme_code,
         'MemberCode': member_id,
         'ClientCode': client_code,
@@ -721,7 +717,7 @@ def get_bse_xsip_order_params(sip, member_id, user_id, password, pass_key):
         'Brokerage': '',
         'MandateID': sip.mandate.mandate_id,
         'SubberCode': '', # Updated Name
-        'Euin': euin,
+        'Euin': euin, # Use correct EUIN
         'EuinVal': euin_val, # Updated Name
         'DPC': 'Y', # Guideline mandates 'Y'
         'XsipRegID': '', # Postman uses XsipRegID
