@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.forms import inlineformset_factory, BaseInlineFormSet
 from django.core.validators import RegexValidator
-from .models import RMProfile, DistributorProfile, InvestorProfile, BankAccount, Nominee, Document
+from .models import RMProfile, DistributorProfile, InvestorProfile, BankAccount, Nominee, Document, Branch
 from .constants import STATE_CHOICES
 from datetime import date
 
@@ -56,6 +56,7 @@ class UserCreationForm(forms.ModelForm):
 
 class RMCreationForm(UserCreationForm):
     employee_code = forms.CharField(max_length=50)
+    branch = forms.ModelChoiceField(queryset=Branch.objects.all(), required=False)
 
     def save(self, commit=True):
         with transaction.atomic():
@@ -65,7 +66,8 @@ class RMCreationForm(UserCreationForm):
                 user.save()
                 RMProfile.objects.create(
                     user=user,
-                    employee_code=self.cleaned_data['employee_code']
+                    employee_code=self.cleaned_data['employee_code'],
+                    branch=self.cleaned_data.get('branch')
                 )
         return user
 
@@ -82,9 +84,19 @@ class DistributorCreationForm(UserCreationForm):
         label="Parent Distributor (if sub-broker)"
     )
 
+    # Allow Admin to select RM
+    rm = forms.ModelChoiceField(
+        queryset=RMProfile.objects.all(),
+        required=False,
+        label="Relationship Manager"
+    )
+
     def __init__(self, *args, **kwargs):
         self.rm_user = kwargs.pop('rm_user', None)
         super().__init__(*args, **kwargs)
+        # If created by RM, hide the RM field or set it to self
+        if self.rm_user and self.rm_user.user_type == User.Types.RM:
+            self.fields['rm'].widget = forms.HiddenInput()
 
     def save(self, commit=True):
         with transaction.atomic():
@@ -93,8 +105,8 @@ class DistributorCreationForm(UserCreationForm):
             if commit:
                 user.save()
 
-                # Determine RM: if creator is RM, use them. If Admin, it might be None or selected (simplified for now)
-                rm_profile = None
+                # Determine RM: if creator is RM, use them. Else use selected RM.
+                rm_profile = self.cleaned_data.get('rm')
                 if self.rm_user and self.rm_user.user_type == User.Types.RM:
                     rm_profile = self.rm_user.rm_profile
 
@@ -134,6 +146,9 @@ class InvestorCreationForm(UserCreationForm):
                 if self.distributor_user and self.distributor_user.user_type == User.Types.DISTRIBUTOR:
                     distributor_profile = self.distributor_user.distributor_profile
 
+                # Note: RM and Branch will be handled in Views or signals if not set here.
+                # In InvestorCreateView, we should handle setting RM/Branch based on context.
+
                 InvestorProfile.objects.create(
                     user=user,
                     distributor=distributor_profile,
@@ -147,7 +162,7 @@ class InvestorCreationForm(UserCreationForm):
 
 class InvestorProfileForm(forms.ModelForm):
     """
-    Comprehensive form for Investor Profile, used in the Onboarding Wizard.
+    Comprehensive form for Investor Profile, used in the Onboarding Wizard and Update View.
     Includes User fields (name, email) managed manually or via a mixin.
     """
     # User fields
@@ -166,12 +181,21 @@ class InvestorProfileForm(forms.ModelForm):
     state = forms.ChoiceField(choices=STATE_CHOICES, required=False)
     foreign_state = forms.ChoiceField(choices=STATE_CHOICES, required=False, label="Foreign State")
 
+    # Hierarchy Fields (for Assignment)
+    # Explicitly declared to control order or attributes, though they are in Meta.fields
+    distributor = forms.ModelChoiceField(queryset=DistributorProfile.objects.all(), required=False)
+    rm = forms.ModelChoiceField(queryset=RMProfile.objects.all(), required=False, label="Relationship Manager")
+    branch = forms.ModelChoiceField(queryset=Branch.objects.all(), required=False)
+
     class Meta:
         model = InvestorProfile
         fields = [
             'pan', 'dob', 'gender', 'mobile',
             'tax_status', 'occupation', 'holding_nature',
             'address_1', 'address_2', 'address_3', 'city', 'state', 'pincode', 'country',
+
+            # Hierarchy
+            'distributor', 'rm', 'branch',
 
             # FATCA
             'place_of_birth', 'country_of_birth', 'source_of_wealth', 'income_slab', 'pep_status', 'exemption_code',
@@ -213,11 +237,41 @@ class InvestorProfileForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
+        self.request_user = kwargs.pop('user', None) # Pass request.user for logic
         super().__init__(*args, **kwargs)
+
         # Populate initial user data if instance exists
         if self.instance and self.instance.pk and self.instance.user:
             self.fields['name'].initial = self.instance.user.name
             self.fields['email'].initial = self.instance.user.email
+
+        # Permissions Logic for Hierarchy Fields
+        if self.request_user:
+            if self.request_user.user_type == User.Types.INVESTOR:
+                # Investors cannot change their mapping
+                self.fields['distributor'].disabled = True
+                self.fields['rm'].disabled = True
+                self.fields['branch'].disabled = True
+            elif self.request_user.user_type == User.Types.DISTRIBUTOR:
+                 # Distributor cannot change their own mapping via this form usually, or only see self
+                 self.fields['distributor'].disabled = True
+                 self.fields['rm'].disabled = True
+                 self.fields['branch'].disabled = True
+            elif self.request_user.user_type == User.Types.RM:
+                # RM can assign distributor (from their list potentially)
+                # RM cannot change RM (assign to another RM? Maybe not allowed or only to self)
+                # RM cannot change Branch (bound to RM)
+
+                # Logic: RM can set Distributor to one of their own distributors or None (Direct)
+                self.fields['distributor'].queryset = DistributorProfile.objects.filter(rm__user=self.request_user)
+
+                # RM field: Can they reassign to another RM? User requirement: "assign distributor to investor... at RM level"
+                # It doesn't explicitly say reassignment to another RM. usually RM manages THEIR investors.
+                # So we lock RM to self (or current value) and Branch to self's branch.
+                self.fields['rm'].disabled = True
+                self.fields['branch'].disabled = True
+
+            # Admin has full access (default)
 
 class BankAccountForm(forms.ModelForm):
     ifsc_code = forms.CharField(max_length=11, validators=[ifsc_validator])
