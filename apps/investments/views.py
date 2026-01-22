@@ -13,6 +13,7 @@ from .forms import OrderForm, MandateForm
 from apps.users.models import InvestorProfile, DistributorProfile
 from apps.products.models import Scheme, AMC, SchemeCategory
 from apps.integration.bse_client import BSEStarMFClient
+from apps.integration.sync_utils import sync_pending_orders
 import logging
 import json
 
@@ -251,6 +252,13 @@ def render_order_form(request, form):
 @login_required
 def order_list(request):
     user = request.user
+
+    # Sync pending orders for this user context before loading
+    try:
+        sync_pending_orders(user)
+    except Exception as e:
+        logger.error(f"Failed to sync pending orders: {e}")
+
     if user.user_type == 'ADMIN':
         orders = Order.objects.all()
     elif user.user_type == 'RM':
