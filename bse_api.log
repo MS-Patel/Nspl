@@ -98,3 +98,44 @@
 2026-01-22 15:07:05,337 - PAN CHECK: ABCDE1234F | RESPONSE: <MagicMock name='mock.AOFPanSearch()' id='140159690666016'>
 2026-01-22 15:16:03,068 - PAN CHECK ERROR: SOAP Error
 2026-01-22 15:16:04,110 - PAN CHECK: ABCDE1234F | RESPONSE: <MagicMock name='mock.AOFPanSearch()' id='140459566592608'>
+2026-01-22 17:00:02,427 - PAN CHECK: EEFPP8024C | RESPONSE: {
+    'BSERemarks': 'FAILED: INVALID ACCOUNT INFORMATION',
+    'PAN': None,
+    'Status': '101',
+    'imageResponseStatus': {
+        'BSELMNDP_MFD': None,
+        'BSELMNDR_RFD': None,
+        'BSENONDP_MFI': None,
+        'BSENONDR_RFI': None
+    },
+    'imageUploadStatus': {
+        'BSELMNDP_MFD': None,
+        'BSELMNDR_RFD': None,
+        'BSENONDP_MFI': None,
+        'BSENONDR_RFI': None
+    }
+}
+2026-01-22 17:00:56,667 - MANDATE STATUS: 896153 | RESPONSE: {
+    'MandateDetails': {
+        'MandateDetails': []
+    },
+    'Message': 'FAILED: ACCESS TOKEN EXPIRED',
+    'Status': '101'
+}
+2026-01-22 17:01:14,834 - PAN CHECK: BDAPK9533N | RESPONSE: {
+    'BSERemarks': 'FAILED: INVALID ACCOUNT INFORMATION',
+    'PAN': None,
+    'Status': '101',
+    'imageResponseStatus': {
+        'BSELMNDP_MFD': None,
+        'BSELMNDR_RFD': None,
+        'BSENONDP_MFI': None,
+        'BSENONDR_RFI': None
+    },
+    'imageUploadStatus': {
+        'BSELMNDP_MFD': None,
+        'BSELMNDR_RFD': None,
+        'BSENONDP_MFI': None,
+        'BSENONDR_RFI': None
+    }
+}
