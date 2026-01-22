@@ -2,6 +2,8 @@ from django.db import models
 from django.conf import settings
 from apps.users.models import InvestorProfile, DistributorProfile, BankAccount
 from apps.products.models import Scheme, AMC
+from apps.investments.constants import COMPANY_DEFAULT_EUIN
+from apps.investments.utils import generate_distributor_based_ref
 import uuid
 import time
 import random
@@ -13,6 +15,7 @@ def generate_order_unique_ref_no():
     to comply with BSE requirements.
     Format: {timestamp_ms}{random_6_chars}
     Example: 1705622400123ABCDEF (13 + 6 = 19 chars)
+    DEPRECATED: Used in old migrations. New logic uses generate_distributor_based_ref in save().
     """
     # 13 digits for millis timestamp
     timestamp = int(time.time() * 1000)
@@ -118,12 +121,38 @@ class SIP(models.Model):
     bse_sip_id = models.CharField(max_length=50, blank=True, null=True, help_text="BSE SIP Registration ID")
     bse_reg_no = models.CharField(max_length=50, blank=True, null=True, help_text="BSE XSIP Registration Number")
 
+    # New Fields for Ref No and EUIN
+    unique_ref_no = models.CharField(max_length=30, unique=True, blank=True, editable=False)
+    euin = models.CharField(max_length=50, blank=True, help_text="EUIN used for this transaction")
+
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"SIP - {self.investor.user.username} - {self.scheme.name} - {self.amount}"
+
+    def save(self, *args, **kwargs):
+        """
+        Overrides save to generate unique_ref_no and populate EUIN.
+        NOTE: These automated fields will NOT be populated if using bulk_create.
+        """
+        # Generate Unique Ref No if not present
+        if not self.unique_ref_no:
+            # SIP uses investor's distributor as it doesn't have a direct distributor field usually
+            dist_id = 0
+            if self.investor and self.investor.distributor:
+                dist_id = self.investor.distributor.id
+            self.unique_ref_no = generate_distributor_based_ref(dist_id)
+
+        # Auto-fill EUIN
+        if not self.euin:
+            if self.investor.distributor and self.investor.distributor.euin:
+                self.euin = self.investor.distributor.euin
+            else:
+                self.euin = COMPANY_DEFAULT_EUIN
+
+        super().save(*args, **kwargs)
 
 class Order(models.Model):
     # Transaction Types
@@ -184,7 +213,8 @@ class Order(models.Model):
     allotted_units = models.DecimalField(max_digits=15, decimal_places=4, null=True, blank=True)
 
     # BSE Specifics
-    unique_ref_no = models.CharField(max_length=20, unique=True, default=generate_order_unique_ref_no, editable=False)
+    # Removed default=generate_order_unique_ref_no to use save() logic
+    unique_ref_no = models.CharField(max_length=20, unique=True, blank=True, editable=False)
     bse_order_id = models.CharField(max_length=20, blank=True, null=True)
     bse_remarks = models.TextField(blank=True, null=True)
 
@@ -209,9 +239,20 @@ class Order(models.Model):
         return f"{self.unique_ref_no} - {self.investor.user.username} - {self.scheme.name}"
 
     def save(self, *args, **kwargs):
-        # Auto-fill EUIN from Distributor if not set
-        if not self.euin and self.distributor:
-            self.euin = self.distributor.euin
-        # Fallback to Company EUIN if still empty? (Can be handled in View or here if we import settings)
-        # For now, leaving it blank if distributor has none, to be handled by business logic
+        """
+        Overrides save to generate unique_ref_no and populate EUIN.
+        NOTE: These automated fields will NOT be populated if using bulk_create.
+        """
+        # Generate Unique Ref No if not present
+        if not self.unique_ref_no:
+            dist_id = self.distributor.id if self.distributor else 0
+            self.unique_ref_no = generate_distributor_based_ref(dist_id)
+
+        # Auto-fill EUIN
+        if not self.euin:
+            if self.distributor and self.distributor.euin:
+                self.euin = self.distributor.euin
+            else:
+                self.euin = COMPANY_DEFAULT_EUIN
+
         super().save(*args, **kwargs)
