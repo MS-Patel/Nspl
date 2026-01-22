@@ -25,8 +25,23 @@ class User(AbstractUser):
     def get_absolute_url(self):
         return f"/users/{self.username}/"
 
+class Branch(models.Model):
+    name = models.CharField(max_length=100)
+    code = models.CharField(max_length=50, unique=True)
+    address = models.CharField(max_length=255, blank=True)
+    city = models.CharField(max_length=50, blank=True)
+    state = models.CharField(max_length=50, blank=True)
+    pincode = models.CharField(max_length=6, blank=True)
+
+    def __str__(self):
+        return f"{self.name} ({self.code})"
+
+    class Meta:
+        verbose_name_plural = "Branches"
+
 class RMProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='rm_profile')
+    branch = models.ForeignKey(Branch, on_delete=models.SET_NULL, null=True, blank=True, related_name='rms')
     employee_code = models.CharField(max_length=50, unique=True)
 
     def __str__(self):
@@ -226,7 +241,11 @@ class InvestorProfile(models.Model):
     ]
 
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='investor_profile')
+
+    # Hierarchy Fields
     distributor = models.ForeignKey(DistributorProfile, on_delete=models.SET_NULL, null=True, blank=True, related_name='investors')
+    rm = models.ForeignKey(RMProfile, on_delete=models.SET_NULL, null=True, blank=True, related_name='investors')
+    branch = models.ForeignKey(Branch, on_delete=models.SET_NULL, null=True, blank=True, related_name='investors')
 
     # Basic Info
     pan = models.CharField(max_length=10, unique=True)
