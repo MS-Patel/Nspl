@@ -21,17 +21,6 @@
             <li>{{ investor.user.name }}</li>
         </ul>
     </div>
-
-    {% if messages %}
-    <div class="mb-4">
-        {% for message in messages %}
-        <div class="alert flex rounded-lg border border-primary/10 bg-primary/10 py-4 px-4 text-primary dark:border-accent-light/15 dark:bg-accent-light/15 dark:text-accent-light sm:px-5">
-            {{ message }}
-        </div>
-        {% endfor %}
-    </div>
-    {% endif %}
-
     <div class="grid grid-cols-12 gap-4 sm:gap-5 lg:gap-6">
         <!-- Profile Card -->
         <div class="col-span-12 lg:col-span-4">

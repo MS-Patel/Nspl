@@ -61,6 +61,61 @@
   	{% comment %} <script src="{% static 'js/just-validate.production.min.js' %}"></script> {% endcomment %}
     <script src="{% static 'js/script.js' %}"></script>
 
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        {% if messages %}
+          // Toast configuration for Success/Info
+          const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+              toast.addEventListener('mouseenter', Swal.stopTimer)
+              toast.addEventListener('mouseleave', Swal.resumeTimer)
+            }
+          });
+
+          {% for message in messages %}
+            (function() {
+              const type = "{{ message.tags }}";
+              const text = "{{ message|escapejs }}";
+
+              if (type.includes('success')) {
+                Toast.fire({
+                  icon: 'success',
+                  title: text
+                });
+              } else if (type.includes('info')) {
+                Toast.fire({
+                  icon: 'info',
+                  title: text
+                });
+              } else if (type.includes('warning')) {
+                Swal.fire({
+                  icon: 'warning',
+                  title: 'Warning',
+                  text: text
+                });
+              } else if (type.includes('error')) {
+                Swal.fire({
+                  icon: 'error',
+                  title: 'Error',
+                  text: text
+                });
+              } else {
+                 // Fallback
+                 Toast.fire({
+                  icon: 'info',
+                  title: text
+                });
+              }
+            })();
+          {% endfor %}
+        {% endif %}
+      });
+    </script>
     {% block javascript %}
 
     {% endblock %}

@@ -702,7 +702,7 @@ def get_bse_xsip_order_params(sip, member_id, user_id, password, pass_key):
 
     params = {
         'TransactionCode': 'NEW',
-        'UniqueRefNo': f"SIP-{sip.id}",
+        'UniqueRefNo': sip.id,
         'SchemeCode': sip.scheme.scheme_code,
         'MemberCode': member_id,
         'ClientCode': client_code,
