@@ -1,91 +1,112 @@
 from django.db import models
 from django.core.exceptions import ValidationError
-from apps.products.models import SchemeCategory, AMC
-from apps.users.models import User
-from apps.reconciliation.models import Holding
+from django.conf import settings
+from apps.users.models import DistributorProfile
 
-class CommissionRule(models.Model):
-    category = models.ForeignKey(SchemeCategory, on_delete=models.CASCADE, related_name='commission_rules')
-    amc = models.ForeignKey(AMC, on_delete=models.CASCADE, null=True, blank=True, related_name='commission_rules', help_text="Leave blank to apply to all AMCs for this category")
-
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+class DistributorCategory(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+    min_aum = models.DecimalField(max_digits=15, decimal_places=2, default=0, help_text="Minimum AUM in Rupees")
+    max_aum = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True, help_text="Maximum AUM in Rupees (Leave blank for infinity)")
+    share_percentage = models.DecimalField(max_digits=5, decimal_places=2, help_text="Percentage of brokerage given to distributor (e.g., 60.00)")
 
     class Meta:
-        unique_together = ('category', 'amc')
-        verbose_name = "Commission Rule"
-        verbose_name_plural = "Commission Rules"
-
-    def __str__(self):
-        if self.amc:
-            return f"{self.category.name} - {self.amc.name}"
-        return f"{self.category.name} - All AMCs"
-
-class CommissionTier(models.Model):
-    rule = models.ForeignKey(CommissionRule, on_delete=models.CASCADE, related_name='tiers')
-    min_aum = models.DecimalField(max_digits=15, decimal_places=2, default=0, help_text="Minimum AUM (>=)")
-    max_aum = models.DecimalField(max_digits=15, decimal_places=2, null=True, blank=True, help_text="Maximum AUM (<). Leave blank for infinity.")
-    rate = models.DecimalField(max_digits=5, decimal_places=2, help_text="Commission Rate in % (e.g. 0.80)")
-
-    class Meta:
+        verbose_name_plural = "Distributor Categories"
         ordering = ['min_aum']
-        verbose_name = "Commission Tier"
-        verbose_name_plural = "Commission Tiers"
 
     def __str__(self):
-        max_str = f"{self.max_aum}" if self.max_aum else "Inf"
-        return f"{self.min_aum} - {max_str} : {self.rate}%"
+        return f"{self.name} ({self.share_percentage}%)"
 
     def clean(self):
         if self.max_aum and self.min_aum >= self.max_aum:
             raise ValidationError("Max AUM must be greater than Min AUM")
 
-    def save(self, *args, **kwargs):
-        self.clean()
-        super().save(*args, **kwargs)
+class BrokerageImport(models.Model):
+    STATUS_PENDING = 'PENDING'
+    STATUS_PROCESSING = 'PROCESSING'
+    STATUS_COMPLETED = 'COMPLETED'
+    STATUS_FAILED = 'FAILED'
+
+    STATUS_CHOICES = [
+        (STATUS_PENDING, 'Pending'),
+        (STATUS_PROCESSING, 'Processing'),
+        (STATUS_COMPLETED, 'Completed'),
+        (STATUS_FAILED, 'Failed'),
+    ]
+
+    month = models.IntegerField(choices=[(i, i) for i in range(1, 13)])
+    year = models.IntegerField()
+    cams_file = models.FileField(upload_to='brokerage/cams/%Y/%m/', null=True, blank=True)
+    karvy_file = models.FileField(upload_to='brokerage/karvy/%Y/%m/', null=True, blank=True)
+
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING)
+    error_log = models.TextField(blank=True)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    processed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-year', '-month']
+        unique_together = ('month', 'year')
+
+    def __str__(self):
+        return f"Brokerage Import - {self.get_month_display() if hasattr(self, 'get_month_display') else self.month}/{self.year}"
+
+class BrokerageTransaction(models.Model):
+    SOURCE_CAMS = 'CAMS'
+    SOURCE_KARVY = 'KARVY'
+    SOURCE_CHOICES = [
+        (SOURCE_CAMS, 'CAMS'),
+        (SOURCE_KARVY, 'Karvy'),
+    ]
+
+    import_file = models.ForeignKey(BrokerageImport, on_delete=models.CASCADE, related_name='transactions')
+    distributor = models.ForeignKey(DistributorProfile, on_delete=models.SET_NULL, null=True, blank=True, related_name='brokerage_transactions')
+    source = models.CharField(max_length=10, choices=SOURCE_CHOICES)
+
+    # Raw Details
+    transaction_date = models.DateField(null=True, blank=True)
+    investor_name = models.CharField(max_length=255, blank=True)
+    folio_number = models.CharField(max_length=50, blank=True)
+    scheme_name = models.CharField(max_length=255, blank=True)
+    amount = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+
+    # Commission
+    brokerage_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+
+    # Audit
+    is_mapped = models.BooleanField(default=False)
+    mapping_remark = models.CharField(max_length=255, blank=True) # e.g. "Mapped via ARN", "Mapped via PAN"
+
+    raw_data = models.JSONField(default=dict, blank=True) # To store full original row
+
+    def __str__(self):
+        return f"{self.source} - {self.investor_name} - {self.brokerage_amount}"
 
 class Payout(models.Model):
-    STATUS_DRAFT = 'DRAFT'
+    STATUS_CALCULATED = 'CALCULATED'
     STATUS_PAID = 'PAID'
     STATUS_CHOICES = [
-        (STATUS_DRAFT, 'Draft'),
+        (STATUS_CALCULATED, 'Calculated'),
         (STATUS_PAID, 'Paid'),
     ]
 
-    distributor = models.ForeignKey(User, on_delete=models.CASCADE, related_name='payouts', limit_choices_to={'user_type': 'DISTRIBUTOR'})
-    period_date = models.DateField(help_text="The month/year this payout represents (usually 1st of month)")
+    brokerage_import = models.ForeignKey(BrokerageImport, on_delete=models.CASCADE, related_name='payouts')
+    distributor = models.ForeignKey(DistributorProfile, on_delete=models.CASCADE, related_name='payouts')
 
-    total_aum = models.DecimalField(max_digits=20, decimal_places=2, default=0)
-    total_commission = models.DecimalField(max_digits=20, decimal_places=2, default=0)
+    # Snapshot of Distributor Status at time of calculation
+    total_aum = models.DecimalField(max_digits=20, decimal_places=2, default=0, help_text="Total AUM of Distributor at time of calculation")
+    category = models.CharField(max_length=100, blank=True) # e.g. "Gold"
+    share_percentage = models.DecimalField(max_digits=5, decimal_places=2, default=0)
 
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_DRAFT)
+    # Amounts
+    gross_brokerage = models.DecimalField(max_digits=15, decimal_places=2, default=0, help_text="Total brokerage received from RTA")
+    payable_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0, help_text="Amount payable to Distributor")
 
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_CALCULATED)
     generated_at = models.DateTimeField(auto_now_add=True)
     paid_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
-        unique_together = ('distributor', 'period_date')
-        ordering = ['-period_date', 'distributor']
+        ordering = ['-brokerage_import__year', '-brokerage_import__month', 'distributor']
 
     def __str__(self):
-        return f"{self.distributor.name} - {self.period_date.strftime('%B %Y')}"
-
-class PayoutDetail(models.Model):
-    payout = models.ForeignKey(Payout, on_delete=models.CASCADE, related_name='details')
-    holding = models.ForeignKey(Holding, on_delete=models.SET_NULL, null=True, blank=True, related_name='payout_details')
-
-    # Denormalized fields for reporting preservation even if underlying objects change
-    investor_name = models.CharField(max_length=255)
-    scheme_name = models.CharField(max_length=255)
-    folio_number = models.CharField(max_length=50, blank=True)
-    category = models.CharField(max_length=100)
-    amc_name = models.CharField(max_length=255)
-
-    aum = models.DecimalField(max_digits=20, decimal_places=2, help_text="AUM used for calculation")
-    applied_rate = models.DecimalField(max_digits=5, decimal_places=2, help_text="Rate % applied")
-    commission_amount = models.DecimalField(max_digits=15, decimal_places=2)
-
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return f"{self.payout} - {self.scheme_name}"
+        return f"{self.distributor.user.username} - {self.payable_amount}"

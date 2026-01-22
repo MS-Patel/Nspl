@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <h1 class="h3 mb-4 text-gray-800">Brokerage Imports</h1>
+
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Period</th>
+                            <th>Status</th>
+                            <th>Uploaded At</th>
+                            <th>Processed At</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for import in object_list %}
+                        <tr>
+                            <td>{{ import.get_month_display }} {{ import.year }}</td>
+                            <td>
+                                {% if import.status == 'COMPLETED' %}
+                                    <span class="badge badge-success">{{ import.status }}</span>
+                                {% elif import.status == 'FAILED' %}
+                                    <span class="badge badge-danger">{{ import.status }}</span>
+                                {% else %}
+                                    <span class="badge badge-warning">{{ import.status }}</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ import.uploaded_at }}</td>
+                            <td>{{ import.processed_at|default:"-" }}</td>
+                            <td>
+                                <a href="{% url 'import_detail' import.pk %}" class="btn btn-sm btn-primary">Details</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

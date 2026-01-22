@@ -1,136 +1,247 @@
-import datetime
+import pandas as pd
 from decimal import Decimal
-from django.db import transaction
-from django.db.models import Sum
-from apps.users.models import User, InvestorProfile, DistributorProfile
+from simpledbf import Dbf5
+import os
+from django.conf import settings
+from django.utils import timezone
+from .models import BrokerageTransaction, Payout, DistributorCategory
+from apps.users.models import DistributorProfile, InvestorProfile
 from apps.reconciliation.models import Holding
-from apps.payouts.models import CommissionRule, Payout, PayoutDetail
+from django.db.models import Sum
 
-def calculate_commission(year, month):
+def process_brokerage_import(brokerage_import):
     """
-    Calculates distributor commission for the given month/year.
+    Main entry point for processing an uploaded BrokerageImport.
     """
-    # 1. Determine period date (1st of the month)
-    period_date = datetime.date(year, month, 1)
+    brokerage_import.status = brokerage_import.STATUS_PROCESSING
+    brokerage_import.save()
 
-    # 2. Get all active Distributors
-    # Note: User type DISTRIBUTOR is what we loop over.
-    distributors = User.objects.filter(user_type=User.Types.DISTRIBUTOR, is_active=True)
+    try:
+        # 1. Process CAMS File
+        if brokerage_import.cams_file:
+            process_cams_file(brokerage_import)
 
-    payouts_created = []
+        # 2. Process Karvy File
+        if brokerage_import.karvy_file:
+            process_karvy_file(brokerage_import)
 
-    for dist in distributors:
-        # Check if payout already exists for this period, delete to re-calculate?
-        Payout.objects.filter(distributor=dist, period_date=period_date, status=Payout.STATUS_DRAFT).delete()
+        # 3. Calculate Payouts
+        calculate_payouts(brokerage_import)
 
-        # If PAID exists, skip
-        if Payout.objects.filter(distributor=dist, period_date=period_date, status=Payout.STATUS_PAID).exists():
-            print(f"Skipping {dist.username}: Payout already PAID for {period_date}")
-            continue
+        brokerage_import.status = brokerage_import.STATUS_COMPLETED
+        brokerage_import.processed_at = timezone.now()
+        brokerage_import.save()
 
-        with transaction.atomic():
-            # 3. Fetch Investors mapped to this Distributor
-            # InvestorProfile has 'distributor' FK to DistributorProfile
-            # So we need to get the DistributorProfile for the current User first.
+    except Exception as e:
+        brokerage_import.status = brokerage_import.STATUS_FAILED
+        brokerage_import.error_log = str(e)
+        brokerage_import.save()
+        raise e
+
+def process_cams_file(brokerage_import):
+    file_path = brokerage_import.cams_file.path
+
+    # Check file extension
+    if file_path.lower().endswith('.dbf'):
+        dbf = Dbf5(file_path)
+        df = dbf.to_dataframe()
+    else:
+        # Assuming CSV if not DBF (rare for CAMS standard, but good fallback)
+        df = pd.read_csv(file_path)
+
+    # Standard CAMS columns often include:
+    # BROK_CODE, BRKAGE_AMT, INV_NAME, FOLIO_NO, SCHEME_COD, TRXN_TYPE, PROC_DATE
+    # Note: Column names in DBF are often truncated to 10 chars.
+
+    # We iterate and save raw transactions
+    transactions = []
+    for _, row in df.iterrows():
+        # Clean Row Data
+        data = row.to_dict()
+
+        # Extract Key Fields (Handle variations in column names if necessary)
+        brokerage = Decimal(str(row.get('BRKAGE_AMT', 0) or 0))
+        amount = Decimal(str(row.get('PLOT_AMOUN', 0) or 0))
+        txn_date = pd.to_datetime(row.get('TRXN_DATE', row.get('PROC_DATE'))) if row.get('TRXN_DATE') or row.get('PROC_DATE') else None
+
+        if txn_date:
+            txn_date = txn_date.date()
+
+        transaction = BrokerageTransaction(
+            import_file=brokerage_import,
+            source=BrokerageTransaction.SOURCE_CAMS,
+            transaction_date=txn_date,
+            investor_name=row.get('INV_NAME', ''),
+            folio_number=row.get('FOLIO_NO', ''),
+            scheme_name=row.get('SCHEME_NAM', row.get('SCHEME_COD', '')), # Sometimes SCHEME_COD is a code
+            amount=amount,
+            brokerage_amount=brokerage,
+            raw_data=str(data)
+        )
+
+        # Attempt Mapping
+        map_transaction(transaction)
+        transactions.append(transaction)
+
+    BrokerageTransaction.objects.bulk_create(transactions)
+
+def process_karvy_file(brokerage_import):
+    file_path = brokerage_import.karvy_file.path
+    df = pd.read_csv(file_path)
+
+    # Karvy CSV often has: 'Broker Code', 'Brokerage (in Rs.)', 'Transaction Date', 'Investor Name'
+
+    transactions = []
+    for _, row in df.iterrows():
+        data = row.to_dict()
+
+        brokerage = Decimal(str(row.get('Brokerage (in Rs.)', 0) or 0))
+        amount = Decimal(str(row.get('Amount (in Rs.)', 0) or 0))
+
+        # Karvy Date format often DD/MM/YYYY
+        txn_date_str = row.get('Transaction Date', row.get('Process Date'))
+        txn_date = None
+        if txn_date_str:
             try:
-                dist_profile = dist.distributor_profile
-            except DistributorProfile.DoesNotExist:
-                print(f"Skipping {dist.username}: No DistributorProfile found")
-                continue
+                txn_date = pd.to_datetime(txn_date_str, dayfirst=True).date()
+            except:
+                pass
 
-            investors = InvestorProfile.objects.filter(distributor=dist_profile)
+        transaction = BrokerageTransaction(
+            import_file=brokerage_import,
+            source=BrokerageTransaction.SOURCE_KARVY,
+            transaction_date=txn_date,
+            investor_name=row.get('Investor Name', ''),
+            folio_number=str(row.get('Account Number', row.get('Folio Number', ''))),
+            scheme_name=row.get('Fund Description', row.get('Scheme Name', '')),
+            amount=amount,
+            brokerage_amount=brokerage,
+            raw_data=str(data)
+        )
 
-            # 4. Fetch Holdings
-            # Holding -> Investor (Profile) -> User
-            holdings = Holding.objects.filter(investor__in=investors).select_related('scheme', 'scheme__category', 'scheme__amc', 'investor', 'investor__user')
+        map_transaction(transaction)
+        transactions.append(transaction)
 
-            if not holdings.exists():
-                # Even if no holdings, maybe we shouldn't create a payout? Or create zero payout?
-                # User usually wants to see report even if zero. But 'transaction level' means empty.
-                # Let's skip if no holdings.
-                continue
+    BrokerageTransaction.objects.bulk_create(transactions)
 
-            # 5. Group Holdings by (Category, AMC) to determine applicable AUM Slab
-            # Key: (category_id, amc_id or None) -> Total AUM
+def map_transaction(transaction):
+    """
+    Logic to link a transaction to a DistributorProfile.
+    """
+    mapped = False
 
-            holding_rule_map = [] # List of (holding, rule)
-            rule_aum_map = {} # { rule_id: Decimal(total_aum) }
+    # 1. Map via Sub-Broker Code (if present in raw data)
+    # CAMS: SUB_BRK_CO / SUB_BRK_AR
+    # Karvy: Sub-Broker Code
 
-            for holding in holdings:
-                scheme = holding.scheme
-                category = scheme.category
-                amc = scheme.amc
+    # We need to parse raw_data back from string or pass it in.
+    # For simplicity, let's assume we look at specific known fields.
+    # Note: In `bulk_create`, `save()` isn't called, so this logic runs before bulk_create object construction.
 
-                # Find Rule: Specific AMC first, then Global
-                rule = CommissionRule.objects.filter(category=category, amc=amc).first()
-                if not rule:
-                    rule = CommissionRule.objects.filter(category=category, amc__isnull=True).first()
+    # (Since I'm doing bulk_create, I'm setting attributes on the object instance)
 
-                if rule:
-                    holding_rule_map.append((holding, rule))
-                    current_aum = holding.current_value if holding.current_value else Decimal(0)
-                    rule_aum_map[rule.id] = rule_aum_map.get(rule.id, Decimal(0)) + current_aum
-                else:
-                    # No rule found
-                    holding_rule_map.append((holding, None))
+    # Logic:
+    # Find Distributor by PAN (via Investor) or ARN
 
-            # 6. Create Payout Header
-            payout = Payout.objects.create(
-                distributor=dist,
-                period_date=period_date,
-                status=Payout.STATUS_DRAFT
-            )
+    distributor = None
 
-            total_comm = Decimal(0)
-            total_payout_aum = Decimal(0)
+    # Try 1: Folio Number Mapping
+    # We check if we have this Folio mapped to an Investor in our system.
+    if transaction.folio_number:
+        # Clean folio
+        folio = str(transaction.folio_number).strip()
+        # Find Investor with this folio in Holdings (most reliable link)
+        # OR check InvestorProfile -> but InvestorProfile doesn't store Folio directly (Holding does).
+        # But we can try to find an investor via PAN if available in file.
 
-            # 7. Calculate Commission per Holding
-            for holding, rule in holding_rule_map:
-                aum = holding.current_value if holding.current_value else Decimal(0)
-                rate = Decimal(0)
+        # Let's search Holdings first.
+        holding = Holding.objects.filter(folio_number=folio).select_related('investor__distributor').first()
+        if holding and holding.investor.distributor:
+            distributor = holding.investor.distributor
+            transaction.mapping_remark = f"Mapped via Folio {folio}"
+            mapped = True
 
-                if rule:
-                    total_rule_aum = rule_aum_map.get(rule.id, Decimal(0))
+    # Try 2: Investor PAN (if available in file)
+    # Karvy: 'InvPAN'
+    # CAMS: 'PAN_NO'
+    if not mapped:
+        import ast
+        try:
+            raw = ast.literal_eval(transaction.raw_data) if isinstance(transaction.raw_data, str) else transaction.raw_data
+            pan = raw.get('InvPAN', raw.get('PAN_NO', raw.get('PAN_NUMBER', '')))
+            if pan:
+                investor = InvestorProfile.objects.filter(pan=pan).select_related('distributor').first()
+                if investor and investor.distributor:
+                    distributor = investor.distributor
+                    transaction.mapping_remark = f"Mapped via Investor PAN {pan}"
+                    mapped = True
+        except:
+            pass
 
-                    # Find Tier
-                    # Slab Logic: Use total_rule_aum to find the tier.
-                    tier = rule.tiers.filter(min_aum__lte=total_rule_aum).order_by('-min_aum').first()
+    if mapped and distributor:
+        transaction.distributor = distributor
+        transaction.is_mapped = True
 
-                    if tier:
-                        # Check max_aum if it exists
-                        if tier.max_aum and total_rule_aum >= tier.max_aum:
-                             # This should technically not happen if tiers are well defined covering all ranges,
-                             # but if it does, it means the AUM is above the max of this tier,
-                             # and since we ordered by min_aum desc, this WAS the highest start.
-                             # If max is strict, then we fell off the chart (too rich).
-                             # Assuming rate 0 if fall off.
-                             pass
-                        else:
-                            rate = tier.rate
+def calculate_payouts(brokerage_import):
+    """
+    Aggregates transactions and calculates final payout based on AUM tiers.
+    """
+    # 1. Identify all distributors involved in this import
+    # (We only care about transactions that were successfully mapped)
+    distributor_ids = BrokerageTransaction.objects.filter(
+        import_file=brokerage_import,
+        is_mapped=True
+    ).values_list('distributor_id', flat=True).distinct()
 
-                commission = aum * (rate / Decimal(100))
+    payouts_to_create = []
 
-                PayoutDetail.objects.create(
-                    payout=payout,
-                    holding=holding,
-                    investor_name=holding.investor.user.name if holding.investor.user.name else f"User {holding.investor.user.id}",
-                    scheme_name=holding.scheme.name,
-                    folio_number=holding.folio_number,
-                    category=holding.scheme.category.name if holding.scheme.category else "Unknown",
-                    amc_name=holding.scheme.amc.name if holding.scheme.amc else "Unknown",
-                    aum=aum,
-                    applied_rate=rate,
-                    commission_amount=commission
-                )
+    for dist_id in distributor_ids:
+        distributor = DistributorProfile.objects.get(id=dist_id)
 
-                total_comm += commission
-                total_payout_aum += aum
+        # 2. Calculate Total AUM for this distributor (Live from Holdings)
+        # Sum of current_value of all holdings linked to investors of this distributor
+        total_aum = Holding.objects.filter(
+            investor__distributor=distributor
+        ).aggregate(Sum('current_value'))['current_value__sum'] or Decimal(0)
 
-            # Update Payout Totals
-            payout.total_aum = total_payout_aum
-            payout.total_commission = total_comm
-            payout.save()
+        # 3. Determine Category
+        category = get_distributor_category(total_aum)
+        share_percent = category.share_percentage if category else Decimal(0)
+        category_name = category.name if category else "Uncategorized"
 
-            payouts_created.append(payout)
+        # 4. Sum Brokerage from this Import
+        gross_brokerage = BrokerageTransaction.objects.filter(
+            import_file=brokerage_import,
+            distributor=distributor
+        ).aggregate(Sum('brokerage_amount'))['brokerage_amount__sum'] or Decimal(0)
 
-    return payouts_created
+        # 5. Calculate Payable
+        payable = (gross_brokerage * share_percent) / Decimal(100)
+
+        payout = Payout(
+            brokerage_import=brokerage_import,
+            distributor=distributor,
+            total_aum=total_aum,
+            category=category_name,
+            share_percentage=share_percent,
+            gross_brokerage=gross_brokerage,
+            payable_amount=payable
+        )
+        payouts_to_create.append(payout)
+
+    Payout.objects.bulk_create(payouts_to_create)
+
+def get_distributor_category(aum):
+    """
+    Returns the DistributorCategory object based on AUM.
+    """
+    # Logic: min_aum <= aum < max_aum
+    # Ordered by min_aum descending to match highest tier first
+    categories = DistributorCategory.objects.all().order_by('-min_aum')
+
+    for cat in categories:
+        if aum >= cat.min_aum:
+            # If max_aum is None (Infinity) or aum is less than max_aum
+            if cat.max_aum is None or aum < cat.max_aum:
+                return cat
+    return None

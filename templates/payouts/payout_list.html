@@ -1,107 +1,46 @@
-{% extends 'layout/base.html' %}
-{% load static %}
-{% block css %}
-{% endblock %}
+{% extends "base.html" %}
+
 {% block content %}
-<div class="my-5 flex h-8 items-center justify-between px-4 sm:px-5">
-  <div class="flex items-center space-x-4">
-        <h2
-          class="text-xl font-medium text-slate-800 dark:text-navy-50 lg:text-2xl"
-        >
-         My Payouts
-        </h2>
-        <div class="hidden h-full py-1 sm:flex">
-          <div class="h-full w-px bg-slate-300 dark:bg-navy-600"></div>
+<div class="container-fluid">
+    <h1 class="h3 mb-4 text-gray-800">Distributor Payouts</h1>
+
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Distributor</th>
+                            <th>Period</th>
+                            <th>AUM</th>
+                            <th>Category</th>
+                            <th>Gross Brokerage</th>
+                            <th>Share %</th>
+                            <th>Payable</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for payout in object_list %}
+                        <tr>
+                            <td>{{ payout.distributor }}</td>
+                            <td>{{ payout.brokerage_import.get_month_display }} {{ payout.brokerage_import.year }}</td>
+                            <td>₹{{ payout.total_aum }}</td>
+                            <td>{{ payout.category }}</td>
+                            <td>₹{{ payout.gross_brokerage }}</td>
+                            <td>{{ payout.share_percentage }}%</td>
+                            <td class="font-weight-bold">₹{{ payout.payable_amount }}</td>
+                            <td>{{ payout.status }}</td>
+                            <td>
+                                <a href="{% url 'payout_detail' payout.pk %}" class="btn btn-sm btn-info">View</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
-        <ul class="hidden flex-wrap items-center space-x-2 sm:flex">
-          <li>Payouts</li>
-        </ul>
-      </div>
-</div>
-<div class="card p-4">
-  <div>
-    <div class="flex items-end justify-between">
-      <input id="filter-input" type="search" placeholder="Search payouts..." class="mb-4 p-2 border rounded form-control" />
     </div>
-    <div id="payout_list"></div>
-  </div>
 </div>
-{% endblock %}
-
-{% block javascript %}
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const tableData = {{ grid_data_json|safe }};
-    const gridContainer = document.querySelector("#payout_list");
-
-    const gridConfig = {
-      columns: [
-        {
-          id: "period",
-          name: "Period",
-          formatter: (cell) => Gridjs.html(`<span class="font-medium text-slate-700 dark:text-navy-100">${cell}</span>`)
-        },
-        {
-          id: "total_aum",
-          name: "Total AUM (₹)",
-          formatter: (cell) => `₹ ${cell.toLocaleString('en-IN', {minimumFractionDigits: 2})}`
-        },
-        {
-          id: "total_commission",
-          name: "Commission (₹)",
-          formatter: (cell) => Gridjs.html(`<span class="font-bold text-success">₹ ${cell.toLocaleString('en-IN', {minimumFractionDigits: 2})}</span>`)
-        },
-        {
-          id: "status",
-          name: "Status",
-          formatter: (cell) => {
-             let color = 'bg-warning/10 text-warning';
-             if(cell === 'Paid') color = 'bg-success/10 text-success';
-             return Gridjs.html(`<div class="badge ${color}">${cell}</div>`);
-          }
-        },
-        {
-            id: "action_url",
-            name: "Action",
-            formatter: (cell, row) => {
-                return Gridjs.html(`
-                    <a href="${cell}"
-                       class="btn h-8 rounded-full bg-primary/10 px-3 text-xs+ font-medium text-primary hover:bg-primary/20 focus:bg-primary/20 active:bg-primary/25 dark:bg-accent-light/10 dark:text-accent-light dark:hover:bg-accent-light/20 dark:focus:bg-accent-light/20 dark:active:bg-accent-light/25">
-                       View Details
-                    </a>
-                `);
-            }
-        }
-      ],
-      data: tableData,
-      sort: true,
-      search: false,
-      pagination: {
-        limit: 10
-      },
-      className: {
-        table: 'is-hoverable w-full text-left',
-        tbody: 'text-slate-600 dark:text-navy-200',
-        thead: 'bg-slate-200 text-slate-800 dark:bg-navy-800 dark:text-navy-100',
-      }
-    };
-
-    const grid = new Gridjs.Grid(gridConfig).render(gridContainer);
-
-    // Search Logic
-    const filterInput = document.getElementById('filter-input');
-    filterInput.addEventListener('input', (e) => {
-      const keyword = e.target.value.toLowerCase();
-      if (!keyword) {
-          grid.updateConfig({ data: tableData }).forceRender();
-          return;
-      }
-      const filteredData = tableData.filter(item =>
-          item.period.toLowerCase().includes(keyword) ||
-          item.status.toLowerCase().includes(keyword)
-      );
-      grid.updateConfig({ data: filteredData }).forceRender();
-    });
-  });
-</script>
 {% endblock %}

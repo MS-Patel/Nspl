@@ -1,136 +1,100 @@
-{% extends 'layout/base.html' %}
-{% load static %}
-{% block css %}
-{% endblock %}
+{% extends "base.html" %}
+
 {% block content %}
-<div class="my-5 flex h-8 items-center justify-between px-4 sm:px-5">
-  <div class="flex items-center space-x-4">
-        <h2
-          class="text-xl font-medium text-slate-800 dark:text-navy-50 lg:text-2xl"
-        >
-         Payout Details: {{ payout.period_date|date:"F Y" }}
-        </h2>
-        <div class="hidden h-full py-1 sm:flex">
-          <div class="h-full w-px bg-slate-300 dark:bg-navy-600"></div>
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Payout Detail: {{ object.distributor }}</h1>
+        <span class="badge badge-primary">{{ object.brokerage_import.get_month_display }} {{ object.brokerage_import.year }}</span>
+    </div>
+
+    <div class="row">
+        <!-- Summary Card -->
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total AUM</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">₹{{ object.total_aum }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-chart-line fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <ul class="hidden flex-wrap items-center space-x-2 sm:flex">
-          <li class="flex items-center space-x-2">
-            <a
-              class="text-primary transition-colors hover:text-primary-focus dark:text-accent-light dark:hover:text-accent"
-              href="{% url 'payouts:payout_list' %}"
-              >Payouts</a
-            >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="size-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M9 5l7 7-7 7"
-              />
-            </svg>
-          </li>
-          <li>Details</li>
-        </ul>
-      </div>
-      <div>
-        <a href="{% url 'payouts:payout_export' payout.pk %}" class="btn bg-success font-medium text-white hover:bg-success-focus focus:bg-success-focus active:bg-success-focus/90">
-            <i class="fa-solid fa-file-excel mr-2"></i> Export to Excel
-        </a>
-      </div>
+
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Payable Amount</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">₹{{ object.payable_amount }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-rupee-sign fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Category & Share</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ object.category }} ({{ object.share_percentage }}%)</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-medal fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Raw Transactions -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Associated Transactions (Imported)</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Source</th>
+                            <th>Investor</th>
+                            <th>Scheme</th>
+                            <th>Amount</th>
+                            <th>Brokerage</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- We need to filter transactions for this payout -->
+                        <!-- Since Payout links to Import, we filter transactions of that import linked to this distributor -->
+                        {% for txn in object.brokerage_import.transactions.all %}
+                            {% if txn.distributor == object.distributor %}
+                            <tr>
+                                <td>{{ txn.transaction_date|default:"-" }}</td>
+                                <td>{{ txn.source }}</td>
+                                <td>{{ txn.investor_name }}</td>
+                                <td>{{ txn.scheme_name }}</td>
+                                <td>{{ txn.amount }}</td>
+                                <td>{{ txn.brokerage_amount }}</td>
+                            </tr>
+                            {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>
-<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 px-4 sm:px-5 mb-5">
-    <div class="card p-4 flex flex-col justify-center items-center">
-        <span class="text-slate-400 dark:text-navy-300 uppercase text-xs">Total AUM</span>
-        <span class="text-xl font-semibold">₹ {{ payout.total_aum|floatformat:2 }}</span>
-    </div>
-    <div class="card p-4 flex flex-col justify-center items-center">
-        <span class="text-slate-400 dark:text-navy-300 uppercase text-xs">Total Commission</span>
-        <span class="text-2xl font-bold text-success">₹ {{ payout.total_commission|floatformat:2 }}</span>
-    </div>
-    <div class="card p-4 flex flex-col justify-center items-center">
-        <span class="text-slate-400 dark:text-navy-300 uppercase text-xs">Status</span>
-        <span class="badge {% if payout.status == 'PAID' %}bg-success/10 text-success{% else %}bg-warning/10 text-warning{% endif %}">
-            {{ payout.get_status_display }}
-        </span>
-    </div>
-</div>
-
-<div class="card p-4">
-  <div>
-    <div class="flex items-end justify-between">
-      <input id="filter-input" type="search" placeholder="Search details..." class="mb-4 p-2 border rounded form-control" />
-    </div>
-    <div id="payout_detail_list"></div>
-  </div>
-</div>
-{% endblock %}
-
-{% block javascript %}
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const tableData = {{ grid_data_json|safe }};
-    const gridContainer = document.querySelector("#payout_detail_list");
-
-    const gridConfig = {
-      columns: [
-        { id: "investor", name: "Investor" },
-        { id: "folio", name: "Folio" },
-        { id: "scheme", name: "Scheme" },
-        { id: "category", name: "Category" },
-        { id: "amc", name: "AMC" },
-        {
-          id: "aum",
-          name: "AUM (₹)",
-          formatter: (cell) => cell.toLocaleString('en-IN', {minimumFractionDigits: 2})
-        },
-        {
-          id: "rate",
-          name: "Rate (%)",
-          formatter: (cell) => `${cell.toFixed(2)}%`
-        },
-        {
-          id: "commission",
-          name: "Comm. (₹)",
-          formatter: (cell) => Gridjs.html(`<span class="font-bold text-slate-700 dark:text-navy-100">${cell.toLocaleString('en-IN', {minimumFractionDigits: 2})}</span>`)
-        },
-      ],
-      data: tableData,
-      sort: true,
-      search: false,
-      pagination: {
-        limit: 20
-      },
-      className: {
-        table: 'is-hoverable w-full text-left',
-        tbody: 'text-slate-600 dark:text-navy-200',
-        thead: 'bg-slate-200 text-slate-800 dark:bg-navy-800 dark:text-navy-100',
-      }
-    };
-
-    const grid = new Gridjs.Grid(gridConfig).render(gridContainer);
-
-    // Search Logic
-    const filterInput = document.getElementById('filter-input');
-    filterInput.addEventListener('input', (e) => {
-      const keyword = e.target.value.toLowerCase();
-      if (!keyword) {
-          grid.updateConfig({ data: tableData }).forceRender();
-          return;
-      }
-      const filteredData = tableData.filter(item =>
-          item.investor.toLowerCase().includes(keyword) ||
-          item.scheme.toLowerCase().includes(keyword) ||
-          item.folio.toLowerCase().includes(keyword) ||
-          item.amc.toLowerCase().includes(keyword)
-      );
-      grid.updateConfig({ data: filteredData }).forceRender();
-    });
-  });
-</script>
 {% endblock %}
