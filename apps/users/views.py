@@ -17,9 +17,12 @@ from .services import validate_investor_for_bse
 from apps.integration.bse_client import BSEStarMFClient
 from apps.integration.utils import map_investor_to_bse_param_string
 from apps.reconciliation.utils.valuation import calculate_portfolio_valuation
+from apps.integration.sync_utils import sync_pending_mandates, sync_pending_orders, sync_sip_child_orders
+import logging
 import json
 
 User = get_user_model()
+logger = logging.getLogger(__name__)
 
 # --- Authentication & Dashboard Views ---
 
@@ -85,6 +88,15 @@ class InvestorDashboardView(LoginRequiredMixin, TemplateView):
             # Handle potential DoesNotExist if profile creation failed (though it shouldn't)
             try:
                 investor_profile = user.investor_profile
+
+                # Sync SIPs and Orders for this investor (Mandates are synced in Detail View)
+                # Since Dashboard usually shows high level info, syncing SIP child orders here is good.
+                try:
+                    sync_sip_child_orders(user=user, investor=investor_profile)
+                    sync_pending_orders(user=user, investor=investor_profile)
+                except Exception as e:
+                    logger.error(f"Sync failed for investor {user.username}: {e}")
+
             except InvestorProfile.DoesNotExist:
                 pass
 
@@ -442,6 +454,15 @@ class InvestorDetailView(LoginRequiredMixin, DetailView):
     context_object_name = 'investor'
 
     def get_context_data(self, **kwargs):
+        # Sync Mandates status here as user is viewing the details
+        # Pass self.object (investor) to sync_pending_mandates to avoid syncing ALL mandates if Admin
+        try:
+            sync_pending_mandates(user=self.request.user, investor=self.object)
+            # Also sync pending orders for this specific investor
+            sync_pending_orders(user=self.request.user, investor=self.object)
+        except Exception as e:
+            logger.error(f"Sync failed in InvestorDetailView: {e}")
+
         context = super().get_context_data(**kwargs)
         context['bank_accounts'] = self.object.bank_accounts.all()
         context['nominees'] = self.object.nominees.all()
