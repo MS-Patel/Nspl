@@ -423,3 +423,35 @@ class BSEStarMFClient:
         except Exception as e:
             bse_logger.error(f"CHILD ORDERS ERROR: {str(e)}")
             return None
+
+    def check_pan_status(self, pan):
+        """
+        Checks the status of a PAN using AOFPanSearch API.
+        """
+        encrypted_password, pass_key = self._get_auth_details()
+        _, service = self._get_query_soap_client(self)
+        try:
+            response = service.AOFPanSearch(Param={
+                "MemberCode": self.member_id,
+                "PAN": pan,
+                "Password": encrypted_password,
+                "UserId": self.user_id
+            })
+            bse_logger.info(f"PAN CHECK: {pan} | RESPONSE: {response}")
+
+            # Serialize the Zeep object to a dictionary
+            # Note: Zeep objects can be converted to dict using helpers, but simple attribute access works
+            result_data = {
+                'status': getattr(response, 'Status', ''),
+                'remarks': getattr(response, 'BSERemarks', ''),
+                'pan': getattr(response, 'PAN', ''),
+                'inv_name': getattr(response, 'InvName', '')
+            }
+
+            return {
+                'status': 'success',
+                'data': result_data
+            }
+        except Exception as e:
+            bse_logger.error(f"PAN CHECK ERROR: {str(e)}")
+            return {'status': 'error', 'remarks': str(e)}

@@ -92,3 +92,9 @@
 2026-01-22 09:19:24,605 - ORDER ENTRY: 12345 | RESPONSE: 0|123|Success
 2026-01-22 09:24:24,758 - ORDER Request: {'TransCode': 'NEW', 'TransNo': '12345', 'OrderId': '', 'UserID': '2463702', 'MemberId': '24637', 'ClientCode': 'TESTUCC123', 'SchemeCd': 'INF123', 'BuySell': <MagicMock name='mock.transaction_type' id='140284482340864'>, 'BuySellType': 'FRESH', 'DPTxn': 'P', 'OrderVal': '1000.00', 'Qty': '10.0000', 'AllRedeem': 'N', 'FolioNo': <MagicMock name='mock.folio.folio_number' id='140284482366992'>, 'Remarks': '', 'KYCStatus': 'Y', 'RefNo': '', 'SubBrCode': '', 'EUIN': <MagicMock name='mock.euin' id='140284482352048'>, 'EUINVal': 'Y', 'MinRedeem': 'N', 'DPC': 'N', 'IPAdd': '', 'Password': 'encrypted', 'PassKey': 'passkey', 'Parma1': '', 'Param2': '', 'Param3': '', 'MobileNo': '8961122581', 'EmailID': 'fmcmillan@example.net', 'MandateID': <MagicMock name='mock.mandate.mandate_id' id='140284483934192'>, 'Filler1': '', 'Filler2': '', 'Filler3': '', 'Filler4': '', 'Filler5': '', 'Filler6': ''}
 2026-01-22 09:24:24,758 - ORDER ENTRY: 12345 | RESPONSE: 0|123|Success
+2026-01-22 15:03:52,890 - PAN CHECK ERROR: SOAP Error
+2026-01-22 15:03:53,915 - PAN CHECK: ABCDE1234F | RESPONSE: <MagicMock name='mock.AOFPanSearch()' id='140351915731968'>
+2026-01-22 15:07:04,274 - PAN CHECK ERROR: SOAP Error
+2026-01-22 15:07:05,337 - PAN CHECK: ABCDE1234F | RESPONSE: <MagicMock name='mock.AOFPanSearch()' id='140159690666016'>
+2026-01-22 15:16:03,068 - PAN CHECK ERROR: SOAP Error
+2026-01-22 15:16:04,110 - PAN CHECK: ABCDE1234F | RESPONSE: <MagicMock name='mock.AOFPanSearch()' id='140459566592608'>
