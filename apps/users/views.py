@@ -102,6 +102,11 @@ class InvestorDashboardView(LoginRequiredMixin, TemplateView):
 
         if investor_profile:
             valuation_data = calculate_portfolio_valuation(investor_profile)
+
+            # Inject Redemption URL
+            for holding in valuation_data['holdings']:
+                holding['redemption_url'] = reverse('investments:redemption_create', args=[holding['id']])
+
             context['valuation'] = valuation_data
             context['grid_data_json'] = json.dumps(valuation_data['holdings'], default=str)
 

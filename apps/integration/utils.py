@@ -645,7 +645,7 @@ def get_bse_order_params(order, member_id, user_id, password, pass_key):
         'DPTxn': dptxn,
         'OrderVal': txt_amount,
         'Qty': txt_quantity,
-        'AllRedeem': 'N',
+        'AllRedeem': 'Y' if order.all_redeem else 'N',
         'FolioNo': folio_no,
         'Remarks': '',
         'KYCStatus': 'Y',

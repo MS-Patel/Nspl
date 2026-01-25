@@ -9,15 +9,129 @@ from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 
 from .models import Order, Folio, Mandate, SIP
-from .forms import OrderForm, MandateForm
+from .forms import OrderForm, MandateForm, RedemptionForm
 from apps.users.models import InvestorProfile, DistributorProfile
 from apps.products.models import Scheme, AMC, SchemeCategory
+from apps.reconciliation.models import Holding
 from apps.integration.bse_client import BSEStarMFClient
 from apps.integration.sync_utils import sync_pending_orders
 import logging
 import json
 
 logger = logging.getLogger(__name__)
+
+def has_access_to_investor(user, investor_id):
+    """Helper to check if a user has access to a specific investor."""
+    try:
+        investor = InvestorProfile.objects.get(id=investor_id)
+    except InvestorProfile.DoesNotExist:
+        return False
+
+    if user.user_type == 'ADMIN':
+        return True
+    if user.user_type == 'INVESTOR':
+        return user.investor_profile.id == int(investor_id)
+    if user.user_type == 'DISTRIBUTOR':
+        return investor.distributor.user == user
+    if user.user_type == 'RM':
+        return investor.distributor.rm.user == user
+
+    return False
+
+@method_decorator(login_required, name='dispatch')
+class RedemptionCreateView(CreateView):
+    template_name = 'investments/redemption_form.html'
+    form_class = RedemptionForm
+
+    def get_holding(self):
+        holding_id = self.kwargs.get('holding_id')
+        return get_object_or_404(Holding, id=holding_id)
+
+    def dispatch(self, request, *args, **kwargs):
+        holding = self.get_holding()
+        # Verify access
+        if not has_access_to_investor(request.user, holding.investor.id):
+             return HttpResponseForbidden("You do not have access to this investment.")
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['holding'] = self.get_holding()
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['holding'] = self.get_holding()
+        context['title'] = "Redeem Funds"
+        return context
+
+    def form_valid(self, form):
+        holding = self.get_holding()
+        data = form.cleaned_data
+
+        # Create Order
+        order = Order(
+            investor=holding.investor,
+            scheme=holding.scheme,
+            folio=Folio.objects.filter(folio_number=holding.folio_number, investor=holding.investor).first(), # Try to link actual Folio object
+            transaction_type=Order.REDEMPTION,
+            status=Order.PENDING,
+            all_redeem=data.get('all_redeem', False)
+        )
+
+        # Handle Distributor mapping (Copied from Order Create logic)
+        # If user is Distributor, link them. If Investor, link their distributor.
+        user = self.request.user
+        if user.user_type == 'DISTRIBUTOR':
+            order.distributor = user.distributor_profile
+        elif user.user_type == 'RM':
+             # RM placing order for investor -> Investor's distributor
+             order.distributor = holding.investor.distributor
+        elif user.user_type == 'INVESTOR':
+            order.distributor = holding.investor.distributor
+        elif user.user_type == 'ADMIN':
+             order.distributor = holding.investor.distributor
+
+        # Set Amount/Units based on Type
+        if data['redemption_type'] == 'AMOUNT':
+            order.amount = data['value']
+            order.units = 0
+        elif data['redemption_type'] == 'UNITS':
+            order.amount = 0
+            order.units = data['value']
+        elif data['redemption_type'] == 'ALL':
+            order.amount = 0
+            order.units = 0 # BSE ignores Qty/Val if AllRedeem is Y
+            order.all_redeem = True
+
+        order.save()
+
+        # Push to BSE
+        try:
+            client = BSEStarMFClient()
+            result = client.place_order(order)
+
+            if result['status'] == 'success':
+                order.status = Order.SENT_TO_BSE
+                order.bse_order_id = result.get('bse_order_id')
+                order.bse_remarks = result.get('remarks')
+                messages.success(self.request, f"Redemption Order Placed. Ref: {result.get('remarks')}")
+            else:
+                order.status = Order.REJECTED
+                order.bse_remarks = result.get('remarks')
+                messages.error(self.request, f"BSE Error: {result.get('remarks')}")
+
+            order.save()
+
+        except Exception as e:
+            logger.exception("Error placing redemption order on BSE")
+            order.status = Order.REJECTED
+            order.bse_remarks = f"System Error: {str(e)}"
+            order.save()
+            messages.error(self.request, f"System Error: {str(e)}")
+
+        return redirect('investments:order_list')
+
 
 @method_decorator(login_required, name='dispatch')
 class MandateCreateView(CreateView):
@@ -391,21 +505,3 @@ def get_order_metadata(request):
             pass
 
     return JsonResponse(response_data)
-
-def has_access_to_investor(user, investor_id):
-    """Helper to check if a user has access to a specific investor."""
-    try:
-        investor = InvestorProfile.objects.get(id=investor_id)
-    except InvestorProfile.DoesNotExist:
-        return False
-
-    if user.user_type == 'ADMIN':
-        return True
-    if user.user_type == 'INVESTOR':
-        return user.investor_profile.id == int(investor_id)
-    if user.user_type == 'DISTRIBUTOR':
-        return investor.distributor.user == user
-    if user.user_type == 'RM':
-        return investor.distributor.rm.user == user
-
-    return False
