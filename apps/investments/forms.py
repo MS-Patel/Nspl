@@ -2,6 +2,7 @@ from django import forms
 from .models import Order, Folio, Mandate, SIP
 from apps.users.models import InvestorProfile, BankAccount
 from apps.products.models import Scheme
+from apps.reconciliation.models import Holding
 from django.core.exceptions import ValidationError
 from datetime import date
 from dateutil.relativedelta import relativedelta
@@ -177,3 +178,51 @@ class MandateForm(forms.ModelForm):
         # Styling
         self.fields['investor'].widget.attrs.update({'class': 'form-select'})
         self.fields['bank_account'].widget.attrs.update({'class': 'form-select'})
+
+class RedemptionForm(forms.Form):
+    redemption_type = forms.ChoiceField(
+        choices=[('AMOUNT', 'By Amount'), ('UNITS', 'By Units'), ('ALL', 'Redeem All')],
+        widget=forms.RadioSelect,
+        initial='AMOUNT'
+    )
+    value = forms.DecimalField(
+        required=False,
+        max_digits=15,
+        decimal_places=4,
+        widget=forms.NumberInput(attrs={'class': 'form-input', 'step': '0.0001'})
+    )
+    all_redeem = forms.BooleanField(
+        required=False,
+        widget=forms.CheckboxInput(attrs={'class': 'form-checkbox'})
+    )
+
+    def __init__(self, *args, **kwargs):
+        self.holding = kwargs.pop('holding', None)
+        if 'instance' in kwargs:
+            kwargs.pop('instance')
+        super().__init__(*args, **kwargs)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        red_type = cleaned_data.get('redemption_type')
+        value = cleaned_data.get('value')
+        all_redeem = cleaned_data.get('all_redeem')
+
+        if not self.holding:
+            raise ValidationError("Holding context missing.")
+
+        if red_type == 'ALL':
+            cleaned_data['all_redeem'] = True
+            cleaned_data['value'] = 0 # Ignored
+        elif red_type == 'AMOUNT':
+            if not value or value <= 0:
+                self.add_error('value', "Amount must be greater than 0.")
+            if self.holding.current_value and value > self.holding.current_value:
+                 self.add_error('value', f"Amount exceeds current holding value ({self.holding.current_value:.2f}).")
+        elif red_type == 'UNITS':
+            if not value or value <= 0:
+                self.add_error('value', "Units must be greater than 0.")
+            if value > self.holding.units:
+                 self.add_error('value', f"Units exceed current holding units ({self.holding.units:.4f}).")
+
+        return cleaned_data

@@ -42,6 +42,7 @@ def calculate_portfolio_valuation(investor_profile):
             gain_loss_percent = Decimal(0)
 
         holdings_data.append({
+            'id': holding.id,
             'scheme_name': scheme.name,
             'folio': holding.folio_number,
             'units': float(holding.units),

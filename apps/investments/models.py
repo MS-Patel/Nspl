@@ -227,6 +227,7 @@ class Order(models.Model):
 
     # Flags
     is_new_folio = models.BooleanField(default=False, help_text="If True, request new folio creation")
+    all_redeem = models.BooleanField(default=False, help_text="If True, redeem all units")
 
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=PENDING)
     created_at = models.DateTimeField(auto_now_add=True)
