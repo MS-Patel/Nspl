@@ -129,6 +129,25 @@ class BSEStarMFClient:
         except Exception as e:
             raise Exception(f"SOAP Error during upload service authentication: {str(e)}")
 
+    def _get_query_auth_details(self):
+        pass_key = self._generate_pass_key()
+        _, service = self._get_query_soap_client(self)
+
+        try:
+            response = service.getPassword(
+                UserId=self.user_id,
+                MemberId=self.member_id,
+                Password=self.password,
+                PassKey=pass_key
+            )
+            result_str = response.split('|')
+            if result_str[0] == '100':
+                return result_str[1], pass_key
+            else:
+                raise Exception(f"BSE Query Service Authentication Failed: {response}")
+        except Exception as e:
+            raise Exception(f"SOAP Error during query service authentication: {str(e)}")
+
     def _get_password(self):
         token, _ = self._get_auth_details()
         return token
@@ -386,7 +405,7 @@ class BSEStarMFClient:
             return {'status': 'error', 'remarks': str(e)}
 
     def get_mandate_status(self, mandate_id, client_code=None):
-        encrypted_password, _ = self._get_auth_details()
+        encrypted_password, _ = self._get_query_auth_details()
         _, service = self._get_query_soap_client(self)
         today = datetime.date.today().strftime("%d/%m/%Y")
         start_date = (datetime.date.today() - datetime.timedelta(days=365)).strftime("%d/%m/%Y")
@@ -406,7 +425,7 @@ class BSEStarMFClient:
             return None
 
     def get_child_orders(self, regn_no, client_code, plan_type="XSIP"):
-        encrypted_password, _ = self._get_auth_details()
+        encrypted_password, _ = self._get_query_auth_details()
         _, service = self._get_query_soap_client(self)
         today = datetime.date.today().strftime("%d %b %Y").upper()
         try:
