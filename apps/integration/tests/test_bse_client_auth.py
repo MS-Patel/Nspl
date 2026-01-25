@@ -27,6 +27,15 @@ class TestBSEAuthSplit(SimpleTestCase):
         # Override the method on the instance: returns (client, service)
         client._get_upload_soap_client = MagicMock(return_value=(mock_upload_client, mock_upload_service_instance))
 
+        # --- Mock Query Service (New for Mandate Check) ---
+        mock_query_client = MagicMock()
+        mock_query_service_instance = MagicMock()
+        # Mock getPassword response
+        mock_query_service_instance.getPassword.return_value = "100|QueryAuthToken"
+
+        # Override the method on the instance: returns (client, service)
+        client._get_query_soap_client = MagicMock(return_value=(mock_query_client, mock_query_service_instance))
+
         # --- TEST 1: Place Order (Should use Order Service Auth) ---
         with patch('apps.integration.bse_client.get_bse_order_params') as mock_params:
             mock_params.return_value = {'param': 'value'}
@@ -46,6 +55,7 @@ class TestBSEAuthSplit(SimpleTestCase):
             # VERIFY
             mock_order_service_instance.getPassword.assert_called()
             mock_upload_service_instance.getPassword.assert_not_called()
+            mock_query_service_instance.getPassword.assert_not_called()
 
             call_args = mock_order_service_instance.getPassword.call_args
             self.assertEqual(call_args.kwargs['UserId'], "USER_ID")
@@ -54,6 +64,7 @@ class TestBSEAuthSplit(SimpleTestCase):
             # Reset mocks
             mock_order_service_instance.reset_mock()
             mock_upload_service_instance.reset_mock()
+            mock_query_service_instance.reset_mock()
 
         # --- TEST 2: Register Mandate (Should use Upload Service Auth) ---
         with patch('apps.integration.bse_client.get_bse_mandate_param_string') as mock_mandate_params:
@@ -69,7 +80,35 @@ class TestBSEAuthSplit(SimpleTestCase):
             # VERIFY
             mock_upload_service_instance.getPassword.assert_called()
             mock_order_service_instance.getPassword.assert_not_called()
+            mock_query_service_instance.getPassword.assert_not_called()
 
             call_args = mock_upload_service_instance.getPassword.call_args
             self.assertEqual(call_args.kwargs['UserId'], "USER_ID")
             self.assertEqual(call_args.kwargs['Password'], "PASSWORD")
+
+            # Reset mocks
+            mock_order_service_instance.reset_mock()
+            mock_upload_service_instance.reset_mock()
+            mock_query_service_instance.reset_mock()
+
+        # --- TEST 3: Check Mandate Status (Should use Query Service Auth) ---
+        # Mock MandateDetails response
+        mock_query_service_instance.MandateDetails.return_value = "MandateDetailsResponse"
+
+        # CALL
+        client.get_mandate_status("12345")
+
+        # VERIFY
+        mock_query_service_instance.getPassword.assert_called()
+        mock_order_service_instance.getPassword.assert_not_called()
+        mock_upload_service_instance.getPassword.assert_not_called()
+
+        call_args = mock_query_service_instance.getPassword.call_args
+        self.assertEqual(call_args.kwargs['UserId'], "USER_ID")
+        self.assertEqual(call_args.kwargs['Password'], "PASSWORD")
+        self.assertEqual(call_args.kwargs['MemberId'], "MEMBER_ID")
+
+        # Verify MandateDetails call used the token
+        mock_query_service_instance.MandateDetails.assert_called()
+        mandate_call_args = mock_query_service_instance.MandateDetails.call_args
+        self.assertEqual(mandate_call_args.kwargs['Param']['EncryptedPassword'], "QueryAuthToken")
