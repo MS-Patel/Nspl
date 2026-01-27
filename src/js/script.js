@@ -17,6 +17,12 @@ function setupFormValidation({
         return;
     }
 
+    // Mark form as JS handled so the global loader doesn't interfere
+    const formEl = document.querySelector(formId);
+    if (formEl) {
+        formEl.setAttribute('data-js-handled', 'true');
+    }
+
     validation = new JustValidate(formId, {
         errorFieldCssClass: 'is-invalid',
         errorLabelCssClass: 'just-validate-error-label',
@@ -242,6 +248,33 @@ document.addEventListener("DOMContentLoaded", function () {
         window.open(whatsappURL, "_blank");
         });
     }
+
+    // Global Loader for all form submissions
+    document.addEventListener('submit', function(e) {
+        const form = e.target;
+
+        // Skip if form is handled by setupFormValidation (has data-js-handled attribute)
+        if (form.hasAttribute('data-js-handled')) {
+            return;
+        }
+
+        // Skip if form has explicit no-loader attribute
+        if (form.hasAttribute('data-no-loader')) {
+            return;
+        }
+
+        // Show Loader using SweetAlert2
+        if (window.Swal) {
+            Swal.fire({
+                title: 'Processing...',
+                text: 'Please wait while we process your request.',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+        }
+    });
 });
 
 // Use a more robust initialization for Header Dropdowns
