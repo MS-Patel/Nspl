@@ -116,6 +116,10 @@ class RedemptionCreateView(CreateView):
                 order.bse_order_id = result.get('bse_order_id')
                 order.bse_remarks = result.get('remarks')
                 messages.success(self.request, f"Redemption Order Placed. Ref: {result.get('remarks')}")
+            elif result['status'] == 'exception':
+                 order.status = Order.PENDING
+                 order.bse_remarks = f"System Error: {result.get('remarks')}"
+                 messages.error(self.request, f"System Error (Order saved as Pending): {result.get('remarks')}")
             else:
                 order.status = Order.REJECTED
                 order.bse_remarks = result.get('remarks')
@@ -125,10 +129,10 @@ class RedemptionCreateView(CreateView):
 
         except Exception as e:
             logger.exception("Error placing redemption order on BSE")
-            order.status = Order.REJECTED
+            order.status = Order.PENDING
             order.bse_remarks = f"System Error: {str(e)}"
             order.save()
-            messages.error(self.request, f"System Error: {str(e)}")
+            messages.error(self.request, f"System Error (Order saved as Pending): {str(e)}")
 
         return redirect('investments:order_list')
 
@@ -181,6 +185,10 @@ class MandateCreateView(CreateView):
 
                 # Check if we should redirect to auth or list
                 # For now, redirect to investor detail where they can click "Authorize"
+            elif result['status'] == 'exception':
+                mandate.status = Mandate.PENDING
+                mandate.save()
+                messages.error(self.request, f"System Error (Mandate saved): {result['remarks']}")
             else:
                 mandate.status = Mandate.REJECTED
                 mandate.save()
@@ -300,6 +308,14 @@ def order_create(request):
                         order.save()
 
                         messages.success(request, f"SIP Registered Successfully! Reg No: {result['bse_reg_no']}")
+                    elif result['status'] == 'exception':
+                         # Keep SIP as Pending
+                         sip.status = SIP.STATUS_PENDING
+                         sip.save()
+                         order.status = Order.PENDING
+                         order.bse_remarks = f"System Error: {result['remarks']}"
+                         order.save()
+                         messages.error(request, f"System Error (SIP saved as Pending): {result['remarks']}")
                     else:
                         sip.status = SIP.STATUS_PENDING # Or Rejected
                         sip.save()
@@ -324,6 +340,11 @@ def order_create(request):
                         order.bse_order_id = result.get('bse_order_id')
                         order.bse_remarks = result.get('remarks')
                         messages.success(request, f"Order {order.unique_ref_no} placed on BSE: {result.get('remarks')}")
+                    elif result['status'] == 'exception':
+                         order.status = Order.PENDING
+                         order.bse_remarks = f"System Error: {result.get('remarks')}"
+                         order.save()
+                         messages.error(request, f"System Error (Order saved as Pending): {result.get('remarks')}")
                     else:
                         order.status = Order.REJECTED
                         order.bse_remarks = result.get('remarks')
@@ -333,10 +354,10 @@ def order_create(request):
 
                 except Exception as e:
                     logger.exception("Error placing order on BSE")
-                    order.status = Order.REJECTED
+                    order.status = Order.PENDING
                     order.bse_remarks = f"System Error: {str(e)}"
                     order.save()
-                    messages.error(request, f"Order saved but failed to push to BSE: {str(e)}")
+                    messages.error(request, f"System Error (Order saved as Pending): {str(e)}")
 
             return redirect('investments:order_list') # Redirect to order list
         else:

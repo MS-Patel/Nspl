@@ -189,7 +189,7 @@ class BSEStarMFClient:
                 }
         except Exception as e:
             bse_logger.error(f"ORDER ENTRY ERROR: {str(e)}")
-            return {'status': 'error', 'remarks': str(e)}
+            return {'status': 'exception', 'remarks': str(e)}
 
     def register_sip(self, sip):
         investor = sip.investor
@@ -228,7 +228,7 @@ class BSEStarMFClient:
                 }
         except Exception as e:
             bse_logger.error(f"SIP ENTRY ERROR: {str(e)}")
-            return {'status': 'error', 'remarks': str(e)}
+            return {'status': 'exception', 'remarks': str(e)}
 
     def register_mandate(self, mandate):
         try:
@@ -257,7 +257,7 @@ class BSEStarMFClient:
                 }
         except Exception as e:
             bse_logger.error(f"MANDATE REG ERROR: {str(e)}")
-            return {'status': 'error', 'remarks': str(e)}
+            return {'status': 'exception', 'remarks': str(e)}
 
     def register_client(self, payload, regn_type="NEW"):
         request_body = {
