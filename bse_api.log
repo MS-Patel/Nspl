@@ -13,3 +13,10 @@
     'Message': 'FAILED: ACCESS TOKEN EXPIRED',
     'Status': '101'
 }
+2026-01-27 10:22:51,892 - MANDATE STATUS: 896153 | RESPONSE: {
+    'MandateDetails': {
+        'MandateDetails': []
+    },
+    'Message': 'FAILED: ACCESS TOKEN EXPIRED',
+    'Status': '101'
+}
