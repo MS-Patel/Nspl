@@ -69,7 +69,7 @@ def sync_pending_orders(user=None, investor=None):
                         order.status = Order.APPROVED
                         order.bse_remarks = f"{order.bse_remarks} | Payment: {payment_resp['remarks']}"
                         order.save()
-                elif 'REJECTED' in payment_resp.get('remarks', '').upper():
+                elif payment_resp['status'] == 'success' and 'REJECTED' in payment_resp.get('remarks', '').upper():
                      order.status = Order.REJECTED
                      order.bse_remarks = f"{order.bse_remarks} | Payment: {payment_resp['remarks']}"
                      order.save()
