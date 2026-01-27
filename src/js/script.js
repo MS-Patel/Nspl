@@ -294,6 +294,9 @@ function initHeaderDropdowns() {
     if(document.querySelector("#master-menu-dropdown")) {
         new window.Popper("#master-menu-dropdown", ".popper-ref", ".popper-root", o);
     }
+    if(document.querySelector("#payouts-menu-dropdown")) {
+        new window.Popper("#payouts-menu-dropdown", ".popper-ref", ".popper-root", o);
+    }
     if(document.querySelector("#user-menu-wrapper")) {
         new window.Popper("#user-menu-wrapper", ".popper-ref", ".popper-root", o);
     }

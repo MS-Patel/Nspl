@@ -4,7 +4,9 @@ from django.contrib import messages
 from django.db.models import Q
 from django.http import JsonResponse, HttpResponseForbidden
 from django.urls import reverse
-from django.views.generic import CreateView
+from django.views.generic import CreateView, ListView
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth import get_user_model
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 
@@ -526,3 +528,41 @@ def get_order_metadata(request):
             pass
 
     return JsonResponse(response_data)
+
+class HoldingListView(LoginRequiredMixin, ListView):
+    model = Holding
+    template_name = 'investments/holding_list.html'
+    context_object_name = 'holdings'
+
+    def get_queryset(self):
+        user = self.request.user
+        User = get_user_model()
+        qs = super().get_queryset().select_related('investor', 'scheme', 'investor__user')
+
+        if user.user_type == User.Types.ADMIN:
+            return qs
+        elif user.user_type == User.Types.RM:
+             # Holdings of investors where (distributor.rm == self) OR (rm == self)
+             return qs.filter(Q(investor__distributor__rm__user=user) | Q(investor__rm__user=user))
+        elif user.user_type == User.Types.DISTRIBUTOR:
+            return qs.filter(investor__distributor__user=user)
+        elif user.user_type == User.Types.INVESTOR:
+            return qs.filter(investor__user=user)
+        return qs.none()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        data = []
+        for holding in self.get_queryset():
+            data.append({
+                'investor_name': holding.investor.user.name or holding.investor.user.username,
+                'folio_number': holding.folio_number,
+                'scheme_name': holding.scheme.name,
+                'units': float(holding.units),
+                'average_cost': float(holding.average_cost),
+                'current_value': float(holding.current_value) if holding.current_value else 0.0,
+                'current_nav': float(holding.current_nav) if holding.current_nav else 0.0,
+                'action_url': reverse('investments:redemption_create', args=[holding.id])
+            })
+        context['grid_data_json'] = json.dumps(data)
+        return context
