@@ -112,3 +112,73 @@ class TestBSEAuthSplit(SimpleTestCase):
         mock_query_service_instance.MandateDetails.assert_called()
         mandate_call_args = mock_query_service_instance.MandateDetails.call_args
         self.assertEqual(mandate_call_args.kwargs['Param']['EncryptedPassword'], "QueryAuthToken")
+
+        # --- TEST 4: Get Order Status (Should use Query Service Auth) ---
+        # Reset mocks
+        mock_order_service_instance.reset_mock()
+        mock_upload_service_instance.reset_mock()
+        mock_query_service_instance.reset_mock()
+
+        mock_query_service_instance.OrderStatus.return_value = "OrderStatusResponse"
+
+        # CALL
+        client.get_order_status("123456")
+
+        # VERIFY
+        mock_query_service_instance.getPassword.assert_called()
+        call_args = mock_query_service_instance.getPassword.call_args
+        self.assertEqual(call_args.kwargs['UserId'], "USER_ID")
+        self.assertEqual(call_args.kwargs['MemberId'], "MEMBER_ID")
+
+        # Verify OrderStatus used the token
+        mock_query_service_instance.OrderStatus.assert_called()
+        order_status_args = mock_query_service_instance.OrderStatus.call_args
+        self.assertEqual(order_status_args.kwargs['Param']['Password'], "QueryAuthToken")
+
+        # --- TEST 5: Get Allotment Statement (Should use Query Service Auth) ---
+        # Reset mocks
+        mock_order_service_instance.reset_mock()
+        mock_upload_service_instance.reset_mock()
+        mock_query_service_instance.reset_mock()
+
+        mock_query_service_instance.AllotmentStatement.return_value = "AllotmentResponse"
+
+        # CALL
+        client.get_allotment_statement("123456")
+
+        # VERIFY
+        mock_query_service_instance.getPassword.assert_called()
+        call_args = mock_query_service_instance.getPassword.call_args
+        self.assertEqual(call_args.kwargs['UserId'], "USER_ID")
+        self.assertEqual(call_args.kwargs['MemberId'], "MEMBER_ID")
+
+        # Verify AllotmentStatement used the token
+        mock_query_service_instance.AllotmentStatement.assert_called()
+        allot_args = mock_query_service_instance.AllotmentStatement.call_args
+        self.assertEqual(allot_args.kwargs['Param']['Password'], "QueryAuthToken")
+
+        # --- TEST 6: Check PAN Status (Should use Query Service Auth) ---
+        # Reset mocks
+        mock_order_service_instance.reset_mock()
+        mock_upload_service_instance.reset_mock()
+        mock_query_service_instance.reset_mock()
+
+        mock_pan_response = MagicMock()
+        mock_pan_response.Status = "0"
+        mock_pan_response.BSERemarks = "OK"
+        mock_pan_response.PAN = "ABCDE1234F"
+        mock_pan_response.InvName = "John Doe"
+        mock_query_service_instance.AOFPanSearch.return_value = mock_pan_response
+
+        # CALL
+        client.check_pan_status("ABCDE1234F")
+
+        # VERIFY
+        mock_query_service_instance.getPassword.assert_called()
+        call_args = mock_query_service_instance.getPassword.call_args
+        self.assertEqual(call_args.kwargs['UserId'], "USER_ID")
+        self.assertEqual(call_args.kwargs['MemberId'], "MEMBER_ID")
+
+        mock_query_service_instance.AOFPanSearch.assert_called()
+        pan_args = mock_query_service_instance.AOFPanSearch.call_args
+        self.assertEqual(pan_args.kwargs['Param']['Password'], "QueryAuthToken")
