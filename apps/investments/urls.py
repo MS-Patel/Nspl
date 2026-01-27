@@ -6,6 +6,7 @@ app_name = 'investments'
 urlpatterns = [
     path('order/create/', views.order_create, name='order_create'),
     path('order/list/', views.order_list, name='order_list'),
+    path('holdings/', views.HoldingListView.as_view(), name='holding_list'),
     path('redemption/create/<int:holding_id>/', views.RedemptionCreateView.as_view(), name='redemption_create'),
     path('mandate/create/', views.MandateCreateView.as_view(), name='mandate_create'),
     path('mandate/<int:pk>/auth/', views.mandate_authorize, name='mandate_auth'),

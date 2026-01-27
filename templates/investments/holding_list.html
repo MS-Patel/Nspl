@@ -1,0 +1,161 @@
+{% extends 'layout/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="my-5 flex h-8 items-center justify-between px-4 sm:px-5">
+    <div class="flex items-center space-x-4">
+        <h2 class="text-xl font-medium text-slate-800 dark:text-navy-50 lg:text-2xl">
+            Portfolio Holdings
+        </h2>
+        <div class="hidden h-full py-1 sm:flex">
+            <div class="h-full w-px bg-slate-300 dark:bg-navy-600"></div>
+        </div>
+        <ul class="hidden flex-wrap items-center space-x-2 sm:flex">
+            <li class="flex items-center space-x-2">
+                <a class="text-primary transition-colors hover:text-primary-focus dark:text-accent-light dark:hover:text-accent" href="#">Investments</a>
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+            </li>
+            <li>Holdings</li>
+        </ul>
+    </div>
+</div>
+
+<div class="card p-4">
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between mb-4 space-y-4 sm:space-y-0">
+        <div class="w-full sm:w-auto">
+             <input id="filter-input" type="search" placeholder="Search Holdings..." class="form-input w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" />
+        </div>
+
+        <div class="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4 w-full sm:w-auto justify-end">
+             <!-- Export Dropdown -->
+             <div id="dropdown-wrapper-export" class="inline-flex relative">
+                <button class="popper-ref btn space-x-2 bg-slate-150 font-medium text-slate-800 hover:bg-slate-200 focus:bg-slate-200 active:bg-slate-200/80 dark:bg-navy-500 dark:text-navy-50 dark:hover:bg-navy-450 dark:focus:bg-navy-450 dark:active:bg-navy-450/90 [&.is-active_svg]:rotate-180">
+                    <span>Export</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="size-4 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </button>
+                <div class="popper-root absolute">
+                    <div class="popper-box rounded-md border border-slate-150 bg-white py-1.5 font-inter dark:border-navy-500 dark:bg-navy-700">
+                        <ul>
+                            <li>
+                                <a href="#" id="btn-export-csv" class="flex h-8 items-center space-x-3 px-3 pr-8 font-medium tracking-wide outline-hidden transition-all hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100">
+                                    <span> CSV</span>
+                                </a>
+                            </li>
+                             <li>
+                                <a href="#" id="btn-export-excel" class="flex h-8 items-center space-x-3 px-3 pr-8 font-medium tracking-wide outline-hidden transition-all hover:bg-slate-100 hover:text-slate-800 focus:bg-slate-100 focus:text-slate-800 dark:hover:bg-navy-600 dark:hover:text-navy-100 dark:focus:bg-navy-600 dark:focus:text-navy-100">
+                                    <span> Excel</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="holding-grid"></div>
+</div>
+{% endblock %}
+
+{% block javascript %}
+{% include 'includes/gridjs_export_scripts.html' %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const gridData = {{ grid_data_json|safe }};
+        const gridContainer = document.getElementById("holding-grid");
+
+        const formatCurrency = (amount) => {
+            return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(amount);
+        };
+
+        const gridConfig = {
+            columns: [
+                { id: 'investor_name', name: 'Investor' },
+                { id: 'folio_number', name: 'Folio' },
+                { id: 'scheme_name', name: 'Scheme', width: '25%' },
+                { id: 'units', name: 'Units' },
+                {
+                    id: 'average_cost',
+                    name: 'Avg Cost',
+                    formatter: (cell) => formatCurrency(cell)
+                },
+                {
+                    id: 'current_nav',
+                    name: 'NAV',
+                    formatter: (cell) => formatCurrency(cell)
+                },
+                {
+                    id: 'current_value',
+                    name: 'Cur. Value',
+                    formatter: (cell) => formatCurrency(cell)
+                },
+                {
+                    id: 'action_url',
+                    name: 'Action',
+                    sort: false,
+                    formatter: (cell) => {
+                         return Gridjs.html(`<a href="${cell}" class="btn h-8 rounded-full bg-primary/10 px-3 text-xs font-medium text-primary hover:bg-primary/20 focus:bg-primary/20 active:bg-primary/25 dark:bg-accent-light/10 dark:text-accent-light dark:hover:bg-accent-light/20 dark:focus:bg-accent-light/20 dark:active:bg-accent-light/25">
+                            Redeem
+                        </a>`);
+                    }
+                }
+            ],
+            data: gridData,
+            search: false,
+            sort: true,
+            pagination: { limit: 10 },
+            className: {
+                table: 'is-hoverable w-full text-left',
+                tbody: 'text-slate-600 dark:text-navy-200',
+                thead: 'bg-slate-200 text-slate-800 dark:bg-navy-800 dark:text-navy-100',
+            }
+        };
+
+        const grid = new Gridjs.Grid(gridConfig).render(gridContainer);
+
+        // --- Export & Popper Setup ---
+         const exportColumns = [
+             { id: 'investor_name', name: 'Investor' },
+             { id: 'folio_number', name: 'Folio' },
+             { id: 'scheme_name', name: 'Scheme' },
+             { id: 'units', name: 'Units' },
+             { id: 'average_cost', name: 'Avg Cost' },
+             { id: 'current_nav', name: 'NAV' },
+             { id: 'current_value', name: 'Current Value' }
+         ];
+
+        const popperConfig = {
+            placement: "bottom-end",
+            modifiers: [ { name: "offset", options: { offset: [0, 4] } } ],
+        };
+        new Popper("#dropdown-wrapper-export", ".popper-ref", ".popper-root", popperConfig);
+
+        const applyFilters = () => {
+            const keyword = document.getElementById('filter-input').value.toLowerCase();
+            let filtered = gridData.filter(row => {
+                return (
+                    (row.investor_name && row.investor_name.toLowerCase().includes(keyword)) ||
+                    (row.folio_number && row.folio_number.toLowerCase().includes(keyword)) ||
+                    (row.scheme_name && row.scheme_name.toLowerCase().includes(keyword))
+                );
+            });
+            grid.updateConfig({ data: filtered }).forceRender();
+        };
+
+        document.getElementById('filter-input').addEventListener('input', applyFilters);
+
+        document.getElementById('btn-export-csv').addEventListener('click', (e) => {
+            e.preventDefault();
+            GridJSExportUtils.exportCsv(grid.config.data, exportColumns, { filename: 'holdings' });
+        });
+        document.getElementById('btn-export-excel').addEventListener('click', (e) => {
+             e.preventDefault();
+             GridJSExportUtils.exportExcel(grid.config.data, exportColumns, { filename: 'holdings', sheetName: 'Holdings' });
+        });
+    });
+</script>
+{% endblock %}
