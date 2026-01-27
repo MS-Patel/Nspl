@@ -335,7 +335,7 @@ class BSEStarMFClient:
             raise e
 
     def get_order_status(self, order_no, client_code=None, order_type="All"):
-        encrypted_password, pass_key = self._get_auth_details()
+        encrypted_password, pass_key = self._get_query_auth_details()
         _, service = self._get_query_soap_client(self)
         today = datetime.date.today().strftime("%d/%m/%Y")
         try:
@@ -359,7 +359,7 @@ class BSEStarMFClient:
             return None
 
     def get_allotment_statement(self, order_no, client_code=None, order_type="All"):
-        encrypted_password, pass_key = self._get_auth_details()
+        encrypted_password, pass_key = self._get_query_auth_details()
         _, service = self._get_query_soap_client(self)
         today = datetime.date.today().strftime("%d/%m/%Y")
         try:
@@ -447,7 +447,7 @@ class BSEStarMFClient:
         """
         Checks the status of a PAN using AOFPanSearch API.
         """
-        encrypted_password, pass_key = self._get_auth_details()
+        encrypted_password, pass_key = self._get_query_auth_details()
         _, service = self._get_query_soap_client(self)
         try:
             response = service.AOFPanSearch(Param={
