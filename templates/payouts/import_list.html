@@ -33,7 +33,7 @@
                             <td>{{ import.uploaded_at }}</td>
                             <td>{{ import.processed_at|default:"-" }}</td>
                             <td>
-                                <a href="{% url 'import_detail' import.pk %}" class="btn btn-sm btn-primary">Details</a>
+                                <a href="{% url 'payouts:import_detail' import.pk %}" class="btn btn-sm btn-primary">Details</a>
                             </td>
                         </tr>
                         {% endfor %}
