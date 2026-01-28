@@ -28,3 +28,69 @@
 2026-01-27 11:59:25,241 - API Error: HTTPSConnectionPool(host='bsestarmfdemo.bseindia.com', port=443): Max retries exceeded with url: /BSEMFWEBAPI/UCCAPI/UCCRegistrationV183 (Caused by ConnectTimeoutError(<HTTPSConnection(host='bsestarmfdemo.bseindia.com', port=443) at 0x1f864425d60>, 'Connection to bsestarmfdemo.bseindia.com timed out. (connect timeout=None)'))
 2026-01-27 12:00:14,908 - API: https://bsestarmfdemo.bseindia.com/BSEMFWEBAPI/UCCAPI/UCCRegistrationV183 | REGN TYPE: NEW | REQUEST BODY: {'UserId': '2463702', 'MemberCode': '24637', 'Password': '********', 'RegnType': 'NEW', 'Param': 'DKIPP1267D|PATEL||KHUSHBUBEN|01|F|15/07/1992|02|SI|||||||||||||N||||DKIPP1267D||||||||P||||||||SB|50100461805109||HDFC0000384|Y|||||||||||||||||||||PATEL KHUSHBUBEN|04|B-404 , RAJDEEP HEIGHTS,|NEAR KRISHNA NAGAR - 1,||VADODARA|GU|390019|India|||||khushbusonvane16@gmail.com|M||||||||||||7622021529|K||||||||||||||P|||SE|SE||||||||||Y|O|RAJENDRABHAI SONVANE|06|100|N||||1|BLSPR1234K|khushbusonvane16@gmail.com|7622021529|B-404 , Rajdeep heights,|||Vadodara|390019|India|||||||||||||||||||||||||||||||||||N||||||||', 'Filler1': '', 'Filler2': ''}
 2026-01-27 12:00:35,951 - API Error: HTTPSConnectionPool(host='bsestarmfdemo.bseindia.com', port=443): Max retries exceeded with url: /BSEMFWEBAPI/UCCAPI/UCCRegistrationV183 (Caused by ConnectTimeoutError(<HTTPSConnection(host='bsestarmfdemo.bseindia.com', port=443) at 0x1eba2f75d30>, 'Connection to bsestarmfdemo.bseindia.com timed out. (connect timeout=None)'))
+2026-01-27 20:37:58,215 - MANDATE STATUS: 8209299 | RESPONSE: {
+    'MandateDetails': {
+        'MandateDetails': []
+    },
+    'Message': 'FAILED: INVALID CLIENT CODE FOR GIVEN MEMBER CODE',
+    'Status': '101'
+}
+2026-01-27 20:38:30,617 - API: https://bsestarmfdemo.bseindia.com/BSEMFWEBAPI/UCCAPI/UCCRegistrationV183 | REGN TYPE: MOD | REQUEST BODY: {'UserId': '2463702', 'MemberCode': '24637', 'Password': '********', 'RegnType': 'MOD', 'Param': 'AAACN6682J|NAVINCHANDRA|SECURITIES PRIVATE|LIMITED|04|F|13/05/1994|01|SI|||||||||||||N||||AAACN6682J||||||||P||||||||CB|201002568134||INDB0000857|Y|||||||||||||||||||||NAVINCHANDRA SECURITIES PRIVATE LIMITED|04|FF 130,131, SAMANVAY SAPTARSHI,|NEAR MONALISA, MANJALPUR,||VADODARA|GU|390011|INDIA|||||trishala.indiref@gmail.com|M||||||||||||8347863688|K||||||||||||||P|||SE|SE||||||||||Y|W||||||||||||||||||||||||||||||||||||||||||||||||||||N||||||||', 'Filler1': '', 'Filler2': ''}
+2026-01-27 20:38:30,735 - API: https://bsestarmfdemo.bseindia.com/BSEMFWEBAPI/UCCAPI/UCCRegistrationV183 | RESPONSE: {"Status":"101","Remarks":" Nominee 1 name is mandatory","Filler1":"","Filler2":""}
+2026-01-27 20:49:00,586 - MANDATE STATUS: 2592556 | RESPONSE: {
+    'MandateDetails': {
+        'MandateDetails': []
+    },
+    'Message': 'FAILED: INVALID CLIENT CODE FOR GIVEN MEMBER CODE',
+    'Status': '101'
+}
+2026-01-27 20:49:20,885 - API: https://bsestarmfdemo.bseindia.com/StarMFWebService/StarMFWebService.svc/EMandateAuthURL | REQUEST BODY: {'MemberCode': '24637', 'Password': '********', 'ClientCode': 'APDPR7516Q', 'UserId': '2463702', 'MandateID': '2592556', 'LoopBackUrl': 'http://127.0.0.1:8000/users/investor/5/'}
+2026-01-27 20:49:21,097 - API: https://bsestarmfdemo.bseindia.com/StarMFWebService/StarMFWebService.svc/EMandateAuthURL | RESPONSE: {"Filler":null,"ResponseString":"FAILED: INVALID MANDATE ID","Status":"101"}
+2026-01-27 20:49:21,233 - MANDATE STATUS: 2592556 | RESPONSE: {
+    'MandateDetails': {
+        'MandateDetails': []
+    },
+    'Message': 'FAILED: INVALID CLIENT CODE FOR GIVEN MEMBER CODE',
+    'Status': '101'
+}
+2026-01-28 01:30:28,005 - MANDATE STATUS: 896153 | RESPONSE: {
+    'MandateDetails': {
+        'MandateDetails': []
+    },
+    'Message': 'FAILED: ACCESS TOKEN EXPIRED',
+    'Status': '101'
+}
+2026-01-28 11:01:32,605 - PAN CHECK: EEFPP8024C | RESPONSE: {
+    'BSERemarks': 'FAILED: INVALID ACCOUNT INFORMATION',
+    'PAN': None,
+    'Status': '101',
+    'imageResponseStatus': {
+        'BSELMNDP_MFD': None,
+        'BSELMNDR_RFD': None,
+        'BSENONDP_MFI': None,
+        'BSENONDR_RFI': None
+    },
+    'imageUploadStatus': {
+        'BSELMNDP_MFD': None,
+        'BSELMNDR_RFD': None,
+        'BSENONDP_MFI': None,
+        'BSENONDR_RFI': None
+    }
+}
+2026-01-28 11:01:55,643 - PAN CHECK: MNEPS6398L | RESPONSE: {
+    'BSERemarks': 'FAILED: INVALID ACCOUNT INFORMATION',
+    'PAN': None,
+    'Status': '101',
+    'imageResponseStatus': {
+        'BSELMNDP_MFD': None,
+        'BSELMNDR_RFD': None,
+        'BSENONDP_MFI': None,
+        'BSENONDR_RFI': None
+    },
+    'imageUploadStatus': {
+        'BSELMNDP_MFD': None,
+        'BSELMNDR_RFD': None,
+        'BSENONDP_MFI': None,
+        'BSENONDR_RFI': None
+    }
+}
