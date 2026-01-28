@@ -1,173 +1,119 @@
 Watching for file changes with StatReloader
 Not Found: /users/login/
-[27/Jan/2026 23:59:02] "GET /users/login/ HTTP/1.1" 404 14757
+[28/Jan/2026 23:30:17] "GET /users/login/ HTTP/1.1" 404 14908
 Not Found: /users/login/
-[27/Jan/2026 23:59:48] "GET /users/login/ HTTP/1.1" 404 14757
-Not Found: /users/login/
-[28/Jan/2026 00:00:22] "GET /users/login/ HTTP/1.1" 404 14757
-Not Found: /users/login/
-[28/Jan/2026 00:01:36] "GET /users/login/ HTTP/1.1" 404 14757
-[28/Jan/2026 00:03:00] "GET /login/ HTTP/1.1" 200 7753
-[28/Jan/2026 00:03:00] "GET /static/images/logo12.png HTTP/1.1" 200 4636
-[28/Jan/2026 00:03:00] "GET /static/css/app.css HTTP/1.1" 200 386360
-[28/Jan/2026 00:03:00] "GET /static/images/illustrations/dashboard-check.svg HTTP/1.1" 200 130952
-[28/Jan/2026 00:03:00] "GET /static/js/app.js HTTP/1.1" 200 147725
-[28/Jan/2026 00:03:00] "GET /static/images/illustrations/dashboard-check-dark.svg HTTP/1.1" 200 130972
-[28/Jan/2026 00:03:00] "GET /static/js/pages/pages-sign-in-2.js HTTP/1.1" 200 340
-[28/Jan/2026 00:03:03] "POST /login/ HTTP/1.1" 302 0
-Internal Server Error: /dashboard/admin/
-Traceback (most recent call last):
-  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/urls/base.py", line 81, in reverse
-    extra, resolver = resolver.namespace_dict[ns]
-                      ~~~~~~~~~~~~~~~~~~~~~~~^^^^
-KeyError: 'payouts'
-
-During handling of the above exception, another exception occurred:
-
-Traceback (most recent call last):
-  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/core/handlers/exception.py", line 55, in inner
-    response = get_response(request)
-               ^^^^^^^^^^^^^^^^^^^^^
-  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/core/handlers/base.py", line 221, in _get_response
-    response = response.render()
-               ^^^^^^^^^^^^^^^^^
-  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/template/response.py", line 114, in render
-    self.content = self.rendered_content
-                   ^^^^^^^^^^^^^^^^^^^^^
-  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/template/response.py", line 92, in rendered_content
-    return template.render(context, self._request)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/template/backends/django.py", line 107, in render
-    return self.template.render(context)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/template/base.py", line 174, in render
-    return self._render(context)
-           ^^^^^^^^^^^^^^^^^^^^^
-  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/template/base.py", line 166, in _render
-    return self.nodelist.render(context)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/template/base.py", line 1091, in render
-    return SafeString("".join([node.render_annotated(context) for node in self]))
-                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/template/base.py", line 1052, in render_annotated
-    return self.render(context)
-           ^^^^^^^^^^^^^^^^^^^^
-  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/template/loader_tags.py", line 160, in render
-    return compiled_parent._render(context)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/template/base.py", line 166, in _render
-    return self.nodelist.render(context)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/template/base.py", line 1091, in render
-    return SafeString("".join([node.render_annotated(context) for node in self]))
-                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/template/base.py", line 1052, in render_annotated
-    return self.render(context)
-           ^^^^^^^^^^^^^^^^^^^^
-  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/template/loader_tags.py", line 211, in render
-    return template.render(context)
-           ^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/template/base.py", line 176, in render
-    return self._render(context)
-           ^^^^^^^^^^^^^^^^^^^^^
-  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/template/base.py", line 166, in _render
-    return self.nodelist.render(context)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/template/base.py", line 1091, in render
-    return SafeString("".join([node.render_annotated(context) for node in self]))
-                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/template/base.py", line 1052, in render_annotated
-    return self.render(context)
-           ^^^^^^^^^^^^^^^^^^^^
-  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/template/defaulttags.py", line 333, in render
-    return nodelist.render(context)
-           ^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/template/base.py", line 1091, in render
-    return SafeString("".join([node.render_annotated(context) for node in self]))
-                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/template/base.py", line 1052, in render_annotated
-    return self.render(context)
-           ^^^^^^^^^^^^^^^^^^^^
-  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/template/defaulttags.py", line 511, in render
-    url = reverse(view_name, args=args, kwargs=kwargs, current_app=current_app)
-          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/urls/base.py", line 92, in reverse
-    raise NoReverseMatch("%s is not a registered namespace" % key)
-django.urls.exceptions.NoReverseMatch: 'payouts' is not a registered namespace
-[28/Jan/2026 00:03:03] "GET /dashboard/admin/ HTTP/1.1" 500 174539
-/app/apps/payouts/urls.py changed, reloading.
-Performing system checks...
-
-PyTables is not installed. No support for HDF output.
-SQLalchemy is not installed. No support for SQL output.
-System check identified no issues (0 silenced).
-January 27, 2026 - 23:57:46
-Django version 6.0.1, using settings 'core.settings'
-Starting development server at http://0.0.0.0:8000/
-Quit the server with CONTROL-C.
-
-WARNING: This is a development server. Do not use it in a production setting. Use a production WSGI or ASGI server instead.
-For more information on production servers see: https://docs.djangoproject.com/en/6.0/howto/deployment/
-Watching for file changes with StatReloader
-[28/Jan/2026 00:03:38] "GET /login/ HTTP/1.1" 200 7753
-[28/Jan/2026 00:03:38] "GET /static/images/logo12.png HTTP/1.1" 200 4636
-[28/Jan/2026 00:03:38] "GET /static/js/app.js HTTP/1.1" 200 147725
-[28/Jan/2026 00:03:38] "GET /static/images/illustrations/dashboard-check.svg HTTP/1.1" 200 130952
-[28/Jan/2026 00:03:38] "GET /static/css/app.css HTTP/1.1" 200 386360
-[28/Jan/2026 00:03:38] "GET /static/images/illustrations/dashboard-check-dark.svg HTTP/1.1" 200 130972
-[28/Jan/2026 00:03:38] "GET /static/js/pages/pages-sign-in-2.js HTTP/1.1" 200 340
-[28/Jan/2026 00:03:40] "POST /login/ HTTP/1.1" 302 0
-[28/Jan/2026 00:03:40] "GET /dashboard/admin/ HTTP/1.1" 200 54557
-[28/Jan/2026 00:03:40] "GET /static/js/libs/components.js HTTP/1.1" 200 823854
-[28/Jan/2026 00:03:40] "GET /static/css/style.css HTTP/1.1" 200 1
-[28/Jan/2026 00:03:40] "GET /static/images/user.png HTTP/1.1" 200 19456
-[28/Jan/2026 00:03:40] "GET /static/js/libs/forms.js HTTP/1.1" 200 495466
-[28/Jan/2026 00:03:40] "GET /static/js/script.js HTTP/1.1" 200 10291
-[28/Jan/2026 00:03:41] "GET /static/fonts/fontawesome/fa-solid-900.woff2 HTTP/1.1" 200 154228
-[28/Jan/2026 00:07:45] "GET /login/ HTTP/1.1" 200 7753
-[28/Jan/2026 00:07:46] "GET /static/images/logo12.png HTTP/1.1" 200 4636
-[28/Jan/2026 00:07:46] "GET /static/js/app.js HTTP/1.1" 200 147725
-[28/Jan/2026 00:07:46] "GET /static/images/illustrations/dashboard-check-dark.svg HTTP/1.1" 200 130972
-[28/Jan/2026 00:07:46] "GET /static/images/illustrations/dashboard-check.svg HTTP/1.1" 200 130952
-[28/Jan/2026 00:07:46] "GET /static/css/app.css HTTP/1.1" 200 386360
-[28/Jan/2026 00:07:46] "GET /static/js/pages/pages-sign-in-2.js HTTP/1.1" 200 340
-[28/Jan/2026 00:07:48] "POST /login/ HTTP/1.1" 302 0
-[28/Jan/2026 00:07:48] "GET /dashboard/admin/ HTTP/1.1" 200 54515
-[28/Jan/2026 00:07:48] "GET /static/js/libs/forms.js HTTP/1.1" 200 495466
-[28/Jan/2026 00:07:48] "GET /static/css/style.css HTTP/1.1" 200 1
-[28/Jan/2026 00:07:48] "GET /static/images/user.png HTTP/1.1" 200 19456
-[28/Jan/2026 00:07:48] "GET /static/js/libs/components.js HTTP/1.1" 200 823854
-[28/Jan/2026 00:07:48] "GET /static/js/script.js HTTP/1.1" 200 10291
-[28/Jan/2026 00:07:48] "GET /static/fonts/fontawesome/fa-solid-900.woff2 HTTP/1.1" 200 154228
-[28/Jan/2026 00:08:51] "GET /login/ HTTP/1.1" 200 7753
-[28/Jan/2026 00:08:51] "GET /static/css/app.css HTTP/1.1" 200 386360
-[28/Jan/2026 00:08:51] "GET /static/images/logo12.png HTTP/1.1" 200 4636
-[28/Jan/2026 00:08:51] "GET /static/js/app.js HTTP/1.1" 200 147725
-[28/Jan/2026 00:08:51] "GET /static/images/illustrations/dashboard-check.svg HTTP/1.1" 200 130952
-[28/Jan/2026 00:08:51] "GET /static/images/illustrations/dashboard-check-dark.svg HTTP/1.1" 200 130972
-[28/Jan/2026 00:08:51] "GET /static/js/pages/pages-sign-in-2.js HTTP/1.1" 200 340
-[28/Jan/2026 00:08:53] "POST /login/ HTTP/1.1" 302 0
-[28/Jan/2026 00:08:53] "GET /dashboard/admin/ HTTP/1.1" 200 54515
-[28/Jan/2026 00:08:54] "GET /static/css/style.css HTTP/1.1" 200 1
-[28/Jan/2026 00:08:54] "GET /static/images/user.png HTTP/1.1" 200 19456
-[28/Jan/2026 00:08:54] "GET /static/js/libs/forms.js HTTP/1.1" 200 495466
-[28/Jan/2026 00:08:54] "GET /static/js/libs/components.js HTTP/1.1" 200 823854
-[28/Jan/2026 00:08:54] "GET /static/js/script.js HTTP/1.1" 200 10291
-[28/Jan/2026 00:08:54] "GET /static/fonts/fontawesome/fa-solid-900.woff2 HTTP/1.1" 200 154228
-[28/Jan/2026 00:10:59] "GET /login/ HTTP/1.1" 200 7753
-[28/Jan/2026 00:10:59] "GET /static/images/logo12.png HTTP/1.1" 200 4636
-[28/Jan/2026 00:10:59] "GET /static/css/app.css HTTP/1.1" 200 386360
-[28/Jan/2026 00:10:59] "GET /static/images/illustrations/dashboard-check.svg HTTP/1.1" 200 130952
-[28/Jan/2026 00:10:59] "GET /static/js/app.js HTTP/1.1" 200 147725
-[28/Jan/2026 00:10:59] "GET /static/images/illustrations/dashboard-check-dark.svg HTTP/1.1" 200 130972
-[28/Jan/2026 00:10:59] "GET /static/js/pages/pages-sign-in-2.js HTTP/1.1" 200 340
-[28/Jan/2026 00:11:02] "POST /login/ HTTP/1.1" 302 0
-[28/Jan/2026 00:11:02] "GET /dashboard/admin/ HTTP/1.1" 200 54515
-[28/Jan/2026 00:11:02] "GET /static/css/style.css HTTP/1.1" 200 1
-[28/Jan/2026 00:11:02] "GET /static/images/user.png HTTP/1.1" 200 19456
-[28/Jan/2026 00:11:02] "GET /static/js/libs/forms.js HTTP/1.1" 200 495466
-[28/Jan/2026 00:11:02] "GET /static/js/libs/components.js HTTP/1.1" 200 823854
-[28/Jan/2026 00:11:02] "GET /static/js/script.js HTTP/1.1" 200 12352
-[28/Jan/2026 00:11:02] "GET /static/fonts/fontawesome/fa-solid-900.woff2 HTTP/1.1" 200 154228
-[28/Jan/2026 00:11:06] "GET /holdings/ HTTP/1.1" 200 65012
-[28/Jan/2026 00:11:06] "GET /static/js/script.js HTTP/1.1" 304 0
+[28/Jan/2026 23:32:26] "GET /users/login/ HTTP/1.1" 404 14908
+[28/Jan/2026 23:33:19] "GET /login/ HTTP/1.1" 200 7753
+[28/Jan/2026 23:33:19] "GET /static/css/app.css HTTP/1.1" 200 386360
+[28/Jan/2026 23:33:19] "GET /static/js/app.js HTTP/1.1" 200 147725
+[28/Jan/2026 23:33:19] "GET /static/images/logo12.png HTTP/1.1" 200 4636
+[28/Jan/2026 23:33:19] "GET /static/images/illustrations/dashboard-check.svg HTTP/1.1" 200 130952
+[28/Jan/2026 23:33:19] "GET /static/images/illustrations/dashboard-check-dark.svg HTTP/1.1" 200 130972
+[28/Jan/2026 23:33:19] "GET /static/js/pages/pages-sign-in-2.js HTTP/1.1" 200 340
+[28/Jan/2026 23:33:21] "POST /login/ HTTP/1.1" 302 0
+[28/Jan/2026 23:33:21] "GET /dashboard/admin/ HTTP/1.1" 200 57177
+[28/Jan/2026 23:33:21] "GET /static/js/libs/components.js HTTP/1.1" 200 823854
+[28/Jan/2026 23:33:21] "GET /static/js/libs/forms.js HTTP/1.1" 200 495466
+[28/Jan/2026 23:33:21] "GET /static/css/style.css HTTP/1.1" 200 1
+[28/Jan/2026 23:33:21] "GET /static/images/user.png HTTP/1.1" 200 19456
+[28/Jan/2026 23:33:22] "GET /static/js/script.js HTTP/1.1" 200 12352
+[28/Jan/2026 23:33:22] "GET /static/fonts/fontawesome/fa-solid-900.woff2 HTTP/1.1" 200 154228
+[28/Jan/2026 23:33:47] "GET /login/ HTTP/1.1" 200 7753
+[28/Jan/2026 23:33:47] "GET /static/images/logo12.png HTTP/1.1" 200 4636
+[28/Jan/2026 23:33:47] "GET /static/images/illustrations/dashboard-check.svg HTTP/1.1" 200 130952
+[28/Jan/2026 23:33:47] "GET /static/js/app.js HTTP/1.1" 200 147725
+[28/Jan/2026 23:33:47] "GET /static/css/app.css HTTP/1.1" 200 386360
+[28/Jan/2026 23:33:47] "GET /static/images/illustrations/dashboard-check-dark.svg HTTP/1.1" 200 130972
+[28/Jan/2026 23:33:47] "GET /static/js/pages/pages-sign-in-2.js HTTP/1.1" 200 340
+[28/Jan/2026 23:33:49] "POST /login/ HTTP/1.1" 302 0
+[28/Jan/2026 23:33:49] "GET /dashboard/admin/ HTTP/1.1" 200 57177
+[28/Jan/2026 23:33:50] "GET /static/images/user.png HTTP/1.1" 200 19456
+[28/Jan/2026 23:33:50] "GET /static/css/style.css HTTP/1.1" 200 1
+[28/Jan/2026 23:33:50] "GET /static/js/libs/forms.js HTTP/1.1" 200 495466
+[28/Jan/2026 23:33:50] "GET /static/js/libs/components.js HTTP/1.1" 200 823854
+[28/Jan/2026 23:33:50] "GET /static/js/script.js HTTP/1.1" 200 12352
+[28/Jan/2026 23:33:50] "GET /static/fonts/fontawesome/fa-solid-900.woff2 HTTP/1.1" 200 154228
+[28/Jan/2026 23:34:16] "GET /login/ HTTP/1.1" 200 7753
+[28/Jan/2026 23:34:16] "GET /static/css/app.css HTTP/1.1" 200 386360
+[28/Jan/2026 23:34:16] "GET /static/js/app.js HTTP/1.1" 200 147725
+[28/Jan/2026 23:34:16] "GET /static/images/illustrations/dashboard-check.svg HTTP/1.1" 200 130952
+[28/Jan/2026 23:34:16] "GET /static/images/logo12.png HTTP/1.1" 200 4636
+[28/Jan/2026 23:34:16] "GET /static/images/illustrations/dashboard-check-dark.svg HTTP/1.1" 200 130972
+[28/Jan/2026 23:34:16] "GET /static/js/pages/pages-sign-in-2.js HTTP/1.1" 200 340
+[28/Jan/2026 23:34:19] "POST /login/ HTTP/1.1" 302 0
+[28/Jan/2026 23:34:19] "GET /dashboard/admin/ HTTP/1.1" 200 57177
+[28/Jan/2026 23:34:19] "GET /static/css/style.css HTTP/1.1" 200 1
+[28/Jan/2026 23:34:19] "GET /static/images/user.png HTTP/1.1" 200 19456
+[28/Jan/2026 23:34:19] "GET /static/js/libs/components.js HTTP/1.1" 200 823854
+[28/Jan/2026 23:34:19] "GET /static/js/libs/forms.js HTTP/1.1" 200 495466
+[28/Jan/2026 23:34:19] "GET /static/js/script.js HTTP/1.1" 200 12352
+[28/Jan/2026 23:34:19] "GET /static/fonts/fontawesome/fa-solid-900.woff2 HTTP/1.1" 200 154228
+[28/Jan/2026 23:34:55] "GET /login/ HTTP/1.1" 200 7753
+[28/Jan/2026 23:34:55] "GET /static/css/app.css HTTP/1.1" 200 386360
+[28/Jan/2026 23:34:55] "GET /static/js/app.js HTTP/1.1" 200 147725
+[28/Jan/2026 23:34:55] "GET /static/images/logo12.png HTTP/1.1" 200 4636
+[28/Jan/2026 23:34:55] "GET /static/images/illustrations/dashboard-check.svg HTTP/1.1" 200 130952
+[28/Jan/2026 23:34:55] "GET /static/images/illustrations/dashboard-check-dark.svg HTTP/1.1" 200 130972
+[28/Jan/2026 23:34:55] "GET /static/js/pages/pages-sign-in-2.js HTTP/1.1" 200 340
+[28/Jan/2026 23:34:57] "POST /login/ HTTP/1.1" 302 0
+[28/Jan/2026 23:34:57] "GET /dashboard/admin/ HTTP/1.1" 200 57177
+[28/Jan/2026 23:34:57] "GET /static/css/style.css HTTP/1.1" 200 1
+[28/Jan/2026 23:34:57] "GET /static/images/user.png HTTP/1.1" 200 19456
+[28/Jan/2026 23:34:57] "GET /static/js/libs/forms.js HTTP/1.1" 200 495466
+[28/Jan/2026 23:34:57] "GET /static/js/libs/components.js HTTP/1.1" 200 823854
+[28/Jan/2026 23:34:57] "GET /static/js/script.js HTTP/1.1" 200 12352
+[28/Jan/2026 23:34:57] "GET /static/fonts/fontawesome/fa-solid-900.woff2 HTTP/1.1" 200 154228
+[28/Jan/2026 23:35:50] "GET /login/ HTTP/1.1" 200 7753
+[28/Jan/2026 23:35:50] "GET /static/images/logo12.png HTTP/1.1" 200 4636
+[28/Jan/2026 23:35:50] "GET /static/js/app.js HTTP/1.1" 200 147725
+[28/Jan/2026 23:35:50] "GET /static/css/app.css HTTP/1.1" 200 386360
+[28/Jan/2026 23:35:50] "GET /static/images/illustrations/dashboard-check.svg HTTP/1.1" 200 130952
+[28/Jan/2026 23:35:51] "GET /static/images/illustrations/dashboard-check-dark.svg HTTP/1.1" 200 130972
+[28/Jan/2026 23:35:51] "GET /static/js/pages/pages-sign-in-2.js HTTP/1.1" 200 340
+[28/Jan/2026 23:35:53] "POST /login/ HTTP/1.1" 302 0
+[28/Jan/2026 23:35:53] "GET /dashboard/admin/ HTTP/1.1" 200 57177
+[28/Jan/2026 23:35:53] "GET /static/images/user.png HTTP/1.1" 200 19456
+[28/Jan/2026 23:35:53] "GET /static/js/libs/forms.js HTTP/1.1" 200 495466
+[28/Jan/2026 23:35:53] "GET /static/js/libs/components.js HTTP/1.1" 200 823854
+[28/Jan/2026 23:35:53] "GET /static/css/style.css HTTP/1.1" 200 1
+[28/Jan/2026 23:35:53] "GET /static/js/script.js HTTP/1.1" 200 12352
+[28/Jan/2026 23:35:53] "GET /static/fonts/fontawesome/fa-solid-900.woff2 HTTP/1.1" 200 154228
+[28/Jan/2026 23:35:53] "GET /reports/ HTTP/1.1" 200 63432
+[28/Jan/2026 23:35:53] "GET /reports/investors/ HTTP/1.1" 200 64701
+[28/Jan/2026 23:35:54] "GET /reports/transactions/ HTTP/1.1" 200 64796
+[28/Jan/2026 23:35:55] "GET /reports/masters/distributor/ HTTP/1.1" 200 65145
+[28/Jan/2026 23:35:55] "GET /reports/masters/scheme/ HTTP/1.1" 200 65009
+[28/Jan/2026 23:36:29] "GET /login/ HTTP/1.1" 200 7753
+[28/Jan/2026 23:36:29] "GET /static/images/logo12.png HTTP/1.1" 200 4636
+[28/Jan/2026 23:36:29] "GET /static/css/app.css HTTP/1.1" 200 386360
+[28/Jan/2026 23:36:29] "GET /static/js/app.js HTTP/1.1" 200 147725
+[28/Jan/2026 23:36:29] "GET /static/images/illustrations/dashboard-check.svg HTTP/1.1" 200 130952
+[28/Jan/2026 23:36:29] "GET /static/images/illustrations/dashboard-check-dark.svg HTTP/1.1" 200 130972
+[28/Jan/2026 23:36:29] "GET /static/js/pages/pages-sign-in-2.js HTTP/1.1" 200 340
+[28/Jan/2026 23:36:31] "POST /login/ HTTP/1.1" 302 0
+[28/Jan/2026 23:36:31] "GET /dashboard/admin/ HTTP/1.1" 200 57177
+[28/Jan/2026 23:36:31] "GET /static/css/style.css HTTP/1.1" 200 1
+[28/Jan/2026 23:36:31] "GET /static/images/user.png HTTP/1.1" 200 19456
+[28/Jan/2026 23:36:31] "GET /static/js/libs/components.js HTTP/1.1" 200 823854
+[28/Jan/2026 23:36:31] "GET /static/js/libs/forms.js HTTP/1.1" 200 495466
+[28/Jan/2026 23:36:31] "GET /reports/ HTTP/1.1" 200 63432
+[28/Jan/2026 23:36:31] "GET /static/js/script.js HTTP/1.1" 200 12352
+[28/Jan/2026 23:36:31] "GET /static/fonts/fontawesome/fa-solid-900.woff2 HTTP/1.1" 200 154228
+[28/Jan/2026 23:36:33] "GET /reports/investors/ HTTP/1.1" 200 64701
+[28/Jan/2026 23:39:26] "GET /login/ HTTP/1.1" 200 7753
+[28/Jan/2026 23:39:26] "GET /static/images/illustrations/dashboard-check.svg HTTP/1.1" 200 130952
+[28/Jan/2026 23:39:26] "GET /static/images/logo12.png HTTP/1.1" 200 4636
+[28/Jan/2026 23:39:26] "GET /static/js/app.js HTTP/1.1" 200 147725
+[28/Jan/2026 23:39:26] "GET /static/css/app.css HTTP/1.1" 200 386360
+[28/Jan/2026 23:39:26] "GET /static/images/illustrations/dashboard-check-dark.svg HTTP/1.1" 200 130972
+[28/Jan/2026 23:39:26] "GET /static/js/pages/pages-sign-in-2.js HTTP/1.1" 200 340
+[28/Jan/2026 23:39:28] "POST /login/ HTTP/1.1" 302 0
+[28/Jan/2026 23:39:28] "GET /dashboard/admin/ HTTP/1.1" 200 57177
+[28/Jan/2026 23:39:28] "GET /static/images/user.png HTTP/1.1" 200 19456
+[28/Jan/2026 23:39:28] "GET /static/css/style.css HTTP/1.1" 200 1
+[28/Jan/2026 23:39:28] "GET /static/js/libs/components.js HTTP/1.1" 200 823854
+[28/Jan/2026 23:39:28] "GET /static/js/libs/forms.js HTTP/1.1" 200 495466
+[28/Jan/2026 23:39:28] "GET /reports/ HTTP/1.1" 200 63432
+[28/Jan/2026 23:39:28] "GET /static/js/script.js HTTP/1.1" 200 12352
+[28/Jan/2026 23:39:28] "GET /static/fonts/fontawesome/fa-solid-900.woff2 HTTP/1.1" 200 154228
+[28/Jan/2026 23:39:30] "GET /reports/investors/ HTTP/1.1" 200 64627

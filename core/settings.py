@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'apps.integration',
     'apps.analytics',
     'apps.reconciliation',
+    'apps.reports',
 ]
 
 MIDDLEWARE = [
