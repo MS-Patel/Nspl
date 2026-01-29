@@ -1,8 +1,28 @@
-2026-01-29 16:15:24,225 - ORDER STATUS ERROR: HTTPSConnectionPool(host='bsestarmfdemo.bseindia.com', port=443): Max retries exceeded with url: /StarMFWebService/StarMFWebService.svc?singleWsdl (Caused by ConnectTimeoutError(<HTTPSConnection(host='bsestarmfdemo.bseindia.com', port=443) at 0x7f60b83beea0>, 'Connection to bsestarmfdemo.bseindia.com timed out. (connect timeout=10)'))
-2026-01-29 16:15:34,734 - ALLOTMENT STATEMENT ERROR: HTTPSConnectionPool(host='bsestarmfdemo.bseindia.com', port=443): Max retries exceeded with url: /StarMFWebService/StarMFWebService.svc?singleWsdl (Caused by ConnectTimeoutError(<HTTPSConnection(host='bsestarmfdemo.bseindia.com', port=443) at 0x7f60b821f380>, 'Connection to bsestarmfdemo.bseindia.com timed out. (connect timeout=10)'))
-2026-01-29 16:15:45,156 - ALLOTMENT STATEMENT ERROR: HTTPSConnectionPool(host='bsestarmfdemo.bseindia.com', port=443): Max retries exceeded with url: /StarMFWebService/StarMFWebService.svc?singleWsdl (Caused by ConnectTimeoutError(<HTTPSConnection(host='bsestarmfdemo.bseindia.com', port=443) at 0x7f60b821fe90>, 'Connection to bsestarmfdemo.bseindia.com timed out. (connect timeout=10)'))
-2026-01-29 21:00:36,593 - ORDER STATUS ERROR: {http://schemas.datacontract.org/2004/07/StarMFWebService}OrderRequest() got an unexpected keyword argument 'SettlementType'. Signature: `ClientCode: xsd:string, Filler1: xsd:string, Filler2: xsd:string, Filler3: xsd:string, FromDate: xsd:string, MemberCode: xsd:string, OrderNo: xsd:string, OrderStatus: xsd:string, OrderType: xsd:string, Password: xsd:string, SettType: xsd:string, SubOrderType: xsd:string, ToDate: xsd:string, TransType: xsd:string, UserId: xsd:string`
-2026-01-29 21:00:43,901 - ORDER STATUS ERROR: {http://schemas.datacontract.org/2004/07/StarMFWebService}OrderRequest() got an unexpected keyword argument 'SettlementType'. Signature: `ClientCode: xsd:string, Filler1: xsd:string, Filler2: xsd:string, Filler3: xsd:string, FromDate: xsd:string, MemberCode: xsd:string, OrderNo: xsd:string, OrderStatus: xsd:string, OrderType: xsd:string, Password: xsd:string, SettType: xsd:string, SubOrderType: xsd:string, ToDate: xsd:string, TransType: xsd:string, UserId: xsd:string`
-2026-01-29 21:01:15,982 - ALLOTMENT STATEMENT ERROR: {http://schemas.datacontract.org/2004/07/StarMFWebService}AllotmentStatementRequest() got an unexpected keyword argument 'SettlementType'. Signature: `ClientCode: xsd:string, Filler1: xsd:string, Filler2: xsd:string, Filler3: xsd:string, FromDate: xsd:string, MemberCode: xsd:string, OrderNo: xsd:string, OrderStatus: xsd:string, OrderType: xsd:string, Password: xsd:string, SettType: xsd:string, SubOrderType: xsd:string, ToDate: xsd:string, UserId: xsd:string`
-2026-01-29 21:01:23,860 - ALLOTMENT STATEMENT ERROR: {http://schemas.datacontract.org/2004/07/StarMFWebService}AllotmentStatementRequest() got an unexpected keyword argument 'SettlementType'. Signature: `ClientCode: xsd:string, Filler1: xsd:string, Filler2: xsd:string, Filler3: xsd:string, FromDate: xsd:string, MemberCode: xsd:string, OrderNo: xsd:string, OrderStatus: xsd:string, OrderType: xsd:string, Password: xsd:string, SettType: xsd:string, SubOrderType: xsd:string, ToDate: xsd:string, UserId: xsd:string`
-2026-01-29 21:01:32,582 - ALLOTMENT STATEMENT ERROR: {http://schemas.datacontract.org/2004/07/StarMFWebService}AllotmentStatementRequest() got an unexpected keyword argument 'SettlementType'. Signature: `ClientCode: xsd:string, Filler1: xsd:string, Filler2: xsd:string, Filler3: xsd:string, FromDate: xsd:string, MemberCode: xsd:string, OrderNo: xsd:string, OrderStatus: xsd:string, OrderType: xsd:string, Password: xsd:string, SettType: xsd:string, SubOrderType: xsd:string, ToDate: xsd:string, UserId: xsd:string`
+2026-01-29 21:34:01,621 - ORDER STATUS: None | RESPONSE: {
+    'Message': 'INVALID ACCOUNT INFORMATION',
+    'OrderDetails': {
+        'OrderDetails': []
+    },
+    'Status': '101'
+}
+2026-01-29 21:34:31,168 - ALLOTMENT STATEMENT: None | RESPONSE: {
+    'AllotmentDetails': {
+        'AllotmentDetails': []
+    },
+    'Message': 'FAILED: INVALID ACCOUNT INFORMATION',
+    'Status': '101'
+}
+2026-01-29 21:34:35,122 - ALLOTMENT STATEMENT: None | RESPONSE: {
+    'AllotmentDetails': {
+        'AllotmentDetails': []
+    },
+    'Message': 'FAILED: INVALID ACCOUNT INFORMATION',
+    'Status': '101'
+}
+2026-01-29 21:34:52,850 - ALLOTMENT STATEMENT: None | RESPONSE: {
+    'AllotmentDetails': {
+        'AllotmentDetails': []
+    },
+    'Message': 'FAILED: INVALID ACCOUNT INFORMATION',
+    'Status': '101'
+}

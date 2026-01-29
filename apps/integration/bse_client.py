@@ -399,7 +399,7 @@ class BSEStarMFClient:
                 "OrderType": order_type,
                 "SubOrderType": "All",
                 "OrderStatus": "All",
-                "SettlementType": "ALL",
+                "SettType": "ALL",
                 "OrderNo": order_no if order_no else ""
             })
             bse_logger.info(f"ORDER STATUS: {order_no} | RESPONSE: {response}")
@@ -427,7 +427,7 @@ class BSEStarMFClient:
                 "OrderType": order_type,
                 "SubOrderType": "All",
                 "OrderStatus": "All",
-                "SettlementType": "ALL",
+                "SettType": "ALL",
                 "OrderNo": order_no if order_no else ""
             })
             bse_logger.info(f"ALLOTMENT STATEMENT: {order_no} | RESPONSE: {response}")
