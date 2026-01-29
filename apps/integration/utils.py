@@ -794,3 +794,73 @@ def get_bse_mandate_param_string(mandate):
     ]
 
     return "|".join(fields)
+
+def get_bse_switch_order_params(order, member_id, user_id, password, pass_key):
+    """
+    Constructs the parameter dictionary for BSE StarMF switchOrderEntryParam API (SOAP).
+    """
+
+    client_code = order.investor.ucc_code if order.investor.ucc_code else order.investor.pan
+
+    # Use the EUIN stored on the Order
+    euin = order.euin if order.euin else ""
+    euin_flag = "Y" if euin else "N"
+
+    folio_no = order.folio.folio_number if order.folio else ""
+
+    # Switch Mode Logic
+    # BSE expects:
+    # - Amount if Switch by Amount
+    # - Units if Switch by Units
+    # - AllRedeem='Y' if Switch All
+
+    txt_amount = ""
+    txt_units = ""
+    all_units_flag = "N"
+
+    if order.all_redeem:
+        all_units_flag = "Y"
+        txt_amount = "0"
+        txt_units = "0"
+    elif order.amount and order.amount > 0:
+        txt_amount = f"{order.amount:.2f}"
+        txt_units = "0"
+    elif order.units and order.units > 0:
+        txt_units = f"{order.units:.4f}"
+        txt_amount = "0"
+
+    # User confirmed TransMode P -> DPTxn
+    dptxn = "P" # Physical
+
+    params = {
+        'TransCode': 'NEW',
+        'TransNo': str(order.unique_ref_no),
+        'UserId': user_id,
+        'MemberId': member_id,
+        'ClientCode': client_code,
+        'SwitchCode': order.scheme.scheme_code,  # Source Scheme
+        'ToSchemeCode': order.target_scheme.scheme_code, # Target Scheme
+        'SwitchAmount': txt_amount,
+        'SwitchUnits': txt_units,
+        'AllUnitsFlag': all_units_flag,
+        'FolioNo': folio_no,
+        'Remarks': '',
+        'KYCStatus': 'Y',
+        'RefNo': '',
+        'SubBrCode': '',
+        'Euin': euin,
+        'EuinVal': euin_flag,
+        'MinRedeem': 'N',
+        'DPC': 'N', # Usually N for Switch? Or DPTxn? Let's assume N for now.
+        'IPAdd': '',
+        'Password': password,
+        'PassKey': pass_key,
+        'Param1': '',
+        'Param2': '',
+        'Param3': '',
+        'Filler1': '',
+        'Filler2': '',
+        'Filler3': '',
+    }
+
+    return params

@@ -202,6 +202,7 @@ class Order(models.Model):
     investor = models.ForeignKey(InvestorProfile, on_delete=models.CASCADE, related_name='orders')
     distributor = models.ForeignKey(DistributorProfile, on_delete=models.SET_NULL, null=True, blank=True, related_name='orders')
     scheme = models.ForeignKey(Scheme, on_delete=models.CASCADE, related_name='orders')
+    target_scheme = models.ForeignKey(Scheme, on_delete=models.CASCADE, null=True, blank=True, related_name='switch_orders', help_text="Target Scheme for Switch Orders")
     folio = models.ForeignKey(Folio, on_delete=models.SET_NULL, null=True, blank=True, related_name='orders', help_text="Linked Folio if existing")
     mandate = models.ForeignKey(Mandate, on_delete=models.SET_NULL, null=True, blank=True, related_name='orders', help_text="Required for SIP")
     sip_reg = models.ForeignKey(SIP, on_delete=models.SET_NULL, null=True, blank=True, related_name='registration_orders', help_text="Linked SIP Registration")

@@ -331,7 +331,7 @@ def order_create(request):
                     messages.error(request, f"System Error: {str(e)}")
 
             # Execute Lumpsum Order on BSE
-            elif order.transaction_type in [Order.PURCHASE, Order.REDEMPTION, Order.SWITCH]:
+            elif order.transaction_type in [Order.PURCHASE, Order.REDEMPTION]:
                 order.save()
                 try:
                     client = BSEStarMFClient()
@@ -356,6 +356,39 @@ def order_create(request):
 
                 except Exception as e:
                     logger.exception("Error placing order on BSE")
+                    order.status = Order.PENDING
+                    order.bse_remarks = f"System Error: {str(e)}"
+                    order.save()
+                    messages.error(request, f"System Error (Order saved as Pending): {str(e)}")
+
+            # Execute Switch Order on BSE
+            elif order.transaction_type == Order.SWITCH:
+                order.save()
+                try:
+                    client = BSEStarMFClient()
+                    # Determine switch type from form data if needed, or rely on order fields
+                    # The Order model fields (units, amount, all_redeem) are already set by form.save()
+                    result = client.switch_order(order)
+
+                    if result['status'] == 'success':
+                        order.status = Order.SENT_TO_BSE
+                        order.bse_order_id = result.get('bse_order_id')
+                        order.bse_remarks = result.get('remarks')
+                        messages.success(request, f"Switch Order {order.unique_ref_no} placed on BSE: {result.get('remarks')}")
+                    elif result['status'] == 'exception':
+                         order.status = Order.PENDING
+                         order.bse_remarks = f"System Error: {result.get('remarks')}"
+                         order.save()
+                         messages.error(request, f"System Error (Order saved as Pending): {result.get('remarks')}")
+                    else:
+                        order.status = Order.REJECTED
+                        order.bse_remarks = result.get('remarks')
+                        messages.error(request, f"BSE Error: {result.get('remarks')}")
+
+                    order.save()
+
+                except Exception as e:
+                    logger.exception("Error placing switch order on BSE")
                     order.status = Order.PENDING
                     order.bse_remarks = f"System Error: {str(e)}"
                     order.save()
@@ -494,7 +527,7 @@ def get_order_metadata(request):
     # Optimizing query: return only needed fields
     schemes_data = schemes_qs.values(
         'id', 'name', 'scheme_code', 'min_purchase_amount', 'max_purchase_amount',
-        'purchase_amount_multiplier', 'is_sip_allowed'
+        'purchase_amount_multiplier', 'is_sip_allowed', 'amc_id'
     )
 
     if request.GET.get('fetch_schemes') == 'true':
@@ -522,7 +555,8 @@ def get_order_metadata(request):
                 'min_purchase_amount': scheme.min_purchase_amount,
                 'max_purchase_amount': scheme.max_purchase_amount,
                 'purchase_amount_multiplier': scheme.purchase_amount_multiplier,
-                'is_sip_allowed': scheme.is_sip_allowed
+                'is_sip_allowed': scheme.is_sip_allowed,
+                'amc_id': scheme.amc.id
             }
         except Scheme.DoesNotExist:
             pass
