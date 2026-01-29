@@ -843,6 +843,7 @@ def get_bse_switch_order_params(order, member_id, user_id, password, pass_key):
         'SwitchAmount': txt_amount,
         'SwitchUnits': txt_units,
         'AllUnitsFlag': all_units_flag,
+        'DPTxn': dptxn,
         'FolioNo': folio_no,
         'Remarks': '',
         'KYCStatus': 'Y',

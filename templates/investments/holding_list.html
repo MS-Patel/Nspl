@@ -98,9 +98,16 @@
                     name: 'Action',
                     sort: false,
                     formatter: (cell) => {
-                         return Gridjs.html(`<a href="${cell}" class="btn h-8 rounded-full bg-primary/10 px-3 text-xs font-medium text-primary hover:bg-primary/20 focus:bg-primary/20 active:bg-primary/25 dark:bg-accent-light/10 dark:text-accent-light dark:hover:bg-accent-light/20 dark:focus:bg-accent-light/20 dark:active:bg-accent-light/25">
-                            Redeem
-                        </a>`);
+                         return Gridjs.html(`
+                            <div class="flex space-x-2">
+                                <a href="${cell.redeem}" class="btn h-8 rounded-full bg-error/10 px-3 text-xs font-medium text-error hover:bg-error/20 focus:bg-error/20 active:bg-error/25">
+                                    Redeem
+                                </a>
+                                <a href="${cell.switch}" class="btn h-8 rounded-full bg-info/10 px-3 text-xs font-medium text-info hover:bg-info/20 focus:bg-info/20 active:bg-info/25">
+                                    Switch
+                                </a>
+                            </div>
+                        `);
                     }
                 }
             ],

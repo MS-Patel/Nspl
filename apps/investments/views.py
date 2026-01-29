@@ -247,8 +247,25 @@ def order_create(request):
     user = request.user
     initial_data = {}
 
-    # Pre-fill data if available in GET params (e.g., from Scheme Explorer)
-    if 'scheme' in request.GET:
+    # Pre-fill data if available in GET params (e.g., from Scheme Explorer or Holding)
+    if 'holding_id' in request.GET:
+        holding_id = request.GET.get('holding_id')
+        try:
+            holding = Holding.objects.get(id=holding_id)
+            # Verify Access
+            if has_access_to_investor(user, holding.investor.id):
+                initial_data['investor'] = holding.investor
+                initial_data['scheme'] = holding.scheme
+                initial_data['transaction_type'] = Order.SWITCH
+
+                # Attempt to link Folio
+                folio = Folio.objects.filter(investor=holding.investor, folio_number=holding.folio_number).first()
+                if folio:
+                    initial_data['folio_selection'] = folio
+        except Holding.DoesNotExist:
+            pass
+
+    if 'scheme' in request.GET and 'scheme' not in initial_data:
         scheme_id = request.GET.get('scheme')
         try:
             scheme = Scheme.objects.get(id=scheme_id)
@@ -596,7 +613,10 @@ class HoldingListView(LoginRequiredMixin, ListView):
                 'average_cost': float(holding.average_cost),
                 'current_value': float(holding.current_value) if holding.current_value else 0.0,
                 'current_nav': float(holding.current_nav) if holding.current_nav else 0.0,
-                'action_url': reverse('investments:redemption_create', args=[holding.id])
+                'action_url': {
+                    'redeem': reverse('investments:redemption_create', args=[holding.id]),
+                    'switch': reverse('investments:order_create') + f"?holding_id={holding.id}"
+                }
             })
         context['grid_data_json'] = json.dumps(data)
         return context

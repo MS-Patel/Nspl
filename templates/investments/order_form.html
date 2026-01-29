@@ -448,6 +448,7 @@
             const amcId = amcSelect.getValue();
             const catId = categorySelect.getValue();
             const typeVal = typeSelect.getValue();
+            const currentSchemeId = schemeSelect.getValue(); // Preserve selection
 
             // Use fetch and addOption/refreshOptions
             const params = new URLSearchParams({
@@ -462,10 +463,27 @@
             fetch(`{% url 'investments:api_order_metadata' %}?${params.toString()}`)
                 .then(response => response.json())
                 .then(data => {
+                    // We need to keep the currently selected option if it exists
+                    let currentOption = null;
+                    if (currentSchemeId) {
+                        currentOption = schemeSelect.options[currentSchemeId];
+                    }
+
                     schemeSelect.clearOptions();
+
                     if (data.schemes && data.schemes.length > 0) {
                         schemeSelect.addOption(data.schemes);
                     }
+
+                    // Restore selection if it was lost (and add it back if filters excluded it but we want to keep it visible)
+                    if (currentSchemeId && currentOption) {
+                        schemeSelect.addOption(currentOption);
+                        schemeSelect.setValue(currentSchemeId, true); // silent update
+                    } else if (currentSchemeId) {
+                         // If we didn't capture the option object (rare), try to set value anyway if it's in new data
+                         schemeSelect.setValue(currentSchemeId, true);
+                    }
+
                     schemeSelect.refreshOptions(false); // Update the dropdown
                     schemeSelect.unlock();
                 })
