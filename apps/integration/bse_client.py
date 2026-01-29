@@ -6,7 +6,7 @@ import logging
 from django.conf import settings
 from zeep import Client, Settings
 import datetime
-from .utils import get_bse_order_params, get_bse_xsip_order_params, get_bse_mandate_param_string, map_investor_to_fatca_string
+from .utils import get_bse_order_params, get_bse_xsip_order_params, get_bse_switch_order_params, get_bse_mandate_param_string, map_investor_to_fatca_string
 from apps.users.models import InvestorProfile
 
 # Configure a specific logger for BSE API
@@ -189,6 +189,45 @@ class BSEStarMFClient:
                 }
         except Exception as e:
             bse_logger.error(f"ORDER ENTRY ERROR: {str(e)}")
+            return {'status': 'exception', 'remarks': str(e)}
+
+    def switch_order(self, order):
+        # COMPLIANCE GUARD
+        investor = order.investor
+        if investor.nominee_auth_status == InvestorProfile.AUTH_PENDING and investor.nomination_opt == 'Y':
+             return {
+                'status': 'error',
+                'remarks': 'COMPLIANCE BLOCK: Nominee Authentication is Pending.'
+            }
+
+        try:
+            encrypted_password, pass_key = self._get_auth_details()
+            params = get_bse_switch_order_params(
+                order,
+                self.member_id,
+                self.user_id,
+                encrypted_password,
+                pass_key
+            )
+            client = self._get_soap_client(self)
+            bse_logger.info(f"SWITCH ORDER Request: {params}")
+            response = client.service.switchOrderEntryParam(**params)
+            bse_logger.info(f"SWITCH ORDER ENTRY: {order.unique_ref_no} | RESPONSE: {response}")
+
+            parts = str(response).split('|')
+            if parts[0] == '0':
+                return {
+                    'status': 'success',
+                    'bse_order_id': parts[1] if len(parts) > 1 else "",
+                    'remarks': parts[2] if len(parts) > 2 else 'Switch Order Placed'
+                }
+            else:
+                return {
+                    'status': 'error',
+                    'remarks': parts[1] if len(parts) > 1 else response
+                }
+        except Exception as e:
+            bse_logger.error(f"SWITCH ORDER ENTRY ERROR: {str(e)}")
             return {'status': 'exception', 'remarks': str(e)}
 
     def register_sip(self, sip):

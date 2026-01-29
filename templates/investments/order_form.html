@@ -101,7 +101,7 @@
                         <!-- Scheme Selection -->
                         <div class="sm:col-span-2">
                              <label class="block">
-                                <span class="font-medium text-slate-600 dark:text-navy-100">Scheme</span>
+                                <span class="font-medium text-slate-600 dark:text-navy-100">Source Scheme</span>
                                 {% render_field form.scheme class="mt-1.5 w-full" id="id_scheme" %}
                                 {% if form.scheme.errors %}
                                     <span class="text-tiny+ text-error">{{ form.scheme.errors.0 }}</span>
@@ -121,8 +121,43 @@
                             </label>
                         </div>
 
+                        <!-- Switch Section (Initially Hidden) -->
+                        <div id="switch-section" class="col-span-1 sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-slate-200 dark:border-navy-500 pt-4 mt-2" style="display:none;">
+                            <div class="sm:col-span-2">
+                                <h5 class="text-base font-medium text-slate-700 dark:text-navy-100 mb-2">Switch Details</h5>
+                            </div>
+
+                            <!-- Target Scheme -->
+                            <div class="sm:col-span-2">
+                                <label class="block">
+                                    <span class="font-medium text-slate-600 dark:text-navy-100">Target Scheme (Switch In)</span>
+                                    {% render_field form.target_scheme class="mt-1.5 w-full" id="id_target_scheme" %}
+                                    <span class="text-xs text-slate-400 dark:text-navy-300">Only schemes from the same AMC are allowed.</span>
+                                    {% if form.target_scheme.errors %}
+                                        <span class="text-tiny+ text-error">{{ form.target_scheme.errors.0 }}</span>
+                                    {% endif %}
+                                </label>
+                            </div>
+
+                            <!-- Switch Mode -->
+                             <div class="sm:col-span-2">
+                                 <label class="block mb-2 font-medium text-slate-600 dark:text-navy-100">Switch Mode</label>
+                                 <div class="flex space-x-4">
+                                     {% for radio in form.switch_mode %}
+                                        <label class="inline-flex items-center space-x-2 cursor-pointer">
+                                            {{ radio.tag }}
+                                            <span class="text-slate-700 dark:text-navy-100">{{ radio.choice_label }}</span>
+                                        </label>
+                                     {% endfor %}
+                                 </div>
+                                 {% if form.switch_mode.errors %}
+                                    <span class="text-tiny+ text-error">{{ form.switch_mode.errors.0 }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+
                          <!-- Amount -->
-                        <div class="sm:col-span-1">
+                        <div class="sm:col-span-1" id="amount-container">
                             <label class="block">
                                 <span class="font-medium text-slate-600 dark:text-navy-100">Amount (₹)</span>
                                 {% render_field form.amount class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" placeholder="Min Amount..." id="id_amount" %}
@@ -133,8 +168,19 @@
                             </label>
                         </div>
 
+                         <!-- Units (Initially Hidden) -->
+                        <div class="sm:col-span-1" id="units-container" style="display:none;">
+                            <label class="block">
+                                <span class="font-medium text-slate-600 dark:text-navy-100">Units</span>
+                                {% render_field form.units class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" placeholder="Units..." id="id_units" %}
+                                {% if form.units.errors %}
+                                    <span class="text-tiny+ text-error">{{ form.units.errors.0 }}</span>
+                                {% endif %}
+                            </label>
+                        </div>
+
                          <!-- Payment Mode -->
-                        <div class="sm:col-span-1">
+                        <div class="sm:col-span-1" id="payment-mode-container">
                             <label class="block">
                                 <span class="font-medium text-slate-600 dark:text-navy-100">Payment Mode</span>
                                 {% render_field form.payment_mode class="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:bg-navy-700 dark:hover:border-navy-400 dark:focus:border-accent" %}
@@ -238,6 +284,7 @@
 
 <script>
     const onLoad = () => {
+        try {
         console.log("Order Form JS Initialized");
         // --- Init TomSelects ---
         const config = {
@@ -245,27 +292,31 @@
             sortField: { field: "text", direction: "asc" }
         };
 
+        // Use TomSelect constructor if Tom is not defined (global name might be TomSelect)
+        // Check both just in case
+        const TomConstructor = (typeof Tom !== 'undefined') ? Tom : TomSelect;
+
         let investorSelect = null;
         if(document.getElementById('id_investor').tagName === 'SELECT') {
              const el = document.getElementById('id_investor');
-             el._tom = new Tom(el, config);
+             el._tom = new TomConstructor(el, config);
              investorSelect = el._tom;
         }
 
         const amcEl = document.querySelector('#filter_amc');
-        amcEl._tom = new Tom(amcEl, config);
+        amcEl._tom = new TomConstructor(amcEl, config);
         const amcSelect = amcEl._tom;
 
         const catEl = document.querySelector('#filter_category');
-        catEl._tom = new Tom(catEl, config);
+        catEl._tom = new TomConstructor(catEl, config);
         const categorySelect = catEl._tom;
 
         const typeEl = document.querySelector('#filter_type');
-        typeEl._tom = new Tom(typeEl, config);
+        typeEl._tom = new TomConstructor(typeEl, config);
         const typeSelect = typeEl._tom;
 
         const schemeEl = document.querySelector('#id_scheme');
-        schemeEl._tom = new Tom(schemeEl, {
+        schemeEl._tom = new TomConstructor(schemeEl, {
             ...config,
             valueField: 'id',
             labelField: 'name',
@@ -285,56 +336,110 @@
         });
         const schemeSelect = schemeEl._tom;
 
+        const targetSchemeEl = document.querySelector('#id_target_scheme');
+        targetSchemeEl._tom = new TomConstructor(targetSchemeEl, {
+             ...config,
+             placeholder: 'Select Target Scheme...',
+        });
+        const targetSchemeSelect = targetSchemeEl._tom;
+
         const folioEl = document.querySelector('#id_folio_selection');
-        folioEl._tom = new Tom(folioEl, config);
+        folioEl._tom = new TomConstructor(folioEl, config);
         const folioSelect = folioEl._tom;
 
         const mandateEl = document.querySelector('#id_mandate');
-        mandateEl._tom = new Tom(mandateEl, config);
+        mandateEl._tom = new TomConstructor(mandateEl, config);
         const mandateSelect = mandateEl._tom;
 
         const freqEl = document.querySelector('#id_sip_frequency');
-        freqEl._tom = new Tom(freqEl, config);
+        freqEl._tom = new TomConstructor(freqEl, config);
         const frequencySelect = freqEl._tom;
 
         // --- Elements ---
         const txnTypeRadios = document.querySelectorAll('input[name="transaction_type"]');
+        const switchModeRadios = document.querySelectorAll('input[name="switch_mode"]');
         const sipSection = document.getElementById('sip-section');
+        const switchSection = document.getElementById('switch-section');
+        const amountContainer = document.getElementById('amount-container');
+        const unitsContainer = document.getElementById('units-container');
+        const paymentModeContainer = document.getElementById('payment-mode-container');
+
         const schemeInfoBox = document.getElementById('scheme-info-box');
         const amountInput = document.getElementById('id_amount');
         const amountFeedback = document.getElementById('amount-feedback');
 
         let currentSchemeDetails = null;
 
-        // --- SIP Toggle Logic ---
-        function toggleSipSection() {
+        // --- Transaction Type Toggle Logic ---
+        function handleTransactionTypeChange() {
             let selectedType = null;
-            // Robustly get checked value
             const checkedRadio = document.querySelector('input[name="transaction_type"]:checked');
             if (checkedRadio) {
                 selectedType = checkedRadio.value;
             }
+            console.log("Transaction Type Changed:", selectedType);
+
+            // Hide all special sections first
+            sipSection.style.display = 'none';
+            switchSection.style.display = 'none';
+
+            // Reset Amount/Units visibility to default (Amount)
+            amountContainer.style.display = 'block';
+            unitsContainer.style.display = 'none';
+            paymentModeContainer.style.display = 'block';
 
             if (selectedType === 'SIP') {
                 sipSection.style.display = 'grid';
-                // Validate SIP Allowed
+                mandateSelect.sync();
+                frequencySelect.sync();
+                // Validate SIP
                 if(currentSchemeDetails && !currentSchemeDetails.is_sip_allowed) {
                     alert('Selected scheme does not support SIP.');
                 }
-                // Refresh hidden TomSelects to calculate correct width
-                mandateSelect.sync();
-                frequencySelect.sync();
-            } else {
-                sipSection.style.display = 'none';
+            } else if (selectedType === 'S') { // Switch
+                switchSection.style.display = 'grid';
+                paymentModeContainer.style.display = 'none'; // No payment for Switch
+                targetSchemeSelect.sync();
+                handleSwitchModeChange(); // Ensure correct input is shown
+            }
+
+            // Trigger fetch for target schemes if Switch and Source Scheme selected
+            if (selectedType === 'S' && schemeSelect.getValue()) {
+                 fetchTargetSchemes(schemeSelect.getValue());
+            }
+        }
+
+        // --- Switch Mode Toggle Logic ---
+        function handleSwitchModeChange() {
+            let switchMode = 'AMOUNT';
+            const checkedRadio = document.querySelector('input[name="switch_mode"]:checked');
+            if (checkedRadio) {
+                switchMode = checkedRadio.value;
+            }
+
+            if (switchMode === 'AMOUNT') {
+                amountContainer.style.display = 'block';
+                unitsContainer.style.display = 'none';
+            } else if (switchMode === 'UNITS') {
+                amountContainer.style.display = 'none';
+                unitsContainer.style.display = 'block';
+            } else if (switchMode === 'ALL') {
+                amountContainer.style.display = 'none';
+                unitsContainer.style.display = 'none';
             }
         }
 
         txnTypeRadios.forEach(radio => {
-            radio.addEventListener('change', toggleSipSection);
+            radio.addEventListener('change', handleTransactionTypeChange);
         });
+
+        switchModeRadios.forEach(radio => {
+             radio.addEventListener('change', handleSwitchModeChange);
+        });
+
         // Initial check
         if (document.querySelector('input[name="transaction_type"]:checked')) {
-            toggleSipSection();
+            handleTransactionTypeChange();
         }
 
         // --- Dynamic Scheme Filtering ---
@@ -377,12 +482,51 @@
         // Load initial schemes
         fetchSchemes();
 
+        // --- Fetch Target Schemes (Same AMC) ---
+        function fetchTargetSchemes(sourceSchemeId) {
+             if (!sourceSchemeId) return;
+
+             targetSchemeSelect.lock();
+             targetSchemeSelect.clearOptions();
+
+             // First get source scheme details to know AMC
+             fetch(`{% url 'investments:api_order_metadata' %}?scheme_id=${sourceSchemeId}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.scheme_details) {
+                         const amcId = data.scheme_details.amc_id;
+
+                         if (amcId) {
+                             fetch(`{% url 'investments:api_order_metadata' %}?fetch_schemes=true&amc_id=${amcId}`)
+                                .then(r2 => r2.json())
+                                .then(data2 => {
+                                    if (data2.schemes) {
+                                        // Filter out source scheme
+                                        const filtered = data2.schemes.filter(s => s.id != sourceSchemeId);
+                                        targetSchemeSelect.addOption(filtered);
+                                    }
+                                    targetSchemeSelect.refreshOptions(false);
+                                    targetSchemeSelect.unlock();
+                                });
+                         } else {
+                             targetSchemeSelect.unlock();
+                         }
+                    }
+                });
+        }
+
+
         // --- Scheme Details & Validation ---
         schemeSelect.on('change', function(value) {
             if (!value) {
                 schemeInfoBox.innerHTML = '<p class="text-xs text-slate-500">Select a scheme to view details.</p>';
                 currentSchemeDetails = null;
                 return;
+            }
+
+            // If Switch is active, fetch target schemes
+            if (document.querySelector('input[name="transaction_type"]:checked')?.value === 'S') {
+                fetchTargetSchemes(value);
             }
 
             fetch(`{% url 'investments:api_order_metadata' %}?scheme_id=${value}`)
@@ -424,6 +568,15 @@
         // --- Amount Validation ---
         function validateAmount() {
             if (!currentSchemeDetails) return;
+            // Skip validation if Switch By Units or All
+            const switchMode = document.querySelector('input[name="switch_mode"]:checked')?.value;
+            const txnType = document.querySelector('input[name="transaction_type"]:checked')?.value;
+
+            if (txnType === 'S' && switchMode !== 'AMOUNT') {
+                 amountFeedback.classList.add('hidden');
+                 return;
+            }
+
             const amount = parseFloat(amountInput.value);
             if (isNaN(amount)) {
                  amountFeedback.classList.add('hidden');
@@ -485,6 +638,10 @@
                     })
                     .catch(() => {});
             });
+        }
+
+        } catch (e) {
+            console.error("JS Error in onLoad:", e);
         }
     };
 

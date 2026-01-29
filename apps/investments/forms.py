@@ -34,11 +34,38 @@ class OrderForm(forms.ModelForm):
         widget=forms.NumberInput(attrs={'class': 'form-input'})
     )
 
+    # Switch Specific Fields
+    switch_mode = forms.ChoiceField(
+        choices=[('AMOUNT', 'By Amount'), ('UNITS', 'By Units'), ('ALL', 'Switch All Units')],
+        required=False,
+        label="Switch Mode",
+        widget=forms.RadioSelect
+    )
+
+    # Override amount to be optional (validated in clean)
+    amount = forms.DecimalField(
+        required=False,
+        max_digits=15,
+        decimal_places=2,
+        widget=forms.NumberInput(attrs={'class': 'form-input'})
+    )
+
+    # Override units to be optional (validated in clean)
+    units = forms.DecimalField(
+        required=False,
+        max_digits=15,
+        decimal_places=4,
+        widget=forms.NumberInput(attrs={'class': 'form-input', 'step': '0.0001'})
+    )
+
     class Meta:
         model = Order
-        fields = ['investor', 'scheme', 'amount', 'folio_selection', 'payment_mode', 'transaction_type', 'mandate']
+        fields = ['investor', 'scheme', 'target_scheme', 'amount', 'units', 'all_redeem', 'folio_selection', 'payment_mode', 'transaction_type', 'mandate']
         widgets = {
             'transaction_type': forms.RadioSelect,
+            'target_scheme': forms.Select(attrs={'class': 'form-select'}),
+            'units': forms.NumberInput(attrs={'class': 'form-input', 'step': '0.0001'}),
+            'all_redeem': forms.CheckboxInput(attrs={'class': 'form-checkbox'}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -64,6 +91,15 @@ class OrderForm(forms.ModelForm):
         # 2. Dynamic Folio & Mandate Filtering
         investor_id = self.data.get('investor') or (self.initial.get('investor').id if hasattr(self.initial.get('investor'), 'id') else self.initial.get('investor'))
 
+        # Initialize target_scheme queryset (empty by default, filled via JS or POST)
+        # We start with empty to avoid loading all schemes, but if data is present (POST), we need to allow validation.
+        # Ideally, we should filter by AMC if scheme is selected, but for now we might leave it open or handle carefully.
+        # To avoid validation errors on POST if scheme is not in initial queryset:
+        if self.data:
+            self.fields['target_scheme'].queryset = Scheme.objects.all()
+        else:
+             self.fields['target_scheme'].queryset = Scheme.objects.none()
+
         # If user is investor, force investor_id
         if self.user and self.user.user_type == 'INVESTOR':
             investor_id = self.user.investor_profile.id
@@ -86,12 +122,12 @@ class OrderForm(forms.ModelForm):
 
         # Style widgets
         for field in self.fields:
-            if field == 'transaction_type':
+            if field in ['transaction_type', 'switch_mode', 'all_redeem']:
                 continue
             if field != 'investor' or (self.user and self.user.user_type != 'INVESTOR'):
                  if not 'class' in self.fields[field].widget.attrs:
                     self.fields[field].widget.attrs.update({'class': 'form-select'})
-            if field == 'amount':
+            if field in ['amount', 'units']:
                  self.fields[field].widget.attrs.update({'class': 'form-input'})
 
 
@@ -101,19 +137,25 @@ class OrderForm(forms.ModelForm):
         scheme = cleaned_data.get('scheme')
         txn_type = cleaned_data.get('transaction_type')
         mandate = cleaned_data.get('mandate')
+        target_scheme = cleaned_data.get('target_scheme')
+        switch_mode = cleaned_data.get('switch_mode')
+        units = cleaned_data.get('units')
 
         # Safety Check: If scheme is missing (invalid ID), don't proceed with dependent checks
         if not scheme:
             # Error is already added by field validation (required=True by default)
             return cleaned_data
 
-        if amount:
-            if amount < scheme.min_purchase_amount:
-                self.add_error('amount', f"Minimum purchase amount is {scheme.min_purchase_amount}")
-            if scheme.max_purchase_amount > 0 and amount > scheme.max_purchase_amount:
-                 self.add_error('amount', f"Maximum purchase amount is {scheme.max_purchase_amount}")
+        if txn_type == Order.PURCHASE:
+             if not amount:
+                 self.add_error('amount', "Amount is required for purchase.")
+             elif amount:
+                if amount < scheme.min_purchase_amount:
+                    self.add_error('amount', f"Minimum purchase amount is {scheme.min_purchase_amount}")
+                if scheme.max_purchase_amount > 0 and amount > scheme.max_purchase_amount:
+                    self.add_error('amount', f"Maximum purchase amount is {scheme.max_purchase_amount}")
 
-        if txn_type == Order.SIP:
+        elif txn_type == Order.SIP:
             if not scheme.is_sip_allowed:
                  self.add_error('scheme', "This scheme does not allow SIP investments.")
             if not mandate:
@@ -126,6 +168,32 @@ class OrderForm(forms.ModelForm):
                 self.add_error('sip_start_date', "Start Date is required for SIP.")
             if not cleaned_data.get('sip_installments'):
                 self.add_error('sip_installments', "Installments count is required.")
+
+        elif txn_type == Order.SWITCH:
+            if not target_scheme:
+                self.add_error('target_scheme', "Target Scheme is required for Switch orders.")
+
+            if target_scheme and scheme.amc != target_scheme.amc:
+                self.add_error('target_scheme', "Source and Target schemes must belong to the same AMC.")
+
+            if switch_mode == 'AMOUNT':
+                if not amount or amount <= 0:
+                    self.add_error('amount', "Amount must be greater than 0.")
+            elif switch_mode == 'UNITS':
+                if not units or units <= 0:
+                    self.add_error('units', "Units must be greater than 0.")
+            elif switch_mode == 'ALL':
+                cleaned_data['all_redeem'] = True
+                cleaned_data['amount'] = 0 # Ignore amount
+                cleaned_data['units'] = 0 # Ignore units
+            else:
+                 self.add_error('switch_mode', "Please select a switch mode.")
+
+        # Ensure defaults for optional fields to satisfy DB NOT NULL constraints
+        if not cleaned_data.get('amount'):
+            cleaned_data['amount'] = 0
+        if not cleaned_data.get('units'):
+            cleaned_data['units'] = 0
 
         return cleaned_data
 
