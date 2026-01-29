@@ -390,7 +390,6 @@ class BSEStarMFClient:
             t_date = to_date if to_date else today
 
             params = {
-                "ClientCode": client_code if client_code else "",
                 "MemberCode": self.member_id,
                 "UserId": self.user_id,
                 "Password": encrypted_password,
@@ -438,6 +437,7 @@ class BSEStarMFClient:
                 "OrderStatus": "All",
                 "SettType": "ALL",
                 "OrderNo": order_no if order_no else "",
+                "TransType": "P",
                 "Filler1": "",
                 "Filler2": "",
                 "Filler3": ""
@@ -465,7 +465,6 @@ class BSEStarMFClient:
                 "Password": encrypted_password,
                 "FromDate": f_date,
                 "ToDate": t_date,
-                "ClientCode": client_code if client_code else "",
                 "OrderType": "All",
                 "SubOrderType": "All",
                 "OrderStatus": "All",
