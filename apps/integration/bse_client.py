@@ -390,6 +390,7 @@ class BSEStarMFClient:
             t_date = to_date if to_date else today
 
             params = {
+                "ClientCode": client_code if client_code else "",
                 "MemberCode": self.member_id,
                 "UserId": self.user_id,
                 "Password": encrypted_password,
@@ -425,13 +426,13 @@ class BSEStarMFClient:
             f_date = from_date if from_date else today
             t_date = to_date if to_date else today
 
-            response = service.AllotmentStatement(Param={
+            log_params = {
+                "ClientCode": client_code if client_code else "",
                 "MemberCode": self.member_id,
                 "UserId": self.user_id,
                 "Password": encrypted_password,
                 "FromDate": f_date,
                 "ToDate": t_date,
-                "ClientCode": client_code if client_code else "",
                 "OrderType": order_type,
                 "SubOrderType": "All",
                 "OrderStatus": "All",
@@ -440,7 +441,9 @@ class BSEStarMFClient:
                 "Filler1": "",
                 "Filler2": "",
                 "Filler3": ""
-            })
+            }
+            bse_logger.info(f"ALLOTMENT STATEMENT Request: {log_params}")
+            response = service.AllotmentStatement(Param=log_params)
             bse_logger.info(f"ALLOTMENT STATEMENT: {order_no} | RESPONSE: {response}")
             return response
         except Exception as e:
@@ -455,8 +458,8 @@ class BSEStarMFClient:
             today = datetime.date.today().strftime("%d/%m/%Y")
             f_date = from_date if from_date else today
             t_date = to_date if to_date else today
-
-            response = service.RedemptionStatement(Param={
+            log_params = {
+                "ClientCode": client_code if client_code else "",
                 "MemberCode": self.member_id,
                 "UserId": self.user_id,
                 "Password": encrypted_password,
@@ -471,7 +474,9 @@ class BSEStarMFClient:
                 "Filler1": "",
                 "Filler2": "",
                 "Filler3": ""
-            })
+            }
+            bse_logger.info(f"REDEMPTION STATEMENT Request: {log_params}")
+            response = service.RedemptionStatement(Param=log_params)
             bse_logger.info(f"REDEMPTION STATEMENT: {order_no} | RESPONSE: {response}")
             return response
         except Exception as e:
