@@ -1,0 +1,24 @@
+2026-01-30 01:48:51,415 - ALLOTMENT STATEMENT Request: {'ClientCode': 'EEFPP8024C', 'MemberCode': '24637', 'UserId': '2463702', 'Password': 'dm25bEOQ5jH6fKJQQx8C1OQqM/wM4YC1UlZTOfpHK2suul/vwwIsLOtJxbrPZxpT', 'FromDate': '01/01/2026', 'ToDate': '30/01/2026', 'OrderType': 'Purchase', 'SubOrderType': 'All', 'OrderStatus': 'All', 'SettType': 'ALL', 'OrderNo': '', 'Filler1': '', 'Filler2': '', 'Filler3': ''}
+2026-01-30 01:48:51,478 - ALLOTMENT STATEMENT: None | RESPONSE: {
+    'AllotmentDetails': {
+        'AllotmentDetails': []
+    },
+    'Message': 'FAILED: INVALID ACCOUNT INFORMATION',
+    'Status': '101'
+}
+2026-01-30 01:57:36,954 - ORDER STATUS Request: {'ClientCode': 'EEFPP8024C', 'MemberCode': '24637', 'UserId': '2463702', 'Password': '********', 'FromDate': '30/01/2026', 'ToDate': '30/01/2026', 'OrderType': 'All', 'SubOrderType': 'All', 'OrderStatus': 'All', 'SettType': 'ALL', 'OrderNo': '', 'TransType': 'P', 'Filler1': '', 'Filler2': '', 'Filler3': ''}
+2026-01-30 01:57:37,008 - ORDER STATUS: None | RESPONSE: {
+    'Message': 'INVALID ACCOUNT INFORMATION',
+    'OrderDetails': {
+        'OrderDetails': []
+    },
+    'Status': '101'
+}
+2026-01-30 01:57:45,123 - REDEMPTION STATEMENT Request: {'ClientCode': 'EEFPP8024C', 'MemberCode': '24637', 'UserId': '2463702', 'Password': 'dm25bEOQ5jH6fKJQQx8C1OQqM/wM4YC1UlZTOfpHK2sK8BFmvMmoI+tJxbrPZxpT', 'FromDate': '30/01/2026', 'ToDate': '30/01/2026', 'OrderType': 'All', 'SubOrderType': 'All', 'OrderStatus': 'All', 'SettType': 'ALL', 'OrderNo': '', 'Filler1': '', 'Filler2': '', 'Filler3': ''}
+2026-01-30 01:57:45,173 - REDEMPTION STATEMENT: None | RESPONSE: {
+    'Message': 'FAILED: INVALID ACCOUNT INFORMATION',
+    'RedemptionDetails': {
+        'RedemptionDetails': []
+    },
+    'Status': '101'
+}
