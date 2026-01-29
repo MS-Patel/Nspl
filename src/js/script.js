@@ -129,12 +129,47 @@ function handleErrorResponse(errorData) {
 
     if (errorData.errors && !Array.isArray(errorData.errors)) {
       // 1. Validation Errors (Django Dict Format: { field: [messages] })
+      let unmappedErrors = [];
+
       Object.entries(errorData.errors).forEach(([field, messages]) => {
-          // If messages is an array (standard Django errors), join them
+          // Check for Formset Errors (Array of Objects)
+          if (Array.isArray(messages) && messages.length > 0 && typeof messages[0] === 'object') {
+              // Iterate over the formset list
+              messages.forEach((formErrors, index) => {
+                  // formErrors is a dict { subField: [msgs] }
+                  Object.entries(formErrors).forEach(([subField, subMsgs]) => {
+                       // Construct ID: id_{prefix}-{index}-{subField}
+                       // Use field as prefix (e.g., bank_accounts)
+                       let selector = `#id_${field}-${index}-${subField}`;
+                       const msg = Array.isArray(subMsgs) ? subMsgs.join(', ') : subMsgs;
+
+                       let el = document.querySelector(selector);
+                       if (el && validation) {
+                           validation.showErrors({ [selector]: msg });
+                       } else if (el) {
+                           // Fallback
+                            let errorEl = el.parentNode.querySelector('.error-message');
+                            if (!errorEl) {
+                                errorEl = document.createElement('div');
+                                errorEl.classList.add('text-tiny+', 'text-error', 'mt-1', 'error-message');
+                                el.parentNode.appendChild(errorEl);
+                            }
+                            errorEl.textContent = msg;
+                       } else {
+                           unmappedErrors.push(`${subField}: ${msg}`);
+                       }
+                  });
+              });
+              return;
+          }
+
+          // Normal Field Errors
           const message = Array.isArray(messages) ? messages.join(', ') : messages;
 
-          // Skip if it's a complex object (like formset errors) for now, or handle appropriately
-          if (typeof message !== 'string') return;
+          if (typeof message !== 'string') {
+              unmappedErrors.push(`${field}: Invalid error format`);
+              return;
+          }
 
           // Try to match field by ID first, then Name
           let fieldSelector = `#${field}`;
@@ -158,14 +193,20 @@ function handleErrorResponse(errorData) {
                   el.parentNode.appendChild(errorEl);
               }
               errorEl.textContent = message;
+          } else {
+              unmappedErrors.push(message);
           }
       });
 
       if(window.Swal) {
+          let swalText = 'Please correct the errors in the form.';
+          if (unmappedErrors.length > 0) {
+              swalText += '\n\n' + unmappedErrors.join('\n');
+          }
           Swal.fire({
             icon: 'error',
             title: 'Validation Error',
-            text: 'Please correct the errors in the form.',
+            text: swalText,
           });
       }
 

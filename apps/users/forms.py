@@ -273,6 +273,15 @@ class InvestorProfileForm(forms.ModelForm):
 
             # Admin has full access (default)
 
+    def clean_pan(self):
+        pan = self.cleaned_data.get('pan')
+        if pan:
+            # If this is a new instance (create), check if User already exists with this PAN
+            if not self.instance.pk:
+                if User.objects.filter(username=pan).exists():
+                    raise forms.ValidationError(f"User with PAN {pan} already exists.")
+        return pan
+
 class BankAccountForm(forms.ModelForm):
     ifsc_code = forms.CharField(max_length=11, validators=[ifsc_validator])
 

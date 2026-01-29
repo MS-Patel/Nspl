@@ -265,10 +265,6 @@ class InvestorCreateView(LoginRequiredMixin, CreateView):
             name = form.cleaned_data['name']
             email = form.cleaned_data['email']
 
-            if User.objects.filter(username=pan).exists():
-                messages.error(self.request, f"User with PAN {pan} already exists.")
-                return self.form_invalid(form)
-
             user = User.objects.create_user(
                 username=pan,
                 email=email,
