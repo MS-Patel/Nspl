@@ -26,3 +26,24 @@
     'Message': 'FAILED: INVALID ACCOUNT INFORMATION',
     'Status': '101'
 }
+2026-01-29 22:58:30,830 - ALLOTMENT STATEMENT: None | RESPONSE: {
+    'AllotmentDetails': {
+        'AllotmentDetails': []
+    },
+    'Message': 'FAILED: INVALID ACCOUNT INFORMATION',
+    'Status': '101'
+}
+2026-01-29 23:24:20,954 - ALLOTMENT STATEMENT: None | RESPONSE: {
+    'AllotmentDetails': {
+        'AllotmentDetails': []
+    },
+    'Message': 'FAILED: INVALID ACCOUNT INFORMATION',
+    'Status': '101'
+}
+2026-01-29 23:24:32,019 - ALLOTMENT STATEMENT: None | RESPONSE: {
+    'AllotmentDetails': {
+        'AllotmentDetails': []
+    },
+    'Message': 'FAILED: INVALID ACCOUNT INFORMATION',
+    'Status': '101'
+}

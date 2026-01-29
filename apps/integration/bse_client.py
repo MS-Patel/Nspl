@@ -400,7 +400,11 @@ class BSEStarMFClient:
                 "SubOrderType": "All",
                 "OrderStatus": "All",
                 "SettType": "ALL",
-                "OrderNo": order_no if order_no else ""
+                "OrderNo": order_no if order_no else "",
+                "TransType": "P",
+                "Filler1": "",
+                "Filler2": "",
+                "Filler3": ""
             })
             bse_logger.info(f"ORDER STATUS: {order_no} | RESPONSE: {response}")
             return response
