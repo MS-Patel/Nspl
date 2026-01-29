@@ -389,7 +389,7 @@ class BSEStarMFClient:
             f_date = from_date if from_date else today
             t_date = to_date if to_date else today
 
-            response = service.OrderStatus(Param={
+            params = {
                 "MemberCode": self.member_id,
                 "UserId": self.user_id,
                 "Password": encrypted_password,
@@ -405,7 +405,11 @@ class BSEStarMFClient:
                 "Filler1": "",
                 "Filler2": "",
                 "Filler3": ""
-            })
+            }
+            log_params = params.copy()
+            log_params['Password'] = '********'
+            bse_logger.info(f"ORDER STATUS Request: {log_params}")
+            response = service.OrderStatus(Param=params)
             bse_logger.info(f"ORDER STATUS: {order_no} | RESPONSE: {response}")
             return response
         except Exception as e:
@@ -432,7 +436,10 @@ class BSEStarMFClient:
                 "SubOrderType": "All",
                 "OrderStatus": "All",
                 "SettType": "ALL",
-                "OrderNo": order_no if order_no else ""
+                "OrderNo": order_no if order_no else "",
+                "Filler1": "",
+                "Filler2": "",
+                "Filler3": ""
             })
             bse_logger.info(f"ALLOTMENT STATEMENT: {order_no} | RESPONSE: {response}")
             return response
@@ -441,16 +448,35 @@ class BSEStarMFClient:
             return None
 
     def get_redemption_statement(self, order_no=None, client_code=None, from_date=None, to_date=None):
-        """
-        Fetches Redemption Statement by calling AllotmentStatement with OrderType='Redemption'.
-        """
-        return self.get_allotment_statement(
-            order_no=order_no,
-            client_code=client_code,
-            order_type="Redemption",
-            from_date=from_date,
-            to_date=to_date
-        )
+        try:
+            encrypted_password, pass_key = self._get_query_auth_details()
+            _, service = self._get_query_soap_client(self)
+
+            today = datetime.date.today().strftime("%d/%m/%Y")
+            f_date = from_date if from_date else today
+            t_date = to_date if to_date else today
+
+            response = service.RedemptionStatement(Param={
+                "MemberCode": self.member_id,
+                "UserId": self.user_id,
+                "Password": encrypted_password,
+                "FromDate": f_date,
+                "ToDate": t_date,
+                "ClientCode": client_code if client_code else "",
+                "OrderType": "All",
+                "SubOrderType": "All",
+                "OrderStatus": "All",
+                "SettType": "ALL",
+                "OrderNo": order_no if order_no else "",
+                "Filler1": "",
+                "Filler2": "",
+                "Filler3": ""
+            })
+            bse_logger.info(f"REDEMPTION STATEMENT: {order_no} | RESPONSE: {response}")
+            return response
+        except Exception as e:
+            bse_logger.error(f"REDEMPTION STATEMENT ERROR: {str(e)}")
+            return None
 
     def get_payment_status(self, client_code, order_no):
         try:
