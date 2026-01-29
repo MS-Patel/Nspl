@@ -109,6 +109,7 @@ class RedemptionCreateView(CreateView):
         order.save()
 
         # Push to BSE
+        should_redirect = True
         try:
             client = BSEStarMFClient()
             result = client.place_order(order)
@@ -126,6 +127,7 @@ class RedemptionCreateView(CreateView):
                 order.status = Order.REJECTED
                 order.bse_remarks = result.get('remarks')
                 messages.error(self.request, f"BSE Error: {result.get('remarks')}")
+                should_redirect = False  # Stay on page to allow resubmission
 
             order.save()
 
@@ -136,7 +138,10 @@ class RedemptionCreateView(CreateView):
             order.save()
             messages.error(self.request, f"System Error (Order saved as Pending): {str(e)}")
 
-        return redirect('investments:order_list')
+        if should_redirect:
+            return redirect('investments:order_list')
+
+        return self.render_to_response(self.get_context_data(form=form))
 
 
 @method_decorator(login_required, name='dispatch')
@@ -277,6 +282,7 @@ def order_create(request):
         form = OrderForm(request.POST, user=user)
         if form.is_valid():
             order = form.save(commit=False)
+            should_redirect = True
 
             # Additional Logic: Check if new folio is requested
             if form.cleaned_data.get('folio_selection'):
@@ -342,6 +348,7 @@ def order_create(request):
                         order.bse_remarks = result['remarks']
                         order.save()
                         messages.error(request, f"BSE SIP Error: {result['remarks']}")
+                        should_redirect = False
 
                 except Exception as e:
                     logger.exception("SIP Registration Failed")
@@ -368,6 +375,7 @@ def order_create(request):
                         order.status = Order.REJECTED
                         order.bse_remarks = result.get('remarks')
                         messages.error(request, f"BSE Error: {result.get('remarks')}")
+                        should_redirect = False
 
                     order.save()
 
@@ -401,6 +409,7 @@ def order_create(request):
                         order.status = Order.REJECTED
                         order.bse_remarks = result.get('remarks')
                         messages.error(request, f"BSE Error: {result.get('remarks')}")
+                        should_redirect = False
 
                     order.save()
 
@@ -411,7 +420,8 @@ def order_create(request):
                     order.save()
                     messages.error(request, f"System Error (Order saved as Pending): {str(e)}")
 
-            return redirect('investments:order_list') # Redirect to order list
+            if should_redirect:
+                return redirect('investments:order_list')
         else:
             messages.error(request, "Please correct the errors below.")
     else:
