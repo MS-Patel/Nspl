@@ -4,10 +4,12 @@ from django.core.exceptions import PermissionDenied
 import json
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import Q
+import datetime
 
 from apps.users.models import User, InvestorProfile, DistributorProfile, RMProfile
 from apps.investments.models import Order, SIP
 from apps.products.models import Scheme
+from apps.integration.bse_client import BSEStarMFClient
 
 class ReportDashboardView(LoginRequiredMixin, TemplateView):
     template_name = 'reports/dashboard.html'
@@ -173,4 +175,171 @@ class MasterReportView(LoginRequiredMixin, TemplateView):
         context['grid_data_json'] = json.dumps(data, cls=DjangoJSONEncoder)
         context['report_title'] = title
         context['report_type'] = report_type
+        return context
+
+class OrderStatusReportView(LoginRequiredMixin, TemplateView):
+    template_name = 'reports/order_status.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+
+        # Get Filter Params
+        from_date = self.request.GET.get('from_date')
+        to_date = self.request.GET.get('to_date')
+        # Default to today if not provided to avoid showing stale/no data?
+        # Or show nothing until searched. Let's show today's data as default "Realtime" view.
+        if not from_date:
+            from_date = datetime.date.today().strftime("%d/%m/%Y")
+        if not to_date:
+            to_date = datetime.date.today().strftime("%d/%m/%Y")
+
+        data = []
+
+        # Access Logic for Client Code
+        target_client_code = None
+        if user.user_type == User.Types.INVESTOR:
+             profile = InvestorProfile.objects.filter(user=user).first()
+             if profile:
+                 target_client_code = profile.ucc_code
+
+        client = BSEStarMFClient()
+        response = client.get_order_status(from_date=from_date, to_date=to_date, client_code=target_client_code)
+
+        if response and getattr(response, 'Status', None) == '0' and getattr(response, 'OrderDetails', None):
+             # Access Control Logic (Post-fetch filtering for non-investors)
+             permitted_uccs = None
+             if user.user_type == User.Types.DISTRIBUTOR:
+                 permitted_uccs = set(InvestorProfile.objects.filter(distributor__user=user).values_list('ucc_code', flat=True))
+             elif user.user_type == User.Types.RM:
+                 permitted_uccs = set(InvestorProfile.objects.filter(Q(rm__user=user) | Q(distributor__rm__user=user)).values_list('ucc_code', flat=True))
+
+             for item in response.OrderDetails:
+                 # Check permission
+                 if permitted_uccs is not None:
+                     if item.ClientCode not in permitted_uccs:
+                         continue
+
+                 data.append({
+                     'OrderNo': item.OrderNo,
+                     'ClientCode': item.ClientCode,
+                     'SchemeCode': item.SchemeCode,
+                     'OrderType': item.OrderType,
+                     'BuySell': item.BuySell,
+                     'OrderVal': float(item.OrderVal) if item.OrderVal else 0,
+                     'OrderStatus': item.OrderStatus,
+                     'OrderRemarks': item.OrderRemarks,
+                     'TransNo': getattr(item, 'TransNo', '')
+                 })
+
+        context['grid_data_json'] = json.dumps(data, cls=DjangoJSONEncoder)
+        context['from_date'] = from_date
+        context['to_date'] = to_date
+        return context
+
+class AllotmentReportView(LoginRequiredMixin, TemplateView):
+    template_name = 'reports/allotment_statement.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+
+        from_date = self.request.GET.get('from_date')
+        to_date = self.request.GET.get('to_date')
+        if not from_date:
+            from_date = datetime.date.today().strftime("%d/%m/%Y")
+        if not to_date:
+            to_date = datetime.date.today().strftime("%d/%m/%Y")
+
+        data = []
+        target_client_code = None
+        if user.user_type == User.Types.INVESTOR:
+             profile = InvestorProfile.objects.filter(user=user).first()
+             if profile:
+                 target_client_code = profile.ucc_code
+
+        client = BSEStarMFClient()
+        # Allotment Statement usually focuses on Purchases
+        response = client.get_allotment_statement(from_date=from_date, to_date=to_date, client_code=target_client_code, order_type="Purchase")
+
+        if response and getattr(response, 'Status', None) == '0' and getattr(response, 'AllotmentDetails', None):
+             permitted_uccs = None
+             if user.user_type == User.Types.DISTRIBUTOR:
+                 permitted_uccs = set(InvestorProfile.objects.filter(distributor__user=user).values_list('ucc_code', flat=True))
+             elif user.user_type == User.Types.RM:
+                 permitted_uccs = set(InvestorProfile.objects.filter(Q(rm__user=user) | Q(distributor__rm__user=user)).values_list('ucc_code', flat=True))
+
+             for item in response.AllotmentDetails:
+                 if permitted_uccs is not None:
+                     if item.ClientCode not in permitted_uccs:
+                         continue
+
+                 data.append({
+                     'OrderNo': item.OrderNo,
+                     'ClientCode': item.ClientCode,
+                     'SchemeCode': item.SchemeCode,
+                     'FolioNo': item.FolioNo,
+                     'AllottedUnit': float(item.AllottedUnit) if item.AllottedUnit else 0,
+                     'AllottedAmt': float(item.AllottedAmt) if item.AllottedAmt else 0,
+                     'Nav': float(item.Nav) if item.Nav else 0,
+                     'AllotmentDate': item.AllotmentDate,
+                     'TransNo': getattr(item, 'TransNo', '')
+                 })
+
+        context['grid_data_json'] = json.dumps(data, cls=DjangoJSONEncoder)
+        context['from_date'] = from_date
+        context['to_date'] = to_date
+        return context
+
+class RedemptionReportView(LoginRequiredMixin, TemplateView):
+    template_name = 'reports/redemption_statement.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+
+        from_date = self.request.GET.get('from_date')
+        to_date = self.request.GET.get('to_date')
+        if not from_date:
+            from_date = datetime.date.today().strftime("%d/%m/%Y")
+        if not to_date:
+            to_date = datetime.date.today().strftime("%d/%m/%Y")
+
+        data = []
+        target_client_code = None
+        if user.user_type == User.Types.INVESTOR:
+             profile = InvestorProfile.objects.filter(user=user).first()
+             if profile:
+                 target_client_code = profile.ucc_code
+
+        client = BSEStarMFClient()
+        response = client.get_redemption_statement(from_date=from_date, to_date=to_date, client_code=target_client_code)
+
+        if response and getattr(response, 'Status', None) == '0' and getattr(response, 'AllotmentDetails', None):
+             permitted_uccs = None
+             if user.user_type == User.Types.DISTRIBUTOR:
+                 permitted_uccs = set(InvestorProfile.objects.filter(distributor__user=user).values_list('ucc_code', flat=True))
+             elif user.user_type == User.Types.RM:
+                 permitted_uccs = set(InvestorProfile.objects.filter(Q(rm__user=user) | Q(distributor__rm__user=user)).values_list('ucc_code', flat=True))
+
+             for item in response.AllotmentDetails:
+                 if permitted_uccs is not None:
+                     if item.ClientCode not in permitted_uccs:
+                         continue
+
+                 data.append({
+                     'OrderNo': item.OrderNo,
+                     'ClientCode': item.ClientCode,
+                     'SchemeCode': item.SchemeCode,
+                     'FolioNo': item.FolioNo,
+                     'Units': float(item.AllottedUnit) if item.AllottedUnit else 0, # In redemption, this might be units redeemed
+                     'Amount': float(item.AllottedAmt) if item.AllottedAmt else 0,
+                     'Nav': float(item.Nav) if item.Nav else 0,
+                     'Date': item.AllotmentDate,
+                     'TransNo': getattr(item, 'TransNo', '')
+                 })
+
+        context['grid_data_json'] = json.dumps(data, cls=DjangoJSONEncoder)
+        context['from_date'] = from_date
+        context['to_date'] = to_date
         return context

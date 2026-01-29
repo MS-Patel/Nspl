@@ -5,6 +5,7 @@ import requests
 import logging
 from django.conf import settings
 from zeep import Client, Settings
+from zeep.transports import Transport
 import datetime
 from .utils import get_bse_order_params, get_bse_xsip_order_params, get_bse_switch_order_params, get_bse_mandate_param_string, map_investor_to_fatca_string
 from apps.users.models import InvestorProfile
@@ -51,9 +52,11 @@ class BSEStarMFClient:
         Returns cached Zeep Client for Order Service.
         """
         if cls._soap_client is None:
+            transport = Transport(timeout=10)
             zeep_settings = Settings(strict=False, xml_huge_tree=True)
             cls._soap_client = Client(
                 wsdl=instance.order_wsdl,
+                transport=transport,
                 settings=zeep_settings,
                 service_name='MFOrder',
                 port_name='WSHttpBinding_MFOrderEntry1'
@@ -66,9 +69,11 @@ class BSEStarMFClient:
         Returns cached Zeep Client for Upload Service.
         """
         if cls._upload_client is None:
+            transport = Transport(timeout=10)
             zeep_settings = Settings(strict=False, xml_huge_tree=True)
             client = Client(
                 wsdl=instance.upload_wsdl,
+                transport=transport,
                 settings=zeep_settings,
                 service_name='MFUploadService',
                 port_name='WSHttpBinding_IMFUploadService1'
@@ -82,9 +87,11 @@ class BSEStarMFClient:
         Returns cached Zeep Client for Query Service.
         """
         if cls._query_client is None:
+            transport = Transport(timeout=10)
             zeep_settings = Settings(strict=False, xml_huge_tree=True)
             client = Client(
                 wsdl=instance.query_wsdl,
+                transport=transport,
                 settings=zeep_settings,
                 service_name='StarMFWebService',
                 port_name='WSHttpBinding_IStarMFWebService1'
@@ -373,23 +380,27 @@ class BSEStarMFClient:
             bse_logger.error(f"API Error (Emandate Auth): {str(e)}")
             raise e
 
-    def get_order_status(self, order_no, client_code=None, order_type="All"):
-        encrypted_password, pass_key = self._get_query_auth_details()
-        _, service = self._get_query_soap_client(self)
-        today = datetime.date.today().strftime("%d/%m/%Y")
+    def get_order_status(self, order_no=None, client_code=None, order_type="All", from_date=None, to_date=None):
         try:
+            encrypted_password, pass_key = self._get_query_auth_details()
+            _, service = self._get_query_soap_client(self)
+
+            today = datetime.date.today().strftime("%d/%m/%Y")
+            f_date = from_date if from_date else today
+            t_date = to_date if to_date else today
+
             response = service.OrderStatus(Param={
                 "MemberCode": self.member_id,
                 "UserId": self.user_id,
                 "Password": encrypted_password,
-                "FromDate": today,
-                "ToDate": today,
+                "FromDate": f_date,
+                "ToDate": t_date,
                 "ClientCode": client_code if client_code else "",
                 "OrderType": order_type,
                 "SubOrderType": "All",
                 "OrderStatus": "All",
                 "SettlementType": "ALL",
-                "OrderNo": order_no
+                "OrderNo": order_no if order_no else ""
             })
             bse_logger.info(f"ORDER STATUS: {order_no} | RESPONSE: {response}")
             return response
@@ -397,29 +408,45 @@ class BSEStarMFClient:
             bse_logger.error(f"ORDER STATUS ERROR: {str(e)}")
             return None
 
-    def get_allotment_statement(self, order_no, client_code=None, order_type="All"):
-        encrypted_password, pass_key = self._get_query_auth_details()
-        _, service = self._get_query_soap_client(self)
-        today = datetime.date.today().strftime("%d/%m/%Y")
+    def get_allotment_statement(self, order_no=None, client_code=None, order_type="All", from_date=None, to_date=None):
         try:
+            encrypted_password, pass_key = self._get_query_auth_details()
+            _, service = self._get_query_soap_client(self)
+
+            today = datetime.date.today().strftime("%d/%m/%Y")
+            f_date = from_date if from_date else today
+            t_date = to_date if to_date else today
+
             response = service.AllotmentStatement(Param={
                 "MemberCode": self.member_id,
                 "UserId": self.user_id,
                 "Password": encrypted_password,
-                "FromDate": today,
-                "ToDate": today,
+                "FromDate": f_date,
+                "ToDate": t_date,
                 "ClientCode": client_code if client_code else "",
                 "OrderType": order_type,
                 "SubOrderType": "All",
                 "OrderStatus": "All",
                 "SettlementType": "ALL",
-                "OrderNo": order_no
+                "OrderNo": order_no if order_no else ""
             })
             bse_logger.info(f"ALLOTMENT STATEMENT: {order_no} | RESPONSE: {response}")
             return response
         except Exception as e:
             bse_logger.error(f"ALLOTMENT STATEMENT ERROR: {str(e)}")
             return None
+
+    def get_redemption_statement(self, order_no=None, client_code=None, from_date=None, to_date=None):
+        """
+        Fetches Redemption Statement by calling AllotmentStatement with OrderType='Redemption'.
+        """
+        return self.get_allotment_statement(
+            order_no=order_no,
+            client_code=client_code,
+            order_type="Redemption",
+            from_date=from_date,
+            to_date=to_date
+        )
 
     def get_payment_status(self, client_code, order_no):
         try:
