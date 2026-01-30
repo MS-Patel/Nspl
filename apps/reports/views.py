@@ -206,30 +206,29 @@ class OrderStatusReportView(LoginRequiredMixin, TemplateView):
         client = BSEStarMFClient()
         response = client.get_order_status(from_date=from_date, to_date=to_date, client_code=target_client_code)
 
-        if response and getattr(response, 'Status', None) == '0' and getattr(response, 'OrderDetails', None):
+        if response and getattr(response, 'Status', None) == '100' and getattr(response, 'OrderDetails', None):
              # Access Control Logic (Post-fetch filtering for non-investors)
              permitted_uccs = None
              if user.user_type == User.Types.DISTRIBUTOR:
                  permitted_uccs = set(InvestorProfile.objects.filter(distributor__user=user).values_list('ucc_code', flat=True))
              elif user.user_type == User.Types.RM:
                  permitted_uccs = set(InvestorProfile.objects.filter(Q(rm__user=user) | Q(distributor__rm__user=user)).values_list('ucc_code', flat=True))
-
-             for item in response.OrderDetails:
+             for item in response.OrderDetails.OrderDetails:
                  # Check permission
                  if permitted_uccs is not None:
                      if item.ClientCode not in permitted_uccs:
                          continue
 
                  data.append({
-                     'OrderNo': item.OrderNo,
+                     'OrderNo': getattr(item, 'OrderNumber', ''),
                      'ClientCode': item.ClientCode,
                      'SchemeCode': item.SchemeCode,
                      'OrderType': item.OrderType,
                      'BuySell': item.BuySell,
-                     'OrderVal': float(item.OrderVal) if item.OrderVal else 0,
+                     'OrderVal': float(getattr(item, 'Amount', 0) or 0),
                      'OrderStatus': item.OrderStatus,
                      'OrderRemarks': item.OrderRemarks,
-                     'TransNo': getattr(item, 'TransNo', '')
+                     'TransNo': getattr(item, 'SettNo', getattr(item, 'TransNo', ''))
                  })
 
         context['grid_data_json'] = json.dumps(data, cls=DjangoJSONEncoder)
@@ -262,14 +261,14 @@ class AllotmentReportView(LoginRequiredMixin, TemplateView):
         # Allotment Statement usually focuses on Purchases
         response = client.get_allotment_statement(from_date=from_date, to_date=to_date, client_code=target_client_code, order_type="All")
 
-        if response and getattr(response, 'Status', None) == '0' and getattr(response, 'AllotmentDetails', None):
+        if response and getattr(response, 'Status', None) == '100' and getattr(response, 'AllotmentDetails', None):
              permitted_uccs = None
              if user.user_type == User.Types.DISTRIBUTOR:
                  permitted_uccs = set(InvestorProfile.objects.filter(distributor__user=user).values_list('ucc_code', flat=True))
              elif user.user_type == User.Types.RM:
                  permitted_uccs = set(InvestorProfile.objects.filter(Q(rm__user=user) | Q(distributor__rm__user=user)).values_list('ucc_code', flat=True))
 
-             for item in response.AllotmentDetails:
+             for item in response.AllotmentDetails.AllotmentDetails:
                  if permitted_uccs is not None:
                      if item.ClientCode not in permitted_uccs:
                          continue
@@ -315,18 +314,18 @@ class RedemptionReportView(LoginRequiredMixin, TemplateView):
         client = BSEStarMFClient()
         response = client.get_redemption_statement(from_date=from_date, to_date=to_date, client_code=target_client_code)
 
-        if response and getattr(response, 'Status', None) == '0' and getattr(response, 'AllotmentDetails', None):
+        if response and getattr(response, 'Status', None) == '100' and getattr(response, 'RedemptionDetails', None):
              permitted_uccs = None
              if user.user_type == User.Types.DISTRIBUTOR:
                  permitted_uccs = set(InvestorProfile.objects.filter(distributor__user=user).values_list('ucc_code', flat=True))
              elif user.user_type == User.Types.RM:
                  permitted_uccs = set(InvestorProfile.objects.filter(Q(rm__user=user) | Q(distributor__rm__user=user)).values_list('ucc_code', flat=True))
 
-             for item in response.AllotmentDetails:
+             for item in response.RedemptionDetails.RedemptionDetails:
                  if permitted_uccs is not None:
                      if item.ClientCode not in permitted_uccs:
                          continue
-
+                         
                  data.append({
                      'OrderNo': item.OrderNo,
                      'ClientCode': item.ClientCode,
@@ -336,6 +335,7 @@ class RedemptionReportView(LoginRequiredMixin, TemplateView):
                      'Amount': float(item.AllottedAmt) if item.AllottedAmt else 0,
                      'Nav': float(item.Nav) if item.Nav else 0,
                      'Date': item.AllotmentDate,
+                     'Remarks': getattr(item, 'Remarks', ''),
                      'TransNo': getattr(item, 'TransNo', '')
                  })
 

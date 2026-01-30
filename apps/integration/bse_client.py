@@ -406,7 +406,6 @@ class BSEStarMFClient:
 
     def get_order_status(self, order_no=None, client_code=None, order_type="All", from_date=None, to_date=None):
         try:
-            encrypted_password, pass_key = self._get_query_auth_details()
             _, service = self._get_query_soap_client(self)
 
             today = datetime.date.today().strftime("%d/%m/%Y")
@@ -414,10 +413,9 @@ class BSEStarMFClient:
             t_date = to_date if to_date else today
 
             params = {
-                "ClientCode": client_code if client_code else "",
                 "MemberCode": self.member_id,
                 "UserId": self.user_id,
-                "Password": "Abc@1234",#encrypted_password,
+                "Password": self.password,
                 "FromDate": f_date,
                 "ToDate": t_date,
                 "ClientCode": client_code if client_code else "",
@@ -426,12 +424,10 @@ class BSEStarMFClient:
                 "OrderStatus": "All",
                 "SettType": "ALL",
                 "OrderNo": order_no if order_no else "",
-                "TransType": "P",
-                "Filler1": "",
-                "Filler2": "",
-                "Filler3": ""
+                "TransType": "P"
             }
             log_params = params.copy()
+            log_params['Password'] = '********'
             bse_logger.info(f"ORDER STATUS Request: {log_params}")
             response = service.OrderStatus(Param=params)
             bse_logger.info(f"ORDER STATUS: {order_no} | RESPONSE: {response}")
@@ -442,31 +438,30 @@ class BSEStarMFClient:
 
     def get_allotment_statement(self, order_no=None, client_code=None, order_type="All", from_date=None, to_date=None):
         try:
-            encrypted_password, pass_key = self._get_query_auth_details()
             _, service = self._get_query_soap_client(self)
 
             today = datetime.date.today().strftime("%d/%m/%Y")
             f_date = from_date if from_date else today
             t_date = to_date if to_date else today
 
-            log_params = {
-                "ClientCode": client_code if client_code else "",
+            params = {
                 "MemberCode": self.member_id,
                 "UserId": self.user_id,
-                "Password": "Abc@1234",#encrypted_password,
+                "Password": self.password,
                 "FromDate": f_date,
                 "ToDate": t_date,
+                "ClientCode": client_code if client_code else "",
                 "OrderType": order_type,
                 "SubOrderType": "All",
                 "OrderStatus": "All",
                 "SettType": "ALL",
                 "OrderNo": order_no if order_no else "",
-                "Filler1": "",
-                "Filler2": "",
-                "Filler3": ""
+                "Filler1": ""
             }
+            log_params = params.copy()
+            log_params['Password'] = '********'
             bse_logger.info(f"ALLOTMENT STATEMENT Request: {log_params}")
-            response = service.AllotmentStatement(Param=log_params)
+            response = service.AllotmentStatement(Param=params)
             bse_logger.info(f"ALLOTMENT STATEMENT: {order_no} | RESPONSE: {response}")
             return response
         except Exception as e:
@@ -475,17 +470,15 @@ class BSEStarMFClient:
 
     def get_redemption_statement(self, order_no=None, client_code=None, from_date=None, to_date=None):
         try:
-            encrypted_password, pass_key = self._get_query_auth_details()
             _, service = self._get_query_soap_client(self)
 
             today = datetime.date.today().strftime("%d/%m/%Y")
             f_date = from_date if from_date else today
             t_date = to_date if to_date else today
-            log_params = {
-                "ClientCode": client_code if client_code else "",
+            params = {
                 "MemberCode": self.member_id,
                 "UserId": self.user_id,
-                "Password": "Abc@1234",#encrypted_password,
+                "Password": self.password,
                 "FromDate": f_date,
                 "ToDate": t_date,
                 "ClientCode": client_code if client_code else "",
@@ -498,8 +491,10 @@ class BSEStarMFClient:
                 "Filler2": "",
                 "Filler3": ""
             }
+            log_params = params.copy()
+            log_params['Password'] = '********'
             bse_logger.info(f"REDEMPTION STATEMENT Request: {log_params}")
-            response = service.RedemptionStatement(Param=log_params)
+            response = service.RedemptionStatement(Param=params)
             bse_logger.info(f"REDEMPTION STATEMENT: {order_no} | RESPONSE: {response}")
             return response
         except Exception as e:
