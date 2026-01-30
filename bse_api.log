@@ -1,0 +1,335 @@
+2026-01-30 10:04:22,650 - ORDER STATUS Request: {'ClientCode': '', 'MemberCode': '24637', 'UserId': '2463702', 'Password': '********', 'FromDate': '30/01/2026', 'ToDate': '30/01/2026', 'OrderType': 'All', 'SubOrderType': 'All', 'OrderStatus': 'All', 'SettType': 'ALL', 'OrderNo': '', 'TransType': 'P', 'Filler1': '', 'Filler2': '', 'Filler3': ''}
+2026-01-30 10:04:22,791 - ORDER STATUS: None | RESPONSE: {
+    'Message': 'INVALID ACCOUNT INFORMATION',
+    'OrderDetails': {
+        'OrderDetails': []
+    },
+    'Status': '101'
+}
+2026-01-30 10:05:22,482 - ORDER STATUS Request: {'ClientCode': '', 'MemberCode': '24637', 'UserId': '2463702', 'Password': '********', 'FromDate': '01/01/2026', 'ToDate': '30/01/2026', 'OrderType': 'All', 'SubOrderType': 'All', 'OrderStatus': 'All', 'SettType': 'ALL', 'OrderNo': '', 'TransType': 'P', 'Filler1': '', 'Filler2': '', 'Filler3': ''}
+2026-01-30 10:05:22,525 - ORDER STATUS: None | RESPONSE: {
+    'Message': 'INVALID ACCOUNT INFORMATION',
+    'OrderDetails': {
+        'OrderDetails': []
+    },
+    'Status': '101'
+}
+2026-01-30 10:06:35,452 - ORDER STATUS Request: {'ClientCode': '', 'MemberCode': '24637', 'UserId': '2463702', 'Password': 'dm25bEOQ5jH6fKJQQx8C1OQqM/wM4YC19iwjoyOIvnqSEhvP1aKKWetJxbrPZxpT', 'FromDate': '01/01/2026', 'ToDate': '30/01/2026', 'OrderType': 'All', 'SubOrderType': 'All', 'OrderStatus': 'All', 'SettType': 'ALL', 'OrderNo': '', 'TransType': 'P', 'Filler1': '', 'Filler2': '', 'Filler3': ''}
+2026-01-30 10:06:35,486 - ORDER STATUS: None | RESPONSE: {
+    'Message': 'INVALID ACCOUNT INFORMATION',
+    'OrderDetails': {
+        'OrderDetails': []
+    },
+    'Status': '101'
+}
+2026-01-30 10:07:14,575 - ORDER STATUS Request: {'ClientCode': '', 'MemberCode': '24637', 'UserId': '2463702', 'Password': 'dm25bEOQ5jH6fKJQQx8C1OQqM/wM4YC19iwjoyOIvnrWZXLAWsgQwOtJxbrPZxpT', 'FromDate': '01/01/2026', 'ToDate': '30/01/2026', 'OrderType': 'All', 'SubOrderType': 'All', 'OrderStatus': 'All', 'SettType': 'ALL', 'OrderNo': '', 'TransType': 'P', 'Filler1': '', 'Filler2': '', 'Filler3': ''}
+2026-01-30 10:07:14,624 - ORDER STATUS: None | RESPONSE: {
+    'Message': 'INVALID ACCOUNT INFORMATION',
+    'OrderDetails': {
+        'OrderDetails': []
+    },
+    'Status': '101'
+}
+2026-01-30 10:07:41,196 - ORDER STATUS Request: {'ClientCode': '', 'MemberCode': '24637', 'UserId': '2463702', 'Password': 'dm25bEOQ5jH6fKJQQx8C1OQqM/wM4YC19iwjoyOIvnpw4Jo76FXw9etJxbrPZxpT', 'FromDate': '01/01/2026', 'ToDate': '30/01/2026', 'OrderType': 'All', 'SubOrderType': 'All', 'OrderStatus': 'All', 'SettType': 'ALL', 'OrderNo': '', 'TransType': 'P', 'Filler1': '', 'Filler2': '', 'Filler3': ''}
+2026-01-30 10:07:41,234 - ORDER STATUS: None | RESPONSE: {
+    'Message': 'INVALID ACCOUNT INFORMATION',
+    'OrderDetails': {
+        'OrderDetails': []
+    },
+    'Status': '101'
+}
+2026-01-30 10:08:31,678 - MANDATE STATUS: 896153 | RESPONSE: {
+    'MandateDetails': {
+        'MandateDetails': [
+            {
+                'Amount': '80000.0000',
+                'ApprovedDate': None,
+                'BankAccNo': '521903721321',
+                'BankBranch': 'BAMROLI ROAD,GODHRA',
+                'BankName': 'STATE BANK OF INDIA',
+                'ClientCode': 'BDAPK9533N',
+                'ClientName': 'Putul Kashyap',
+                'CollectionType': None,
+                'MandateId': '896153',
+                'MandateType': 'XSP',
+                'MemberCode': '24637',
+                'RegnDate': 'Jan 20 2026  9:55PM',
+                'Remarks': None,
+                'Status': 'WAITING FOR CLIENT AUTHENTICATION',
+                'UMRNNo': None,
+                'UploadDate': None
+            }
+        ]
+    },
+    'Message': 'Mandate Details ',
+    'Status': '100'
+}
+2026-01-30 10:11:35,685 - ORDER STATUS Request: {'ClientCode': '', 'MemberCode': '24637', 'UserId': '2463702', 'Password': 'Abc@1234', 'FromDate': '30/01/2026', 'ToDate': '30/01/2026', 'OrderType': 'All', 'SubOrderType': 'All', 'OrderStatus': 'All', 'SettType': 'ALL', 'OrderNo': '', 'TransType': 'P', 'Filler1': '', 'Filler2': '', 'Filler3': ''}
+2026-01-30 10:11:37,212 - ORDER STATUS: None | RESPONSE: {
+    'Message': 'Order Status Details Not Found',
+    'OrderDetails': {
+        'OrderDetails': []
+    },
+    'Status': '101'
+}
+2026-01-30 10:11:43,228 - ORDER STATUS Request: {'ClientCode': '', 'MemberCode': '24637', 'UserId': '2463702', 'Password': 'Abc@1234', 'FromDate': '01/01/2026', 'ToDate': '30/01/2026', 'OrderType': 'All', 'SubOrderType': 'All', 'OrderStatus': 'All', 'SettType': 'ALL', 'OrderNo': '', 'TransType': 'P', 'Filler1': '', 'Filler2': '', 'Filler3': ''}
+2026-01-30 10:11:55,798 - ORDER STATUS: None | RESPONSE: {
+    'Message': 'Order Status Details',
+    'OrderDetails': {
+        'OrderDetails': [
+            {
+                'ALLUnits': 'N',
+                'Amount': '50000.0000',
+                'BuySell': 'P',
+                'BuySellType': 'FRESH',
+                'ClientCode': 'BDAPK9533N',
+                'ClientName': 'Putul Kashyap',
+                'DPC': 'Y',
+                'DPFolioNo': None,
+                'DPTrans': 'PHYSICAL',
+                'Date': '22/01/2026',
+                'EUIN': None,
+                'EUINDecl': 'N',
+                'EntryBy': '128630',
+                'FirstOrder': 'N',
+                'FolioNo': None,
+                'ISIN': 'INF179K01608',
+                'InternalRefNo': None,
+                'KYCFlag': 'Y',
+                'MINRedeemFlag': 'N',
+                'MemberCode': '24637',
+                'MemberRemarks': None,
+                'OrderNumber': '16084759',
+                'OrderRemarks': 'PAYMENT NOT INITIATED',
+                'OrderStatus': 'INVALID',
+                'OrderType': 'NRM',
+                'SIPRegnDate': None,
+                'SIPRegnNo': '0',
+                'SchemeCode': '02',
+                'SchemeName': 'HDFC EQUITY FUND - GROWTH OPTION',
+                'SettNo': '2526200',
+                'SettType': 'T3',
+                'SubBrCode': None,
+                'SubBrokerARNCode': None,
+                'SubOrderType': 'NRM',
+                'Time': '14:25:32',
+                'Units': '0.0000'
+            },
+            {
+                'ALLUnits': 'N',
+                'Amount': '50000.0000',
+                'BuySell': 'P',
+                'BuySellType': 'FRESH',
+                'ClientCode': 'EEFPP8024C',
+                'ClientName': 'Milind Patel',
+                'DPC': 'Y',
+                'DPFolioNo': None,
+                'DPTrans': 'PHYSICAL',
+                'Date': '22/01/2026',
+                'EUIN': None,
+                'EUINDecl': 'N',
+                'EntryBy': '128630',
+                'FirstOrder': 'N',
+                'FolioNo': None,
+                'ISIN': 'INF179K01608',
+                'InternalRefNo': None,
+                'KYCFlag': 'Y',
+                'MINRedeemFlag': 'N',
+                'MemberCode': '24637',
+                'MemberRemarks': None,
+                'OrderNumber': '16084685',
+                'OrderRemarks': 'PAYMENT NOT INITIATED',
+                'OrderStatus': 'INVALID',
+                'OrderType': 'NRM',
+                'SIPRegnDate': None,
+                'SIPRegnNo': '0',
+                'SchemeCode': '02',
+                'SchemeName': 'HDFC EQUITY FUND - GROWTH OPTION',
+                'SettNo': '2526200',
+                'SettType': 'T3',
+                'SubBrCode': None,
+                'SubBrokerARNCode': None,
+                'SubOrderType': 'NRM',
+                'Time': '14:25:32',
+                'Units': '0.0000'
+            },
+            {
+                'ALLUnits': 'N',
+                'Amount': '50000.0000',
+                'BuySell': 'P',
+                'BuySellType': 'FRESH',
+                'ClientCode': 'EEFPP8024C',
+                'ClientName': 'Milind Patel',
+                'DPC': 'Y',
+                'DPFolioNo': None,
+                'DPTrans': 'PHYSICAL',
+                'Date': '22/01/2026',
+                'EUIN': None,
+                'EUINDecl': 'N',
+                'EntryBy': '128630',
+                'FirstOrder': 'N',
+                'FolioNo': None,
+                'ISIN': 'INF179K01608',
+                'InternalRefNo': None,
+                'KYCFlag': 'Y',
+                'MINRedeemFlag': 'N',
+                'MemberCode': '24637',
+                'MemberRemarks': None,
+                'OrderNumber': '16084758',
+                'OrderRemarks': 'PAYMENT NOT INITIATED',
+                'OrderStatus': 'INVALID',
+                'OrderType': 'NRM',
+                'SIPRegnDate': None,
+                'SIPRegnNo': '0',
+                'SchemeCode': '02',
+                'SchemeName': 'HDFC EQUITY FUND - GROWTH OPTION',
+                'SettNo': '2526200',
+                'SettType': 'T3',
+                'SubBrCode': None,
+                'SubBrokerARNCode': None,
+                'SubOrderType': 'NRM',
+                'Time': '14:25:32',
+                'Units': '0.0000'
+            },
+            {
+                'ALLUnits': 'N',
+                'Amount': '10000.0000',
+                'BuySell': 'P',
+                'BuySellType': 'FRESH',
+                'ClientCode': 'EEFPP8024C',
+                'ClientName': 'Milind Patel',
+                'DPC': 'Y',
+                'DPFolioNo': None,
+                'DPTrans': 'PHYSICAL',
+                'Date': '29/01/2026',
+                'EUIN': 'E123456',
+                'EUINDecl': 'Y',
+                'EntryBy': '128630',
+                'FirstOrder': 'N',
+                'FolioNo': None,
+                'ISIN': 'INF179K01608',
+                'InternalRefNo': None,
+                'KYCFlag': 'Y',
+                'MINRedeemFlag': 'N',
+                'MemberCode': '24637',
+                'MemberRemarks': None,
+                'OrderNumber': '16105768',
+                'OrderRemarks': 'PAYMENT NOT INITIATED',
+                'OrderStatus': 'INVALID',
+                'OrderType': 'NRM',
+                'SIPRegnDate': None,
+                'SIPRegnNo': '0',
+                'SchemeCode': '02',
+                'SchemeName': 'HDFC EQUITY FUND - GROWTH OPTION',
+                'SettNo': '2526204',
+                'SettType': 'T3',
+                'SubBrCode': None,
+                'SubBrokerARNCode': None,
+                'SubOrderType': 'NRM',
+                'Time': '14:25:41',
+                'Units': '0.0000'
+            },
+            {
+                'ALLUnits': 'N',
+                'Amount': '30000.0000',
+                'BuySell': 'P',
+                'BuySellType': 'FRESH',
+                'ClientCode': 'EEFPP8024C',
+                'ClientName': 'Milind Patel',
+                'DPC': 'Y',
+                'DPFolioNo': None,
+                'DPTrans': 'PHYSICAL',
+                'Date': '28/01/2026',
+                'EUIN': 'E123456',
+                'EUINDecl': 'Y',
+                'EntryBy': '128630',
+                'FirstOrder': 'N',
+                'FolioNo': None,
+                'ISIN': 'INF179K01608',
+                'InternalRefNo': None,
+                'KYCFlag': 'Y',
+                'MINRedeemFlag': 'N',
+                'MemberCode': '24637',
+                'MemberRemarks': None,
+                'OrderNumber': '16105771',
+                'OrderRemarks': '2FA PURCHASE AUTHENTICATION NOT RECEIVED',
+                'OrderStatus': 'INVALID',
+                'OrderType': 'NRM',
+                'SIPRegnDate': None,
+                'SIPRegnNo': '0',
+                'SchemeCode': '02',
+                'SchemeName': 'HDFC EQUITY FUND - GROWTH OPTION',
+                'SettNo': '2526205',
+                'SettType': 'T3',
+                'SubBrCode': None,
+                'SubBrokerARNCode': None,
+                'SubOrderType': 'NRM',
+                'Time': '13:00:33',
+                'Units': '0.0000'
+            },
+            {
+                'ALLUnits': 'N',
+                'Amount': '10000.0000',
+                'BuySell': 'P',
+                'BuySellType': 'FRESH',
+                'ClientCode': 'EEFPP8024C',
+                'ClientName': 'Milind Patel',
+                'DPC': 'Y',
+                'DPFolioNo': '12342134',
+                'DPTrans': 'PHYSICAL',
+                'Date': '28/01/2026',
+                'EUIN': 'E123456',
+                'EUINDecl': 'Y',
+                'EntryBy': '128630',
+                'FirstOrder': 'N',
+                'FolioNo': None,
+                'ISIN': 'INF179K01608',
+                'InternalRefNo': None,
+                'KYCFlag': 'Y',
+                'MINRedeemFlag': 'N',
+                'MemberCode': '24637',
+                'MemberRemarks': None,
+                'OrderNumber': '16105783',
+                'OrderRemarks': '2FA PURCHASE AUTHENTICATION NOT RECEIVED',
+                'OrderStatus': 'INVALID',
+                'OrderType': 'NRM',
+                'SIPRegnDate': None,
+                'SIPRegnNo': '0',
+                'SchemeCode': '02',
+                'SchemeName': 'HDFC EQUITY FUND - GROWTH OPTION',
+                'SettNo': '2526205',
+                'SettType': 'T3',
+                'SubBrCode': None,
+                'SubBrokerARNCode': None,
+                'SubOrderType': 'NRM',
+                'Time': '13:24:18',
+                'Units': '0.0000'
+            }
+        ]
+    },
+    'Status': '100'
+}
+2026-01-30 10:12:42,181 - ALLOTMENT STATEMENT Request: {'ClientCode': '', 'MemberCode': '24637', 'UserId': '2463702', 'Password': 'Abc@1234', 'FromDate': '30/01/2026', 'ToDate': '30/01/2026', 'OrderType': 'Purchase', 'SubOrderType': 'All', 'OrderStatus': 'All', 'SettType': 'ALL', 'OrderNo': '', 'Filler1': '', 'Filler2': '', 'Filler3': ''}
+2026-01-30 10:12:42,637 - ALLOTMENT STATEMENT: None | RESPONSE: {
+    'AllotmentDetails': {
+        'AllotmentDetails': []
+    },
+    'Message': 'FAILED: INVALID ORDER TYPE',
+    'Status': '101'
+}
+2026-01-30 10:12:48,023 - ALLOTMENT STATEMENT Request: {'ClientCode': '', 'MemberCode': '24637', 'UserId': '2463702', 'Password': 'Abc@1234', 'FromDate': '01/01/2026', 'ToDate': '30/01/2026', 'OrderType': 'Purchase', 'SubOrderType': 'All', 'OrderStatus': 'All', 'SettType': 'ALL', 'OrderNo': '', 'Filler1': '', 'Filler2': '', 'Filler3': ''}
+2026-01-30 10:12:48,149 - ALLOTMENT STATEMENT: None | RESPONSE: {
+    'AllotmentDetails': {
+        'AllotmentDetails': []
+    },
+    'Message': 'FAILED: INVALID ORDER TYPE',
+    'Status': '101'
+}
+2026-01-30 10:16:29,379 - ALLOTMENT STATEMENT Request: {'ClientCode': '', 'MemberCode': '24637', 'UserId': '2463702', 'Password': 'Abc@1234', 'FromDate': '01/01/2026', 'ToDate': '30/01/2026', 'OrderType': 'All', 'SubOrderType': 'All', 'OrderStatus': 'All', 'SettType': 'ALL', 'OrderNo': '', 'Filler1': '', 'Filler2': '', 'Filler3': ''}
+2026-01-30 10:16:32,411 - ALLOTMENT STATEMENT: None | RESPONSE: {
+    'AllotmentDetails': {
+        'AllotmentDetails': []
+    },
+    'Message': 'Allotment Statement Not Found',
+    'Status': '101'
+}

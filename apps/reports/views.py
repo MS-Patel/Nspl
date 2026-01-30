@@ -260,7 +260,7 @@ class AllotmentReportView(LoginRequiredMixin, TemplateView):
 
         client = BSEStarMFClient()
         # Allotment Statement usually focuses on Purchases
-        response = client.get_allotment_statement(from_date=from_date, to_date=to_date, client_code=target_client_code, order_type="Purchase")
+        response = client.get_allotment_statement(from_date=from_date, to_date=to_date, client_code=target_client_code, order_type="All")
 
         if response and getattr(response, 'Status', None) == '0' and getattr(response, 'AllotmentDetails', None):
              permitted_uccs = None

@@ -417,7 +417,7 @@ class BSEStarMFClient:
                 "ClientCode": client_code if client_code else "",
                 "MemberCode": self.member_id,
                 "UserId": self.user_id,
-                "Password": encrypted_password,
+                "Password": "Abc@1234",#encrypted_password,
                 "FromDate": f_date,
                 "ToDate": t_date,
                 "ClientCode": client_code if client_code else "",
@@ -432,7 +432,6 @@ class BSEStarMFClient:
                 "Filler3": ""
             }
             log_params = params.copy()
-            log_params['Password'] = '********'
             bse_logger.info(f"ORDER STATUS Request: {log_params}")
             response = service.OrderStatus(Param=params)
             bse_logger.info(f"ORDER STATUS: {order_no} | RESPONSE: {response}")
@@ -454,7 +453,7 @@ class BSEStarMFClient:
                 "ClientCode": client_code if client_code else "",
                 "MemberCode": self.member_id,
                 "UserId": self.user_id,
-                "Password": encrypted_password,
+                "Password": "Abc@1234",#encrypted_password,
                 "FromDate": f_date,
                 "ToDate": t_date,
                 "OrderType": order_type,
@@ -486,7 +485,7 @@ class BSEStarMFClient:
                 "ClientCode": client_code if client_code else "",
                 "MemberCode": self.member_id,
                 "UserId": self.user_id,
-                "Password": encrypted_password,
+                "Password": "Abc@1234",#encrypted_password,
                 "FromDate": f_date,
                 "ToDate": t_date,
                 "ClientCode": client_code if client_code else "",
