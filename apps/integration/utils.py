@@ -618,7 +618,7 @@ def get_bse_order_params(order, member_id, user_id, password, pass_key):
     # Use the EUIN stored on the Order (which already handles the fallback logic)
     euin = order.euin if order.euin else ""
     euin_flag = "Y" if euin else "N"
-    folio_no = order.folio.folio_number if order.folio else ""
+    folio_no = order.folio.folio_number if order.folio else "12523421"
     dpc = "N"
 
     # User confirmed TransMode P -> DPTxn

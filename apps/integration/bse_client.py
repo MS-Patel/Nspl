@@ -3,8 +3,10 @@ import random
 import string
 import requests
 import logging
+import re
 from django.conf import settings
-from zeep import Client, Settings
+from zeep import Client, Settings, Plugin
+from lxml import etree
 from zeep.transports import Transport
 import datetime
 from .utils import get_bse_order_params, get_bse_xsip_order_params, get_bse_switch_order_params, get_bse_mandate_param_string, map_investor_to_fatca_string
@@ -21,6 +23,28 @@ file_handler.setFormatter(formatter)
 
 if not bse_logger.handlers:
     bse_logger.addHandler(file_handler)
+
+class BSELoggingPlugin(Plugin):
+    def egress(self, envelope, http_headers, operation, binding_options):
+        xml = etree.tostring(envelope, pretty_print=True).decode()
+        xml = self._mask_sensitive_data(xml)
+        bse_logger.info(f"BSE REQUEST XML:\n{xml}")
+        return envelope, http_headers
+
+    def ingress(self, envelope, http_headers, operation):
+        if envelope is not None:
+            xml = etree.tostring(envelope, pretty_print=True).decode()
+            xml = self._mask_sensitive_data(xml)
+            bse_logger.info(f"BSE RESPONSE XML:\n{xml}")
+        return envelope, http_headers
+
+    def _mask_sensitive_data(self, xml_str):
+        sensitive_tags = ['Password', 'PassKey', 'EncryptedPassword']
+        for tag in sensitive_tags:
+            # Match <Tag>Content</Tag> or <ns:Tag>Content</ns:Tag>
+            pattern = r'(<(?:[\w]+:)?' + tag + r'>)(.*?)(</(?:[\w]+:)?' + tag + r'>)'
+            xml_str = re.sub(pattern, r'\1********\3', xml_str, flags=re.DOTALL)
+        return xml_str
 
 class BSEStarMFClient:
     # Class-level cache for Zeep Clients to avoid re-parsing WSDLs
@@ -59,7 +83,8 @@ class BSEStarMFClient:
                 transport=transport,
                 settings=zeep_settings,
                 service_name='MFOrder',
-                port_name='WSHttpBinding_MFOrderEntry1'
+                port_name='WSHttpBinding_MFOrderEntry1',
+                plugins=[BSELoggingPlugin()]
             )
         return cls._soap_client
 
@@ -76,7 +101,8 @@ class BSEStarMFClient:
                 transport=transport,
                 settings=zeep_settings,
                 service_name='MFUploadService',
-                port_name='WSHttpBinding_IMFUploadService1'
+                port_name='WSHttpBinding_IMFUploadService1',
+                plugins=[BSELoggingPlugin()]
             )
             cls._upload_client = (client, client.service)
         return cls._upload_client
@@ -94,7 +120,8 @@ class BSEStarMFClient:
                 transport=transport,
                 settings=zeep_settings,
                 service_name='StarMFWebService',
-                port_name='WSHttpBinding_IStarMFWebService1'
+                port_name='WSHttpBinding_IStarMFWebService1',
+                plugins=[BSELoggingPlugin()]
             )
             cls._query_client = (client, client.service)
         return cls._query_client
@@ -207,7 +234,7 @@ class BSEStarMFClient:
             bse_logger.info(f"ORDER ENTRY: {order.unique_ref_no} | RESPONSE: {response}")
 
             parts = str(response).split('|')
-            if parts[0] == '0':
+            if parts[-1] == '0':
                 return {
                     'status': 'success',
                     'bse_order_id': parts[1] if len(parts) > 1 else "",
