@@ -136,6 +136,7 @@ class BSEStarMFClient:
         except Exception as e:
             raise Exception(f"SOAP Error during upload service authentication: {str(e)}")
 
+
     def _get_query_auth_details(self):
         pass_key = self._generate_pass_key()
         _, service = self._get_query_soap_client(self)
@@ -150,6 +151,29 @@ class BSEStarMFClient:
             result_str = response.split('|')
             if result_str[0] == '100':
                 return result_str[1], pass_key
+            else:
+                raise Exception(f"BSE Query Service Authentication Failed: {response}")
+        except Exception as e:
+            raise Exception(f"SOAP Error during query service authentication: {str(e)}")
+
+
+    def _get_query_auth_token(self):
+        pass_key = self._generate_pass_key()
+        _, service = self._get_query_soap_client(self)
+
+        try:
+            param = {
+                "MemberId": self.member_id,
+                "UserId": self.user_id,
+                "Password": self.password,
+                "PassKey": pass_key,
+                "RequestType": "MANDATE"
+            }
+            response = service.GetAccessToken(Param=param)
+            
+            status = getattr(response, 'Status', '')
+            if status == '100':
+                return getattr(response, 'ResponseString', ''), pass_key
             else:
                 raise Exception(f"BSE Query Service Authentication Failed: {response}")
         except Exception as e:
@@ -390,6 +414,7 @@ class BSEStarMFClient:
             t_date = to_date if to_date else today
 
             params = {
+                "ClientCode": client_code if client_code else "",
                 "MemberCode": self.member_id,
                 "UserId": self.user_id,
                 "Password": encrypted_password,
@@ -437,7 +462,6 @@ class BSEStarMFClient:
                 "OrderStatus": "All",
                 "SettType": "ALL",
                 "OrderNo": order_no if order_no else "",
-                "TransType": "P",
                 "Filler1": "",
                 "Filler2": "",
                 "Filler3": ""
@@ -465,6 +489,7 @@ class BSEStarMFClient:
                 "Password": encrypted_password,
                 "FromDate": f_date,
                 "ToDate": t_date,
+                "ClientCode": client_code if client_code else "",
                 "OrderType": "All",
                 "SubOrderType": "All",
                 "OrderStatus": "All",
@@ -505,7 +530,7 @@ class BSEStarMFClient:
             return {'status': 'error', 'remarks': str(e)}
 
     def get_mandate_status(self, mandate_id, client_code=None):
-        encrypted_password, _ = self._get_query_auth_details()
+        encrypted_password, _ = self._get_query_auth_token()
         _, service = self._get_query_soap_client(self)
         today = datetime.date.today().strftime("%d/%m/%Y")
         start_date = (datetime.date.today() - datetime.timedelta(days=365)).strftime("%d/%m/%Y")
