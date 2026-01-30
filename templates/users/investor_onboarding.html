@@ -502,6 +502,10 @@
 
         // Initialize Flatpickr for Date of Birth
         initFlatpickr('#dob', { maxDate: 'today' });
+        
+        // --- State ---
+        const isUpdate = {% if form.instance.pk %}true{% else %}false{% endif %};
+        let isPanVerified = isUpdate;
 
         // --- 1. Step Navigation Logic ---
         function showStep(stepNumber) {
@@ -604,6 +608,13 @@
         const panInput = document.getElementById('pan');
         const panStatusSpan = document.getElementById('panCheckStatus');
 
+        if(panInput) {
+            panInput.addEventListener('input', () => {
+                isPanVerified = false; // Reset verification on edit
+                if(panStatusSpan) panStatusSpan.innerText = '';
+            });
+        }
+
         if(btnCheckPan) {
             btnCheckPan.addEventListener('click', async () => {
                 const pan = panInput.value.trim().toUpperCase();
@@ -615,7 +626,7 @@
 
                 btnCheckPan.disabled = true;
                 btnCheckPan.innerText = '...';
-                panStatusSpan.innerText = 'Checking with BSE...';
+                panStatusSpan.innerText = 'Checking with CVL KRA...';
                 panStatusSpan.className = 'text-xs mt-1 block h-4 text-info';
 
                 try {
@@ -630,25 +641,27 @@
                     const data = await response.json();
 
                     if(data.status === 'success') {
-                        const bse = data.data;
-                        const msg = `BSE Status: ${bse.status || 'N/A'} - ${bse.remarks || ''}`;
+                        const kycData = data.data;
+                        const msg = `Verified: ${kycData.name || 'Unknown Name'} (${kycData.status || 'Verified'})`;
                         panStatusSpan.innerText = msg;
-
-                        // Heuristic styling
-                        if((bse.status && bse.status.includes('VALID')) || (bse.remarks && bse.remarks.includes('VALID'))) {
-                             panStatusSpan.className = 'text-xs mt-1 block h-4 text-success font-medium';
-                        } else if (bse.remarks && bse.remarks.includes('NOT REGISTERED')) {
-                             panStatusSpan.className = 'text-xs mt-1 block h-4 text-warning font-medium';
-                        } else {
-                             panStatusSpan.className = 'text-xs mt-1 block h-4 text-slate-500';
+                        panStatusSpan.className = 'text-xs mt-1 block h-4 text-success font-medium';
+                        
+                        isPanVerified = true;
+                        
+                        // Auto-fill Name if available
+                        if(kycData.name) {
+                            const nameInput = document.getElementById('name');
+                            if(nameInput) nameInput.value = kycData.name;
                         }
 
                     } else {
+                        isPanVerified = false;
                         panStatusSpan.innerText = `Error: ${data.remarks}`;
                         panStatusSpan.className = 'text-xs mt-1 block h-4 text-error';
                     }
                 } catch (e) {
-                    panStatusSpan.innerText = 'Network Error';
+                    isPanVerified = false;
+                    panStatusSpan.innerText = 'Network/System Error';
                     panStatusSpan.className = 'text-xs mt-1 block h-4 text-error';
                 } finally {
                     btnCheckPan.disabled = false;
@@ -664,6 +677,20 @@
             btn.addEventListener('click', async (e) => {
                 e.preventDefault();
                 const stepIndex = parseInt(btn.getAttribute('data-step-index'));
+                
+                // Enforce PAN Check on Step 1
+                if (stepIndex === 1 && !isPanVerified) {
+                    if(window.Swal) {
+                        Swal.fire({ 
+                            icon: 'warning', 
+                            title: 'PAN Verification Required', 
+                            text: 'Please check and verify the PAN before proceeding.'
+                        });
+                    } else {
+                        alert('Please verify PAN first.');
+                    }
+                    return;
+                }
 
                 // Validate fields for current step
                 let isValid = true;

@@ -144,3 +144,8 @@ MEDIA_URL = '/media/'
 BSE_MEMBER_ID = "24637"
 BSE_USER_ID = "2463702"
 BSE_PASSWORD = "Abc@1234"
+
+# CVL KRA API Configuration
+CVL_USER_NAME = "webnspl"
+CVL_POS_CODE = "nspl"
+CVL_PASSWORD = "Cvlkra@1234"
