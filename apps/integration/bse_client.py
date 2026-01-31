@@ -463,6 +463,44 @@ class BSEStarMFClient:
             bse_logger.error(f"ORDER STATUS ERROR: {str(e)}")
             return None
 
+    def get_provisional_order_status(self, order_no=None, client_code=None, order_type="All", from_date=None, to_date=None, trans_type="P"):
+        """
+        Fetches the provisional order status from BSE.
+        """
+        try:
+            _, service = self._get_query_soap_client(self)
+
+            today = datetime.date.today().strftime("%d/%m/%Y")
+            f_date = from_date if from_date else today
+            t_date = to_date if to_date else today
+
+            params = {
+                "MemberCode": self.member_id,
+                "UserId": self.user_id,
+                "Password": self.password,
+                "FromDate": f_date,
+                "ToDate": t_date,
+                "ClientCode": client_code if client_code else "",
+                "OrderType": order_type,
+                "SubOrderType": "All",
+                "OrderStatus": "All",
+                "SettType": "ALL",
+                "OrderNo": order_no if order_no else "",
+                "TransType": trans_type,
+                "Filler1": "",
+                "Filler2": "",
+                "Filler3": ""
+            }
+            log_params = params.copy()
+            log_params['Password'] = '********'
+            bse_logger.info(f"PROVISIONAL ORDER STATUS Request: {log_params}")
+            response = service.ProvOrderStatus(Param=params)
+            bse_logger.info(f"PROVISIONAL ORDER STATUS: {order_no} | RESPONSE: {response}")
+            return response
+        except Exception as e:
+            bse_logger.error(f"PROVISIONAL ORDER STATUS ERROR: {str(e)}")
+            return None
+
     def get_allotment_statement(self, order_no=None, client_code=None, order_type="All", from_date=None, to_date=None):
         try:
             _, service = self._get_query_soap_client(self)
