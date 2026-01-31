@@ -1,158 +1,38 @@
 Watching for file changes with StatReloader
-[29/Jan/2026 16:13:54] "GET /login/ HTTP/1.1" 200 7753
-[29/Jan/2026 16:13:54] "GET /static/images/logo12.png HTTP/1.1" 200 4636
-[29/Jan/2026 16:13:54] "GET /static/js/app.js HTTP/1.1" 200 147725
-[29/Jan/2026 16:13:54] "GET /static/css/app.css HTTP/1.1" 200 387118
-[29/Jan/2026 16:13:54] "GET /static/images/illustrations/dashboard-check.svg HTTP/1.1" 200 130952
-[29/Jan/2026 16:13:54] "GET /static/images/illustrations/dashboard-check-dark.svg HTTP/1.1" 200 130972
-[29/Jan/2026 16:13:54] "GET /static/js/pages/pages-sign-in-2.js HTTP/1.1" 200 340
-[29/Jan/2026 16:13:56] "POST /login/ HTTP/1.1" 302 0
-[29/Jan/2026 16:13:56] "GET /dashboard/admin/ HTTP/1.1" 200 58640
-[29/Jan/2026 16:13:56] "GET /static/css/style.css HTTP/1.1" 200 1
-[29/Jan/2026 16:13:56] "GET /static/images/user.png HTTP/1.1" 200 19456
-[29/Jan/2026 16:13:56] "GET /static/js/libs/components.js HTTP/1.1" 200 823854
-[29/Jan/2026 16:13:56] "GET /static/js/script.js HTTP/1.1" 200 10541
-[29/Jan/2026 16:13:56] "GET /static/js/libs/forms.js HTTP/1.1" 200 495466
-[29/Jan/2026 16:13:56] "GET /static/fonts/fontawesome/fa-solid-900.woff2 HTTP/1.1" 200 154228
-Internal Server Error: /reports/order-status/
-Traceback (most recent call last):
-  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/urllib3/connection.py", line 204, in _new_conn
-    sock = connection.create_connection(
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/urllib3/util/connection.py", line 85, in create_connection
-    raise err
-  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/urllib3/util/connection.py", line 73, in create_connection
-    sock.connect(sa)
-TimeoutError: timed out
-
-The above exception was the direct cause of the following exception:
-
-Traceback (most recent call last):
-  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/urllib3/connectionpool.py", line 787, in urlopen
-    response = self._make_request(
-               ^^^^^^^^^^^^^^^^^^^
-  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/urllib3/connectionpool.py", line 488, in _make_request
-    raise new_e
-  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/urllib3/connectionpool.py", line 464, in _make_request
-    self._validate_conn(conn)
-  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/urllib3/connectionpool.py", line 1093, in _validate_conn
-    conn.connect()
-  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/urllib3/connection.py", line 759, in connect
-    self.sock = sock = self._new_conn()
-                       ^^^^^^^^^^^^^^^^
-  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/urllib3/connection.py", line 213, in _new_conn
-    raise ConnectTimeoutError(
-urllib3.exceptions.ConnectTimeoutError: (<HTTPSConnection(host='bsestarmfdemo.bseindia.com', port=443) at 0x7f44198e06b0>, 'Connection to bsestarmfdemo.bseindia.com timed out. (connect timeout=10)')
-
-The above exception was the direct cause of the following exception:
-
-Traceback (most recent call last):
-  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/requests/adapters.py", line 644, in send
-    resp = conn.urlopen(
-           ^^^^^^^^^^^^^
-  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/urllib3/connectionpool.py", line 841, in urlopen
-    retries = retries.increment(
-              ^^^^^^^^^^^^^^^^^^
-  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/urllib3/util/retry.py", line 535, in increment
-    raise MaxRetryError(_pool, url, reason) from reason  # type: ignore[arg-type]
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-urllib3.exceptions.MaxRetryError: HTTPSConnectionPool(host='bsestarmfdemo.bseindia.com', port=443): Max retries exceeded with url: /StarMFWebService/StarMFWebService.svc?singleWsdl (Caused by ConnectTimeoutError(<HTTPSConnection(host='bsestarmfdemo.bseindia.com', port=443) at 0x7f44198e06b0>, 'Connection to bsestarmfdemo.bseindia.com timed out. (connect timeout=10)'))
-
-During handling of the above exception, another exception occurred:
-
-Traceback (most recent call last):
-  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/core/handlers/exception.py", line 55, in inner
-    response = get_response(request)
-               ^^^^^^^^^^^^^^^^^^^^^
-  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/core/handlers/base.py", line 198, in _get_response
-    response = wrapped_callback(request, *callback_args, **callback_kwargs)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/views/generic/base.py", line 106, in view
-    return self.dispatch(request, *args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/contrib/auth/mixins.py", line 74, in dispatch
-    return super().dispatch(request, *args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/views/generic/base.py", line 145, in dispatch
-    return handler(request, *args, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/django/views/generic/base.py", line 229, in get
-    context = self.get_context_data(**kwargs)
-              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/app/apps/reports/views.py", line 207, in get_context_data
-    response = client.get_order_status(from_date=from_date, to_date=to_date, client_code=target_client_code)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/app/apps/integration/bse_client.py", line 384, in get_order_status
-    encrypted_password, pass_key = self._get_query_auth_details()
-                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/app/apps/integration/bse_client.py", line 141, in _get_query_auth_details
-    _, service = self._get_query_soap_client(self)
-                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/app/apps/integration/bse_client.py", line 92, in _get_query_soap_client
-    client = Client(
-             ^^^^^^^
-  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/zeep/client.py", line 76, in __init__
-    self.wsdl = Document(wsdl, self.transport, settings=self.settings)
-                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/zeep/wsdl/wsdl.py", line 86, in __init__
-    self.load(location)
-  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/zeep/wsdl/wsdl.py", line 89, in load
-    document = self._get_xml_document(location)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/zeep/wsdl/wsdl.py", line 149, in _get_xml_document
-    return load_external(
-           ^^^^^^^^^^^^^^
-  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/zeep/loader.py", line 89, in load_external
-    content = transport.load(url)
-              ^^^^^^^^^^^^^^^^^^^
-  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/zeep/transports.py", line 132, in load
-    content = self._load_remote_data(url)
-              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/zeep/transports.py", line 144, in _load_remote_data
-    response = self.session.get(url, timeout=self.load_timeout)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/requests/sessions.py", line 602, in get
-    return self.request("GET", url, **kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/requests/sessions.py", line 589, in request
-    resp = self.send(prep, **send_kwargs)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/requests/sessions.py", line 703, in send
-    r = adapter.send(request, **kwargs)
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/jules/.pyenv/versions/3.12.12/lib/python3.12/site-packages/requests/adapters.py", line 665, in send
-    raise ConnectTimeout(e, request=request)
-requests.exceptions.ConnectTimeout: HTTPSConnectionPool(host='bsestarmfdemo.bseindia.com', port=443): Max retries exceeded with url: /StarMFWebService/StarMFWebService.svc?singleWsdl (Caused by ConnectTimeoutError(<HTTPSConnection(host='bsestarmfdemo.bseindia.com', port=443) at 0x7f44198e06b0>, 'Connection to bsestarmfdemo.bseindia.com timed out. (connect timeout=10)'))
-[29/Jan/2026 16:14:07] "GET /reports/order-status/ HTTP/1.1" 500 228804
-/app/apps/integration/bse_client.py changed, reloading.
+[31/Jan/2026 22:49:28] "GET / HTTP/1.1" 200 8933
+[31/Jan/2026 22:49:28] "GET /static/images/logo12.png HTTP/1.1" 200 4636
+[31/Jan/2026 22:49:28] "GET /static/css/style.css HTTP/1.1" 200 1
+[31/Jan/2026 22:49:28] "GET /static/css/app.css HTTP/1.1" 200 387118
+[31/Jan/2026 22:49:28] "GET /static/images/web/shield-investment.png HTTP/1.1" 200 187255
+[31/Jan/2026 22:49:28] "GET /static/images/web/sheild.png HTTP/1.1" 200 259729
+[31/Jan/2026 22:49:28] "GET /static/images/web/aboutus-section-bg-new.png HTTP/1.1" 200 155790
+[31/Jan/2026 22:49:28] "GET /static/js/app.js HTTP/1.1" 200 147725
+[31/Jan/2026 22:49:28] "GET /about-us/ HTTP/1.1" 200 6682
+[31/Jan/2026 22:49:28] "GET /mutual-funds/ HTTP/1.1" 200 8879
+[31/Jan/2026 22:49:29] "GET /contact-us/ HTTP/1.1" 200 8581
+[31/Jan/2026 22:52:59] "GET / HTTP/1.1" 200 8892
+[31/Jan/2026 22:52:59] "GET /static/css/style.css HTTP/1.1" 200 1
+[31/Jan/2026 22:52:59] "GET /static/images/logo12.png HTTP/1.1" 200 4636
+[31/Jan/2026 22:52:59] "GET /static/images/web/sheild.png HTTP/1.1" 200 259729
+[31/Jan/2026 22:52:59] "GET /static/images/web/shield-investment.png HTTP/1.1" 200 187255
+[31/Jan/2026 22:52:59] "GET /static/css/app.css HTTP/1.1" 200 387118
+[31/Jan/2026 22:52:59] "GET /static/js/app.js HTTP/1.1" 200 147725
+[31/Jan/2026 22:52:59] "GET /static/images/web/aboutus-section-bg-new.png HTTP/1.1" 200 155790
+[31/Jan/2026 22:52:59] "GET /about-us/ HTTP/1.1" 200 6653
+[31/Jan/2026 22:52:59] "GET /mutual-funds/ HTTP/1.1" 200 8894
+[31/Jan/2026 22:52:59] "GET /contact-us/ HTTP/1.1" 200 8580
 Performing system checks...
 
 PyTables is not installed. No support for HDF output.
 SQLalchemy is not installed. No support for SQL output.
 System check identified no issues (0 silenced).
-January 29, 2026 - 16:13:38
+
+You have 50 unapplied migration(s). Your project may not work properly until you apply the migrations for app(s): admin, analytics, auth, contenttypes, investments, payouts, products, reconciliation, sessions, users.
+Run 'python manage.py migrate' to apply them.
+January 31, 2026 - 22:48:33
 Django version 6.0.1, using settings 'core.settings'
-Starting development server at http://127.0.0.1:8000/
+Starting development server at http://0.0.0.0:8000/
 Quit the server with CONTROL-C.
 
 WARNING: This is a development server. Do not use it in a production setting. Use a production WSGI or ASGI server instead.
 For more information on production servers see: https://docs.djangoproject.com/en/6.0/howto/deployment/
-Watching for file changes with StatReloader
-[29/Jan/2026 16:15:11] "GET /login/ HTTP/1.1" 200 7753
-[29/Jan/2026 16:15:11] "GET /static/images/logo12.png HTTP/1.1" 200 4636
-[29/Jan/2026 16:15:11] "GET /static/images/illustrations/dashboard-check.svg HTTP/1.1" 200 130952
-[29/Jan/2026 16:15:11] "GET /static/js/app.js HTTP/1.1" 200 147725
-[29/Jan/2026 16:15:11] "GET /static/css/app.css HTTP/1.1" 200 387118
-[29/Jan/2026 16:15:11] "GET /static/images/illustrations/dashboard-check-dark.svg HTTP/1.1" 200 130972
-[29/Jan/2026 16:15:11] "GET /static/js/pages/pages-sign-in-2.js HTTP/1.1" 200 340
-[29/Jan/2026 16:15:13] "POST /login/ HTTP/1.1" 302 0
-[29/Jan/2026 16:15:13] "GET /dashboard/admin/ HTTP/1.1" 200 58640
-[29/Jan/2026 16:15:13] "GET /static/css/style.css HTTP/1.1" 200 1
-[29/Jan/2026 16:15:13] "GET /static/images/user.png HTTP/1.1" 200 19456
-[29/Jan/2026 16:15:13] "GET /static/js/libs/components.js HTTP/1.1" 200 823854
-[29/Jan/2026 16:15:13] "GET /static/js/script.js HTTP/1.1" 200 10541
-[29/Jan/2026 16:15:13] "GET /static/js/libs/forms.js HTTP/1.1" 200 495466
-[29/Jan/2026 16:15:13] "GET /static/fonts/fontawesome/fa-solid-900.woff2 HTTP/1.1" 200 154228
-[29/Jan/2026 16:15:24] "GET /reports/order-status/ HTTP/1.1" 200 67363
-[29/Jan/2026 16:15:34] "GET /reports/allotment/ HTTP/1.1" 200 67368
-[29/Jan/2026 16:15:45] "GET /reports/redemption/ HTTP/1.1" 200 67348

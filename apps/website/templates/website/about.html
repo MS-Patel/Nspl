@@ -1,0 +1,44 @@
+{% extends 'layout/public_base.html' %}
+{% load static %}
+
+{% block title %}About Us - BuyBestFin{% endblock %}
+
+{% block content %}
+<section class="bg-slate-50 dark:bg-navy-800 py-16">
+    <div class="container mx-auto px-4">
+        <h1 class="text-4xl font-bold text-slate-800 dark:text-white mb-8 text-center">About Us</h1>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 items-center">
+            <div>
+                <img src="{% static 'images/web/aboutus-section-bg-new.png' %}" alt="About Us" class="rounded-lg shadow-xl w-full" />
+            </div>
+            <div>
+                <p class="text-lg text-slate-600 dark:text-slate-300 mb-6 leading-relaxed">
+                    With roots dating back to 1968, Navinchandra Groups is one of the oldest financial services providers in the area of Company Deposit, Government Securities, Bonds, NCD, Equity, Insurance, Mutual Funds, PMS & Unlisted Shares.
+                </p>
+                <p class="text-lg text-slate-600 dark:text-slate-300 mb-6 leading-relaxed">
+                    As an umbrella brand for the financial businesses of the Navinchandra Group, we offer a diverse range of products and services across corporate finance and retail segments. Our client-centric approach and commitment to transparency have made us a trusted partner for thousands of investors.
+                </p>
+            </div>
+        </div>
+
+        <div class="mt-16">
+             <h2 class="text-3xl font-bold text-slate-800 dark:text-white mb-8 text-center">Our Vision & Mission</h2>
+             <div class="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                 <div class="bg-white dark:bg-navy-700 p-8 rounded-lg shadow-md">
+                     <h3 class="text-xl font-bold text-primary mb-4">Our Vision</h3>
+                     <p class="text-slate-600 dark:text-slate-300">
+                         To be the most trusted and respected financial services provider, empowering individuals to achieve their financial goals through expert guidance and innovative solutions.
+                     </p>
+                 </div>
+                 <div class="bg-white dark:bg-navy-700 p-8 rounded-lg shadow-md">
+                     <h3 class="text-xl font-bold text-primary mb-4">Our Mission</h3>
+                     <p class="text-slate-600 dark:text-slate-300">
+                         To simplify investment processes, educate investors, and provide personalized financial advice that creates long-term wealth and financial security for our clients.
+                     </p>
+                 </div>
+             </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
