@@ -93,15 +93,29 @@ class CVLClient:
                 passKey=pass_key
             )
             
-            # The result is in GetPasswordResult
-            # If successful, it returns the encrypted password.
-            # If failure, it might return an error string or fault.
-            # Assuming standard behavior: return value is the encrypted string.
-            encrypted_password = response
+            encrypted_password = None
+
+            # Check if response is an lxml Element (standard for xs:any return)
+            if hasattr(response, 'find'):
+                # Traverse: APP_RES_ROOT -> APP_GET_PASS
+                # Note: APP_RES_ROOT usually has empty namespace, so direct find might work or we use local-name
+                pass_node = response.find('APP_GET_PASS')
+                if pass_node is None:
+                     # Try searching recursively if structure varies
+                     pass_node = response.find('.//APP_GET_PASS')
+                
+                if pass_node is not None and pass_node.text:
+                    encrypted_password = pass_node.text
+                else:
+                    # Fallback log
+                    cvl_logger.error(f"CVL Auth: APP_GET_PASS not found in response: {etree.tostring(response)}")
             
-            # Basic validation: check if it looks like an error or empty
+            # Fallback for string/bytes response
+            elif isinstance(response, (str, bytes)):
+                 encrypted_password = response
+
             if not encrypted_password:
-                 raise Exception("Empty response from GetPassword")
+                 raise Exception("Empty or invalid response from GetPassword")
 
             return encrypted_password, pass_key
 
@@ -127,61 +141,57 @@ class CVLClient:
                 passKey=pass_key
             )
             
-            # response is GetPanStatusResult (xs:any)
-            # Typically returns a pipe-separated string or JSON string.
-            # Let's handle generic string response first.
+            # response is GetPanStatusResult (xs:any), usually an lxml Element
             
-            result_str = str(response)
+            # Log the raw response for debugging (converting element to string if needed)
+            if hasattr(response, 'find'):
+                result_str = etree.tostring(response, pretty_print=True).decode()
+            else:
+                result_str = str(response)
+                
             cvl_logger.info(f"PAN CHECK: {pan} | RESULT: {result_str}")
 
-            # Typical CVL Response Format (Assumption based on industry standard):
-            # RETURN_CODE|APP_NAME|APP_STATUS|STATUS_DATE|...
-            # 0 -> Success? 1 -> Success?
-            # Or JSON: {"Name": "...", "Status": "..."}
-            
-            # Since I don't have the exact response spec documentation, I will try to infer.
-            # If it's JSON:
-            try:
-                json_data = json.loads(result_str)
-                return {
-                    'status': 'success',
-                    'data': {
-                        'name': json_data.get('APP_NAME', json_data.get('Name', '')),
-                        'status': json_data.get('APP_STATUS', json_data.get('Status', '')),
-                        'raw': json_data
-                    }
-                }
-            except json.JSONDecodeError:
-                pass
-            
-            # If Pipe Separated
-            if '|' in result_str:
-                parts = result_str.split('|')
-                # Assuming: Code | Name | Status | ...
-                # If first part is '1' or '0' (Success)
-                # Let's assume index 1 is Name as requested by user ("fill name directly")
+            if hasattr(response, 'find'):
+                # Handle XML structure
+                # Structure: APP_RES_ROOT -> APP_PAN_INQ -> [APP_NAME, APP_STATUS, ERROR, etc.]
                 
-                # Heuristic: Find the name part.
-                # Usually: CODE|NAME|STATUS
-                
-                # Check if it's an error message
-                if "INVALID" in result_str.upper() or "ERROR" in result_str.upper():
-                     return {'status': 'error', 'remarks': result_str}
+                inq_node = response.find('APP_PAN_INQ')
+                if inq_node is None:
+                     inq_node = response.find('.//APP_PAN_INQ')
 
-                name = parts[1] if len(parts) > 1 else ""
-                status = parts[2] if len(parts) > 2 else ""
-                
-                return {
-                    'status': 'success',
-                    'data': {
-                        'name': name,
-                        'status': status,
-                        'raw': result_str
+                if inq_node is not None:
+                    # Check for Error
+                    error_node = inq_node.find('ERROR')
+                    if error_node is not None:
+                        msg = error_node.find('ERROR_MSG')
+                        remarks = msg.text if msg is not None else 'Unknown Error from CVL'
+                        return {'status': 'error', 'remarks': remarks}
+                    
+                    # Extract Success Data
+                    name_node = inq_node.find('APP_NAME')
+                    status_node = inq_node.find('APP_STATUS')
+                    
+                    name = name_node.text if name_node is not None else ""
+                    status = status_node.text if status_node is not None else ""
+                    
+                    return {
+                        'status': 'success',
+                        'data': {
+                            'name': name,
+                            'status': status,
+                            'raw': result_str
+                        }
                     }
-                }
-            
-            # If plain string (maybe just name? unlikely)
-            return {'status': 'success', 'data': {'name': '', 'status': result_str, 'raw': result_str}}
+                else:
+                     # Check if ERROR is directly under root or somewhere else
+                     error_node = response.find('.//ERROR')
+                     if error_node is not None:
+                         msg = error_node.find('ERROR_MSG')
+                         remarks = msg.text if msg is not None else 'Unknown Error from CVL'
+                         return {'status': 'error', 'remarks': remarks}
+
+            # Fallback for unexpected formats
+            return {'status': 'error', 'remarks': 'Could not parse CVL response'}
 
         except Exception as e:
             cvl_logger.error(f"CVL PAN Check Error: {str(e)}")

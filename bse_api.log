@@ -6950,3 +6950,565 @@
     'Message': 'FAILED: ORDER DETAILS NOT FOUND',
     'Status': '101'
 }
+2026-01-31 01:09:44,172 - ORDER STATUS Request: {'MemberCode': '24637', 'UserId': '2463702', 'Password': '********', 'FromDate': '31/01/2026', 'ToDate': '31/01/2026', 'ClientCode': '', 'OrderType': 'All', 'SubOrderType': 'All', 'OrderStatus': 'All', 'SettType': 'ALL', 'OrderNo': '', 'TransType': 'P'}
+2026-01-31 01:09:44,177 - BSE REQUEST XML:
+<soap-env:Envelope xmlns:soap-env="http://www.w3.org/2003/05/soap-envelope">
+  <soap-env:Header xmlns:wsa="http://www.w3.org/2005/08/addressing">
+    <wsa:Action>http://www.bsestarmf.in/2016/01/IStarMFWebService/OrderStatus</wsa:Action>
+    <wsa:MessageID>urn:uuid:e227ba60-9b52-4516-9003-b665866a938f</wsa:MessageID>
+    <wsa:To>https://bsestarmfdemo.bseindia.com/StarMFWebService/StarMFWebService.svc/Secure</wsa:To>
+  </soap-env:Header>
+  <soap-env:Body>
+    <ns0:OrderStatus xmlns:ns0="http://www.bsestarmf.in/2016/01/">
+      <ns0:Param>
+        <ns1:ClientCode xmlns:ns1="http://schemas.datacontract.org/2004/07/StarMFWebService"></ns1:ClientCode>
+        <ns2:FromDate xmlns:ns2="http://schemas.datacontract.org/2004/07/StarMFWebService">31/01/2026</ns2:FromDate>
+        <ns3:MemberCode xmlns:ns3="http://schemas.datacontract.org/2004/07/StarMFWebService">24637</ns3:MemberCode>
+        <ns4:OrderNo xmlns:ns4="http://schemas.datacontract.org/2004/07/StarMFWebService"></ns4:OrderNo>
+        <ns5:OrderStatus xmlns:ns5="http://schemas.datacontract.org/2004/07/StarMFWebService">All</ns5:OrderStatus>
+        <ns6:OrderType xmlns:ns6="http://schemas.datacontract.org/2004/07/StarMFWebService">All</ns6:OrderType>
+        <ns7:Password xmlns:ns7="http://schemas.datacontract.org/2004/07/StarMFWebService">Abc@1234</ns7:Password>
+        <ns8:SettType xmlns:ns8="http://schemas.datacontract.org/2004/07/StarMFWebService">ALL</ns8:SettType>
+        <ns9:SubOrderType xmlns:ns9="http://schemas.datacontract.org/2004/07/StarMFWebService">All</ns9:SubOrderType>
+        <ns10:ToDate xmlns:ns10="http://schemas.datacontract.org/2004/07/StarMFWebService">31/01/2026</ns10:ToDate>
+        <ns11:TransType xmlns:ns11="http://schemas.datacontract.org/2004/07/StarMFWebService">P</ns11:TransType>
+        <ns12:UserId xmlns:ns12="http://schemas.datacontract.org/2004/07/StarMFWebService">2463702</ns12:UserId>
+      </ns0:Param>
+    </ns0:OrderStatus>
+  </soap-env:Body>
+</soap-env:Envelope>
+
+2026-01-31 01:09:51,404 - BSE RESPONSE XML:
+<s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope" xmlns:a="http://www.w3.org/2005/08/addressing">
+  <s:Header>
+    <a:Action s:mustUnderstand="1">http://www.bsestarmf.in/2016/01/IStarMFWebService/OrderStatusResponse</a:Action>
+    <a:RelatesTo>urn:uuid:e227ba60-9b52-4516-9003-b665866a938f</a:RelatesTo>
+  </s:Header>
+  <s:Body>
+    <OrderStatusResponse xmlns="http://www.bsestarmf.in/2016/01/">
+      <OrderStatusResult xmlns:b="http://schemas.datacontract.org/2004/07/StarMFWebService" xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+        <b:Message>Order Status Details Not Found</b:Message>
+        <b:OrderDetails i:nil="true"/>
+        <b:Status>101</b:Status>
+      </OrderStatusResult>
+    </OrderStatusResponse>
+  </s:Body>
+</s:Envelope>
+
+2026-01-31 01:09:51,409 - ORDER STATUS: None | RESPONSE: {
+    'Message': 'Order Status Details Not Found',
+    'OrderDetails': {
+        'OrderDetails': []
+    },
+    'Status': '101'
+}
+2026-01-31 01:09:57,988 - ORDER STATUS Request: {'MemberCode': '24637', 'UserId': '2463702', 'Password': '********', 'FromDate': '01/01/2026', 'ToDate': '31/01/2026', 'ClientCode': '', 'OrderType': 'All', 'SubOrderType': 'All', 'OrderStatus': 'All', 'SettType': 'ALL', 'OrderNo': '', 'TransType': 'P'}
+2026-01-31 01:09:57,990 - BSE REQUEST XML:
+<soap-env:Envelope xmlns:soap-env="http://www.w3.org/2003/05/soap-envelope">
+  <soap-env:Header xmlns:wsa="http://www.w3.org/2005/08/addressing">
+    <wsa:Action>http://www.bsestarmf.in/2016/01/IStarMFWebService/OrderStatus</wsa:Action>
+    <wsa:MessageID>urn:uuid:90752cb2-f598-4ff0-80a5-400f3d084b13</wsa:MessageID>
+    <wsa:To>https://bsestarmfdemo.bseindia.com/StarMFWebService/StarMFWebService.svc/Secure</wsa:To>
+  </soap-env:Header>
+  <soap-env:Body>
+    <ns0:OrderStatus xmlns:ns0="http://www.bsestarmf.in/2016/01/">
+      <ns0:Param>
+        <ns1:ClientCode xmlns:ns1="http://schemas.datacontract.org/2004/07/StarMFWebService"></ns1:ClientCode>
+        <ns2:FromDate xmlns:ns2="http://schemas.datacontract.org/2004/07/StarMFWebService">01/01/2026</ns2:FromDate>
+        <ns3:MemberCode xmlns:ns3="http://schemas.datacontract.org/2004/07/StarMFWebService">24637</ns3:MemberCode>
+        <ns4:OrderNo xmlns:ns4="http://schemas.datacontract.org/2004/07/StarMFWebService"></ns4:OrderNo>
+        <ns5:OrderStatus xmlns:ns5="http://schemas.datacontract.org/2004/07/StarMFWebService">All</ns5:OrderStatus>
+        <ns6:OrderType xmlns:ns6="http://schemas.datacontract.org/2004/07/StarMFWebService">All</ns6:OrderType>
+        <ns7:Password xmlns:ns7="http://schemas.datacontract.org/2004/07/StarMFWebService">Abc@1234</ns7:Password>
+        <ns8:SettType xmlns:ns8="http://schemas.datacontract.org/2004/07/StarMFWebService">ALL</ns8:SettType>
+        <ns9:SubOrderType xmlns:ns9="http://schemas.datacontract.org/2004/07/StarMFWebService">All</ns9:SubOrderType>
+        <ns10:ToDate xmlns:ns10="http://schemas.datacontract.org/2004/07/StarMFWebService">31/01/2026</ns10:ToDate>
+        <ns11:TransType xmlns:ns11="http://schemas.datacontract.org/2004/07/StarMFWebService">P</ns11:TransType>
+        <ns12:UserId xmlns:ns12="http://schemas.datacontract.org/2004/07/StarMFWebService">2463702</ns12:UserId>
+      </ns0:Param>
+    </ns0:OrderStatus>
+  </soap-env:Body>
+</soap-env:Envelope>
+
+2026-01-31 01:10:42,206 - BSE RESPONSE XML:
+<s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope" xmlns:a="http://www.w3.org/2005/08/addressing">
+  <s:Header>
+    <a:Action s:mustUnderstand="1">http://www.bsestarmf.in/2016/01/IStarMFWebService/OrderStatusResponse</a:Action>
+    <a:RelatesTo>urn:uuid:90752cb2-f598-4ff0-80a5-400f3d084b13</a:RelatesTo>
+  </s:Header>
+  <s:Body>
+    <OrderStatusResponse xmlns="http://www.bsestarmf.in/2016/01/">
+      <OrderStatusResult xmlns:b="http://schemas.datacontract.org/2004/07/StarMFWebService" xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+        <b:Message>Order Status Details</b:Message>
+        <b:OrderDetails>
+          <b:OrderDetails>
+            <b:ALLUnits>N</b:ALLUnits>
+            <b:Amount>50000.0000</b:Amount>
+            <b:BuySell>P</b:BuySell>
+            <b:BuySellType>FRESH</b:BuySellType>
+            <b:ClientCode>BDAPK9533N</b:ClientCode>
+            <b:ClientName>Putul Kashyap</b:ClientName>
+            <b:DPC>Y</b:DPC>
+            <b:DPFolioNo/>
+            <b:DPTrans>PHYSICAL</b:DPTrans>
+            <b:Date>22/01/2026</b:Date>
+            <b:EUIN/>
+            <b:EUINDecl>N</b:EUINDecl>
+            <b:EntryBy>128630</b:EntryBy>
+            <b:FirstOrder>N</b:FirstOrder>
+            <b:FolioNo/>
+            <b:ISIN>INF179K01608</b:ISIN>
+            <b:InternalRefNo/>
+            <b:KYCFlag>Y</b:KYCFlag>
+            <b:MINRedeemFlag>N</b:MINRedeemFlag>
+            <b:MemberCode>24637</b:MemberCode>
+            <b:MemberRemarks/>
+            <b:OrderNumber>16084759</b:OrderNumber>
+            <b:OrderRemarks>PAYMENT NOT INITIATED</b:OrderRemarks>
+            <b:OrderStatus>INVALID</b:OrderStatus>
+            <b:OrderType>NRM</b:OrderType>
+            <b:SIPRegnDate/>
+            <b:SIPRegnNo>0</b:SIPRegnNo>
+            <b:SchemeCode>02</b:SchemeCode>
+            <b:SchemeName>HDFC EQUITY FUND - GROWTH OPTION</b:SchemeName>
+            <b:SettNo>2526200</b:SettNo>
+            <b:SettType>T3</b:SettType>
+            <b:SubBrCode/>
+            <b:SubBrokerARNCode/>
+            <b:SubOrderType>NRM</b:SubOrderType>
+            <b:Time>14:25:32</b:Time>
+            <b:Units>0.0000</b:Units>
+          </b:OrderDetails>
+          <b:OrderDetails>
+            <b:ALLUnits>N</b:ALLUnits>
+            <b:Amount>50000.0000</b:Amount>
+            <b:BuySell>P</b:BuySell>
+            <b:BuySellType>FRESH</b:BuySellType>
+            <b:ClientCode>EEFPP8024C</b:ClientCode>
+            <b:ClientName>Milind Patel</b:ClientName>
+            <b:DPC>Y</b:DPC>
+            <b:DPFolioNo/>
+            <b:DPTrans>PHYSICAL</b:DPTrans>
+            <b:Date>22/01/2026</b:Date>
+            <b:EUIN/>
+            <b:EUINDecl>N</b:EUINDecl>
+            <b:EntryBy>128630</b:EntryBy>
+            <b:FirstOrder>N</b:FirstOrder>
+            <b:FolioNo/>
+            <b:ISIN>INF179K01608</b:ISIN>
+            <b:InternalRefNo/>
+            <b:KYCFlag>Y</b:KYCFlag>
+            <b:MINRedeemFlag>N</b:MINRedeemFlag>
+            <b:MemberCode>24637</b:MemberCode>
+            <b:MemberRemarks/>
+            <b:OrderNumber>16084685</b:OrderNumber>
+            <b:OrderRemarks>PAYMENT NOT INITIATED</b:OrderRemarks>
+            <b:OrderStatus>INVALID</b:OrderStatus>
+            <b:OrderType>NRM</b:OrderType>
+            <b:SIPRegnDate/>
+            <b:SIPRegnNo>0</b:SIPRegnNo>
+            <b:SchemeCode>02</b:SchemeCode>
+            <b:SchemeName>HDFC EQUITY FUND - GROWTH OPTION</b:SchemeName>
+            <b:SettNo>2526200</b:SettNo>
+            <b:SettType>T3</b:SettType>
+            <b:SubBrCode/>
+            <b:SubBrokerARNCode/>
+            <b:SubOrderType>NRM</b:SubOrderType>
+            <b:Time>14:25:32</b:Time>
+            <b:Units>0.0000</b:Units>
+          </b:OrderDetails>
+          <b:OrderDetails>
+            <b:ALLUnits>N</b:ALLUnits>
+            <b:Amount>50000.0000</b:Amount>
+            <b:BuySell>P</b:BuySell>
+            <b:BuySellType>FRESH</b:BuySellType>
+            <b:ClientCode>EEFPP8024C</b:ClientCode>
+            <b:ClientName>Milind Patel</b:ClientName>
+            <b:DPC>Y</b:DPC>
+            <b:DPFolioNo/>
+            <b:DPTrans>PHYSICAL</b:DPTrans>
+            <b:Date>22/01/2026</b:Date>
+            <b:EUIN/>
+            <b:EUINDecl>N</b:EUINDecl>
+            <b:EntryBy>128630</b:EntryBy>
+            <b:FirstOrder>N</b:FirstOrder>
+            <b:FolioNo/>
+            <b:ISIN>INF179K01608</b:ISIN>
+            <b:InternalRefNo/>
+            <b:KYCFlag>Y</b:KYCFlag>
+            <b:MINRedeemFlag>N</b:MINRedeemFlag>
+            <b:MemberCode>24637</b:MemberCode>
+            <b:MemberRemarks/>
+            <b:OrderNumber>16084758</b:OrderNumber>
+            <b:OrderRemarks>PAYMENT NOT INITIATED</b:OrderRemarks>
+            <b:OrderStatus>INVALID</b:OrderStatus>
+            <b:OrderType>NRM</b:OrderType>
+            <b:SIPRegnDate/>
+            <b:SIPRegnNo>0</b:SIPRegnNo>
+            <b:SchemeCode>02</b:SchemeCode>
+            <b:SchemeName>HDFC EQUITY FUND - GROWTH OPTION</b:SchemeName>
+            <b:SettNo>2526200</b:SettNo>
+            <b:SettType>T3</b:SettType>
+            <b:SubBrCode/>
+            <b:SubBrokerARNCode/>
+            <b:SubOrderType>NRM</b:SubOrderType>
+            <b:Time>14:25:32</b:Time>
+            <b:Units>0.0000</b:Units>
+          </b:OrderDetails>
+          <b:OrderDetails>
+            <b:ALLUnits>N</b:ALLUnits>
+            <b:Amount>10000.0000</b:Amount>
+            <b:BuySell>P</b:BuySell>
+            <b:BuySellType>FRESH</b:BuySellType>
+            <b:ClientCode>EEFPP8024C</b:ClientCode>
+            <b:ClientName>Milind Patel</b:ClientName>
+            <b:DPC>Y</b:DPC>
+            <b:DPFolioNo/>
+            <b:DPTrans>PHYSICAL</b:DPTrans>
+            <b:Date>29/01/2026</b:Date>
+            <b:EUIN>E123456</b:EUIN>
+            <b:EUINDecl>Y</b:EUINDecl>
+            <b:EntryBy>128630</b:EntryBy>
+            <b:FirstOrder>N</b:FirstOrder>
+            <b:FolioNo/>
+            <b:ISIN>INF179K01608</b:ISIN>
+            <b:InternalRefNo/>
+            <b:KYCFlag>Y</b:KYCFlag>
+            <b:MINRedeemFlag>N</b:MINRedeemFlag>
+            <b:MemberCode>24637</b:MemberCode>
+            <b:MemberRemarks/>
+            <b:OrderNumber>16105768</b:OrderNumber>
+            <b:OrderRemarks>PAYMENT NOT INITIATED</b:OrderRemarks>
+            <b:OrderStatus>INVALID</b:OrderStatus>
+            <b:OrderType>NRM</b:OrderType>
+            <b:SIPRegnDate/>
+            <b:SIPRegnNo>0</b:SIPRegnNo>
+            <b:SchemeCode>02</b:SchemeCode>
+            <b:SchemeName>HDFC EQUITY FUND - GROWTH OPTION</b:SchemeName>
+            <b:SettNo>2526204</b:SettNo>
+            <b:SettType>T3</b:SettType>
+            <b:SubBrCode/>
+            <b:SubBrokerARNCode/>
+            <b:SubOrderType>NRM</b:SubOrderType>
+            <b:Time>14:25:41</b:Time>
+            <b:Units>0.0000</b:Units>
+          </b:OrderDetails>
+          <b:OrderDetails>
+            <b:ALLUnits>N</b:ALLUnits>
+            <b:Amount>30000.0000</b:Amount>
+            <b:BuySell>P</b:BuySell>
+            <b:BuySellType>FRESH</b:BuySellType>
+            <b:ClientCode>EEFPP8024C</b:ClientCode>
+            <b:ClientName>Milind Patel</b:ClientName>
+            <b:DPC>Y</b:DPC>
+            <b:DPFolioNo/>
+            <b:DPTrans>PHYSICAL</b:DPTrans>
+            <b:Date>28/01/2026</b:Date>
+            <b:EUIN>E123456</b:EUIN>
+            <b:EUINDecl>Y</b:EUINDecl>
+            <b:EntryBy>128630</b:EntryBy>
+            <b:FirstOrder>N</b:FirstOrder>
+            <b:FolioNo/>
+            <b:ISIN>INF179K01608</b:ISIN>
+            <b:InternalRefNo/>
+            <b:KYCFlag>Y</b:KYCFlag>
+            <b:MINRedeemFlag>N</b:MINRedeemFlag>
+            <b:MemberCode>24637</b:MemberCode>
+            <b:MemberRemarks/>
+            <b:OrderNumber>16105771</b:OrderNumber>
+            <b:OrderRemarks>2FA PURCHASE AUTHENTICATION NOT RECEIVED</b:OrderRemarks>
+            <b:OrderStatus>INVALID</b:OrderStatus>
+            <b:OrderType>NRM</b:OrderType>
+            <b:SIPRegnDate/>
+            <b:SIPRegnNo>0</b:SIPRegnNo>
+            <b:SchemeCode>02</b:SchemeCode>
+            <b:SchemeName>HDFC EQUITY FUND - GROWTH OPTION</b:SchemeName>
+            <b:SettNo>2526205</b:SettNo>
+            <b:SettType>T3</b:SettType>
+            <b:SubBrCode/>
+            <b:SubBrokerARNCode/>
+            <b:SubOrderType>NRM</b:SubOrderType>
+            <b:Time>13:00:33</b:Time>
+            <b:Units>0.0000</b:Units>
+          </b:OrderDetails>
+          <b:OrderDetails>
+            <b:ALLUnits>N</b:ALLUnits>
+            <b:Amount>10000.0000</b:Amount>
+            <b:BuySell>P</b:BuySell>
+            <b:BuySellType>FRESH</b:BuySellType>
+            <b:ClientCode>EEFPP8024C</b:ClientCode>
+            <b:ClientName>Milind Patel</b:ClientName>
+            <b:DPC>Y</b:DPC>
+            <b:DPFolioNo>12342134</b:DPFolioNo>
+            <b:DPTrans>PHYSICAL</b:DPTrans>
+            <b:Date>28/01/2026</b:Date>
+            <b:EUIN>E123456</b:EUIN>
+            <b:EUINDecl>Y</b:EUINDecl>
+            <b:EntryBy>128630</b:EntryBy>
+            <b:FirstOrder>N</b:FirstOrder>
+            <b:FolioNo/>
+            <b:ISIN>INF179K01608</b:ISIN>
+            <b:InternalRefNo/>
+            <b:KYCFlag>Y</b:KYCFlag>
+            <b:MINRedeemFlag>N</b:MINRedeemFlag>
+            <b:MemberCode>24637</b:MemberCode>
+            <b:MemberRemarks/>
+            <b:OrderNumber>16105783</b:OrderNumber>
+            <b:OrderRemarks>2FA PURCHASE AUTHENTICATION NOT RECEIVED</b:OrderRemarks>
+            <b:OrderStatus>INVALID</b:OrderStatus>
+            <b:OrderType>NRM</b:OrderType>
+            <b:SIPRegnDate/>
+            <b:SIPRegnNo>0</b:SIPRegnNo>
+            <b:SchemeCode>02</b:SchemeCode>
+            <b:SchemeName>HDFC EQUITY FUND - GROWTH OPTION</b:SchemeName>
+            <b:SettNo>2526205</b:SettNo>
+            <b:SettType>T3</b:SettType>
+            <b:SubBrCode/>
+            <b:SubBrokerARNCode/>
+            <b:SubOrderType>NRM</b:SubOrderType>
+            <b:Time>13:24:18</b:Time>
+            <b:Units>0.0000</b:Units>
+          </b:OrderDetails>
+        </b:OrderDetails>
+        <b:Status>100</b:Status>
+      </OrderStatusResult>
+    </OrderStatusResponse>
+  </s:Body>
+</s:Envelope>
+
+2026-01-31 01:10:42,218 - ORDER STATUS: None | RESPONSE: {
+    'Message': 'Order Status Details',
+    'OrderDetails': {
+        'OrderDetails': [
+            {
+                'ALLUnits': 'N',
+                'Amount': '50000.0000',
+                'BuySell': 'P',
+                'BuySellType': 'FRESH',
+                'ClientCode': 'BDAPK9533N',
+                'ClientName': 'Putul Kashyap',
+                'DPC': 'Y',
+                'DPFolioNo': None,
+                'DPTrans': 'PHYSICAL',
+                'Date': '22/01/2026',
+                'EUIN': None,
+                'EUINDecl': 'N',
+                'EntryBy': '128630',
+                'FirstOrder': 'N',
+                'FolioNo': None,
+                'ISIN': 'INF179K01608',
+                'InternalRefNo': None,
+                'KYCFlag': 'Y',
+                'MINRedeemFlag': 'N',
+                'MemberCode': '24637',
+                'MemberRemarks': None,
+                'OrderNumber': '16084759',
+                'OrderRemarks': 'PAYMENT NOT INITIATED',
+                'OrderStatus': 'INVALID',
+                'OrderType': 'NRM',
+                'SIPRegnDate': None,
+                'SIPRegnNo': '0',
+                'SchemeCode': '02',
+                'SchemeName': 'HDFC EQUITY FUND - GROWTH OPTION',
+                'SettNo': '2526200',
+                'SettType': 'T3',
+                'SubBrCode': None,
+                'SubBrokerARNCode': None,
+                'SubOrderType': 'NRM',
+                'Time': '14:25:32',
+                'Units': '0.0000'
+            },
+            {
+                'ALLUnits': 'N',
+                'Amount': '50000.0000',
+                'BuySell': 'P',
+                'BuySellType': 'FRESH',
+                'ClientCode': 'EEFPP8024C',
+                'ClientName': 'Milind Patel',
+                'DPC': 'Y',
+                'DPFolioNo': None,
+                'DPTrans': 'PHYSICAL',
+                'Date': '22/01/2026',
+                'EUIN': None,
+                'EUINDecl': 'N',
+                'EntryBy': '128630',
+                'FirstOrder': 'N',
+                'FolioNo': None,
+                'ISIN': 'INF179K01608',
+                'InternalRefNo': None,
+                'KYCFlag': 'Y',
+                'MINRedeemFlag': 'N',
+                'MemberCode': '24637',
+                'MemberRemarks': None,
+                'OrderNumber': '16084685',
+                'OrderRemarks': 'PAYMENT NOT INITIATED',
+                'OrderStatus': 'INVALID',
+                'OrderType': 'NRM',
+                'SIPRegnDate': None,
+                'SIPRegnNo': '0',
+                'SchemeCode': '02',
+                'SchemeName': 'HDFC EQUITY FUND - GROWTH OPTION',
+                'SettNo': '2526200',
+                'SettType': 'T3',
+                'SubBrCode': None,
+                'SubBrokerARNCode': None,
+                'SubOrderType': 'NRM',
+                'Time': '14:25:32',
+                'Units': '0.0000'
+            },
+            {
+                'ALLUnits': 'N',
+                'Amount': '50000.0000',
+                'BuySell': 'P',
+                'BuySellType': 'FRESH',
+                'ClientCode': 'EEFPP8024C',
+                'ClientName': 'Milind Patel',
+                'DPC': 'Y',
+                'DPFolioNo': None,
+                'DPTrans': 'PHYSICAL',
+                'Date': '22/01/2026',
+                'EUIN': None,
+                'EUINDecl': 'N',
+                'EntryBy': '128630',
+                'FirstOrder': 'N',
+                'FolioNo': None,
+                'ISIN': 'INF179K01608',
+                'InternalRefNo': None,
+                'KYCFlag': 'Y',
+                'MINRedeemFlag': 'N',
+                'MemberCode': '24637',
+                'MemberRemarks': None,
+                'OrderNumber': '16084758',
+                'OrderRemarks': 'PAYMENT NOT INITIATED',
+                'OrderStatus': 'INVALID',
+                'OrderType': 'NRM',
+                'SIPRegnDate': None,
+                'SIPRegnNo': '0',
+                'SchemeCode': '02',
+                'SchemeName': 'HDFC EQUITY FUND - GROWTH OPTION',
+                'SettNo': '2526200',
+                'SettType': 'T3',
+                'SubBrCode': None,
+                'SubBrokerARNCode': None,
+                'SubOrderType': 'NRM',
+                'Time': '14:25:32',
+                'Units': '0.0000'
+            },
+            {
+                'ALLUnits': 'N',
+                'Amount': '10000.0000',
+                'BuySell': 'P',
+                'BuySellType': 'FRESH',
+                'ClientCode': 'EEFPP8024C',
+                'ClientName': 'Milind Patel',
+                'DPC': 'Y',
+                'DPFolioNo': None,
+                'DPTrans': 'PHYSICAL',
+                'Date': '29/01/2026',
+                'EUIN': 'E123456',
+                'EUINDecl': 'Y',
+                'EntryBy': '128630',
+                'FirstOrder': 'N',
+                'FolioNo': None,
+                'ISIN': 'INF179K01608',
+                'InternalRefNo': None,
+                'KYCFlag': 'Y',
+                'MINRedeemFlag': 'N',
+                'MemberCode': '24637',
+                'MemberRemarks': None,
+                'OrderNumber': '16105768',
+                'OrderRemarks': 'PAYMENT NOT INITIATED',
+                'OrderStatus': 'INVALID',
+                'OrderType': 'NRM',
+                'SIPRegnDate': None,
+                'SIPRegnNo': '0',
+                'SchemeCode': '02',
+                'SchemeName': 'HDFC EQUITY FUND - GROWTH OPTION',
+                'SettNo': '2526204',
+                'SettType': 'T3',
+                'SubBrCode': None,
+                'SubBrokerARNCode': None,
+                'SubOrderType': 'NRM',
+                'Time': '14:25:41',
+                'Units': '0.0000'
+            },
+            {
+                'ALLUnits': 'N',
+                'Amount': '30000.0000',
+                'BuySell': 'P',
+                'BuySellType': 'FRESH',
+                'ClientCode': 'EEFPP8024C',
+                'ClientName': 'Milind Patel',
+                'DPC': 'Y',
+                'DPFolioNo': None,
+                'DPTrans': 'PHYSICAL',
+                'Date': '28/01/2026',
+                'EUIN': 'E123456',
+                'EUINDecl': 'Y',
+                'EntryBy': '128630',
+                'FirstOrder': 'N',
+                'FolioNo': None,
+                'ISIN': 'INF179K01608',
+                'InternalRefNo': None,
+                'KYCFlag': 'Y',
+                'MINRedeemFlag': 'N',
+                'MemberCode': '24637',
+                'MemberRemarks': None,
+                'OrderNumber': '16105771',
+                'OrderRemarks': '2FA PURCHASE AUTHENTICATION NOT RECEIVED',
+                'OrderStatus': 'INVALID',
+                'OrderType': 'NRM',
+                'SIPRegnDate': None,
+                'SIPRegnNo': '0',
+                'SchemeCode': '02',
+                'SchemeName': 'HDFC EQUITY FUND - GROWTH OPTION',
+                'SettNo': '2526205',
+                'SettType': 'T3',
+                'SubBrCode': None,
+                'SubBrokerARNCode': None,
+                'SubOrderType': 'NRM',
+                'Time': '13:00:33',
+                'Units': '0.0000'
+            },
+            {
+                'ALLUnits': 'N',
+                'Amount': '10000.0000',
+                'BuySell': 'P',
+                'BuySellType': 'FRESH',
+                'ClientCode': 'EEFPP8024C',
+                'ClientName': 'Milind Patel',
+                'DPC': 'Y',
+                'DPFolioNo': '12342134',
+                'DPTrans': 'PHYSICAL',
+                'Date': '28/01/2026',
+                'EUIN': 'E123456',
+                'EUINDecl': 'Y',
+                'EntryBy': '128630',
+                'FirstOrder': 'N',
+                'FolioNo': None,
+                'ISIN': 'INF179K01608',
+                'InternalRefNo': None,
+                'KYCFlag': 'Y',
+                'MINRedeemFlag': 'N',
+                'MemberCode': '24637',
+                'MemberRemarks': None,
+                'OrderNumber': '16105783',
+                'OrderRemarks': '2FA PURCHASE AUTHENTICATION NOT RECEIVED',
+                'OrderStatus': 'INVALID',
+                'OrderType': 'NRM',
+                'SIPRegnDate': None,
+                'SIPRegnNo': '0',
+                'SchemeCode': '02',
+                'SchemeName': 'HDFC EQUITY FUND - GROWTH OPTION',
+                'SettNo': '2526205',
+                'SettType': 'T3',
+                'SubBrCode': None,
+                'SubBrokerARNCode': None,
+                'SubOrderType': 'NRM',
+                'Time': '13:24:18',
+                'Units': '0.0000'
+            }
+        ]
+    },
+    'Status': '100'
+}
