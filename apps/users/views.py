@@ -120,6 +120,9 @@ class RMListView(LoginRequiredMixin, IsAdminMixin, ListView):
     template_name = 'users/rm_list.html'
     context_object_name = 'rms'
 
+    def get_queryset(self):
+        return super().get_queryset().select_related('branch', 'user')
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         data = []
