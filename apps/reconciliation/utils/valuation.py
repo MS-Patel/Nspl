@@ -1,5 +1,6 @@
 from decimal import Decimal
-from django.db.models import Sum, F
+from django.db.models import Sum, F, OuterRef, Subquery
+from django.utils import timezone
 from apps.products.models import NAVHistory
 from apps.reconciliation.models import Holding
 
@@ -7,26 +8,42 @@ def calculate_portfolio_valuation(investor_profile):
     """
     Updates current value of holdings for an investor and returns summary.
     """
-    holdings = Holding.objects.filter(investor=investor_profile)
+    # Subquery to fetch the latest NAV for the scheme
+    latest_nav_qs = NAVHistory.objects.filter(
+        scheme=OuterRef('scheme')
+    ).order_by('-nav_date')
+
+    # Fetch holdings with scheme pre-fetched and annotated with latest NAV details
+    holdings = Holding.objects.filter(investor=investor_profile).select_related('scheme').annotate(
+        latest_nav_val=Subquery(latest_nav_qs.values('net_asset_value')[:1]),
+        latest_nav_date=Subquery(latest_nav_qs.values('nav_date')[:1])
+    )
 
     total_current_value = Decimal(0)
     total_invested_value = Decimal(0)
 
     holdings_data = []
+    holdings_to_update = []
+
+    # Timestamp for bulk update
+    now = timezone.now()
 
     for holding in holdings:
         scheme = holding.scheme
-        latest_nav = None
-        # Fetch latest NAV
-        try:
-            latest_nav = NAVHistory.objects.filter(scheme=scheme).latest('nav_date')
-            holding.current_nav = latest_nav.net_asset_value
-            holding.current_value = holding.units * latest_nav.net_asset_value
-            holding.save(update_fields=['current_nav', 'current_value', 'last_updated'])
-        except NAVHistory.DoesNotExist:
+        nav_val = holding.latest_nav_val
+        nav_date = holding.latest_nav_date
+
+        if nav_val is not None:
+            holding.current_nav = nav_val
+            holding.current_value = holding.units * nav_val
+            holding.last_updated = now  # Manually update auto_now field for bulk_update
+            holdings_to_update.append(holding)
+        else:
+            # Fallback if no NAV found (matches original except logic)
             if not holding.current_nav:
                 holding.current_nav = Decimal(0)
                 holding.current_value = Decimal(0)
+            # Original code did not save here, so we don't add to holdings_to_update
 
         invested_value = holding.units * holding.average_cost
 
@@ -52,8 +69,11 @@ def calculate_portfolio_valuation(investor_profile):
             'invested_value': float(invested_value),
             'gain_loss': float(gain_loss),
             'gain_loss_percent': float(gain_loss_percent),
-            'nav_date': str(latest_nav.nav_date) if latest_nav else None
+            'nav_date': str(nav_date) if nav_date else None
         })
+
+    if holdings_to_update:
+        Holding.objects.bulk_update(holdings_to_update, ['current_nav', 'current_value', 'last_updated'])
 
     summary = {
         'total_current_value': total_current_value,
