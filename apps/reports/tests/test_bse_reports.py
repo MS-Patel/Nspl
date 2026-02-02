@@ -1,8 +1,10 @@
 from django.test import TestCase, Client
 from django.urls import reverse
-from unittest.mock import patch, MagicMock
+from django.utils import timezone
 from apps.users.models import User, InvestorProfile
-from apps.integration.bse_client import BSEStarMFClient
+from apps.products.models import Scheme, AMC, SchemeCategory
+from apps.investments.models import Order
+from apps.reconciliation.models import Transaction
 import datetime
 
 class BSEReportViewsTest(TestCase):
@@ -12,104 +14,84 @@ class BSEReportViewsTest(TestCase):
         self.investor = InvestorProfile.objects.create(user=self.user, pan='ABCDE1234F', ucc_code='TESTUCC')
         self.client.login(username='testuser', password='password')
 
-    @patch('apps.reports.views.BSEStarMFClient')
-    def test_order_status_report(self, MockBSEClient):
-        # Setup Mock
-        mock_instance = MockBSEClient.return_value
-        mock_response = MagicMock()
-        mock_response.Status = '0'
+        # Products
+        self.amc = AMC.objects.create(name='Test AMC', code='TAMC')
+        self.category = SchemeCategory.objects.create(name='Equity', code='EQ')
+        self.scheme = Scheme.objects.create(
+            amc=self.amc,
+            category=self.category,
+            name='Test Scheme',
+            scheme_code='SCHEME1',
+            isin='INF123456789'
+        )
 
-        # Mock Order Details
-        detail = MagicMock()
-        detail.OrderNo = '12345'
-        detail.ClientCode = 'TESTUCC'
-        detail.SchemeCode = 'SCHEME1'
-        detail.OrderType = 'Purchase'
-        detail.BuySell = 'P'
-        detail.OrderVal = '1000'
-        detail.OrderStatus = 'Approved'
-        detail.OrderRemarks = 'Success'
-        detail.TransNo = 'T123'
-
-        mock_response.OrderDetails = [detail]
-        mock_instance.get_order_status.return_value = mock_response
+    def test_order_status_report(self):
+        # Create Order
+        Order.objects.create(
+            investor=self.investor,
+            scheme=self.scheme,
+            amount=1000,
+            status=Order.APPROVED,
+            bse_order_id='12345',
+            bse_remarks='Success',
+            unique_ref_no='REF123'
+        )
 
         # Request
         url = reverse('reports:order_status_report')
-        response = self.client.get(url, {'from_date': '01/01/2024', 'to_date': '31/01/2024'})
+        today = datetime.date.today().strftime('%d/%m/%Y')
+        response = self.client.get(url, {'from_date': today, 'to_date': today})
 
         # Verify
         self.assertEqual(response.status_code, 200)
-        # Check if get_order_status was called with correct params
-        mock_instance.get_order_status.assert_called_with(
-            from_date='01/01/2024',
-            to_date='31/01/2024',
-            client_code='TESTUCC'
-        )
-        # Check context data
         self.assertIn('grid_data_json', response.context)
         self.assertIn('12345', response.context['grid_data_json'])
         self.assertIn('Approved', response.context['grid_data_json'])
 
-    @patch('apps.reports.views.BSEStarMFClient')
-    def test_allotment_report(self, MockBSEClient):
-        mock_instance = MockBSEClient.return_value
-        mock_response = MagicMock()
-        mock_response.Status = '0'
-
-        detail = MagicMock()
-        detail.OrderNo = '54321'
-        detail.ClientCode = 'TESTUCC'
-        detail.SchemeCode = 'SCHEME2'
-        detail.FolioNo = 'FOLIO1'
-        detail.AllottedUnit = '10.5'
-        detail.AllottedAmt = '1000'
-        detail.Nav = '100'
-        detail.AllotmentDate = '15/01/2024'
-        detail.TransNo = 'T123'
-
-        mock_response.AllotmentDetails = [detail]
-        mock_instance.get_allotment_statement.return_value = mock_response
+    def test_allotment_report(self):
+        # Create Transaction
+        Transaction.objects.create(
+            investor=self.investor,
+            scheme=self.scheme,
+            folio_number='FOLIO1',
+            units=10.5,
+            amount=1000,
+            nav=100,
+            date=datetime.date.today(),
+            txn_type_code='P',
+            source=Transaction.SOURCE_BSE,
+            bse_order_id='54321',
+            txn_number='54321'
+        )
 
         url = reverse('reports:allotment_report')
-        response = self.client.get(url, {'from_date': '01/01/2024', 'to_date': '31/01/2024'})
+        today = datetime.date.today().strftime('%d/%m/%Y')
+        response = self.client.get(url, {'from_date': today, 'to_date': today})
 
         self.assertEqual(response.status_code, 200)
-        mock_instance.get_allotment_statement.assert_called_with(
-            from_date='01/01/2024',
-            to_date='31/01/2024',
-            client_code='TESTUCC',
-            order_type='Purchase'
-        )
         self.assertIn('54321', response.context['grid_data_json'])
+        self.assertIn('FOLIO1', response.context['grid_data_json'])
 
-    @patch('apps.reports.views.BSEStarMFClient')
-    def test_redemption_report(self, MockBSEClient):
-        mock_instance = MockBSEClient.return_value
-        mock_response = MagicMock()
-        mock_response.Status = '0'
-
-        detail = MagicMock()
-        detail.OrderNo = '98765'
-        detail.ClientCode = 'TESTUCC'
-        detail.SchemeCode = 'SCHEME3' # Added SchemeCode which is accessed
-        detail.FolioNo = 'FOLIO2' # Added FolioNo
-        detail.AllottedUnit = '50'
-        detail.AllottedAmt = '5000'
-        detail.Nav = '100'
-        detail.AllotmentDate = '20/01/2024'
-        detail.TransNo = 'T456'
-
-        mock_response.AllotmentDetails = [detail]
-        mock_instance.get_redemption_statement.return_value = mock_response
+    def test_redemption_report(self):
+        # Create Transaction
+        Transaction.objects.create(
+            investor=self.investor,
+            scheme=self.scheme,
+            folio_number='FOLIO2',
+            units=50,
+            amount=5000,
+            nav=100,
+            date=datetime.date.today(),
+            txn_type_code='R',
+            source=Transaction.SOURCE_BSE,
+            bse_order_id='98765',
+            txn_number='98765'
+        )
 
         url = reverse('reports:redemption_report')
-        response = self.client.get(url, {'from_date': '01/01/2024', 'to_date': '31/01/2024'})
+        today = datetime.date.today().strftime('%d/%m/%Y')
+        response = self.client.get(url, {'from_date': today, 'to_date': today})
 
         self.assertEqual(response.status_code, 200)
-        mock_instance.get_redemption_statement.assert_called_with(
-            from_date='01/01/2024',
-            to_date='31/01/2024',
-            client_code='TESTUCC'
-        )
         self.assertIn('98765', response.context['grid_data_json'])
+        self.assertIn('FOLIO2', response.context['grid_data_json'])

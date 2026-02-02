@@ -8,8 +8,9 @@ import datetime
 
 from apps.users.models import User, InvestorProfile, DistributorProfile, RMProfile
 from apps.investments.models import Order, SIP
+from apps.reconciliation.models import Transaction
 from apps.products.models import Scheme
-from apps.integration.bse_client import BSEStarMFClient
+# from apps.integration.bse_client import BSEStarMFClient # No longer needed for direct calls
 
 class ReportDashboardView(LoginRequiredMixin, TemplateView):
     template_name = 'reports/dashboard.html'
@@ -185,55 +186,64 @@ class OrderStatusReportView(LoginRequiredMixin, TemplateView):
         user = self.request.user
 
         # Get Filter Params
-        from_date = self.request.GET.get('from_date')
-        to_date = self.request.GET.get('to_date')
-        # Default to today if not provided to avoid showing stale/no data?
-        # Or show nothing until searched. Let's show today's data as default "Realtime" view.
-        if not from_date:
-            from_date = datetime.date.today().strftime("%d/%m/%Y")
-        if not to_date:
-            to_date = datetime.date.today().strftime("%d/%m/%Y")
+        from_date_str = self.request.GET.get('from_date')
+        to_date_str = self.request.GET.get('to_date')
+
+        # Default to today if not provided
+        if not from_date_str:
+            from_date_str = datetime.date.today().strftime("%d/%m/%Y")
+        if not to_date_str:
+            to_date_str = datetime.date.today().strftime("%d/%m/%Y")
+
+        try:
+            from_date = datetime.datetime.strptime(from_date_str, "%d/%m/%Y").date()
+            # For end date, we want to include the whole day, so we might need strict filtering or lt next day.
+            # But simple date filtering on DateTimeField uses 00:00:00.
+            # created_at is DateTimeField.
+            to_date = datetime.datetime.strptime(to_date_str, "%d/%m/%Y").date()
+            # Adjust to_date to end of day
+            to_date_end = to_date + datetime.timedelta(days=1)
+        except ValueError:
+            from_date = datetime.date.today()
+            to_date = datetime.date.today()
+            to_date_end = to_date + datetime.timedelta(days=1)
 
         data = []
 
-        # Access Logic for Client Code
-        target_client_code = None
-        if user.user_type == User.Types.INVESTOR:
-             profile = InvestorProfile.objects.filter(user=user).first()
-             if profile:
-                 target_client_code = profile.ucc_code
+        # Role-based Filtering
+        qs = Order.objects.filter(created_at__range=(from_date, to_date_end))
 
-        client = BSEStarMFClient()
-        response = client.get_order_status(from_date=from_date, to_date=to_date, client_code=target_client_code)
+        if user.user_type == User.Types.ADMIN:
+            pass
+        elif user.user_type == User.Types.RM:
+            qs = qs.filter(
+                Q(investor__rm__user=user) | Q(investor__distributor__rm__user=user)
+            ).distinct()
+        elif user.user_type == User.Types.DISTRIBUTOR:
+            qs = qs.filter(investor__distributor__user=user)
+        elif user.user_type == User.Types.INVESTOR:
+            qs = qs.filter(investor__user=user)
+        else:
+            qs = Order.objects.none()
 
-        if response and getattr(response, 'Status', None) == '100' and getattr(response, 'OrderDetails', None):
-             # Access Control Logic (Post-fetch filtering for non-investors)
-             permitted_uccs = None
-             if user.user_type == User.Types.DISTRIBUTOR:
-                 permitted_uccs = set(InvestorProfile.objects.filter(distributor__user=user).values_list('ucc_code', flat=True))
-             elif user.user_type == User.Types.RM:
-                 permitted_uccs = set(InvestorProfile.objects.filter(Q(rm__user=user) | Q(distributor__rm__user=user)).values_list('ucc_code', flat=True))
-             for item in response.OrderDetails.OrderDetails:
-                 # Check permission
-                 if permitted_uccs is not None:
-                     if item.ClientCode not in permitted_uccs:
-                         continue
+        qs = qs.select_related('investor', 'scheme').order_by('-created_at')
 
-                 data.append({
-                     'OrderNo': getattr(item, 'OrderNumber', ''),
-                     'ClientCode': item.ClientCode,
-                     'SchemeCode': item.SchemeCode,
-                     'OrderType': item.OrderType,
-                     'BuySell': item.BuySell,
-                     'OrderVal': float(getattr(item, 'Amount', 0) or 0),
-                     'OrderStatus': item.OrderStatus,
-                     'OrderRemarks': item.OrderRemarks,
-                     'TransNo': getattr(item, 'SettNo', getattr(item, 'TransNo', ''))
-                 })
+        for order in qs:
+            data.append({
+                'OrderNo': order.bse_order_id or '',
+                'ClientCode': order.investor.ucc_code,
+                'SchemeCode': order.scheme.scheme_code,
+                'OrderType': order.get_transaction_type_display(),
+                'BuySell': 'P' if order.transaction_type == 'P' else 'R' if order.transaction_type == 'R' else order.transaction_type,
+                'OrderVal': float(order.amount),
+                'OrderStatus': order.get_status_display(), # Or raw status if preferred
+                'OrderRemarks': order.bse_remarks or '',
+                'TransNo': order.bse_order_id or '' # Assuming TransNo == OrderNo locally
+            })
 
         context['grid_data_json'] = json.dumps(data, cls=DjangoJSONEncoder)
-        context['from_date'] = from_date
-        context['to_date'] = to_date
+        context['from_date'] = from_date_str
+        context['to_date'] = to_date_str
         return context
 
 class AllotmentReportView(LoginRequiredMixin, TemplateView):
@@ -243,51 +253,63 @@ class AllotmentReportView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         user = self.request.user
 
-        from_date = self.request.GET.get('from_date')
-        to_date = self.request.GET.get('to_date')
-        if not from_date:
-            from_date = datetime.date.today().strftime("%d/%m/%Y")
-        if not to_date:
-            to_date = datetime.date.today().strftime("%d/%m/%Y")
+        from_date_str = self.request.GET.get('from_date')
+        to_date_str = self.request.GET.get('to_date')
+
+        if not from_date_str:
+            from_date_str = datetime.date.today().strftime("%d/%m/%Y")
+        if not to_date_str:
+            to_date_str = datetime.date.today().strftime("%d/%m/%Y")
+
+        try:
+            from_date = datetime.datetime.strptime(from_date_str, "%d/%m/%Y").date()
+            to_date = datetime.datetime.strptime(to_date_str, "%d/%m/%Y").date()
+        except ValueError:
+            from_date = datetime.date.today()
+            to_date = datetime.date.today()
 
         data = []
-        target_client_code = None
-        if user.user_type == User.Types.INVESTOR:
-             profile = InvestorProfile.objects.filter(user=user).first()
-             if profile:
-                 target_client_code = profile.ucc_code
 
-        client = BSEStarMFClient()
-        # Allotment Statement usually focuses on Purchases
-        response = client.get_allotment_statement(from_date=from_date, to_date=to_date, client_code=target_client_code, order_type="All")
+        # Query Transactions
+        # Source BSE, Type Purchase/Switch-In
+        # Filtering by date (Transaction has date field which is DateField)
+        qs = Transaction.objects.filter(
+            source=Transaction.SOURCE_BSE,
+            txn_type_code__in=['P', 'SI'],
+            date__range=(from_date, to_date)
+        )
 
-        if response and getattr(response, 'Status', None) == '100' and getattr(response, 'AllotmentDetails', None):
-             permitted_uccs = None
-             if user.user_type == User.Types.DISTRIBUTOR:
-                 permitted_uccs = set(InvestorProfile.objects.filter(distributor__user=user).values_list('ucc_code', flat=True))
-             elif user.user_type == User.Types.RM:
-                 permitted_uccs = set(InvestorProfile.objects.filter(Q(rm__user=user) | Q(distributor__rm__user=user)).values_list('ucc_code', flat=True))
+        if user.user_type == User.Types.ADMIN:
+            pass
+        elif user.user_type == User.Types.RM:
+            qs = qs.filter(
+                Q(investor__rm__user=user) | Q(investor__distributor__rm__user=user)
+            ).distinct()
+        elif user.user_type == User.Types.DISTRIBUTOR:
+            qs = qs.filter(investor__distributor__user=user)
+        elif user.user_type == User.Types.INVESTOR:
+            qs = qs.filter(investor__user=user)
+        else:
+            qs = Transaction.objects.none()
 
-             for item in response.AllotmentDetails.AllotmentDetails:
-                 if permitted_uccs is not None:
-                     if item.ClientCode not in permitted_uccs:
-                         continue
+        qs = qs.select_related('investor', 'scheme').order_by('-date')
 
-                 data.append({
-                     'OrderNo': item.OrderNo,
-                     'ClientCode': item.ClientCode,
-                     'SchemeCode': item.SchemeCode,
-                     'FolioNo': item.FolioNo,
-                     'AllottedUnit': float(item.AllottedUnit) if item.AllottedUnit else 0,
-                     'AllottedAmt': float(item.AllottedAmt) if item.AllottedAmt else 0,
-                     'Nav': float(item.Nav) if item.Nav else 0,
-                     'AllotmentDate': item.AllotmentDate,
-                     'TransNo': getattr(item, 'TransNo', '')
-                 })
+        for txn in qs:
+            data.append({
+                'OrderNo': txn.bse_order_id or '',
+                'ClientCode': txn.investor.ucc_code,
+                'SchemeCode': txn.scheme.scheme_code if txn.scheme else '',
+                'FolioNo': txn.folio_number,
+                'AllottedUnit': float(txn.units),
+                'AllottedAmt': float(txn.amount),
+                'Nav': float(txn.nav) if txn.nav else 0,
+                'AllotmentDate': txn.date.strftime("%d/%m/%Y"),
+                'TransNo': txn.bse_order_id or ''
+            })
 
         context['grid_data_json'] = json.dumps(data, cls=DjangoJSONEncoder)
-        context['from_date'] = from_date
-        context['to_date'] = to_date
+        context['from_date'] = from_date_str
+        context['to_date'] = to_date_str
         return context
 
 class RedemptionReportView(LoginRequiredMixin, TemplateView):
@@ -297,49 +319,59 @@ class RedemptionReportView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         user = self.request.user
 
-        from_date = self.request.GET.get('from_date')
-        to_date = self.request.GET.get('to_date')
-        if not from_date:
-            from_date = datetime.date.today().strftime("%d/%m/%Y")
-        if not to_date:
-            to_date = datetime.date.today().strftime("%d/%m/%Y")
+        from_date_str = self.request.GET.get('from_date')
+        to_date_str = self.request.GET.get('to_date')
+
+        if not from_date_str:
+            from_date_str = datetime.date.today().strftime("%d/%m/%Y")
+        if not to_date_str:
+            to_date_str = datetime.date.today().strftime("%d/%m/%Y")
+
+        try:
+            from_date = datetime.datetime.strptime(from_date_str, "%d/%m/%Y").date()
+            to_date = datetime.datetime.strptime(to_date_str, "%d/%m/%Y").date()
+        except ValueError:
+            from_date = datetime.date.today()
+            to_date = datetime.date.today()
 
         data = []
-        target_client_code = None
-        if user.user_type == User.Types.INVESTOR:
-             profile = InvestorProfile.objects.filter(user=user).first()
-             if profile:
-                 target_client_code = profile.ucc_code
 
-        client = BSEStarMFClient()
-        response = client.get_redemption_statement(from_date=from_date, to_date=to_date, client_code=target_client_code)
+        qs = Transaction.objects.filter(
+            source=Transaction.SOURCE_BSE,
+            txn_type_code__in=['R', 'SO'], # Redemption or Switch Out
+            date__range=(from_date, to_date)
+        )
 
-        if response and getattr(response, 'Status', None) == '100' and getattr(response, 'RedemptionDetails', None):
-             permitted_uccs = None
-             if user.user_type == User.Types.DISTRIBUTOR:
-                 permitted_uccs = set(InvestorProfile.objects.filter(distributor__user=user).values_list('ucc_code', flat=True))
-             elif user.user_type == User.Types.RM:
-                 permitted_uccs = set(InvestorProfile.objects.filter(Q(rm__user=user) | Q(distributor__rm__user=user)).values_list('ucc_code', flat=True))
+        if user.user_type == User.Types.ADMIN:
+            pass
+        elif user.user_type == User.Types.RM:
+            qs = qs.filter(
+                Q(investor__rm__user=user) | Q(investor__distributor__rm__user=user)
+            ).distinct()
+        elif user.user_type == User.Types.DISTRIBUTOR:
+            qs = qs.filter(investor__distributor__user=user)
+        elif user.user_type == User.Types.INVESTOR:
+            qs = qs.filter(investor__user=user)
+        else:
+            qs = Transaction.objects.none()
 
-             for item in response.RedemptionDetails.RedemptionDetails:
-                 if permitted_uccs is not None:
-                     if item.ClientCode not in permitted_uccs:
-                         continue
-                         
-                 data.append({
-                     'OrderNo': item.OrderNo,
-                     'ClientCode': item.ClientCode,
-                     'SchemeCode': item.SchemeCode,
-                     'FolioNo': item.FolioNo,
-                     'Units': float(item.AllottedUnit) if item.AllottedUnit else 0, # In redemption, this might be units redeemed
-                     'Amount': float(item.AllottedAmt) if item.AllottedAmt else 0,
-                     'Nav': float(item.Nav) if item.Nav else 0,
-                     'Date': item.AllotmentDate,
-                     'Remarks': getattr(item, 'Remarks', ''),
-                     'TransNo': getattr(item, 'TransNo', '')
-                 })
+        qs = qs.select_related('investor', 'scheme').order_by('-date')
+
+        for txn in qs:
+            data.append({
+                'OrderNo': txn.bse_order_id or '',
+                'ClientCode': txn.investor.ucc_code,
+                'SchemeCode': txn.scheme.scheme_code if txn.scheme else '',
+                'FolioNo': txn.folio_number,
+                'Units': float(txn.units),
+                'Amount': float(txn.amount),
+                'Nav': float(txn.nav) if txn.nav else 0,
+                'Date': txn.date.strftime("%d/%m/%Y"),
+                'Remarks': 'Redeemed',
+                'TransNo': txn.bse_order_id or ''
+            })
 
         context['grid_data_json'] = json.dumps(data, cls=DjangoJSONEncoder)
-        context['from_date'] = from_date
-        context['to_date'] = to_date
+        context['from_date'] = from_date_str
+        context['to_date'] = to_date_str
         return context
