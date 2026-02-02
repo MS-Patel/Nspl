@@ -4,6 +4,8 @@ from decimal import Decimal
 from django.utils import timezone
 from apps.investments.models import Order, Mandate, SIP, Folio
 from apps.integration.bse_client import BSEStarMFClient
+from apps.reconciliation.models import Transaction, Holding
+from apps.reconciliation.utils.reconcile import recalculate_holding
 
 logger = logging.getLogger(__name__)
 
@@ -117,6 +119,46 @@ def sync_pending_orders(user=None, investor=None):
 
                         order.bse_remarks = "Allotted Successfully"
                         order.save()
+
+                        # ------------------------------------------------------------------
+                        # Create Provisional Transaction and Update Holding
+                        # ------------------------------------------------------------------
+
+                        # Determine Scheme and Type
+                        if order.transaction_type == Order.SWITCH and order.target_scheme:
+                            txn_scheme = order.target_scheme
+                            txn_type = 'SI'
+                        else:
+                            txn_scheme = order.scheme
+                            txn_type = 'P' # Default to Purchase for Allotment (incl SIP Child)
+
+                        # Check if transaction exists (Provisional or Confirmed)
+                        # We match strictly on BSE Order ID if available
+                        existing_txn = Transaction.objects.filter(bse_order_id=order.bse_order_id).exists()
+
+                        if not existing_txn and order.folio:
+                            Transaction.objects.create(
+                                investor=order.investor,
+                                scheme=txn_scheme,
+                                folio_number=order.folio.folio_number,
+                                rta_code='BSE', # Placeholder
+                                txn_type_code=txn_type,
+                                txn_number=order.bse_order_id, # Use BSE ID as Temp ID
+                                bse_order_id=order.bse_order_id,
+                                source=Transaction.SOURCE_BSE,
+                                is_provisional=True,
+                                date=timezone.now().date(), # Allotment Date approx
+                                amount=order.amount,
+                                units=allotted_units
+                            )
+
+                            # Recalculate Holdings
+                            recalculate_holding(
+                                investor=order.investor,
+                                scheme=txn_scheme,
+                                folio_number=order.folio.folio_number
+                            )
+                        # ------------------------------------------------------------------
 
         except Exception as e:
             logger.error(f"Error syncing order {order.unique_ref_no}: {e}")
