@@ -39,3 +39,27 @@ def mutual_funds(request):
     if request.user.is_authenticated:
         dashboard_url = get_dashboard_url(request.user)
     return render(request, 'website/mutual_funds.html', {'dashboard_url': dashboard_url})
+
+
+def privacypolicy(request):
+    dashboard_url = None
+    if request.user.is_authenticated:
+        dashboard_url = get_dashboard_url(request.user)
+    return render(request, 'website/privacypolicy.html', {'dashboard_url': dashboard_url})
+
+
+
+def termscondition(request):
+    dashboard_url = None
+    if request.user.is_authenticated:
+        dashboard_url = get_dashboard_url(request.user)
+    return render(request, 'website/termscondition.html', {'dashboard_url': dashboard_url})
+
+
+def documentsdownload(request):
+    dashboard_url = None
+    if request.user.is_authenticated:
+        dashboard_url = get_dashboard_url(request.user)
+    return render(request, 'website/documentsdownload.html', {'dashboard_url': dashboard_url})
+
+
