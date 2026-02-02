@@ -12,6 +12,11 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 import os
 from pathlib import Path
+from dotenv import load_dotenv
+import dj_database_url
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,12 +26,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-j3$*!3y*#6vw3*%k5a4895&589oh!2a#=o#r+y7cxm=c-ty5+v'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-j3$*!3y*#6vw3*%k5a4895&589oh!2a#=o#r+y7cxm=c-ty5+v')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
 
 
 # Application definition
@@ -56,6 +61,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -88,10 +94,10 @@ WSGI_APPLICATION = 'core.wsgi.application'
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.config(
+        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+        conn_max_age=600
+    )
 }
 
 
@@ -137,16 +143,28 @@ STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'assets'),]
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 MEDIA_ROOT =  os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
 # BSE StarMF API Configuration
-BSE_MEMBER_ID = "24637"
-BSE_USER_ID = "2463702"
-BSE_PASSWORD = "Abc@1234"
+BSE_MEMBER_ID = os.environ.get('BSE_MEMBER_ID', "24637")
+BSE_USER_ID = os.environ.get('BSE_USER_ID', "2463702")
+BSE_PASSWORD = os.environ.get('BSE_PASSWORD', "Abc@1234")
+
+# BSE StarMF API URLs (Defaults to UAT)
+BSE_ORDER_WSDL = os.environ.get('BSE_ORDER_WSDL', "https://bsestarmfdemo.bseindia.com/MFOrderEntry/MFOrder.svc?singleWsdl")
+BSE_UPLOAD_SERVICE_URL = os.environ.get('BSE_UPLOAD_SERVICE_URL', "https://bsestarmfdemo.bseindia.com/StarMFFileUploadService/StarMFFileUploadService.svc/Secure/UploadFile")
+BSE_UPLOAD_WSDL = os.environ.get('BSE_UPLOAD_WSDL', "https://bsestarmfdemo.bseindia.com/MFUploadService/MFUploadService.svc?singleWsdl")
+BSE_QUERY_WSDL = os.environ.get('BSE_QUERY_WSDL', "https://bsestarmfdemo.bseindia.com/StarMFWebService/StarMFWebService.svc?singleWsdl")
+BSE_COMMON_API_URL = os.environ.get('BSE_COMMON_API_URL', "https://bsestarmfdemo.bseindia.com/BSEMFWEBAPI/UCCAPI/UCCRegistrationV183")
+BSE_EMANDATE_AUTH_URL = os.environ.get('BSE_EMANDATE_AUTH_URL', "https://bsestarmfdemo.bseindia.com/Emandate/EmandateAuthURL.aspx")
+BSE_EMANDATE_API_URL = os.environ.get('BSE_EMANDATE_API_URL', "https://bsestarmfdemo.bseindia.com/StarMFWebService/StarMFWebService.svc/EMandateAuthURL")
 
 # CVL KRA API Configuration
-CVL_USER_NAME = "webnspl"
-CVL_POS_CODE = "nspl"
-CVL_PASSWORD = "Cvlkra@1234"
+CVL_USER_NAME = os.environ.get('CVL_USER_NAME', "webnspl")
+CVL_POS_CODE = os.environ.get('CVL_POS_CODE', "nspl")
+CVL_PASSWORD = os.environ.get('CVL_PASSWORD', "Cvlkra@1234")
+# Optional override for the service URL endpoint
+CVL_SERVICE_URL = os.environ.get('CVL_SERVICE_URL', "")

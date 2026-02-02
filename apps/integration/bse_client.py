@@ -57,14 +57,14 @@ class BSEStarMFClient:
         self.user_id = settings.BSE_USER_ID
         self.password = settings.BSE_PASSWORD
 
-        # UAT Endpoints
-        self.order_wsdl = "https://bsestarmfdemo.bseindia.com/MFOrderEntry/MFOrder.svc?singleWsdl"
-        self.upload_service_url = "https://bsestarmfdemo.bseindia.com/StarMFFileUploadService/StarMFFileUploadService.svc/Secure/UploadFile"
-        self.upload_wsdl = "https://bsestarmfdemo.bseindia.com/MFUploadService/MFUploadService.svc?singleWsdl"
-        self.query_wsdl = "https://bsestarmfdemo.bseindia.com/StarMFWebService/StarMFWebService.svc?singleWsdl"
-        self.common_api_url = "https://bsestarmfdemo.bseindia.com/BSEMFWEBAPI/UCCAPI/UCCRegistrationV183"
-        self.emandate_auth_url = "https://bsestarmfdemo.bseindia.com/Emandate/EmandateAuthURL.aspx"
-        self.emandate_api_url = "https://bsestarmfdemo.bseindia.com/StarMFWebService/StarMFWebService.svc/EMandateAuthURL"
+        # BSE Endpoints (Configurable via Settings)
+        self.order_wsdl = settings.BSE_ORDER_WSDL
+        self.upload_service_url = settings.BSE_UPLOAD_SERVICE_URL
+        self.upload_wsdl = settings.BSE_UPLOAD_WSDL
+        self.query_wsdl = settings.BSE_QUERY_WSDL
+        self.common_api_url = settings.BSE_COMMON_API_URL
+        self.emandate_auth_url = settings.BSE_EMANDATE_AUTH_URL
+        self.emandate_api_url = settings.BSE_EMANDATE_API_URL
 
     def _generate_pass_key(self):
         """Generates a random 10-character alphanumeric pass key."""

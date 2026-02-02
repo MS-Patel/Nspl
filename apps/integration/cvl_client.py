@@ -77,6 +77,12 @@ class CVLClient:
                 port_name='BasicHttpBinding_ICVLRestInquiry',
                 plugins=[CVLLoggingPlugin()]
             )
+
+            # Override Service Endpoint if setting is present
+            if settings.CVL_SERVICE_URL:
+                 # Override the address in the service binding options
+                 cls._soap_client.service._binding_options['address'] = settings.CVL_SERVICE_URL
+
         return cls._soap_client
 
     def _get_auth_details(self):

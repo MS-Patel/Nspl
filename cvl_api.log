@@ -1,0 +1,119 @@
+2026-02-02 10:56:00,896 - CVL PAN Check Error: Type 'str' cannot be serialized.
+2026-02-02 10:56:02,062 - CVL PAN Check Error: Type 'str' cannot be serialized.
+2026-02-02 10:56:27,229 - CVL REQUEST XML:
+<soap-env:Envelope xmlns:soap-env="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap-env:Header xmlns:wsa="http://www.w3.org/2005/08/addressing">
+    <wsa:Action>https://krapancheck.cvlindia.com/ICVLRestInquiry/GetPassword</wsa:Action>
+    <wsa:MessageID>urn:uuid:203f6455-6ac9-4093-82e4-d15baf50697e</wsa:MessageID>
+    <wsa:To>https://krapancheck.cvlindia.com/CVLRestInquiry.svc</wsa:To>
+  </soap-env:Header>
+  <soap-env:Body>
+    <ns0:GetPassword xmlns:ns0="https://krapancheck.cvlindia.com">
+      <ns0:password>********</ns0:password>
+      <ns0:passKey>********</ns0:passKey>
+    </ns0:GetPassword>
+  </soap-env:Body>
+</soap-env:Envelope>
+
+2026-02-02 10:56:28,064 - CVL RESPONSE XML:
+<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">
+  <s:Body xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <GetPasswordResponse xmlns="https://krapancheck.cvlindia.com">
+      <GetPasswordResult>********</GetPasswordResult>
+    </GetPasswordResponse>
+  </s:Body>
+</s:Envelope>
+
+2026-02-02 10:56:28,065 - CVL REQUEST XML:
+<soap-env:Envelope xmlns:soap-env="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap-env:Header xmlns:wsa="http://www.w3.org/2005/08/addressing">
+    <wsa:Action>https://krapancheck.cvlindia.com/ICVLRestInquiry/GetPanStatus</wsa:Action>
+    <wsa:MessageID>urn:uuid:51a478a4-b870-4012-9913-26e20516cc0f</wsa:MessageID>
+    <wsa:To>https://krapancheck.cvlindia.com/CVLRestInquiry.svc</wsa:To>
+  </soap-env:Header>
+  <soap-env:Body>
+    <ns0:GetPanStatus xmlns:ns0="https://krapancheck.cvlindia.com">
+      <ns0:panNo>ABCDE1234F</ns0:panNo>
+      <ns0:userName>webnspl</ns0:userName>
+      <ns0:posCode>nspl</ns0:posCode>
+      <ns0:password>********</ns0:password>
+      <ns0:passKey>********</ns0:passKey>
+    </ns0:GetPanStatus>
+  </soap-env:Body>
+</soap-env:Envelope>
+
+2026-02-02 10:56:28,376 - CVL RESPONSE XML:
+<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">
+  <s:Body xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <GetPanStatusResponse xmlns="https://krapancheck.cvlindia.com">
+      <GetPanStatusResult>
+        <APP_RES_ROOT xmlns="">
+          <APP_PAN_INQ>YOUR REQUEST COULD NOT BE PROCESSED</APP_PAN_INQ>
+        </APP_RES_ROOT>
+      </GetPanStatusResult>
+    </GetPanStatusResponse>
+  </s:Body>
+</s:Envelope>
+
+2026-02-02 10:56:28,376 - PAN CHECK: ABCDE1234F | RESULT: <APP_RES_ROOT xmlns="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">
+  <APP_PAN_INQ>YOUR REQUEST COULD NOT BE PROCESSED</APP_PAN_INQ>
+</APP_RES_ROOT>
+
+2026-02-02 10:56:29,396 - CVL REQUEST XML:
+<soap-env:Envelope xmlns:soap-env="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap-env:Header xmlns:wsa="http://www.w3.org/2005/08/addressing">
+    <wsa:Action>https://krapancheck.cvlindia.com/ICVLRestInquiry/GetPassword</wsa:Action>
+    <wsa:MessageID>urn:uuid:eeb3dbf3-e4d2-4b00-b1be-cf796fde31a8</wsa:MessageID>
+    <wsa:To>https://krapancheck.cvlindia.com/CVLRestInquiry.svc</wsa:To>
+  </soap-env:Header>
+  <soap-env:Body>
+    <ns0:GetPassword xmlns:ns0="https://krapancheck.cvlindia.com">
+      <ns0:password>********</ns0:password>
+      <ns0:passKey>********</ns0:passKey>
+    </ns0:GetPassword>
+  </soap-env:Body>
+</soap-env:Envelope>
+
+2026-02-02 10:56:29,676 - CVL RESPONSE XML:
+<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">
+  <s:Body xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <GetPasswordResponse xmlns="https://krapancheck.cvlindia.com">
+      <GetPasswordResult>********</GetPasswordResult>
+    </GetPasswordResponse>
+  </s:Body>
+</s:Envelope>
+
+2026-02-02 10:56:29,677 - CVL REQUEST XML:
+<soap-env:Envelope xmlns:soap-env="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap-env:Header xmlns:wsa="http://www.w3.org/2005/08/addressing">
+    <wsa:Action>https://krapancheck.cvlindia.com/ICVLRestInquiry/GetPanStatus</wsa:Action>
+    <wsa:MessageID>urn:uuid:5d7da1ab-15ca-441e-abd1-058ecde953d0</wsa:MessageID>
+    <wsa:To>https://krapancheck.cvlindia.com/CVLRestInquiry.svc</wsa:To>
+  </soap-env:Header>
+  <soap-env:Body>
+    <ns0:GetPanStatus xmlns:ns0="https://krapancheck.cvlindia.com">
+      <ns0:panNo>ABCDE1234F</ns0:panNo>
+      <ns0:userName>webnspl</ns0:userName>
+      <ns0:posCode>nspl</ns0:posCode>
+      <ns0:password>********</ns0:password>
+      <ns0:passKey>********</ns0:passKey>
+    </ns0:GetPanStatus>
+  </soap-env:Body>
+</soap-env:Envelope>
+
+2026-02-02 10:56:29,967 - CVL RESPONSE XML:
+<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">
+  <s:Body xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <GetPanStatusResponse xmlns="https://krapancheck.cvlindia.com">
+      <GetPanStatusResult>
+        <APP_RES_ROOT xmlns="">
+          <APP_PAN_INQ>YOUR REQUEST COULD NOT BE PROCESSED</APP_PAN_INQ>
+        </APP_RES_ROOT>
+      </GetPanStatusResult>
+    </GetPanStatusResponse>
+  </s:Body>
+</s:Envelope>
+
+2026-02-02 10:56:29,968 - PAN CHECK: ABCDE1234F | RESULT: <APP_RES_ROOT xmlns="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">
+  <APP_PAN_INQ>YOUR REQUEST COULD NOT BE PROCESSED</APP_PAN_INQ>
+</APP_RES_ROOT>

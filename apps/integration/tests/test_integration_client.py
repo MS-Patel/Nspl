@@ -10,6 +10,11 @@ from django.contrib.auth import get_user_model
 
 @pytest.mark.django_db
 class TestBSEClient:
+    def setup_method(self, method):
+        BSEStarMFClient._soap_client = None
+        BSEStarMFClient._upload_client = None
+        BSEStarMFClient._query_client = None
+
     def test_get_password_soap_success(self):
         with patch('apps.integration.bse_client.Client') as MockZeepClient:
             # Mock SOAP Response
