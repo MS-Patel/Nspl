@@ -51,3 +51,53 @@ class ValuationTest(TestCase):
         self.assertEqual(summary['total_current_value'], Decimal("1100.00"))
         self.assertEqual(summary['total_invested_value'], Decimal("1000.00"))
         self.assertEqual(summary['total_gain_loss'], Decimal("100.00"))
+
+    def test_valuation_performance(self):
+        """
+        Ensure valuation does not suffer from N+1 query problem.
+        """
+        # Create multiple schemes and holdings
+        num_holdings = 50
+        schemes = [
+            Scheme(
+                amc=self.amc,
+                category=self.category,
+                name=f"Perf Scheme {i}",
+                scheme_code=f"PSC{i}",
+                isin=f"PISIN{i}"
+            )
+            for i in range(num_holdings)
+        ]
+        Scheme.objects.bulk_create(schemes)
+        created_schemes = list(Scheme.objects.filter(scheme_code__startswith="PSC"))
+
+        holdings = [
+            Holding(
+                investor=self.investor,
+                scheme=scheme,
+                folio_number=f"PF{i}",
+                units=Decimal("10.0"),
+                average_cost=Decimal("100.00")
+            )
+            for i, scheme in enumerate(created_schemes)
+        ]
+        Holding.objects.bulk_create(holdings)
+
+        nav_entries = [
+            NAVHistory(
+                scheme=scheme,
+                nav_date=date(2024, 1, 1),
+                net_asset_value=Decimal("100.00")
+            )
+            for scheme in created_schemes
+        ]
+        NAVHistory.objects.bulk_create(nav_entries)
+
+        # Clear any cached lookups
+        self.investor.refresh_from_db()
+
+        # Expected queries:
+        # 1. Select Holdings with Subquery for NAV
+        # 2. Bulk Update Holdings
+        with self.assertNumQueries(2):
+            calculate_portfolio_valuation(self.investor)
