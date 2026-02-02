@@ -1,13 +1,14 @@
 import csv
 import logging
 from decimal import Decimal
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.utils import timezone
 from django.db import transaction
 from .models import RTAFile, Transaction, Holding
 from apps.products.models import Scheme
 from apps.users.models import InvestorProfile
 from apps.investments.models import Folio
+from apps.reconciliation.utils.reconcile import recalculate_holding
 
 logger = logging.getLogger(__name__)
 
@@ -51,17 +52,70 @@ class BaseParser:
                 folio_number=folio_number
             )
 
-    def update_holding(self, investor, scheme, folio_number, units, amount):
-        if not investor or not scheme:
-            return
+    def match_or_create_transaction(self, investor, scheme, folio_number, txn_number, date, amount, units, txn_type, rta_code):
+        """
+        Matches incoming RTA transaction with existing (Provisional) BSE transaction,
+        or creates a new one.
+        """
+        # 1. Check strict duplicate (already processed RTA txn)
+        if Transaction.objects.filter(txn_number=txn_number).exists():
+            return # Skip duplicate
 
-        holding, created = Holding.objects.get_or_create(
+        # 2. Try to find a Provisional Match
+        # Strategy: Match on Investor + Scheme + Folio + Approx Date + Amount
+        # (Since we don't have BSE Order ID reliably in RTA file without specific column knowledge)
+
+        # Date window: +/- 5 days
+        date_min = date - timedelta(days=5)
+        date_max = date + timedelta(days=5)
+
+        candidates = Transaction.objects.filter(
             investor=investor,
             scheme=scheme,
-            folio_number=folio_number
+            folio_number=folio_number,
+            is_provisional=True,
+            amount=amount, # Exact amount match
+            date__range=[date_min, date_max]
         )
-        holding.units += units
-        holding.save()
+
+        # Prioritize match
+        matched_txn = candidates.first()
+
+        if matched_txn:
+            # Update Existing Provisional Transaction to Confirmed RTA Transaction
+            matched_txn.txn_number = txn_number # Update to authoritative RTA ID
+            matched_txn.rta_code = rta_code
+            matched_txn.txn_type_code = txn_type
+            matched_txn.date = date
+            matched_txn.units = units
+            matched_txn.source = Transaction.SOURCE_RTA
+            matched_txn.is_provisional = False
+            matched_txn.source_file = self.rta_file
+            matched_txn.save()
+            logger.info(f"Matched and confirmed provisional transaction {matched_txn.id} with RTA ID {txn_number}")
+
+        else:
+            # Create New Transaction
+            Transaction.objects.create(
+                investor=investor,
+                scheme=scheme,
+                folio_number=folio_number,
+                rta_code=rta_code,
+                txn_type_code=txn_type,
+                txn_number=txn_number,
+                date=date,
+                amount=amount,
+                units=units,
+                source=Transaction.SOURCE_RTA,
+                is_provisional=False,
+                source_file=self.rta_file
+            )
+
+        # Always Recalculate Holding
+        recalculate_holding(investor, scheme, folio_number)
+
+        # Ensure Folio Exists
+        self.get_or_create_folio(investor, scheme, folio_number)
 
 
 class CAMSParser(BaseParser):
@@ -108,9 +162,6 @@ class CAMSParser(BaseParser):
                         folio_number = row[1].strip()
                         txn_number = row[9].strip()
 
-                        if Transaction.objects.filter(txn_number=txn_number).exists():
-                            continue
-
                         txn_date = self.parse_date(row[15])
                         if not txn_date:
                             continue
@@ -119,30 +170,10 @@ class CAMSParser(BaseParser):
                         units = self.clean_decimal(row[12])
                         txn_type = row[8].strip().upper()
 
-                        # Determine effective units (Positive/Negative)
-                        effective_units = units
-                        if txn_type in ['R', 'SO', 'DR', 'REDEMPTION', 'SWITCH OUT']:
-                             effective_units = -abs(units)
-                        elif txn_type in ['P', 'SI', 'PURCHASE', 'SWITCH IN', 'SIP']:
-                             effective_units = abs(units)
-
-                        # Create Transaction
-                        Transaction.objects.create(
-                            investor=investor,
-                            scheme=scheme,
-                            folio_number=folio_number,
-                            rta_code='CAMS',
-                            txn_type_code=txn_type,
-                            txn_number=txn_number,
-                            date=txn_date,
-                            amount=amount,
-                            units=units,
-                            source_file=self.rta_file
+                        # Delegate to helper
+                        self.match_or_create_transaction(
+                            investor, scheme, folio_number, txn_number, txn_date, amount, units, txn_type, 'CAMS'
                         )
-
-                        # Update Holding
-                        self.update_holding(investor, scheme, folio_number, effective_units, amount)
-                        self.get_or_create_folio(investor, scheme, folio_number)
 
             self.rta_file.status = RTAFile.STATUS_PROCESSED
             self.rta_file.processed_at = timezone.now()
@@ -158,39 +189,6 @@ class CAMSParser(BaseParser):
 class KarvyParser(BaseParser):
     """
     Parses Karvy/KFintech MFD Mailback Format.
-    Assumes standard MFD format (often pipe separated or comma).
-    Using pipe for consistency with 'Standard MFD', verifying indices against standard spec.
-    Common Spec (Indices 0-based):
-    0: Product Code (Scheme Code)
-    1: Folio No
-    2: Trxn No (or 3?) -> Let's look for standard headers if possible, or assume fixed.
-
-    Standard Karvy/MFD (Pipe):
-    0: AMC_CODE
-    1: SCHEME_CODE
-    2: SCHEME_NAME
-    3: FOLIO_NO
-    4: INV_NAME
-    5: TR_TYPE (P/R)
-    6: TR_NO
-    7: UNITS
-    8: AMOUNT
-    9: TR_DATE
-    10: NAV
-    ...
-    15: PAN (Position varies, checking specific col usually)
-
-    Let's implement a robust check or assume standard layout.
-    Karvy Mailback (Pipe):
-    Index Mappings (Approximation):
-    1: Scheme Code
-    3: Folio
-    5: Trxn Type
-    6: Trxn No
-    7: Units
-    8: Amount
-    9: Date
-    14 or 15: PAN
     """
 
     def parse(self):
@@ -210,16 +208,7 @@ class KarvyParser(BaseParser):
                             continue
 
                         # Assuming Standard Karvy/MFD Layout (Pipe):
-                        # 0: AMC
-                        # 1: Scheme Code
-                        # 3: Folio
-                        # 5: Type
-                        # 6: Trxn No
-                        # 7: Units
-                        # 8: Amount
-                        # 9: Date
-                        # ... PAN at 14/15/18? Let's check a few spots or scan.
-                        # Usually PAN is near end. Let's assume index 14 for now based on common MFD spec.
+                        # 0: AMC, 1: Scheme Code, 3: Folio, 5: Type, 6: Trxn No, 7: Units, 8: Amount, 9: Date
 
                         pan = None
                         # Try to find PAN in likely columns (often 14, 15, 18, 19)
@@ -229,7 +218,6 @@ class KarvyParser(BaseParser):
                                 break
 
                         if not pan:
-                            # Fallback: check all columns? No, risky.
                             continue
 
                         try:
@@ -240,41 +228,21 @@ class KarvyParser(BaseParser):
                         scheme_code = row[1].strip()
                         scheme = Scheme.objects.filter(scheme_code=scheme_code).first()
                         if not scheme:
-                            # Try mapping? For now skip.
                             continue
 
                         folio_number = row[3].strip()
                         txn_number = row[6].strip()
-
-                        if Transaction.objects.filter(txn_number=txn_number).exists():
-                            continue
 
                         txn_date = self.parse_date(row[9])
                         amount = self.clean_decimal(row[8])
                         units = self.clean_decimal(row[7])
                         txn_type = row[5].strip().upper()
 
-                        effective_units = units
-                        if txn_type in ['R', 'SO', 'REDEMPTION', 'SWITCH OUT']:
-                             effective_units = -abs(units)
-                        else:
-                             effective_units = abs(units)
-
-                        Transaction.objects.create(
-                            investor=investor,
-                            scheme=scheme,
-                            folio_number=folio_number,
-                            rta_code='KARVY',
-                            txn_type_code=txn_type,
-                            txn_number=txn_number,
-                            date=txn_date if txn_date else timezone.now().date(),
-                            amount=amount,
-                            units=units,
-                            source_file=self.rta_file
+                        # Delegate to helper
+                        self.match_or_create_transaction(
+                            investor, scheme, folio_number, txn_number, txn_date if txn_date else timezone.now().date(),
+                            amount, units, txn_type, 'KARVY'
                         )
-
-                        self.update_holding(investor, scheme, folio_number, effective_units, amount)
-                        self.get_or_create_folio(investor, scheme, folio_number)
 
             self.rta_file.status = RTAFile.STATUS_PROCESSED
             self.rta_file.processed_at = timezone.now()
@@ -290,21 +258,6 @@ class KarvyParser(BaseParser):
 class FranklinParser(BaseParser):
     """
     Parses Franklin Templeton Mailback Format.
-    Assumes Pipe Separated.
-    Layout is often similar to Karvy/CAMS but specific columns.
-    Common FT Layout:
-    0: COMP_CODE
-    1: SCHEME_CODE
-    2: SCHEME_NAME
-    3: FOLIO_NO
-    4: INVESTOR_NAME
-    5: TRXN_TYPE
-    6: TRXN_NO
-    7: UNITS
-    8: AMOUNT
-    9: DATE
-    ...
-    18: PAN
     """
 
     def parse(self):
@@ -321,19 +274,11 @@ class FranklinParser(BaseParser):
                         if "Header" in row[0]: continue
 
                         # Franklin Layout Assumptions:
-                        # 1: Scheme Code
-                        # 3: Folio
-                        # 5: Type
-                        # 6: Trxn No
-                        # 7: Units
-                        # 8: Amount
-                        # 9: Date
-                        # 18: PAN (Commonly)
+                        # 1: Scheme Code, 3: Folio, 5: Type, 6: Trxn No, 7: Units, 8: Amount, 9: Date
 
                         pan = None
                         if len(row) > 18: pan = row[18].strip()
                         if not pan:
-                            # Try 14 like Karvy?
                             if len(row) > 14 and len(row[14]) == 10: pan = row[14].strip()
 
                         if not pan: continue
@@ -350,35 +295,16 @@ class FranklinParser(BaseParser):
                         folio_number = row[3].strip()
                         txn_number = row[6].strip()
 
-                        if Transaction.objects.filter(txn_number=txn_number).exists():
-                            continue
-
                         txn_date = self.parse_date(row[9])
                         amount = self.clean_decimal(row[8])
                         units = self.clean_decimal(row[7])
                         txn_type = row[5].strip().upper()
 
-                        effective_units = units
-                        if txn_type in ['R', 'SO', 'REDEMPTION', 'SWITCH OUT']:
-                             effective_units = -abs(units)
-                        else:
-                             effective_units = abs(units)
-
-                        Transaction.objects.create(
-                            investor=investor,
-                            scheme=scheme,
-                            folio_number=folio_number,
-                            rta_code='FRANKLIN',
-                            txn_type_code=txn_type,
-                            txn_number=txn_number,
-                            date=txn_date if txn_date else timezone.now().date(),
-                            amount=amount,
-                            units=units,
-                            source_file=self.rta_file
+                        # Delegate to helper
+                        self.match_or_create_transaction(
+                            investor, scheme, folio_number, txn_number, txn_date if txn_date else timezone.now().date(),
+                            amount, units, txn_type, 'FRANKLIN'
                         )
-
-                        self.update_holding(investor, scheme, folio_number, effective_units, amount)
-                        self.get_or_create_folio(investor, scheme, folio_number)
 
             self.rta_file.status = RTAFile.STATUS_PROCESSED
             self.rta_file.processed_at = timezone.now()

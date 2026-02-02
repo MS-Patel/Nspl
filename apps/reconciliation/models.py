@@ -49,6 +49,16 @@ class Transaction(models.Model):
     TXN_SIP = 'SIP'
     # Add more as needed based on RTA codes
 
+    SOURCE_RTA = 'RTA'
+    SOURCE_BSE = 'BSE'
+    SOURCE_MANUAL = 'MANUAL'
+
+    SOURCE_CHOICES = [
+        (SOURCE_RTA, 'RTA Mailback'),
+        (SOURCE_BSE, 'BSE Star MF'),
+        (SOURCE_MANUAL, 'Manual Entry'),
+    ]
+
     investor = models.ForeignKey(InvestorProfile, on_delete=models.SET_NULL, null=True, blank=True, related_name='rta_transactions')
     scheme = models.ForeignKey(Scheme, on_delete=models.SET_NULL, null=True, blank=True, related_name='rta_transactions')
     folio_number = models.CharField(max_length=50)
@@ -57,6 +67,11 @@ class Transaction(models.Model):
     rta_code = models.CharField(max_length=20, help_text="CAMS/Karvy")
     txn_type_code = models.CharField(max_length=20, help_text="Raw transaction type from RTA")
     txn_number = models.CharField(max_length=100, unique=True, help_text="Unique Reference No from RTA")
+
+    # Matching / Provisional Fields
+    source = models.CharField(max_length=10, choices=SOURCE_CHOICES, default=SOURCE_RTA)
+    is_provisional = models.BooleanField(default=False, help_text="True if sourced from BSE allotment but not yet confirmed by RTA")
+    bse_order_id = models.CharField(max_length=50, null=True, blank=True, help_text="BSE Order ID for matching")
 
     date = models.DateField()
     amount = models.DecimalField(max_digits=20, decimal_places=4)
@@ -70,7 +85,7 @@ class Transaction(models.Model):
     description = models.CharField(max_length=255, blank=True)
 
     # Metadata
-    source_file = models.ForeignKey(RTAFile, on_delete=models.CASCADE, related_name='transactions')
+    source_file = models.ForeignKey(RTAFile, on_delete=models.CASCADE, related_name='transactions', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -78,10 +93,11 @@ class Transaction(models.Model):
         indexes = [
             models.Index(fields=['folio_number', 'scheme']),
             models.Index(fields=['txn_number']),
+            models.Index(fields=['bse_order_id']),
         ]
 
     def __str__(self):
-        return f"{self.folio_number} - {self.scheme} - {self.amount}"
+        return f"{self.folio_number} - {self.scheme} - {self.amount} ({self.source})"
 
 class Holding(models.Model):
     """
@@ -93,6 +109,12 @@ class Holding(models.Model):
     folio_number = models.CharField(max_length=50)
 
     units = models.DecimalField(max_digits=20, decimal_places=4, default=0)
+
+    # Detailed Unit Breakdown
+    free_units = models.DecimalField(max_digits=20, decimal_places=4, default=0)
+    locked_units = models.DecimalField(max_digits=20, decimal_places=4, default=0, help_text="ELSS Locked Units")
+    pledged_units = models.DecimalField(max_digits=20, decimal_places=4, default=0)
+
     average_cost = models.DecimalField(max_digits=20, decimal_places=4, default=0, help_text="Weighted Average Cost")
 
     # Valuation (Updated daily via NAV sync)
