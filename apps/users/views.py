@@ -157,7 +157,7 @@ class DistributorListView(LoginRequiredMixin, IsAdminOrRMMixin, ListView):
     context_object_name = 'distributors'
 
     def get_queryset(self):
-        qs = super().get_queryset()
+        qs = super().get_queryset().select_related('user', 'rm', 'rm__user')
         user = self.request.user
         if user.user_type == User.Types.RM:
             # RM sees only their assigned distributors
