@@ -1,44 +1,166 @@
 {% extends 'layout/public_base.html' %}
 {% load static %}
 
-{% block title %}About Us - BuyBestFin{% endblock %}
+{% block css%}
+<style>
+    .historybg {
+  background-image: url('{% static 'images\our-history1.png' %}');
+  background-size: cover;
+  background-position: center;
+ padding: 200px 0;
+}
 
+
+
+
+
+</style>
+{% endblock%}
 {% block content %}
-<section class="bg-slate-50 dark:bg-navy-800 py-16">
-    <div class="container mx-auto px-4">
-        <h1 class="text-4xl font-bold text-slate-800 dark:text-white mb-8 text-center">About Us</h1>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 items-center">
-            <div>
-                <img src="{% static 'images/web/aboutus-section-bg-new.png' %}" alt="About Us" class="rounded-lg shadow-xl w-full" />
-            </div>
-            <div>
-                <p class="text-lg text-slate-600 dark:text-slate-300 mb-6 leading-relaxed">
-                    With roots dating back to 1968, Navinchandra Groups is one of the oldest financial services providers in the area of Company Deposit, Government Securities, Bonds, NCD, Equity, Insurance, Mutual Funds, PMS & Unlisted Shares.
-                </p>
-                <p class="text-lg text-slate-600 dark:text-slate-300 mb-6 leading-relaxed">
-                    As an umbrella brand for the financial businesses of the Navinchandra Group, we offer a diverse range of products and services across corporate finance and retail segments. Our client-centric approach and commitment to transparency have made us a trusted partner for thousands of investors.
-                </p>
+<main class="bg-white dark:bg-slate-950 transition-colors duration-300">
+    
+    <section class="py-6 md:py-6 ">
+        <div class="container mx-auto px-4 lg:px-8 h-100 ">
+            <div class="flex flex-col lg:flex-row items-center gap-12">
+                <div class="lg:w-1/2 space-y-6">
+                    <h4 class="text-xl">Overview</h4>
+                    <h2 class="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-primary leading-tight">
+                        Navinchandra Securities Pvt. Ltd is a trusted name in the Financial Industry.
+                    </h2>
+                    <p class="text-lg text-slate-600 dark:text-slate-300 leading-relaxed">
+                        Our business is investing on behalf of our clients — from large institutions to parents and grandparents, teachers, nurses, doctors and people from all walks of life who entrust their savings to us.
+                    </p>
+                    <p class="text-lg text-slate-600 dark:text-slate-300 leading-relaxed">
+                        We work only for our clients & distributors. Our promise is to give them insight into what to do with their money, providing products and services that can help them build a better financial future.
+                    </p>
+                </div>
+                <div class="lg:w-1/2">
+                    <div class="relative group">
+                        <div class="absolute -inset-1 bg-gradient-to-r from-blue-600 to-cyan-500 rounded-2xl blur opacity-20 transition duration-1000 group-hover:opacity-40"></div>
+                        <img src="{% static '/images/web/aboutpng1.png' %}" class="relative rounded-2xl shadow-xl w-full object-cover" alt="Financial Overview" />
+                    </div>
+                </div>
             </div>
         </div>
+    </section>
 
-        <div class="mt-16">
-             <h2 class="text-3xl font-bold text-slate-800 dark:text-white mb-8 text-center">Our Vision & Mission</h2>
-             <div class="grid grid-cols-1 sm:grid-cols-2 gap-8">
-                 <div class="bg-white dark:bg-navy-700 p-8 rounded-lg shadow-md">
-                     <h3 class="text-xl font-bold text-primary mb-4">Our Vision</h3>
-                     <p class="text-slate-600 dark:text-slate-300">
-                         To be the most trusted and respected financial services provider, empowering individuals to achieve their financial goals through expert guidance and innovative solutions.
-                     </p>
-                 </div>
-                 <div class="bg-white dark:bg-navy-700 p-8 rounded-lg shadow-md">
-                     <h3 class="text-xl font-bold text-primary mb-4">Our Mission</h3>
-                     <p class="text-slate-600 dark:text-slate-300">
-                         To simplify investment processes, educate investors, and provide personalized financial advice that creates long-term wealth and financial security for our clients.
-                     </p>
-                 </div>
-             </div>
+    <section class="py-6 bg-slate-50 dark:bg-slate-900/50">
+        <div class="container mx-auto px-4 lg:px-8 py-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
+                <div class=" card flex flex-col lg:flex-row bg-white dark:bg-slate-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                    <div class="lg:w-1/3 flex items-center justify-center bg-blue-50 dark:bg-slate-700 p-6">
+                        <img src="{% static '/images/web/ourgoal1.png' %}" class="object-contain" alt="Who We Serve">
+                    </div>
+                    <div class="p-8 lg:w-2/3">
+                        <h5 class="text-xl font-bold text-slate-900 dark:text-primary mb-3">Who We Serve</h5>
+                        <p class="text-slate-600 dark:text-slate-400">We partner with a wide range of clients — from corporations and foundations to millions of individuals. Our solutions are designed to meet diverse financial goals.</p>
+                    </div>
+                </div>
+                <div class="card flex flex-col lg:flex-row bg-white dark:bg-slate-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                    <div class="lg:w-1/3 flex items-center justify-center bg-emerald-50 dark:bg-slate-700 p-6">
+                        <img src="{% static '/images/web/ourgoal2.png' %}" class="  object-contain" alt="Our Focus">
+                    </div>
+                    <div class="p-8 lg:w-2/3">
+                        <h5 class="text-xl font-bold text-slate-900 dark:text-primary mb-3 p-4">Our Singular Focus</h5>
+                        <p class="text-slate-600 dark:text-slate-400 p-4">Everything we do is centered on one commitment: helping our clients achieve financial security and growth through dedicated expertise.</p>
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
-</section>
+    </section>
+
+    <section class="py-6" style="background-color: rgb(207, 230, 251);">
+        <div class="container mx-auto px-4 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8 items-center">
+                <div class="col-4">
+                    <img src="{% static '/images/web/responsibility-s1.png' %}" class="rounded-2xl shadow-lg w-full" alt="Responsibility" />
+                </div>
+                <div class="col-8 ">
+                    <h4 class="text-xl text-blue-600 font-bold uppercase tracking-widest text-sm">Responsibility</h4>
+                    <p class="text-lg text-slate-700 dark:text-slate-300 leading-relaxed">
+                        As a fiduciary for our clients & distributors, our focus is long-term sustainability. We aim to be a responsible corporate citizen, taking into account environmental, social, and governance issues that have quantifiable financial impacts. Serve our clients and give back to the communities in which we and our clients live and work.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class=" bg-slate-900 " style="padding: 60px 0;">
+        <div class="container mx-auto px-4 lg:px-8 text-center">
+            <h4 class="text-blue-400 text-xl font-bold uppercase tracking-widest mb-4">Our Commitment</h4>
+            <h5 class="text-lg md:text-lg font-light mb-6">We are creating financial services that actually serve.</h5>
+            
+            <div class="grid grid-cols-3 md:grid-cols-3 gap-8">
+                <div class="card p-6 rounded-2xl bg-slate-800 border border-slate-700 hover:border-blue-500 transition-colors">
+                    <h5 class="text-xl font-bold mb-4 text-blue-400">DO RIGHT</h5>
+                    <p class="text-slate-300 text-sm leading-relaxed">Sincere respect for each other, our customers & communities we serve. Do for others what we expect of ourselves with a collective desire to improve things.</p>
+                </div>
+                <div class="card p-6 rounded-2xl bg-slate-800 border border-slate-700 hover:border-blue-500 transition-colors">
+                    <h5 class="text-xl font-bold mb-4 text-blue-400 uppercase">Obsess Over Customers</h5>
+                    <p class="text-slate-300 text-sm leading-relaxed">Fierce dedication to putting our customers at the center of everything we do. Driven ensures that every interaction is extraordinary.</p>
+                </div>
+                <div class="card p-6 rounded-2xl bg-slate-800 border border-slate-700 hover:border-blue-500 transition-colors">
+                    <h5 class="text-xl font-bold mb-4 text-blue-400 uppercase">Tirelessly Innovate</h5>
+                    <p class="text-slate-300 text-sm leading-relaxed">Constantly creating & reinventing with the singular purpose of making a real difference for our customers.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-20 dark:bg-slate-950 historybg" >
+        <div class="container mx-auto px-4 lg:px-8">
+            <div class="flex  lg:flex-row gap-16">
+                <div class="lg:w-1/2">
+                    <div class="grid-cols-2 top-24">
+                        <span class="text-7xl md:text-9xl font-black text-slate-100 dark:text-slate-900 block leading-none">IDEAS</span>
+                        <span class="text-6xl md:text-8xl font-black text-blue-600/20 block leading-none -mt-4">INNOVATION</span>
+                        <span class="text-7xl md:text-9xl font-black text-slate-200 dark:text-slate-800 block leading-none -mt-4">GROWTH</span>
+                        
+                        <div class="mt-8 p-8 bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-800 p-6">
+                            <h4 class="text-2xl font-bold text-slate-900 dark:text-primary mb-4">OUR HISTORY</h4>
+                            <p class="text-slate-600 dark:text-slate-400">Beginning with its founding in 1968, Navinchandra Group's story over a golden jubilee is about putting clients first, performance, and remarkable collaboration.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="">
+                    <div class=" pl-8 border-l-2 border-blue-600">
+                        <div class="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-blue-600"></div>
+                        <h5 class="text-2xl font-bold text-slate-900 dark:text-primary mb-4">Something Different : 1968</h5>
+                        <p class="text-slate-600 dark:text-slate-400 leading-relaxed">
+                            Founded by a man who believed they could build a better financial management firm. Dedicated to clear thinking and data-driven investing, with a passion for managing risk.
+                        </p>
+                    </div>
+
+                    <div class="relative pl-8 border-l-2 border-slate-200 dark:border-slate-800">
+                        <div class="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-slate-300 dark:bg-slate-700"></div>
+                        <h5 class="text-2xl font-bold text-slate-900 dark:text-primary mb-4">Seeds of Diversification : 1993</h5>
+                        <p class="text-slate-600 dark:text-slate-400 leading-relaxed mb-6">
+                            Mihir Shah entered the business, taking charge of Marketing and Customer Service. In 2001, he expanded the portfolio into Insurance.
+                        </p>
+                        <div class="bg-blue-50 dark:bg-blue-900/20 p-6 rounded-xl border border-blue-100 dark:border-blue-800/50">
+                            <p class="text-blue-800 dark:text-blue-300 italic text-sm">
+                                "He became a 12-time MDRT as well as COT. With 18 years of experience, he set the bar extremely high in customer service."
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="relative pl-8 border-l-2 border-slate-200 dark:border-slate-800">
+                         <div class="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-slate-300 dark:bg-slate-700"></div>
+                         <h5 class="text-2xl font-bold text-slate-900 dark:text-primary mb-4">Scale & Expansion : 2001</h5>
+                         <p class="text-slate-600 dark:text-slate-400 leading-relaxed">
+                             Navinchandra Securities Pvt. Ltd had developed strong fixed-income, equity, and advisory businesses, greatly expanding the firm's scale.
+                         </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+
+{% endblock %}
+
+{% block custom_js %}      
+
 {% endblock %}

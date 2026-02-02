@@ -23,7 +23,7 @@
 
             <!-- Navigation -->
             <nav class="hidden sm:flex space-x-6">
-                <a href="{% url 'website:home' %}" class="text-slate-600 font-medium hover:text-primary dark:text-navy-100 dark:hover:text-accent">Home</a>
+                <a href="{% url 'website:home' %}" class=" font-medium hover:text-primary dark:text-navy-100 dark:hover:text-accent">Home</a>
                 <a href="{% url 'website:mutual_funds' %}" class="text-slate-600 font-medium hover:text-primary dark:text-navy-100 dark:hover:text-accent">Mutual Funds</a>
                 <a href="{% url 'website:about' %}" class="text-slate-600 font-medium hover:text-primary dark:text-navy-100 dark:hover:text-accent">About Us</a>
                 <a href="{% url 'website:contact' %}" class="text-slate-600 font-medium hover:text-primary dark:text-navy-100 dark:hover:text-accent">Contact Us</a>
@@ -47,26 +47,39 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-slate-800 text-white py-10 mt-10">
-        <div class="container mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div>
-                 <img class="h-12 mb-4" src="{% static 'images/logo12.png' %}" alt="Logo" style="filter: brightness(0) invert(1);" />
-                 <p class="text-slate-300 text-sm">Navinchandra Securities Pvt. Ltd is a trusted name in the Financial Industry, investing on behalf of clients from all walks of life.</p>
+    <footer class="bg-slate-800  py-10 mt-10">
+        <div class="container mx-auto px-4 grid grid-cols-4 md:grid-cols-4 gap-8 ">
+            <div class=" ">
+                 <img class="h-12 mb-4" src="{% static 'images/logo12.png' %}" alt="Logo"  />
+                 <p class="text-slate-300 text-sm">Navinchandra Secuirities Pvt. Ltd is trusted name in Financial Industry. Our business is investing on behalf of our clients — from large institutions to parents and grandparents, teachers, nurses, doctors and people from all walks of life who entrust their savings to us.</p>
             </div>
             <div>
-                <h3 class="font-bold text-lg mb-4">Quick Links</h3>
+                <h3 class="font-bold text-lg mb-4">Top Links</h3>
                 <ul class="space-y-2 text-slate-300">
-                    <li><a href="{% url 'website:home' %}" class="hover:text-white transition-colors">Home</a></li>
-                    <li><a href="{% url 'website:mutual_funds' %}" class="hover:text-white transition-colors">Mutual Funds</a></li>
-                    <li><a href="{% url 'website:about' %}" class="hover:text-white transition-colors">About Us</a></li>
-                    <li><a href="{% url 'website:contact' %}" class="hover:text-white transition-colors">Contact Us</a></li>
+                    <li><a href="{% url 'website:home' %}" class="font-medium hover:text-primary dark:text-navy-100 dark:hover:text-accent">Home</a></li>
+                    <li><a href="{% url 'website:mutual_funds' %}" class="font-medium hover:text-primary dark:text-navy-100 dark:hover:text-accent">Mutual Funds</a></li>
+                    <li><a href="{% url 'website:about' %}" class="font-medium hover:text-primary dark:text-navy-100 dark:hover:text-accent">About Us</a></li>
+                    <li><a href="{% url 'website:contact' %}" class="font-medium hover:text-primary dark:text-navy-100 dark:hover:text-accent">Contact Us</a></li>
+                </ul>
+            </div>
+            <div>
+                  <h3 class="font-bold text-lg mb-4">Useful Links</h3>
+                <ul class="space-y-2 text-slate-300">
+                    <li><a href="{% url 'website:home' %}" class="font-medium hover:text-primary dark:text-navy-100 dark:hover:text-accent">Privacy Policy</a></li>
+                    <li><a href="{% url 'website:mutual_funds' %}" class="font-medium hover:text-primary dark:text-navy-100 dark:hover:text-accent">Terms and Condition</a></li>
+                    <li><a href="{% url 'website:about' %}" class="font-medium hover:text-primary dark:text-navy-100 dark:hover:text-accent">Download Forms</a></li>
+                    <li><a href="https://www.amfiindia.com/" target="_blank" class="font-medium hover:text-primary dark:text-navy-100 dark:hover:text-accent">AMFI</a></li>
+                    <li><a href="https://www.sebi.gov.in/" class="font-medium hover:text-primary dark:text-navy-100 dark:hover:text-accent">SEBI</a></li>
+                    <li><a href="https://www.nseindia.com/" class="font-medium hover:text-primary dark:text-navy-100 dark:hover:text-accent">NSE</a></li>
+                    <li><a href="https://www.bseindia.com/" class="font-medium hover:text-primary dark:text-navy-100 dark:hover:text-accent">BSE</a></li>
+
                 </ul>
             </div>
             <div>
                 <h3 class="font-bold text-lg mb-4">Contact Details</h3>
                  <p class="text-slate-300 mb-2">FF 130,131, Samanvay Saptarshi, Near Monalisa, Manjalpur, Vadodara, Gujarat, 390011, India</p>
-                 <p class="text-slate-300 mb-2"><a href="tel:+917265098822" class="hover:text-white transition-colors">+91 72650 98822</a></p>
-                 <p class="text-slate-300"><a href="mailto:contact@navinchandrasecurities.com" class="hover:text-white transition-colors">contact@navinchandrasecurities.com</a></p>
+                 <p class="text-slate-300 mb-2"><a href="tel:+917265098822" class="font-medium hover:text-primary dark:text-navy-100 dark:hover:text-accent">+91 72650 98822</a></p>
+                 <p class="text-slate-300"><a href="mailto:contact@navinchandrasecurities.com" class="font-medium hover:text-primary dark:text-navy-100 dark:hover:text-accent">contact@navinchandrasecurities.com</a></p>
             </div>
         </div>
         <div class="text-center mt-10 text-slate-400 text-sm border-t border-slate-700 pt-6">

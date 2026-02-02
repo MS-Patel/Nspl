@@ -2,18 +2,41 @@
 {% load static %}
 
 {% block title %}Home - BuyBestFin{% endblock %}
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/swiper@12/swiper-bundle.min.css"
+/>
+{% block css%}
+<style>
+    .herobg {
+  background-image: url('{% static 'images\herobgwebsite.png' %}');
+  background-size: cover;
+  background-position: center;
+}
 
+.aboutus-section-bg {
+      background-image: linear-gradient(
+            360deg,
+            #EFFFFD 13.49%,
+            rgba(239, 255, 253, 0) 117.85%
+        );
+}
+
+
+
+</style>
+{% endblock%}
 {% block content %}
 <!-- Hero Section -->
-<section class="bg-blue-50 dark:bg-navy-800 py-16 md:py-24">
-    <div class="container mx-auto px-4 grid grid-cols-1 sm:grid-cols-2 gap-6 items-center">
+<section class="bg-blue-50 dark:bg-navy-800 py-16 md:py-24 herobg">
+    <div class="container mx-auto px-4 grid grid-cols-1 sm:grid-cols-2 gap-6 items-center h-100vh">
         <div class="mb-10 sm:mb-0">
-            <h1 class="text-4xl md:text-5xl font-bold text-slate-800 dark:text-white mb-6 leading-tight">
+            <h1 class="text-4xl md:text-5xl font-bold text-slate-800 dark:text-primary mb-6 leading-tight">
                 BEFORE YOU SPEND<br/>
                 <span class="text-primary">IT’S THE BEST WAY TO...</span><br/>
                 SAVE
             </h1>
-            <p class="text-lg text-slate-600 dark:text-slate-300 mb-8">
+            <p class="text-lg text-slate-600 dark:text-primary mb-6">
                 Start your journey towards financial freedom with our expert guidance and innovative investment solutions.
             </p>
             {% if not user.is_authenticated %}
@@ -26,25 +49,25 @@
             </a>
             {% endif %}
         </div>
-        <div class="flex justify-center">
-            <img src="{% static 'images/web/sheild.png' %}" alt="Save Shield" class="max-w-xs md:max-w-md animate-float" />
+        <div class="flex justify-center ">
+            <img src="{% static 'images/web/sheild.png' %}" alt="Save Shield" class="max-w-xs md:max-w-md lg:max-w-lg animate-float" />
         </div>
     </div>
 </section>
 
 <!-- Why Investment Section -->
-<section class="py-16 bg-white dark:bg-navy-900">
-    <div class="container mx-auto px-4">
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 items-center">
+<section class="py-16 bg-white dark:bg-navy-900 ">
+    <div class="container mx-auto px-4 h-100vh flex items-center justify-center  " >
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 items-center justify-center ">
             <div class="flex justify-center">
                  <img src="{% static 'images/web/shield-investment.png' %}" alt="Investment Shield" class="max-w-xs md:max-w-sm" />
             </div>
             <div>
                 <h2 class="text-3xl font-bold text-slate-800 dark:text-white mb-6">Why Investment?</h2>
-                <p class="text-slate-600 dark:text-slate-300 mb-4 leading-relaxed">
+                <p class="text-slate-600 dark:text-white mb-4 leading-relaxed">
                     Systematic Investment Plan is a very easy & convenient mode of making investments in mutual funds on a regular basis. SIP allows one to cultivate a habit of savings & creating wealth for the future by starting early.
                 </p>
-                <p class="text-slate-600 dark:text-slate-300 mb-6 leading-relaxed">
+                <p class="text-slate-600 dark:text-white mb-6 leading-relaxed">
                     Offering ease & flexibility, through SIP one can create a planned approach towards investing right. SIP gets auto-debited from the investor's account and the amount is invested into a mutual fund scheme that has been specified.
                 </p>
                 <a href="{% url 'website:mutual_funds' %}" class="text-primary font-semibold hover:underline">Know More &rarr;</a>
@@ -54,16 +77,16 @@
 </section>
 
 <!-- About Preview Section -->
-<section class="py-16 bg-slate-50 dark:bg-navy-800">
-    <div class="container mx-auto px-4 text-center">
-        <h2 class="text-3xl font-bold text-slate-800 dark:text-white mb-4">Innovative Investment Solutions for Important Life Goals</h2>
+<section class="py-16 bg-slate-50 dark:bg-navy-800 aboutus-section-bg " >
+    <div class="container mx-auto px-4 text-center relative">
+        <h2 class="text-3xl font-bold text-slate-800 dark:text-white mb-4 absolute right-0 left-0 text-3xl text-primary dark:text-accent-light badge rounded-full bg-primary text-white  " style="top:-20px">Innovative Investment Solutions for Important Life Goals</h2>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 items-center mt-12">
             <div class="text-left">
-                <h3 class="text-2xl font-bold text-slate-700 dark:text-navy-100 mb-4">About Us</h3>
-                <p class="text-slate-600 dark:text-slate-300 mb-4 leading-relaxed">
+                <h3 class="text-2xl font-bold text-slate-700 dark:text-white mb-4">About Us</h3>
+                <p class="text-slate-600 dark:text-slate-100 mb-4 leading-relaxed">
                     With roots dating back to 1968, Navinchandra Groups is one of the oldest financial services providers in the area of Company Deposit, Government Securities, Bonds, NCD, Equity, Insurance, Mutual Funds, PMS & Unlisted Shares.
                 </p>
-                <p class="text-slate-600 dark:text-slate-300 mb-6 leading-relaxed">
+                <p class="text-slate-600 dark:text-slate-100 mb-6 leading-relaxed">
                     As an umbrella brand for the financial businesses of the Navinchandra Group, we offer a diverse range of products and services across corporate finance and retail segments.
                 </p>
                 <a href="{% url 'website:about' %}" class="btn border border-primary text-primary hover:bg-primary hover:text-white transition-colors">Read More</a>
@@ -76,18 +99,130 @@
 </section>
 
 <!-- Call to Action -->
-<section class="py-16 bg-primary text-white">
-    <div class="container mx-auto px-4 text-center">
-        <h2 class="text-3xl font-bold mb-6">Ready to Start Your Investment Journey?</h2>
-        <p class="text-xl opacity-90 mb-8">Join thousands of satisfied investors who trust us with their financial future.</p>
+<section class="py-12 bg-primary text-white ">
+    <div class="container mx-auto px-4 text-center py-12">
+        <h2 class="text-3xl font-bold mb-4">Ready to Start Your Investment Journey?</h2>
+        <p class="text-xl opacity-90 mb-6">Join thousands of satisfied investors who trust us with their financial future.</p>
         <div class="flex justify-center gap-4">
              {% if not user.is_authenticated %}
              <a href="{% url 'users:login' %}" class="btn bg-white text-primary hover:bg-slate-100 px-8 py-3 rounded-full font-bold">Sign In Now</a>
              {% else %}
              <a href="{{ dashboard_url|default:'/dashboard/' }}" class="btn bg-white text-primary hover:bg-slate-100 px-8 py-3 rounded-full font-bold">Go to Dashboard</a>
              {% endif %}
-             <a href="{% url 'website:contact' %}" class="btn border border-white text-white hover:bg-white hover:text-primary px-8 py-3 rounded-full font-bold">Contact Us</a>
+             <a href="{% url 'website:contact' %}" class="btn border border-white text-white hover:bg-white hover:text-white px-8 py-3 rounded-full font-bold">Contact Us</a>
         </div>
     </div>
 </section>
+
+
+<section 
+  class="bg-cover bg-center py-12 h-100vh  flex items-center"
+  style="background-image: url('{% static 'images/web/client-detail-bg.png' %}');"
+>
+  <div class="container mx-auto px-4 py-[20px] ">
+    <div class="flex justify-center items-center py-6">
+
+      <div class="w-full md:w-8/12 relative py-6">
+
+        <!-- Swiper -->
+        <div class="swiper testimonailSwiper py-6">
+          <div class="swiper-wrapper">
+            <!-- Review 1 -->
+            <div class="swiper-slide p-4">
+              <div class="flex justify-center">
+                <div class="card bg-slate-600 border-0 w-10/12 py-6">
+                  <div class="p-4 text-center">
+                    <p class="text-slate-700 dark:text-white leading-relaxed">
+                      “We know Shri Navinchandra Shah ji for more than 25 years. He has been helping us from that time for all our financial investments till date. He is a reliable person with great knowledge of all financial matters.”
+                    </p>
+                    <h5 class="mt-4 font-semibold text-lg text-slate-900 dark:text-white">
+                      Dr. Mukesh Tailor
+                    </h5>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Review 2 -->
+            <div class="swiper-slide p-4">
+              <div class="flex justify-center">
+                <div class="card bg-slate-600  border-0 w-10/12 py-6">
+                  <div class="p-4 text-center">
+                    <p class="text-slate-700 leading-relaxed dark:text-white">
+                      “Before I met you, I never thought about saving. You taught me and helped me with starting SIP's in mutual funds. That was my first step and the habit of saving helped me in all these 6 to 7 years to come out of many financial issues. I am a private company professional and employed with a small firm. Thanks NSPL money.”
+                    </p>
+                    <h5 class="mt-4 font-semibold text-lg text-slate-900 dark:text-white">
+                      Maulik Nanavati
+                    </h5>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Review 3 -->
+            <div class="swiper-slide p-4">
+              <div class="flex justify-center">
+                <div class="card bg-slate-600  border-0 w-10/12 py-6">
+                  <div class="p-4 text-center">
+                    <p class="text-slate-700 leading-relaxed dark:text-white">
+                      “NSPL money have been outstanding and trusted Financial & Investment Advisors for me & my family. I have been associated with them for over 20 years- their service and customer first orientation is wonderful and rare in the market.”
+                    </p>
+                    <h5 class="mt-4 font-semibold text-lg text-slate-900 dark:text-white">
+                      Former Supreme Court Judge - Justice - G T Nanavati
+                    </h5>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Review 4 -->
+            <div class="swiper-slide p-4">
+              <div class="flex justify-center">
+                <div class="card bg-slate-600  border-0 w-10/12 py-6">
+                  <div class="p-4 text-center">
+                    <p class="text-slate-700 leading-relaxed dark:text-white">
+                      “My long years of association with NSPL money has repeatedly reconfirmed that their clients get the best deal and honest guidance. I wish the team all the best.”
+                    </p>
+                    <h5 class="mt-4 font-semibold text-lg text-slate-900 dark:text-white">
+                      Hemant Desai
+                    </h5>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Decorative Image -->
+        <figure class="flex justify-center mt-10 absolute right-0 top-0">
+          <img 
+            src="{% static '/images/web/money-tree.png' %}" 
+            alt="Decorative Illustration"
+            class="w-72 md:w-96"
+          />
+        </figure>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+
+    <script src="https://cdn.jsdelivr.net/npm/swiper@12/swiper-bundle.min.js"></script>
+
+    <script>
+  document.addEventListener("DOMContentLoaded", () => {
+    new Swiper(".testimonailSwiper", {
+      loop: true,
+      autoplay: {
+        delay: 3500,
+        disableOnInteraction: false,
+      },
+      slidesPerView: 1,
+      spaceBetween: 20,
+      breakpoints: {
+        768: { slidesPerView: 1 },
+        1024: { slidesPerView: 1 },
+      },
+    });
+  });
+</script>
 {% endblock %}
