@@ -204,7 +204,7 @@ class InvestorListView(LoginRequiredMixin, ListView):
     context_object_name = 'investors'
 
     def get_queryset(self):
-        qs = super().get_queryset()
+        qs = super().get_queryset().select_related('user', 'distributor', 'distributor__user')
         user = self.request.user
         if user.user_type == User.Types.DISTRIBUTOR:
             return qs.filter(distributor__user=user)
