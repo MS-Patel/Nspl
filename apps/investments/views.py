@@ -456,15 +456,18 @@ def order_list(request):
     except Exception as e:
         logger.error(f"Failed to sync pending orders: {e}")
 
+    # Optimize query with select_related to avoid N+1 queries
+    queryset = Order.objects.select_related('investor__user', 'scheme')
+
     if user.user_type == 'ADMIN':
-        orders = Order.objects.all()
+        orders = queryset.all()
     elif user.user_type == 'RM':
         # RM sees orders from their distributors' investors
-        orders = Order.objects.filter(distributor__rm__user=user)
+        orders = queryset.filter(distributor__rm__user=user)
     elif user.user_type == 'DISTRIBUTOR':
-        orders = Order.objects.filter(distributor__user=user)
+        orders = queryset.filter(distributor__user=user)
     elif user.user_type == 'INVESTOR':
-        orders = Order.objects.filter(investor__user=user)
+        orders = queryset.filter(investor__user=user)
     else:
         orders = Order.objects.none()
 
