@@ -6,6 +6,8 @@ from apps.investments.models import Order, Mandate, SIP, Folio
 from apps.integration.bse_client import BSEStarMFClient
 from apps.reconciliation.models import Transaction, Holding
 from apps.reconciliation.utils.reconcile import recalculate_holding
+from apps.users.models import InvestorProfile
+from apps.products.models import Scheme
 
 logger = logging.getLogger(__name__)
 
@@ -258,3 +260,198 @@ def sync_sip_child_orders(user=None, investor=None):
         except Exception as e:
             logger.error(f"Error syncing SIP child orders {sip.id}: {e}")
             continue
+
+def sync_bse_daily_reports(days=3):
+    """
+    Orchestrates the daily synchronization of BSE reports.
+    """
+    client = BSEStarMFClient()
+    today = datetime.date.today()
+    from_date = (today - datetime.timedelta(days=days)).strftime("%d/%m/%Y")
+    to_date = today.strftime("%d/%m/%Y")
+
+    logger.info(f"Starting BSE Report Sync from {from_date} to {to_date}")
+
+    _sync_order_status(client, from_date, to_date)
+    _sync_allotments(client, from_date, to_date)
+    _sync_redemptions(client, from_date, to_date)
+
+    logger.info("Completed BSE Report Sync")
+
+def _sync_order_status(client, from_date, to_date):
+    """
+    Fetches Order Status from BSE and updates local Order records.
+    """
+    try:
+        response = client.get_order_status(from_date=from_date, to_date=to_date)
+        if response and getattr(response, 'Status', None) == '100' and getattr(response, 'OrderDetails', None):
+            for item in response.OrderDetails.OrderDetails:
+                bse_order_id = getattr(item, 'OrderNumber', None)
+                if not bse_order_id:
+                    continue
+
+                # Update matching order
+                try:
+                    order = Order.objects.filter(bse_order_id=bse_order_id).first()
+                    if order:
+                        bse_status_text = item.OrderStatus.upper()
+
+                        # Map BSE Status to Local Status
+                        new_status = order.status
+                        if 'INVALID' in bse_status_text or 'REJECTED' in bse_status_text:
+                            new_status = Order.REJECTED
+                        elif 'ALLOTTED' in bse_status_text:
+                            new_status = Order.ALLOTTED
+                        elif 'APPROVED' in bse_status_text:
+                            new_status = Order.APPROVED
+
+                        # Only update if changed or remarks updated
+                        if order.status != new_status or order.bse_remarks != item.OrderRemarks:
+                            order.status = new_status
+                            order.bse_remarks = item.OrderRemarks
+                            order.save(update_fields=['status', 'bse_remarks', 'updated_at'])
+
+                except Exception as ex:
+                    logger.error(f"Failed to update order {bse_order_id}: {ex}")
+
+    except Exception as e:
+        logger.error(f"Error in _sync_order_status: {e}")
+
+def _sync_allotments(client, from_date, to_date):
+    """
+    Fetches Allotment Statement and updates Transaction records.
+    """
+    try:
+        response = client.get_allotment_statement(from_date=from_date, to_date=to_date, order_type="All")
+        if response and getattr(response, 'Status', None) == '100' and getattr(response, 'AllotmentDetails', None):
+            for item in response.AllotmentDetails.AllotmentDetails:
+                try:
+                    bse_order_id = item.OrderNo
+                    if not bse_order_id:
+                        continue
+
+                    # Find Investor
+                    investor = InvestorProfile.objects.filter(ucc_code=item.ClientCode).first()
+                    if not investor:
+                        continue
+
+                    # Find Scheme
+                    scheme = Scheme.objects.filter(scheme_code=item.SchemeCode).first()
+                    if not scheme:
+                        continue
+
+                    # Upsert Transaction
+                    # Note: We rely on txn_number being unique.
+                    # For BSE Allotments, txn_number should be the OrderNo.
+
+                    allotted_units = Decimal(item.AllottedUnit) if item.AllottedUnit else Decimal(0)
+                    allotted_amt = Decimal(item.AllottedAmt) if item.AllottedAmt else Decimal(0)
+                    nav = Decimal(item.Nav) if item.Nav else Decimal(0)
+
+                    # Parse Date (BSE format might vary, assuming DD/MM/YYYY or standard datetime)
+                    # The Zeep client might return a datetime object or string depending on WSDL
+                    # If it is a string 'DD/MM/YYYY', we need to parse.
+                    # Usually zeep parses xs:dateTime to python datetime.
+                    txn_date = item.AllotmentDate
+                    if isinstance(txn_date, str):
+                        try:
+                            txn_date = datetime.datetime.strptime(txn_date, "%d/%m/%Y").date()
+                        except ValueError:
+                             txn_date = datetime.date.today() # Fallback
+
+                    defaults = {
+                        'investor': investor,
+                        'scheme': scheme,
+                        'folio_number': item.FolioNo,
+                        'rta_code': 'BSE',
+                        'txn_type_code': 'P', # Assuming Allotment is Purchase
+                        'bse_order_id': bse_order_id,
+                        'source': Transaction.SOURCE_BSE,
+                        'is_provisional': True, # Keep provisional until RTA Mailback confirms
+                        'date': txn_date,
+                        'amount': allotted_amt,
+                        'units': allotted_units,
+                        'nav': nav
+                    }
+
+                    Transaction.objects.update_or_create(
+                        txn_number=bse_order_id,
+                        defaults=defaults
+                    )
+
+                    # Also ensure Folio exists
+                    if item.FolioNo:
+                         Folio.objects.get_or_create(
+                            investor=investor,
+                            amc=scheme.amc,
+                            folio_number=item.FolioNo
+                        )
+
+                except Exception as ex:
+                    logger.error(f"Failed to process allotment for {item.OrderNo}: {ex}")
+
+    except Exception as e:
+        logger.error(f"Error in _sync_allotments: {e}")
+
+def _sync_redemptions(client, from_date, to_date):
+    """
+    Fetches Redemption Statement and updates Transaction records.
+    """
+    try:
+        response = client.get_redemption_statement(from_date=from_date, to_date=to_date)
+        if response and getattr(response, 'Status', None) == '100' and getattr(response, 'RedemptionDetails', None):
+            for item in response.RedemptionDetails.RedemptionDetails:
+                try:
+                    bse_order_id = item.OrderNo
+                    if not bse_order_id:
+                        continue
+
+                    # Find Investor
+                    investor = InvestorProfile.objects.filter(ucc_code=item.ClientCode).first()
+                    if not investor:
+                        continue
+
+                    # Find Scheme
+                    scheme = Scheme.objects.filter(scheme_code=item.SchemeCode).first()
+                    if not scheme:
+                        continue
+
+                    units = Decimal(item.AllottedUnit) if item.AllottedUnit else Decimal(0)
+                    amount = Decimal(item.AllottedAmt) if item.AllottedAmt else Decimal(0)
+                    nav = Decimal(item.Nav) if item.Nav else Decimal(0)
+
+                    txn_date = item.AllotmentDate
+                    if isinstance(txn_date, str):
+                        try:
+                            txn_date = datetime.datetime.strptime(txn_date, "%d/%m/%Y").date()
+                        except ValueError:
+                             txn_date = datetime.date.today()
+
+                    defaults = {
+                        'investor': investor,
+                        'scheme': scheme,
+                        'folio_number': item.FolioNo,
+                        'rta_code': 'BSE',
+                        'txn_type_code': 'R',
+                        'bse_order_id': bse_order_id,
+                        'source': Transaction.SOURCE_BSE,
+                        'is_provisional': True,
+                        'date': txn_date,
+                        'amount': amount,
+                        'units': units,
+                        'nav': nav
+                    }
+
+                    Transaction.objects.update_or_create(
+                        txn_number=bse_order_id,
+                        defaults=defaults
+                    )
+
+                    # Update Order status if found
+                    Order.objects.filter(bse_order_id=bse_order_id).update(status=Order.ALLOTTED, allotted_units=units)
+
+                except Exception as ex:
+                    logger.error(f"Failed to process redemption for {item.OrderNo}: {ex}")
+
+    except Exception as e:
+        logger.error(f"Error in _sync_redemptions: {e}")
