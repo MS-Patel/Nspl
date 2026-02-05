@@ -68,8 +68,8 @@ class CVLClient:
                 wsdl=wsdl_url,
                 transport=transport,
                 settings=zeep_settings,
-                service_name='CVLRestInquiry',
-                port_name='BasicHttpBinding_ICVLRestInquiry',
+                service_name='CVLPanInquiry',
+                port_name='BasicHttpBinding_ICVLPanInquiry',
                 plugins=[CVLLoggingPlugin()]
             )
 
@@ -83,35 +83,61 @@ class CVLClient:
         client = self._get_soap_client(self)
 
         try:
-            # GetPassword(password, passKey)
+            # GetPassword(webApi={...})
             response = client.service.GetPassword(
-                password=self.password,
-                passKey=pass_key
+                webApi={
+                    'password': self.password,
+                    'passKey': pass_key,
+                    'userName': self.user_name,
+                    'posCode': self.pos_code
+                }
             )
             
             encrypted_password = None
-            print(f"Raw GetPassword response: {response}")  # Debug log for raw response
-            # Check if response is an lxml Element (standard for xs:any return)
-            if hasattr(response, 'find'):
-                # Traverse: APP_RES_ROOT -> APP_GET_PASS
-                # Note: APP_RES_ROOT usually has empty namespace, so direct find might work or we use local-name
+
+            # Zeep might return a dictionary-like object or list for xs:any inside mixed content
+            # If response is an lxml Element (unlikely with Zeep unwrapping unless raw)
+            # Ensure it's not a string because strings also have .find()
+            if hasattr(response, 'find') and not isinstance(response, (str, bytes)):
                 pass_node = response.find('APP_GET_PASS')
                 if pass_node is None:
-                     # Try searching recursively if structure varies
                      pass_node = response.find('.//APP_GET_PASS')
                 
                 if pass_node is not None and pass_node.text:
                     encrypted_password = pass_node.text
-                else:
-                    # Fallback log
-                    cvl_logger.error(f"CVL Auth: APP_GET_PASS not found in response: {etree.tostring(response)}")
+
+            # Check if it's a list (common for xs:any)
+            elif isinstance(response, list):
+                for item in response:
+                    if hasattr(item, 'find') and not isinstance(item, (str, bytes)):
+                        pass_node = item.find('APP_GET_PASS') or item.find('.//APP_GET_PASS')
+                        if pass_node is not None and pass_node.text:
+                            encrypted_password = pass_node.text
+                            break
+
+            # Check if it's a dict or object with _value_1 or similar
+            # Or if Zeep parsed the xs:any content into lxml elements directly
+            elif hasattr(response, '_value_1'):
+                # mixed content
+                vals = response._value_1
+                if isinstance(vals, list):
+                    for val in vals:
+                        if hasattr(val, 'find') and not isinstance(val, (str, bytes)):
+                             pass_node = val.find('APP_GET_PASS') or val.find('.//APP_GET_PASS')
+                             if pass_node is not None and pass_node.text:
+                                encrypted_password = pass_node.text
+                                break
             
             # Fallback for string/bytes response
             elif isinstance(response, (str, bytes)):
                  encrypted_password = response
 
             if not encrypted_password:
-                 raise Exception("Empty or invalid response from GetPassword")
+                # Last ditch effort: if response itself contains the element but wasn't caught
+                # or if debugging shows something else.
+                # For now, let's log error.
+                cvl_logger.error(f"CVL Auth: APP_GET_PASS not found in response: {response}")
+                raise Exception("Empty or invalid response from GetPassword")
 
             return encrypted_password, pass_key
 
@@ -128,63 +154,69 @@ class CVLClient:
             encrypted_password, pass_key = self._get_auth_details()
             client = self._get_soap_client(self)
 
-            # GetPanStatus(panNo, userName, posCode, password, passKey)
+            # GetPanStatus(webApi={...})
             response = client.service.GetPanStatus(
-                panNo=pan,
-                userName=self.user_name,
-                posCode=self.pos_code,
-                password=encrypted_password, # Encrypted password here
-                passKey=pass_key
+                webApi={
+                    'pan': pan,
+                    'userName': self.user_name,
+                    'posCode': self.pos_code,
+                    'password': encrypted_password, # Encrypted password here
+                    'passKey': pass_key
+                }
             )
             
-            # response is GetPanStatusResult (xs:any), usually an lxml Element
+            # response is GetPanStatusResult (xs:any)
             
-            # Log the raw response for debugging (converting element to string if needed)
-            if hasattr(response, 'find'):
-                result_str = etree.tostring(response, pretty_print=True).decode()
-            else:
-                result_str = str(response)
-                
+            result_str = str(response)
             cvl_logger.info(f"PAN CHECK: {pan} | RESULT: {result_str}")
 
-            if hasattr(response, 'find'):
-                # Handle XML structure
-                # Structure: APP_RES_ROOT -> APP_PAN_INQ -> [APP_NAME, APP_STATUS, ERROR, etc.]
-                
-                inq_node = response.find('APP_PAN_INQ')
-                if inq_node is None:
-                     inq_node = response.find('.//APP_PAN_INQ')
+            # Helper to find node in various response types
+            def find_in_response(resp, tag):
+                if hasattr(resp, 'find') and not isinstance(resp, (str, bytes)):
+                    n = resp.find(tag)
+                    if n is None: n = resp.find(f'.//{tag}')
+                    return n
+                if isinstance(resp, list):
+                    for item in resp:
+                        res = find_in_response(item, tag)
+                        if res is not None: return res
+                if hasattr(resp, '_value_1'):
+                     return find_in_response(resp._value_1, tag)
+                return None
 
-                if inq_node is not None:
-                    # Check for Error
-                    error_node = inq_node.find('ERROR')
-                    if error_node is not None:
-                        msg = error_node.find('ERROR_MSG')
-                        remarks = msg.text if msg is not None else 'Unknown Error from CVL'
-                        return {'status': 'error', 'remarks': remarks}
-                    
-                    # Extract Success Data
-                    name_node = inq_node.find('APP_NAME')
-                    status_node = inq_node.find('APP_STATUS')
-                    
-                    name = name_node.text if name_node is not None else ""
-                    status = status_node.text if status_node is not None else ""
-                    
-                    return {
-                        'status': 'success',
-                        'data': {
-                            'name': name,
-                            'status': status,
-                            'raw': result_str
-                        }
+            # Logic to parse response
+            inq_node = find_in_response(response, 'APP_PAN_INQ')
+
+            if inq_node is not None:
+                # Check for Error
+                error_node = inq_node.find('ERROR')
+                if error_node is not None:
+                    msg = error_node.find('ERROR_MSG')
+                    remarks = msg.text if msg is not None else 'Unknown Error from CVL'
+                    return {'status': 'error', 'remarks': remarks}
+                
+                # Extract Success Data
+                name_node = inq_node.find('APP_NAME')
+                status_node = inq_node.find('APP_STATUS')
+
+                name = name_node.text if name_node is not None else ""
+                status = status_node.text if status_node is not None else ""
+
+                return {
+                    'status': 'success',
+                    'data': {
+                        'name': name,
+                        'status': status,
+                        'raw': result_str
                     }
-                else:
-                     # Check if ERROR is directly under root or somewhere else
-                     error_node = response.find('.//ERROR')
-                     if error_node is not None:
-                         msg = error_node.find('ERROR_MSG')
-                         remarks = msg.text if msg is not None else 'Unknown Error from CVL'
-                         return {'status': 'error', 'remarks': remarks}
+                }
+            else:
+                 # Check if ERROR is directly under root or somewhere else
+                 error_node = find_in_response(response, 'ERROR')
+                 if error_node is not None:
+                     msg = error_node.find('ERROR_MSG')
+                     remarks = msg.text if msg is not None else 'Unknown Error from CVL'
+                     return {'status': 'error', 'remarks': remarks}
 
             # Fallback for unexpected formats
             return {'status': 'error', 'remarks': 'Could not parse CVL response'}
