@@ -234,7 +234,7 @@ class BSEStarMFClient:
             bse_logger.info(f"ORDER ENTRY: {order.unique_ref_no} | RESPONSE: {response}")
 
             parts = str(response).split('|')
-            if parts[-1] == '0':
+            if parts[0] == '0':
                 return {
                     'status': 'success',
                     'bse_order_id': parts[1] if len(parts) > 1 else "",

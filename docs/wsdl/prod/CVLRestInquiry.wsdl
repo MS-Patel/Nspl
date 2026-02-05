@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions name="CVLPanInquiry" targetNamespace="https://pancheck.www.kracvl.com"
+    xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata"
+    xmlns:wsx="http://schemas.xmlsoap.org/ws/2004/09/mex"
+    xmlns:wsap="http://schemas.xmlsoap.org/ws/2004/08/addressing/policy"
+    xmlns:msc="http://schemas.microsoft.com/ws/2005/12/wsdl/contract"
+    xmlns:wsp="http://schemas.xmlsoap.org/ws/2004/09/policy" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+    xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd"
+    xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/"
+    xmlns:tns="https://pancheck.www.kracvl.com" xmlns:wsa10="http://www.w3.org/2005/08/addressing"
+    xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl" xmlns:wsa="http://schemas.xmlsoap.org/ws/2004/08/addressing">
+    <wsp:Policy wsu:Id="BasicHttpBinding_ICVLPanInquiry_policy">
+        <wsp:ExactlyOne>
+            <wsp:All>
+                <sp:TransportBinding xmlns:sp="http://schemas.xmlsoap.org/ws/2005/07/securitypolicy">
+                    <wsp:Policy>
+                        <sp:TransportToken>
+                            <wsp:Policy>
+                                <sp:HttpsToken RequireClientCertificate="false" />
+                            </wsp:Policy>
+                        </sp:TransportToken>
+                        <sp:AlgorithmSuite>
+                            <wsp:Policy>
+                                <sp:Basic256 />
+                            </wsp:Policy>
+                        </sp:AlgorithmSuite>
+                        <sp:Layout>
+                            <wsp:Policy>
+                                <sp:Strict />
+                            </wsp:Policy>
+                        </sp:Layout>
+                    </wsp:Policy>
+                </sp:TransportBinding>
+            </wsp:All>
+        </wsp:ExactlyOne>
+    </wsp:Policy>
+    <wsdl:types>
+        <xs:schema elementFormDefault="qualified" targetNamespace="https://pancheck.www.kracvl.com"
+            xmlns:xs="http://www.w3.org/2001/XMLSchema">
+            <xs:element name="GetPassword">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="0" maxOccurs="1" name="webApi" type="tns:CVLKRAWebApi" />
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:complexType name="CVLKRAWebApi">
+                <xs:sequence>
+                    <xs:element minOccurs="0" maxOccurs="1" name="inputXml" type="xs:string" />
+                    <xs:element minOccurs="0" maxOccurs="1" name="pan" type="xs:string" />
+                    <xs:element minOccurs="0" maxOccurs="1" name="userName" type="xs:string" />
+                    <xs:element minOccurs="0" maxOccurs="1" name="posCode" type="xs:string" />
+                    <xs:element minOccurs="0" maxOccurs="1" name="password" type="xs:string" />
+                    <xs:element minOccurs="0" maxOccurs="1" name="passKey" type="xs:string" />
+                </xs:sequence>
+            </xs:complexType>
+            <xs:element name="GetPasswordResponse">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="0" maxOccurs="1" name="GetPasswordResult">
+                            <xs:complexType mixed="true">
+                                <xs:sequence>
+                                    <xs:any />
+                                </xs:sequence>
+                            </xs:complexType>
+                        </xs:element>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="GetPanStatus">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="0" maxOccurs="1" name="webApi" type="tns:CVLKRAWebApi" />
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="GetPanStatusResponse">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="0" maxOccurs="1" name="GetPanStatusResult">
+                            <xs:complexType mixed="true">
+                                <xs:sequence>
+                                    <xs:any />
+                                </xs:sequence>
+                            </xs:complexType>
+                        </xs:element>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="SolicitPANDetailsFetchALLKRA">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="0" maxOccurs="1" name="webApi" type="tns:CVLKRAWebApi" />
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="SolicitPANDetailsFetchALLKRAResponse">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="0" maxOccurs="1" name="SolicitPANDetailsFetchALLKRAResult">
+                            <xs:complexType mixed="true">
+                                <xs:sequence>
+                                    <xs:any />
+                                </xs:sequence>
+                            </xs:complexType>
+                        </xs:element>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="InsertUpdateKYCRecord">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="0" maxOccurs="1" name="webApi" type="tns:CVLKRAWebApi" />
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+            <xs:element name="InsertUpdateKYCRecordResponse">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element minOccurs="0" maxOccurs="1" name="InsertUpdateKYCRecordResult">
+                            <xs:complexType mixed="true">
+                                <xs:sequence>
+                                    <xs:any />
+                                </xs:sequence>
+                            </xs:complexType>
+                        </xs:element>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+        </xs:schema>
+    </wsdl:types>
+    <wsdl:message name="ICVLPanInquiry_GetPassword_InputMessage">
+        <wsdl:part name="parameters" element="tns:GetPassword" />
+    </wsdl:message>
+    <wsdl:message name="ICVLPanInquiry_GetPassword_OutputMessage">
+        <wsdl:part name="parameters" element="tns:GetPasswordResponse" />
+    </wsdl:message>
+    <wsdl:message name="ICVLPanInquiry_GetPanStatus_InputMessage">
+        <wsdl:part name="parameters" element="tns:GetPanStatus" />
+    </wsdl:message>
+    <wsdl:message name="ICVLPanInquiry_GetPanStatus_OutputMessage">
+        <wsdl:part name="parameters" element="tns:GetPanStatusResponse" />
+    </wsdl:message>
+    <wsdl:message name="ICVLPanInquiry_SolicitPANDetailsFetchALLKRA_InputMessage">
+        <wsdl:part name="parameters" element="tns:SolicitPANDetailsFetchALLKRA" />
+    </wsdl:message>
+    <wsdl:message name="ICVLPanInquiry_SolicitPANDetailsFetchALLKRA_OutputMessage">
+        <wsdl:part name="parameters" element="tns:SolicitPANDetailsFetchALLKRAResponse" />
+    </wsdl:message>
+    <wsdl:message name="ICVLPanInquiry_InsertUpdateKYCRecord_InputMessage">
+        <wsdl:part name="parameters" element="tns:InsertUpdateKYCRecord" />
+    </wsdl:message>
+    <wsdl:message name="ICVLPanInquiry_InsertUpdateKYCRecord_OutputMessage">
+        <wsdl:part name="parameters" element="tns:InsertUpdateKYCRecordResponse" />
+    </wsdl:message>
+    <wsdl:portType name="ICVLPanInquiry">
+        <wsdl:operation name="GetPassword">
+            <wsdl:input wsaw:Action="https://pancheck.www.kracvl.com/ICVLPanInquiry/GetPassword"
+                message="tns:ICVLPanInquiry_GetPassword_InputMessage" />
+            <wsdl:output wsaw:Action="https://pancheck.www.kracvl.com/ICVLPanInquiry/GetPasswordResponse"
+                message="tns:ICVLPanInquiry_GetPassword_OutputMessage" />
+        </wsdl:operation>
+        <wsdl:operation name="GetPanStatus">
+            <wsdl:input wsaw:Action="https://pancheck.www.kracvl.com/ICVLPanInquiry/GetPanStatus"
+                message="tns:ICVLPanInquiry_GetPanStatus_InputMessage" />
+            <wsdl:output wsaw:Action="https://pancheck.www.kracvl.com/ICVLPanInquiry/GetPanStatusResponse"
+                message="tns:ICVLPanInquiry_GetPanStatus_OutputMessage" />
+        </wsdl:operation>
+        <wsdl:operation name="SolicitPANDetailsFetchALLKRA">
+            <wsdl:input wsaw:Action="https://pancheck.www.kracvl.com/ICVLPanInquiry/SolicitPANDetailsFetchALLKRA"
+                message="tns:ICVLPanInquiry_SolicitPANDetailsFetchALLKRA_InputMessage" />
+            <wsdl:output
+                wsaw:Action="https://pancheck.www.kracvl.com/ICVLPanInquiry/SolicitPANDetailsFetchALLKRAResponse"
+                message="tns:ICVLPanInquiry_SolicitPANDetailsFetchALLKRA_OutputMessage" />
+        </wsdl:operation>
+        <wsdl:operation name="InsertUpdateKYCRecord">
+            <wsdl:input wsaw:Action="https://pancheck.www.kracvl.com/ICVLPanInquiry/InsertUpdateKYCRecord"
+                message="tns:ICVLPanInquiry_InsertUpdateKYCRecord_InputMessage" />
+            <wsdl:output wsaw:Action="https://pancheck.www.kracvl.com/ICVLPanInquiry/InsertUpdateKYCRecordResponse"
+                message="tns:ICVLPanInquiry_InsertUpdateKYCRecord_OutputMessage" />
+        </wsdl:operation>
+    </wsdl:portType>
+    <wsdl:binding name="BasicHttpBinding_ICVLPanInquiry" type="tns:ICVLPanInquiry">
+        <wsp:PolicyReference URI="#BasicHttpBinding_ICVLPanInquiry_policy" />
+        <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+        <wsdl:operation name="GetPassword">
+            <soap:operation soapAction="https://pancheck.www.kracvl.com/ICVLPanInquiry/GetPassword" style="document" />
+            <wsdl:input>
+                <soap:body use="literal" />
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal" />
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="GetPanStatus">
+            <soap:operation soapAction="https://pancheck.www.kracvl.com/ICVLPanInquiry/GetPanStatus" style="document" />
+            <wsdl:input>
+                <soap:body use="literal" />
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal" />
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="SolicitPANDetailsFetchALLKRA">
+            <soap:operation soapAction="https://pancheck.www.kracvl.com/ICVLPanInquiry/SolicitPANDetailsFetchALLKRA"
+                style="document" />
+            <wsdl:input>
+                <soap:body use="literal" />
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal" />
+            </wsdl:output>
+        </wsdl:operation>
+        <wsdl:operation name="InsertUpdateKYCRecord">
+            <soap:operation soapAction="https://pancheck.www.kracvl.com/ICVLPanInquiry/InsertUpdateKYCRecord"
+                style="document" />
+            <wsdl:input>
+                <soap:body use="literal" />
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal" />
+            </wsdl:output>
+        </wsdl:operation>
+    </wsdl:binding>
+    <wsdl:service name="CVLPanInquiry">
+        <wsdl:port name="BasicHttpBinding_ICVLPanInquiry" binding="tns:BasicHttpBinding_ICVLPanInquiry">
+            <soap:address location="https://pancheck.www.kracvl.com/CVLPanInquiry.svc" />
+        </wsdl:port>
+    </wsdl:service>
+</wsdl:definitions>

@@ -95,25 +95,30 @@ class TestBSEAuthSplit(SimpleTestCase):
         # Mock MandateDetails response
         mock_query_service_instance.MandateDetails.return_value = "MandateDetailsResponse"
 
+        # Mock GetAccessToken response for Mandate Status
+        mock_token_response = MagicMock()
+        mock_token_response.Status = '100'
+        mock_token_response.ResponseString = 'QueryAuthToken'
+        mock_query_service_instance.GetAccessToken.return_value = mock_token_response
+
         # CALL
         client.get_mandate_status("12345")
 
         # VERIFY
-        mock_query_service_instance.getPassword.assert_called()
+        mock_query_service_instance.GetAccessToken.assert_called()
         mock_order_service_instance.getPassword.assert_not_called()
         mock_upload_service_instance.getPassword.assert_not_called()
 
-        call_args = mock_query_service_instance.getPassword.call_args
-        self.assertEqual(call_args.kwargs['UserId'], "USER_ID")
-        self.assertEqual(call_args.kwargs['Password'], "PASSWORD")
-        self.assertEqual(call_args.kwargs['MemberId'], "MEMBER_ID")
+        call_args = mock_query_service_instance.GetAccessToken.call_args
+        self.assertEqual(call_args.kwargs['Param']['UserId'], "USER_ID")
+        self.assertEqual(call_args.kwargs['Param']['MemberId'], "MEMBER_ID")
 
         # Verify MandateDetails call used the token
         mock_query_service_instance.MandateDetails.assert_called()
         mandate_call_args = mock_query_service_instance.MandateDetails.call_args
         self.assertEqual(mandate_call_args.kwargs['Param']['EncryptedPassword'], "QueryAuthToken")
 
-        # --- TEST 4: Get Order Status (Should use Query Service Auth) ---
+        # --- TEST 4: Get Order Status (Uses Plain Text Password, NO Auth Call) ---
         # Reset mocks
         mock_order_service_instance.reset_mock()
         mock_upload_service_instance.reset_mock()
@@ -125,17 +130,14 @@ class TestBSEAuthSplit(SimpleTestCase):
         client.get_order_status("123456")
 
         # VERIFY
-        mock_query_service_instance.getPassword.assert_called()
-        call_args = mock_query_service_instance.getPassword.call_args
-        self.assertEqual(call_args.kwargs['UserId'], "USER_ID")
-        self.assertEqual(call_args.kwargs['MemberId'], "MEMBER_ID")
+        mock_query_service_instance.getPassword.assert_not_called()
 
-        # Verify OrderStatus used the token
+        # Verify OrderStatus used the PLAIN TEXT password
         mock_query_service_instance.OrderStatus.assert_called()
         order_status_args = mock_query_service_instance.OrderStatus.call_args
-        self.assertEqual(order_status_args.kwargs['Param']['Password'], "QueryAuthToken")
+        self.assertEqual(order_status_args.kwargs['Param']['Password'], "PASSWORD")
 
-        # --- TEST 5: Get Allotment Statement (Should use Query Service Auth) ---
+        # --- TEST 5: Get Allotment Statement (Uses Plain Text Password, NO Auth Call) ---
         # Reset mocks
         mock_order_service_instance.reset_mock()
         mock_upload_service_instance.reset_mock()
@@ -147,15 +149,12 @@ class TestBSEAuthSplit(SimpleTestCase):
         client.get_allotment_statement("123456")
 
         # VERIFY
-        mock_query_service_instance.getPassword.assert_called()
-        call_args = mock_query_service_instance.getPassword.call_args
-        self.assertEqual(call_args.kwargs['UserId'], "USER_ID")
-        self.assertEqual(call_args.kwargs['MemberId'], "MEMBER_ID")
+        mock_query_service_instance.getPassword.assert_not_called()
 
-        # Verify AllotmentStatement used the token
+        # Verify AllotmentStatement used the PLAIN TEXT password
         mock_query_service_instance.AllotmentStatement.assert_called()
         allot_args = mock_query_service_instance.AllotmentStatement.call_args
-        self.assertEqual(allot_args.kwargs['Param']['Password'], "QueryAuthToken")
+        self.assertEqual(allot_args.kwargs['Param']['Password'], "PASSWORD")
 
         # --- TEST 6: Check PAN Status (Should use Query Service Auth) ---
         # Reset mocks
