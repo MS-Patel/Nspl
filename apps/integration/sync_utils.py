@@ -1,7 +1,9 @@
 import logging
 import datetime
+import concurrent.futures
 from decimal import Decimal
 from django.utils import timezone
+from django.db import connections
 from apps.investments.models import Order, Mandate, SIP, Folio
 from apps.integration.bse_client import BSEStarMFClient
 from apps.reconciliation.models import Transaction, Holding
@@ -10,6 +12,123 @@ from apps.users.models import InvestorProfile
 from apps.products.models import Scheme
 
 logger = logging.getLogger(__name__)
+
+def _process_single_order_sync(order, client):
+    """
+    Process a single order sync to be run in a thread.
+    Returns a tuple (investor, scheme, folio_number) if a holding recalculation is needed, else None.
+    """
+    if not order.bse_order_id:
+        return None
+
+    recalc_needed = None
+
+    try:
+        # 1. Payment Status Check
+        # Only relevant if not yet Approved/Allotted
+        if order.status in [Order.SENT_TO_BSE, Order.AWAITING_PAYMENT]:
+            payment_resp = client.get_payment_status(
+                client_code=order.investor.ucc_code,
+                order_no=order.bse_order_id
+            )
+
+            if payment_resp['status'] == 'success' and 'APPROVED' in payment_resp['remarks'].upper():
+                if order.status != Order.APPROVED:
+                    order.status = Order.APPROVED
+                    order.bse_remarks = f"{order.bse_remarks} | Payment: {payment_resp['remarks']}"
+                    order.save()
+            elif payment_resp['status'] == 'success' and 'REJECTED' in payment_resp.get('remarks', '').upper():
+                    order.status = Order.REJECTED
+                    order.bse_remarks = f"{order.bse_remarks} | Payment: {payment_resp['remarks']}"
+                    order.save()
+
+        # 2. Order Status Check (Lifecycle)
+        status_resp = client.get_order_status(
+            order_no=order.bse_order_id,
+            client_code=order.investor.ucc_code
+        )
+
+        if status_resp and status_resp.Status == '0' and status_resp.OrderDetails:
+            bse_detail = status_resp.OrderDetails[0]
+            bse_status_text = bse_detail.OrderStatus.upper() # VALID / INVALID
+
+            if bse_status_text == 'INVALID':
+                order.status = Order.REJECTED
+                order.bse_remarks = bse_detail.OrderRemarks
+                order.save()
+                return None # Can stop here if rejected
+
+        # 3. Allotment Check
+        # Only if Approved or Sent to BSE (and valid)
+        if order.status in [Order.APPROVED, Order.SENT_TO_BSE]:
+            allot_resp = client.get_allotment_statement(
+                order_no=order.bse_order_id,
+                client_code=order.investor.ucc_code
+            )
+
+            if allot_resp and allot_resp.Status == '0' and allot_resp.AllotmentDetails:
+                details = allot_resp.AllotmentDetails[0]
+                allotted_units = Decimal(details.AllottedUnit) if details.AllottedUnit else Decimal(0)
+
+                if allotted_units > 0:
+                    order.status = Order.ALLOTTED
+                    order.allotted_units = allotted_units
+
+                    # Capture Folio if new
+                    if details.FolioNo and (not order.folio or order.folio.folio_number != details.FolioNo):
+                        folio, created = Folio.objects.get_or_create(
+                            investor=order.investor,
+                            amc=order.scheme.amc,
+                            folio_number=details.FolioNo
+                        )
+                        order.folio = folio
+
+                    order.bse_remarks = "Allotted Successfully"
+                    order.save()
+
+                    # ------------------------------------------------------------------
+                    # Create Provisional Transaction and Update Holding
+                    # ------------------------------------------------------------------
+
+                    # Determine Scheme and Type
+                    if order.transaction_type == Order.SWITCH and order.target_scheme:
+                        txn_scheme = order.target_scheme
+                        txn_type = 'SI'
+                    else:
+                        txn_scheme = order.scheme
+                        txn_type = 'P' # Default to Purchase for Allotment (incl SIP Child)
+
+                    # Check if transaction exists (Provisional or Confirmed)
+                    # We match strictly on BSE Order ID if available
+                    existing_txn = Transaction.objects.filter(bse_order_id=order.bse_order_id).exists()
+
+                    if not existing_txn and order.folio:
+                        Transaction.objects.create(
+                            investor=order.investor,
+                            scheme=txn_scheme,
+                            folio_number=order.folio.folio_number,
+                            rta_code='BSE', # Placeholder
+                            txn_type_code=txn_type,
+                            txn_number=order.bse_order_id, # Use BSE ID as Temp ID
+                            bse_order_id=order.bse_order_id,
+                            source=Transaction.SOURCE_BSE,
+                            is_provisional=True,
+                            date=timezone.now().date(), # Allotment Date approx
+                            amount=order.amount,
+                            units=allotted_units
+                        )
+
+                        # Return info for recalculation (defer to main thread)
+                        recalc_needed = (order.investor, txn_scheme, order.folio.folio_number)
+                    # ------------------------------------------------------------------
+
+    except Exception as e:
+        logger.error(f"Error syncing order {order.unique_ref_no}: {e}")
+    finally:
+        # Close DB connections created by this thread to prevent leaks
+        connections.close_all()
+
+    return recalc_needed
 
 def sync_pending_orders(user=None, investor=None):
     """
@@ -29,7 +148,7 @@ def sync_pending_orders(user=None, investor=None):
     # PENDING orders haven't been sent yet, so skip.
     orders_qs = Order.objects.filter(
         status__in=[Order.SENT_TO_BSE, Order.AWAITING_PAYMENT, Order.APPROVED]
-    )
+    ).select_related('investor', 'scheme', 'scheme__amc', 'folio', 'target_scheme')
 
     # Apply filtering based on investor if provided (Priority)
     if investor:
@@ -55,116 +174,32 @@ def sync_pending_orders(user=None, investor=None):
         # We'll rely on the Zeep caching optimization for now.
         pass
 
-    for order in orders_qs:
-        if not order.bse_order_id:
-            continue
+    # Use ThreadPoolExecutor to process orders in parallel
+    # We use a limited number of workers to avoid overwhelming the system/DB
+    holdings_to_recalculate = set()
 
+    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+        futures = {executor.submit(_process_single_order_sync, order, client): order for order in orders_qs}
+
+        # Wait for all futures to complete
+        for future in concurrent.futures.as_completed(futures):
+            try:
+                result = future.result()
+                if result:
+                    holdings_to_recalculate.add(result)
+            except Exception as e:
+                logger.error(f"Thread execution failed: {e}")
+
+    # Recalculate holdings sequentially to avoid race conditions
+    for investor_obj, scheme_obj, folio_num in holdings_to_recalculate:
         try:
-            # 1. Payment Status Check
-            # Only relevant if not yet Approved/Allotted
-            if order.status in [Order.SENT_TO_BSE, Order.AWAITING_PAYMENT]:
-                payment_resp = client.get_payment_status(
-                    client_code=order.investor.ucc_code,
-                    order_no=order.bse_order_id
-                )
-
-                if payment_resp['status'] == 'success' and 'APPROVED' in payment_resp['remarks'].upper():
-                    if order.status != Order.APPROVED:
-                        order.status = Order.APPROVED
-                        order.bse_remarks = f"{order.bse_remarks} | Payment: {payment_resp['remarks']}"
-                        order.save()
-                elif payment_resp['status'] == 'success' and 'REJECTED' in payment_resp.get('remarks', '').upper():
-                     order.status = Order.REJECTED
-                     order.bse_remarks = f"{order.bse_remarks} | Payment: {payment_resp['remarks']}"
-                     order.save()
-
-            # 2. Order Status Check (Lifecycle)
-            status_resp = client.get_order_status(
-                order_no=order.bse_order_id,
-                client_code=order.investor.ucc_code
+            recalculate_holding(
+                investor=investor_obj,
+                scheme=scheme_obj,
+                folio_number=folio_num
             )
-
-            if status_resp and status_resp.Status == '0' and status_resp.OrderDetails:
-                bse_detail = status_resp.OrderDetails[0]
-                bse_status_text = bse_detail.OrderStatus.upper() # VALID / INVALID
-
-                if bse_status_text == 'INVALID':
-                    order.status = Order.REJECTED
-                    order.bse_remarks = bse_detail.OrderRemarks
-                    order.save()
-                    continue
-
-            # 3. Allotment Check
-            # Only if Approved or Sent to BSE (and valid)
-            if order.status in [Order.APPROVED, Order.SENT_TO_BSE]:
-                allot_resp = client.get_allotment_statement(
-                    order_no=order.bse_order_id,
-                    client_code=order.investor.ucc_code
-                )
-
-                if allot_resp and allot_resp.Status == '0' and allot_resp.AllotmentDetails:
-                    details = allot_resp.AllotmentDetails[0]
-                    allotted_units = Decimal(details.AllottedUnit) if details.AllottedUnit else Decimal(0)
-
-                    if allotted_units > 0:
-                        order.status = Order.ALLOTTED
-                        order.allotted_units = allotted_units
-
-                        # Capture Folio if new
-                        if details.FolioNo and (not order.folio or order.folio.folio_number != details.FolioNo):
-                            folio, created = Folio.objects.get_or_create(
-                                investor=order.investor,
-                                amc=order.scheme.amc,
-                                folio_number=details.FolioNo
-                            )
-                            order.folio = folio
-
-                        order.bse_remarks = "Allotted Successfully"
-                        order.save()
-
-                        # ------------------------------------------------------------------
-                        # Create Provisional Transaction and Update Holding
-                        # ------------------------------------------------------------------
-
-                        # Determine Scheme and Type
-                        if order.transaction_type == Order.SWITCH and order.target_scheme:
-                            txn_scheme = order.target_scheme
-                            txn_type = 'SI'
-                        else:
-                            txn_scheme = order.scheme
-                            txn_type = 'P' # Default to Purchase for Allotment (incl SIP Child)
-
-                        # Check if transaction exists (Provisional or Confirmed)
-                        # We match strictly on BSE Order ID if available
-                        existing_txn = Transaction.objects.filter(bse_order_id=order.bse_order_id).exists()
-
-                        if not existing_txn and order.folio:
-                            Transaction.objects.create(
-                                investor=order.investor,
-                                scheme=txn_scheme,
-                                folio_number=order.folio.folio_number,
-                                rta_code='BSE', # Placeholder
-                                txn_type_code=txn_type,
-                                txn_number=order.bse_order_id, # Use BSE ID as Temp ID
-                                bse_order_id=order.bse_order_id,
-                                source=Transaction.SOURCE_BSE,
-                                is_provisional=True,
-                                date=timezone.now().date(), # Allotment Date approx
-                                amount=order.amount,
-                                units=allotted_units
-                            )
-
-                            # Recalculate Holdings
-                            recalculate_holding(
-                                investor=order.investor,
-                                scheme=txn_scheme,
-                                folio_number=order.folio.folio_number
-                            )
-                        # ------------------------------------------------------------------
-
         except Exception as e:
-            logger.error(f"Error syncing order {order.unique_ref_no}: {e}")
-            continue
+            logger.error(f"Failed to recalculate holding for {folio_num}: {e}")
 
 def sync_pending_mandates(user=None, investor=None):
     """
