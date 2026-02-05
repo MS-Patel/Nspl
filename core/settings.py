@@ -153,14 +153,31 @@ BSE_MEMBER_ID = os.environ.get('BSE_MEMBER_ID', "24637")
 BSE_USER_ID = os.environ.get('BSE_USER_ID', "2463702")
 BSE_PASSWORD = os.environ.get('BSE_PASSWORD', "Abc@1234")
 
-# BSE StarMF API URLs (Defaults to UAT)
-BSE_ORDER_WSDL = os.environ.get('BSE_ORDER_WSDL', "https://bsestarmfdemo.bseindia.com/MFOrderEntry/MFOrder.svc?singleWsdl")
-BSE_UPLOAD_SERVICE_URL = os.environ.get('BSE_UPLOAD_SERVICE_URL', "https://bsestarmfdemo.bseindia.com/StarMFFileUploadService/StarMFFileUploadService.svc/Secure/UploadFile")
-BSE_UPLOAD_WSDL = os.environ.get('BSE_UPLOAD_WSDL', "https://bsestarmfdemo.bseindia.com/MFUploadService/MFUploadService.svc?singleWsdl")
-BSE_QUERY_WSDL = os.environ.get('BSE_QUERY_WSDL', "https://bsestarmfdemo.bseindia.com/StarMFWebService/StarMFWebService.svc?singleWsdl")
-BSE_COMMON_API_URL = os.environ.get('BSE_COMMON_API_URL', "https://bsestarmfdemo.bseindia.com/BSEMFWEBAPI/UCCAPI/UCCRegistrationV183")
-BSE_EMANDATE_AUTH_URL = os.environ.get('BSE_EMANDATE_AUTH_URL', "https://bsestarmfdemo.bseindia.com/Emandate/EmandateAuthURL.aspx")
-BSE_EMANDATE_API_URL = os.environ.get('BSE_EMANDATE_API_URL', "https://bsestarmfdemo.bseindia.com/StarMFWebService/StarMFWebService.svc/EMandateAuthURL")
+BSE_ENV = os.environ.get('BSE_ENV', 'DEMO').upper()
+
+# WSDL Base Directory
+WSDL_DIR = os.path.join(BASE_DIR, 'docs', 'wsdl', 'prod' if BSE_ENV == 'PROD' else 'demo')
+
+# BSE StarMF API URLs and WSDLs
+if BSE_ENV == 'PROD':
+    BSE_ORDER_WSDL = os.environ.get('BSE_ORDER_WSDL', f"file://{os.path.join(WSDL_DIR, 'MFOrder.wsdl')}")
+    BSE_UPLOAD_WSDL = os.environ.get('BSE_UPLOAD_WSDL', f"file://{os.path.join(WSDL_DIR, 'MFUploadService.wsdl')}")
+    BSE_QUERY_WSDL = os.environ.get('BSE_QUERY_WSDL', f"file://{os.path.join(WSDL_DIR, 'StarMFWebService.wsdl')}")
+
+    BSE_UPLOAD_SERVICE_URL = os.environ.get('BSE_UPLOAD_SERVICE_URL', "https://bsestarmf.in/StarMFFileUploadService/StarMFFileUploadService.svc/Secure/UploadFile")
+    BSE_COMMON_API_URL = os.environ.get('BSE_COMMON_API_URL', "https://bsestarmf.in/BSEMFWEBAPI/UCCAPI/UCCRegistrationV183")
+    BSE_EMANDATE_AUTH_URL = os.environ.get('BSE_EMANDATE_AUTH_URL', "https://bsestarmf.in/Emandate/EmandateAuthURL.aspx")
+    BSE_EMANDATE_API_URL = os.environ.get('BSE_EMANDATE_API_URL', "https://bsestarmf.in/StarMFWebService/StarMFWebService.svc/EMandateAuthURL")
+else:
+    # Defaults to DEMO
+    BSE_ORDER_WSDL = os.environ.get('BSE_ORDER_WSDL', f"file://{os.path.join(WSDL_DIR, 'MFOrder.wsdl')}")
+    BSE_UPLOAD_WSDL = os.environ.get('BSE_UPLOAD_WSDL', f"file://{os.path.join(WSDL_DIR, 'MFUploadService.wsdl')}")
+    BSE_QUERY_WSDL = os.environ.get('BSE_QUERY_WSDL', f"file://{os.path.join(WSDL_DIR, 'StarMFWebService.wsdl')}")
+
+    BSE_UPLOAD_SERVICE_URL = os.environ.get('BSE_UPLOAD_SERVICE_URL', "https://bsestarmfdemo.bseindia.com/StarMFFileUploadService/StarMFFileUploadService.svc/Secure/UploadFile")
+    BSE_COMMON_API_URL = os.environ.get('BSE_COMMON_API_URL', "https://bsestarmfdemo.bseindia.com/BSEMFWEBAPI/UCCAPI/UCCRegistrationV183")
+    BSE_EMANDATE_AUTH_URL = os.environ.get('BSE_EMANDATE_AUTH_URL', "https://bsestarmfdemo.bseindia.com/Emandate/EmandateAuthURL.aspx")
+    BSE_EMANDATE_API_URL = os.environ.get('BSE_EMANDATE_API_URL', "https://bsestarmfdemo.bseindia.com/StarMFWebService/StarMFWebService.svc/EMandateAuthURL")
 
 # CVL KRA API Configuration
 CVL_USER_NAME = os.environ.get('CVL_USER_NAME', "WEBADMIN")

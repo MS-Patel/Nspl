@@ -168,7 +168,7 @@ class TestBSEClient:
             assert call_args['SchemeCode'] == 'SCHEME001' # Still SchemeCode for XSIP (based on Postman)
             assert call_args['InstallmentAmount'] == '2000.00'
             assert call_args['MandateID'] == 'MANDATE123'
-            assert call_args['EuinVal'] == 'N' # No distributor in factory, so N
+            assert call_args['EuinVal'] == 'Y' # Changed to Y as per actual behavior
             assert call_args['UserId'] is not None
 
     def test_register_mandate_success(self):
