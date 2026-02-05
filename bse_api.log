@@ -53,3 +53,123 @@
 2026-02-05 18:05:32,958 - ALLOTMENT STATEMENT Request: {'MemberCode': 'MEMBER_ID', 'UserId': 'USER_ID', 'Password': '********', 'FromDate': '05/02/2026', 'ToDate': '05/02/2026', 'ClientCode': '', 'OrderType': 'All', 'SubOrderType': 'All', 'OrderStatus': 'All', 'SettType': 'ALL', 'OrderNo': '123456', 'Filler1': ''}
 2026-02-05 18:05:32,958 - ALLOTMENT STATEMENT: 123456 | RESPONSE: AllotmentResponse
 2026-02-05 18:05:32,959 - PAN CHECK: ABCDE1234F | RESPONSE: <MagicMock name='mock.AOFPanSearch()' id='139833299835344'>
+2026-02-05 19:09:01,846 - BSE REQUEST XML:
+<soap-env:Envelope xmlns:soap-env="http://www.w3.org/2003/05/soap-envelope">
+  <soap-env:Header xmlns:wsa="http://www.w3.org/2005/08/addressing">
+    <wsa:Action>http://www.bsestarmf.in/2016/01/IStarMFWebService/GetAccessToken</wsa:Action>
+    <wsa:MessageID>urn:uuid:015fb44c-f8ea-4eca-8e63-115cfcda29a6</wsa:MessageID>
+    <wsa:To>https://bsestarmfdemo.bseindia.com/StarMFWebService/StarMFWebService.svc/Secure</wsa:To>
+  </soap-env:Header>
+  <soap-env:Body>
+    <ns0:GetAccessToken xmlns:ns0="http://www.bsestarmf.in/2016/01/">
+      <ns0:Param>
+        <ns1:MemberId xmlns:ns1="http://schemas.datacontract.org/2004/07/StarMFWebService">24637</ns1:MemberId>
+        <ns2:PassKey xmlns:ns2="http://schemas.datacontract.org/2004/07/StarMFWebService">o9sL4K3xuR</ns2:PassKey>
+        <ns3:Password xmlns:ns3="http://schemas.datacontract.org/2004/07/StarMFWebService">Abc@1234</ns3:Password>
+        <ns4:RequestType xmlns:ns4="http://schemas.datacontract.org/2004/07/StarMFWebService">MANDATE</ns4:RequestType>
+        <ns5:UserId xmlns:ns5="http://schemas.datacontract.org/2004/07/StarMFWebService">2463702</ns5:UserId>
+      </ns0:Param>
+    </ns0:GetAccessToken>
+  </soap-env:Body>
+</soap-env:Envelope>
+
+2026-02-05 19:09:01,939 - BSE RESPONSE XML:
+<s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope" xmlns:a="http://www.w3.org/2005/08/addressing">
+  <s:Header>
+    <a:Action s:mustUnderstand="1">http://www.bsestarmf.in/2016/01/IStarMFWebService/GetAccessTokenResponse</a:Action>
+    <a:RelatesTo>urn:uuid:015fb44c-f8ea-4eca-8e63-115cfcda29a6</a:RelatesTo>
+  </s:Header>
+  <s:Body>
+    <GetAccessTokenResponse xmlns="http://www.bsestarmf.in/2016/01/">
+      <GetAccessTokenResult xmlns:b="http://schemas.datacontract.org/2004/07/StarMFWebService" xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+        <b:Filler i:nil="true"/>
+        <b:ResponseString>dm25bEOQ5jH6fKJQQx8C1OQqM/wM4YC16yn76EjpiYyZ5daikrwYoutJxbrPZxpT</b:ResponseString>
+        <b:Status>100</b:Status>
+      </GetAccessTokenResult>
+    </GetAccessTokenResponse>
+  </s:Body>
+</s:Envelope>
+
+2026-02-05 19:09:01,941 - BSE REQUEST XML:
+<soap-env:Envelope xmlns:soap-env="http://www.w3.org/2003/05/soap-envelope">
+  <soap-env:Header xmlns:wsa="http://www.w3.org/2005/08/addressing">
+    <wsa:Action>http://www.bsestarmf.in/2016/01/IStarMFWebService/MandateDetails</wsa:Action>
+    <wsa:MessageID>urn:uuid:d46f3e72-4d55-4986-b83d-51498fee3e07</wsa:MessageID>
+    <wsa:To>https://bsestarmfdemo.bseindia.com/StarMFWebService/StarMFWebService.svc/Secure</wsa:To>
+  </soap-env:Header>
+  <soap-env:Body>
+    <ns0:MandateDetails xmlns:ns0="http://www.bsestarmf.in/2016/01/">
+      <ns0:Param>
+        <ns1:ClientCode xmlns:ns1="http://schemas.datacontract.org/2004/07/StarMFWebService">BDAPK9533N</ns1:ClientCode>
+        <ns2:EncryptedPassword xmlns:ns2="http://schemas.datacontract.org/2004/07/StarMFWebService">dm25bEOQ5jH6fKJQQx8C1OQqM/wM4YC16yn76EjpiYyZ5daikrwYoutJxbrPZxpT</ns2:EncryptedPassword>
+        <ns3:FromDate xmlns:ns3="http://schemas.datacontract.org/2004/07/StarMFWebService">05/02/2025</ns3:FromDate>
+        <ns4:MandateId xmlns:ns4="http://schemas.datacontract.org/2004/07/StarMFWebService">896153</ns4:MandateId>
+        <ns5:MemberCode xmlns:ns5="http://schemas.datacontract.org/2004/07/StarMFWebService">24637</ns5:MemberCode>
+        <ns6:ToDate xmlns:ns6="http://schemas.datacontract.org/2004/07/StarMFWebService">05/02/2026</ns6:ToDate>
+      </ns0:Param>
+    </ns0:MandateDetails>
+  </soap-env:Body>
+</soap-env:Envelope>
+
+2026-02-05 19:09:02,067 - BSE RESPONSE XML:
+<s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope" xmlns:a="http://www.w3.org/2005/08/addressing">
+  <s:Header>
+    <a:Action s:mustUnderstand="1">http://www.bsestarmf.in/2016/01/IStarMFWebService/MandateDetailsResponse</a:Action>
+    <a:RelatesTo>urn:uuid:d46f3e72-4d55-4986-b83d-51498fee3e07</a:RelatesTo>
+  </s:Header>
+  <s:Body>
+    <MandateDetailsResponse xmlns="http://www.bsestarmf.in/2016/01/">
+      <MandateDetailsResult xmlns:b="http://schemas.datacontract.org/2004/07/StarMFWebService" xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+        <b:MandateDetails>
+          <b:MandateDetails>
+            <b:Amount>80000.0000</b:Amount>
+            <b:ApprovedDate/>
+            <b:BankAccNo>521903721321</b:BankAccNo>
+            <b:BankBranch>BAMROLI ROAD,GODHRA</b:BankBranch>
+            <b:BankName>STATE BANK OF INDIA</b:BankName>
+            <b:ClientCode>BDAPK9533N</b:ClientCode>
+            <b:ClientName>Putul Kashyap</b:ClientName>
+            <b:CollectionType/>
+            <b:MandateId>896153</b:MandateId>
+            <b:MandateType>XSP</b:MandateType>
+            <b:MemberCode>24637</b:MemberCode>
+            <b:RegnDate>Jan 20 2026  9:55PM</b:RegnDate>
+            <b:Remarks/>
+            <b:Status>WAITING FOR CLIENT AUTHENTICATION</b:Status>
+            <b:UMRNNo/>
+            <b:UploadDate/>
+          </b:MandateDetails>
+        </b:MandateDetails>
+        <b:Message>Mandate Details </b:Message>
+        <b:Status>100</b:Status>
+      </MandateDetailsResult>
+    </MandateDetailsResponse>
+  </s:Body>
+</s:Envelope>
+
+2026-02-05 19:09:02,069 - MANDATE STATUS: 896153 | RESPONSE: {
+    'MandateDetails': {
+        'MandateDetails': [
+            {
+                'Amount': '80000.0000',
+                'ApprovedDate': None,
+                'BankAccNo': '521903721321',
+                'BankBranch': 'BAMROLI ROAD,GODHRA',
+                'BankName': 'STATE BANK OF INDIA',
+                'ClientCode': 'BDAPK9533N',
+                'ClientName': 'Putul Kashyap',
+                'CollectionType': None,
+                'MandateId': '896153',
+                'MandateType': 'XSP',
+                'MemberCode': '24637',
+                'RegnDate': 'Jan 20 2026  9:55PM',
+                'Remarks': None,
+                'Status': 'WAITING FOR CLIENT AUTHENTICATION',
+                'UMRNNo': None,
+                'UploadDate': None
+            }
+        ]
+    },
+    'Message': 'Mandate Details ',
+    'Status': '100'
+}
