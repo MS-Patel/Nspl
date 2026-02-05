@@ -163,8 +163,8 @@ BSE_EMANDATE_AUTH_URL = os.environ.get('BSE_EMANDATE_AUTH_URL', "https://bsestar
 BSE_EMANDATE_API_URL = os.environ.get('BSE_EMANDATE_API_URL', "https://bsestarmfdemo.bseindia.com/StarMFWebService/StarMFWebService.svc/EMandateAuthURL")
 
 # CVL KRA API Configuration
-CVL_USER_NAME = os.environ.get('CVL_USER_NAME', "webnspl")
-CVL_POS_CODE = os.environ.get('CVL_POS_CODE', "nspl")
-CVL_PASSWORD = os.environ.get('CVL_PASSWORD', "Cvlkra@1234")
+CVL_USER_NAME = os.environ.get('CVL_USER_NAME', "WEBADMIN")
+CVL_POS_CODE = os.environ.get('CVL_POS_CODE', "5100147231")
+CVL_PASSWORD = os.environ.get('CVL_PASSWORD', "E8B0D03E2A")
 # Optional override for the service URL endpoint
-CVL_SERVICE_URL = os.environ.get('CVL_SERVICE_URL', "")
+CVL_SERVICE_URL = os.environ.get('CVL_SERVICE_URL', "https://pancheck.www.kracvl.com/CVLPANInquiry.svc?singleWsdl")

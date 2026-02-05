@@ -14,7 +14,7 @@ User = get_user_model()
 class BSEPanCheckToolView(LoginRequiredMixin, TemplateView):
     template_name = 'integration/pan_check.html'
 
-class CheckPANStatusView(LoginRequiredMixin, View):
+class CheckPANStatusView(View):
     def post(self, request, *args, **kwargs):
         try:
             data = json.loads(request.body)

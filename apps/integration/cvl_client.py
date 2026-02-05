@@ -50,12 +50,7 @@ class CVLClient:
         self.user_name = settings.CVL_USER_NAME
         self.pos_code = settings.CVL_POS_CODE
         self.password = settings.CVL_PASSWORD
-        self.wsdl_path = os.path.join(settings.BASE_DIR, 'docs', 'wsdl', 'CVLRestInquiry.wsdl')
-        
-        # Ensure wsdl exists
-        if not os.path.exists(self.wsdl_path):
-             cvl_logger.error(f"WSDL file not found at {self.wsdl_path}")
-             raise FileNotFoundError(f"WSDL file not found at {self.wsdl_path}")
+        self.wsdl_path = settings.CVL_SERVICE_URL
 
     def _generate_pass_key(self):
         """Generates a random 10-character alphanumeric pass key."""
@@ -67,7 +62,7 @@ class CVLClient:
             transport = Transport(timeout=15)
             zeep_settings = Settings(strict=False, xml_huge_tree=True)
             # Use 'file://' prefix for local WSDL path
-            wsdl_url = f"file://{instance.wsdl_path}"
+            wsdl_url = instance.wsdl_path
             
             cls._soap_client = Client(
                 wsdl=wsdl_url,
@@ -77,11 +72,6 @@ class CVLClient:
                 port_name='BasicHttpBinding_ICVLRestInquiry',
                 plugins=[CVLLoggingPlugin()]
             )
-
-            # Override Service Endpoint if setting is present
-            if settings.CVL_SERVICE_URL:
-                 # Override the address in the service binding options
-                 cls._soap_client.service._binding_options['address'] = settings.CVL_SERVICE_URL
 
         return cls._soap_client
 
@@ -100,7 +90,7 @@ class CVLClient:
             )
             
             encrypted_password = None
-
+            print(f"Raw GetPassword response: {response}")  # Debug log for raw response
             # Check if response is an lxml Element (standard for xs:any return)
             if hasattr(response, 'find'):
                 # Traverse: APP_RES_ROOT -> APP_GET_PASS
