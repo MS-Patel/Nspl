@@ -1,175 +1,897 @@
-2026-02-05 18:01:31,942 - API: https://bsestarmfdemo.bseindia.com/BSEMFWEBAPI/UCCAPI/UCCRegistrationV183 | REGN TYPE: NEW | REQUEST BODY: {'UserId': '2463702', 'MemberCode': '24637', 'Password': '********', 'RegnType': 'NEW', 'Param': 'TEST001|Elizabeth||Wolfe|01||06/11/1939|02|SI|||||||||||||N||||OeUFS2420M||||||||P||||||||SB|GB57PRYV32786793593812||OkPX0178296|Y|||||||||||||||||||||Elizabeth Wolfe|04|||||||India|||||psmith@example.net|M||||||||||||6500809202|K||||||||||||||P|||SE|SE||||||||||N|W||||||||||||||||||||||||||||||||||||||||||||||||||||N||||||||', 'Filler1': '', 'Filler2': ''}
-2026-02-05 18:01:31,944 - API: https://bsestarmfdemo.bseindia.com/BSEMFWEBAPI/UCCAPI/UCCRegistrationV183 | RESPONSE: <MagicMock name='post().text' id='140469085702960'>
-2026-02-05 18:01:36,116 - ORDER Request: {'TransCode': 'NEW', 'TransNo': '1770294696114548362', 'OrderId': '', 'UserID': '2463702', 'MemberId': '24637', 'ClientCode': 'TEST001', 'SchemeCd': 'SCHEME001', 'BuySell': 'P', 'BuySellType': 'FRESH', 'DPTxn': 'P', 'OrderVal': '5000.00', 'Qty': '0', 'AllRedeem': 'N', 'FolioNo': '12523421', 'Remarks': '', 'KYCStatus': 'Y', 'RefNo': '', 'SubBrCode': '', 'EUIN': 'E123456', 'EUINVal': 'Y', 'MinRedeem': 'N', 'DPC': 'N', 'IPAdd': '', 'Password': 'EncryptedToken123', 'PassKey': 'rCqZ5PT53R', 'Parma1': '', 'Param2': '', 'Param3': '', 'MobileNo': '7597213060', 'EmailID': 'ujones@example.net', 'MandateID': '', 'Filler1': '', 'Filler2': '', 'Filler3': '', 'Filler4': '', 'Filler5': '', 'Filler6': ''}
-2026-02-05 18:01:36,117 - ORDER ENTRY: 1770294696114548362 | RESPONSE: 0|123456|Order Placed Successfully
-2026-02-05 18:01:41,233 - ORDER Request: {'TransCode': 'NEW', 'TransNo': '1770294701227299363', 'OrderId': '', 'UserID': '2463702', 'MemberId': '24637', 'ClientCode': 'TEST001', 'SchemeCd': 'SCHEME001', 'BuySell': 'R', 'BuySellType': 'ADDITIONAL', 'DPTxn': 'P', 'OrderVal': '0', 'Qty': '10.5567', 'AllRedeem': 'N', 'FolioNo': '12523421', 'Remarks': '', 'KYCStatus': 'Y', 'RefNo': '', 'SubBrCode': '', 'EUIN': 'E123456', 'EUINVal': 'Y', 'MinRedeem': 'N', 'DPC': 'N', 'IPAdd': '', 'Password': 'EncryptedToken123', 'PassKey': 'E6xzyafiJI', 'Parma1': '', 'Param2': '', 'Param3': '', 'MobileNo': '4267972554', 'EmailID': 'zwebb@example.com', 'MandateID': '', 'Filler1': '', 'Filler2': '', 'Filler3': '', 'Filler4': '', 'Filler5': '', 'Filler6': ''}
-2026-02-05 18:01:41,234 - ORDER ENTRY: 1770294701227299363 | RESPONSE: 0|123456|Redemption Placed
-2026-02-05 18:01:44,523 - SIP ENTRY: 1 | Params: {'TransactionCode': 'NEW', 'UniqueRefNo': '0000011770294704998', 'SchemeCode': 'SCHEME001', 'MemberCode': '24637', 'ClientCode': 'TEST001', 'UserId': '2463702', 'InternalRefNo': '', 'TransMode': 'P', 'DpTxnMode': 'P', 'StartDate': '18/01/2026', 'FrequencyType': 'MONTHLY', 'FrequencyAllowed': '1', 'InstallmentAmount': '2000.00', 'NoOfInstallment': '12', 'Remarks': '', 'FolioNo': '', 'FirstOrderFlag': 'Y', 'Brokerage': '', 'MandateID': 'MANDATE123', 'SubberCode': '', 'Euin': 'E123456', 'EuinVal': 'Y', 'DPC': 'Y', 'XsipRegID': '', 'IPAdd': '', 'Password': 'EncryptedToken123', 'PassKey': 'XMlQam2Rgj', 'Param1': '', 'Param2': '', 'Param3': '', 'Filler1': '', 'Filler2': '', 'Filler3': '', 'Filler4': '', 'Filler5': '', 'Filler6': ''}
-2026-02-05 18:01:44,523 - SIP ENTRY: 1 | RESPONSE: 0|123456|SIP Registered
-2026-02-05 18:01:48,283 - MANDATE REG Request: Flag=06, Param=TEST001|50000.00|I|GB49BUIU60792635758468|SB|TEST0000001||31/01/2026|31/12/2099
-2026-02-05 18:01:48,284 - MANDATE REG: 1 | RESPONSE: 100|Success|UMRN123
-2026-02-05 18:01:51,744 - ORDER Request: {'param': 'value'}
-2026-02-05 18:01:51,744 - ORDER ENTRY: 123456 | RESPONSE: 0|OrderNo|Success
-2026-02-05 18:01:51,745 - MANDATE REG Request: Flag=06, Param=pipe|separated|string
-2026-02-05 18:01:51,746 - MANDATE REG: <MagicMock name='mock.id' id='140469086283456'> | RESPONSE: 100|MandateID|Success
-2026-02-05 18:02:24,653 - ORDER Request: {'TransCode': 'NEW', 'TransNo': '1770294744650742017', 'OrderId': '', 'UserID': '2463702', 'MemberId': '24637', 'ClientCode': 'TEST001', 'SchemeCd': 'SCHEME001', 'BuySell': 'P', 'BuySellType': 'FRESH', 'DPTxn': 'P', 'OrderVal': '5000.00', 'Qty': '0', 'AllRedeem': 'N', 'FolioNo': '12523421', 'Remarks': '', 'KYCStatus': 'Y', 'RefNo': '', 'SubBrCode': '', 'EUIN': 'E123456', 'EUINVal': 'Y', 'MinRedeem': 'N', 'DPC': 'N', 'IPAdd': '', 'Password': 'EncryptedToken123', 'PassKey': '798AXbP0CJ', 'Parma1': '', 'Param2': '', 'Param3': '', 'MobileNo': '6917206255', 'EmailID': 'christina21@example.com', 'MandateID': '', 'Filler1': '', 'Filler2': '', 'Filler3': '', 'Filler4': '', 'Filler5': '', 'Filler6': ''}
-2026-02-05 18:02:24,653 - ORDER ENTRY: 1770294744650742017 | RESPONSE: 0|123456|Order Placed Successfully
-2026-02-05 18:03:38,220 - API: https://bsestarmfdemo.bseindia.com/BSEMFWEBAPI/UCCAPI/UCCRegistrationV183 | REGN TYPE: NEW | REQUEST BODY: {'UserId': '2463702', 'MemberCode': '24637', 'Password': '********', 'RegnType': 'NEW', 'Param': 'TEST001|Joseph||Chavez|01||20/06/2012|02|SI|||||||||||||N||||pPavN4681O||||||||P||||||||SB|GB87NCIQ47017242538895||lmpD0331673|Y|||||||||||||||||||||Joseph Chavez|04|||||||India|||||dennisbennett@example.net|M||||||||||||9376072520|K||||||||||||||P|||SE|SE||||||||||N|W||||||||||||||||||||||||||||||||||||||||||||||||||||N||||||||', 'Filler1': '', 'Filler2': ''}
-2026-02-05 18:03:38,221 - API: https://bsestarmfdemo.bseindia.com/BSEMFWEBAPI/UCCAPI/UCCRegistrationV183 | RESPONSE: <MagicMock name='post().text' id='140284306269120'>
-2026-02-05 18:03:41,317 - ORDER Request: {'TransCode': 'NEW', 'TransNo': '1770294821315873171', 'OrderId': '', 'UserID': '2463702', 'MemberId': '24637', 'ClientCode': 'TEST001', 'SchemeCd': 'SCHEME001', 'BuySell': 'P', 'BuySellType': 'FRESH', 'DPTxn': 'P', 'OrderVal': '5000.00', 'Qty': '0', 'AllRedeem': 'N', 'FolioNo': '12523421', 'Remarks': '', 'KYCStatus': 'Y', 'RefNo': '', 'SubBrCode': '', 'EUIN': 'E123456', 'EUINVal': 'Y', 'MinRedeem': 'N', 'DPC': 'N', 'IPAdd': '', 'Password': 'EncryptedToken123', 'PassKey': 'L94rNlMCNF', 'Parma1': '', 'Param2': '', 'Param3': '', 'MobileNo': '5165207024', 'EmailID': 'yholmes@example.com', 'MandateID': '', 'Filler1': '', 'Filler2': '', 'Filler3': '', 'Filler4': '', 'Filler5': '', 'Filler6': ''}
-2026-02-05 18:03:41,318 - ORDER ENTRY: 1770294821315873171 | RESPONSE: 0|123456|Order Placed Successfully
-2026-02-05 18:03:44,469 - ORDER Request: {'TransCode': 'NEW', 'TransNo': '1770294824467266060', 'OrderId': '', 'UserID': '2463702', 'MemberId': '24637', 'ClientCode': 'TEST001', 'SchemeCd': 'SCHEME001', 'BuySell': 'R', 'BuySellType': 'ADDITIONAL', 'DPTxn': 'P', 'OrderVal': '0', 'Qty': '10.5567', 'AllRedeem': 'N', 'FolioNo': '12523421', 'Remarks': '', 'KYCStatus': 'Y', 'RefNo': '', 'SubBrCode': '', 'EUIN': 'E123456', 'EUINVal': 'Y', 'MinRedeem': 'N', 'DPC': 'N', 'IPAdd': '', 'Password': 'EncryptedToken123', 'PassKey': 'EdxY1Qix9f', 'Parma1': '', 'Param2': '', 'Param3': '', 'MobileNo': '2342269220', 'EmailID': 'floresjennifer@example.org', 'MandateID': '', 'Filler1': '', 'Filler2': '', 'Filler3': '', 'Filler4': '', 'Filler5': '', 'Filler6': ''}
-2026-02-05 18:03:44,469 - ORDER ENTRY: 1770294824467266060 | RESPONSE: 0|123456|Redemption Placed
-2026-02-05 18:03:47,521 - SIP ENTRY: 1 | Params: {'TransactionCode': 'NEW', 'UniqueRefNo': '0000011770294827693', 'SchemeCode': 'SCHEME001', 'MemberCode': '24637', 'ClientCode': 'TEST001', 'UserId': '2463702', 'InternalRefNo': '', 'TransMode': 'P', 'DpTxnMode': 'P', 'StartDate': '01/02/2026', 'FrequencyType': 'MONTHLY', 'FrequencyAllowed': '1', 'InstallmentAmount': '2000.00', 'NoOfInstallment': '12', 'Remarks': '', 'FolioNo': '', 'FirstOrderFlag': 'Y', 'Brokerage': '', 'MandateID': 'MANDATE123', 'SubberCode': '', 'Euin': 'E123456', 'EuinVal': 'Y', 'DPC': 'Y', 'XsipRegID': '', 'IPAdd': '', 'Password': 'EncryptedToken123', 'PassKey': 'J865pXJEDw', 'Param1': '', 'Param2': '', 'Param3': '', 'Filler1': '', 'Filler2': '', 'Filler3': '', 'Filler4': '', 'Filler5': '', 'Filler6': ''}
-2026-02-05 18:03:47,521 - SIP ENTRY: 1 | RESPONSE: 0|123456|SIP Registered
-2026-02-05 18:03:50,670 - MANDATE REG Request: Flag=06, Param=TEST001|50000.00|I|GB27ONKX08447506504662|SB|TEST0000001||17/01/2026|31/12/2099
-2026-02-05 18:03:50,671 - MANDATE REG: 1 | RESPONSE: 100|Success|UMRN123
-2026-02-05 18:03:53,720 - ORDER Request: {'param': 'value'}
-2026-02-05 18:03:53,720 - ORDER ENTRY: 123456 | RESPONSE: 0|OrderNo|Success
-2026-02-05 18:03:53,721 - MANDATE REG Request: Flag=06, Param=pipe|separated|string
-2026-02-05 18:03:53,722 - MANDATE REG: <MagicMock name='mock.id' id='140284300394080'> | RESPONSE: 100|MandateID|Success
-2026-02-05 18:03:53,723 - MANDATE STATUS: 12345 | RESPONSE: MandateDetailsResponse
-2026-02-05 18:03:53,724 - ORDER STATUS Request: {'MemberCode': 'MEMBER_ID', 'UserId': 'USER_ID', 'Password': '********', 'FromDate': '05/02/2026', 'ToDate': '05/02/2026', 'ClientCode': '', 'OrderType': 'All', 'SubOrderType': 'All', 'OrderStatus': 'All', 'SettType': 'ALL', 'OrderNo': '123456', 'TransType': 'P'}
-2026-02-05 18:03:53,724 - ORDER STATUS: 123456 | RESPONSE: OrderStatusResponse
-2026-02-05 18:04:33,635 - SIP ENTRY: 1 | Params: {'TransactionCode': 'NEW', 'UniqueRefNo': '0000011770294873992', 'SchemeCode': 'SCHEME001', 'MemberCode': '24637', 'ClientCode': 'TEST001', 'UserId': '2463702', 'InternalRefNo': '', 'TransMode': 'P', 'DpTxnMode': 'P', 'StartDate': '02/02/2026', 'FrequencyType': 'MONTHLY', 'FrequencyAllowed': '1', 'InstallmentAmount': '2000.00', 'NoOfInstallment': '12', 'Remarks': '', 'FolioNo': '', 'FirstOrderFlag': 'Y', 'Brokerage': '', 'MandateID': 'MANDATE123', 'SubberCode': '', 'Euin': 'E123456', 'EuinVal': 'Y', 'DPC': 'Y', 'XsipRegID': '', 'IPAdd': '', 'Password': 'EncryptedToken123', 'PassKey': 'Kh0yTHkd5I', 'Param1': '', 'Param2': '', 'Param3': '', 'Filler1': '', 'Filler2': '', 'Filler3': '', 'Filler4': '', 'Filler5': '', 'Filler6': ''}
-2026-02-05 18:04:33,635 - SIP ENTRY: 1 | RESPONSE: 0|123456|SIP Registered
-2026-02-05 18:05:17,058 - API: https://bsestarmfdemo.bseindia.com/BSEMFWEBAPI/UCCAPI/UCCRegistrationV183 | REGN TYPE: NEW | REQUEST BODY: {'UserId': '2463702', 'MemberCode': '24637', 'Password': '********', 'RegnType': 'NEW', 'Param': 'TEST001|Michael||Smith|01||22/06/1940|02|SI|||||||||||||N||||UsWyY6324n||||||||P||||||||SB|GB44PXYR29403185516903||JZYT0382016|Y|||||||||||||||||||||Michael Smith|04|||||||India|||||kyle90@example.net|M||||||||||||7734700825|K||||||||||||||P|||SE|SE||||||||||N|W||||||||||||||||||||||||||||||||||||||||||||||||||||N||||||||', 'Filler1': '', 'Filler2': ''}
-2026-02-05 18:05:17,059 - API: https://bsestarmfdemo.bseindia.com/BSEMFWEBAPI/UCCAPI/UCCRegistrationV183 | RESPONSE: <MagicMock name='post().text' id='139833299416080'>
-2026-02-05 18:05:20,383 - ORDER Request: {'TransCode': 'NEW', 'TransNo': '1770294920380930086', 'OrderId': '', 'UserID': '2463702', 'MemberId': '24637', 'ClientCode': 'TEST001', 'SchemeCd': 'SCHEME001', 'BuySell': 'P', 'BuySellType': 'FRESH', 'DPTxn': 'P', 'OrderVal': '5000.00', 'Qty': '0', 'AllRedeem': 'N', 'FolioNo': '12523421', 'Remarks': '', 'KYCStatus': 'Y', 'RefNo': '', 'SubBrCode': '', 'EUIN': 'E123456', 'EUINVal': 'Y', 'MinRedeem': 'N', 'DPC': 'N', 'IPAdd': '', 'Password': 'EncryptedToken123', 'PassKey': 'zb7WBOYrL1', 'Parma1': '', 'Param2': '', 'Param3': '', 'MobileNo': '2422319197', 'EmailID': 'hrios@example.org', 'MandateID': '', 'Filler1': '', 'Filler2': '', 'Filler3': '', 'Filler4': '', 'Filler5': '', 'Filler6': ''}
-2026-02-05 18:05:20,383 - ORDER ENTRY: 1770294920380930086 | RESPONSE: 0|123456|Order Placed Successfully
-2026-02-05 18:05:23,649 - ORDER Request: {'TransCode': 'NEW', 'TransNo': '1770294923647291378', 'OrderId': '', 'UserID': '2463702', 'MemberId': '24637', 'ClientCode': 'TEST001', 'SchemeCd': 'SCHEME001', 'BuySell': 'R', 'BuySellType': 'ADDITIONAL', 'DPTxn': 'P', 'OrderVal': '0', 'Qty': '10.5567', 'AllRedeem': 'N', 'FolioNo': '12523421', 'Remarks': '', 'KYCStatus': 'Y', 'RefNo': '', 'SubBrCode': '', 'EUIN': 'E123456', 'EUINVal': 'Y', 'MinRedeem': 'N', 'DPC': 'N', 'IPAdd': '', 'Password': 'EncryptedToken123', 'PassKey': 'cRSN6DaEJw', 'Parma1': '', 'Param2': '', 'Param3': '', 'MobileNo': '7007470154', 'EmailID': 'fsullivan@example.com', 'MandateID': '', 'Filler1': '', 'Filler2': '', 'Filler3': '', 'Filler4': '', 'Filler5': '', 'Filler6': ''}
-2026-02-05 18:05:23,649 - ORDER ENTRY: 1770294923647291378 | RESPONSE: 0|123456|Redemption Placed
-2026-02-05 18:05:26,791 - SIP ENTRY: 1 | Params: {'TransactionCode': 'NEW', 'UniqueRefNo': '0000011770294926409', 'SchemeCode': 'SCHEME001', 'MemberCode': '24637', 'ClientCode': 'TEST001', 'UserId': '2463702', 'InternalRefNo': '', 'TransMode': 'P', 'DpTxnMode': 'P', 'StartDate': '08/01/2026', 'FrequencyType': 'MONTHLY', 'FrequencyAllowed': '1', 'InstallmentAmount': '2000.00', 'NoOfInstallment': '12', 'Remarks': '', 'FolioNo': '', 'FirstOrderFlag': 'Y', 'Brokerage': '', 'MandateID': 'MANDATE123', 'SubberCode': '', 'Euin': 'E123456', 'EuinVal': 'Y', 'DPC': 'Y', 'XsipRegID': '', 'IPAdd': '', 'Password': 'EncryptedToken123', 'PassKey': 'yr5FENdeAC', 'Param1': '', 'Param2': '', 'Param3': '', 'Filler1': '', 'Filler2': '', 'Filler3': '', 'Filler4': '', 'Filler5': '', 'Filler6': ''}
-2026-02-05 18:05:26,791 - SIP ENTRY: 1 | RESPONSE: 0|123456|SIP Registered
-2026-02-05 18:05:29,869 - MANDATE REG Request: Flag=06, Param=TEST001|50000.00|I|GB60UITQ91089206616622|SB|TEST0000001||30/01/2026|31/12/2099
-2026-02-05 18:05:29,870 - MANDATE REG: 1 | RESPONSE: 100|Success|UMRN123
-2026-02-05 18:05:32,954 - ORDER Request: {'param': 'value'}
-2026-02-05 18:05:32,955 - ORDER ENTRY: 123456 | RESPONSE: 0|OrderNo|Success
-2026-02-05 18:05:32,956 - MANDATE REG Request: Flag=06, Param=pipe|separated|string
-2026-02-05 18:05:32,956 - MANDATE REG: <MagicMock name='mock.id' id='139833299808816'> | RESPONSE: 100|MandateID|Success
-2026-02-05 18:05:32,957 - MANDATE STATUS: 12345 | RESPONSE: MandateDetailsResponse
-2026-02-05 18:05:32,958 - ORDER STATUS Request: {'MemberCode': 'MEMBER_ID', 'UserId': 'USER_ID', 'Password': '********', 'FromDate': '05/02/2026', 'ToDate': '05/02/2026', 'ClientCode': '', 'OrderType': 'All', 'SubOrderType': 'All', 'OrderStatus': 'All', 'SettType': 'ALL', 'OrderNo': '123456', 'TransType': 'P'}
-2026-02-05 18:05:32,958 - ORDER STATUS: 123456 | RESPONSE: OrderStatusResponse
-2026-02-05 18:05:32,958 - ALLOTMENT STATEMENT Request: {'MemberCode': 'MEMBER_ID', 'UserId': 'USER_ID', 'Password': '********', 'FromDate': '05/02/2026', 'ToDate': '05/02/2026', 'ClientCode': '', 'OrderType': 'All', 'SubOrderType': 'All', 'OrderStatus': 'All', 'SettType': 'ALL', 'OrderNo': '123456', 'Filler1': ''}
-2026-02-05 18:05:32,958 - ALLOTMENT STATEMENT: 123456 | RESPONSE: AllotmentResponse
-2026-02-05 18:05:32,959 - PAN CHECK: ABCDE1234F | RESPONSE: <MagicMock name='mock.AOFPanSearch()' id='139833299835344'>
-2026-02-05 19:09:01,846 - BSE REQUEST XML:
+2026-02-06 17:08:57,481 - ORDER STATUS ERROR: HTTPSConnectionPool(host='bsestarmfdemo.bseindia.com', port=443): Max retries exceeded with url: /StarMFWebService/StarMFWebService.svc?singleWsdl (Caused by ConnectTimeoutError(<HTTPSConnection(host='bsestarmfdemo.bseindia.com', port=443) at 0x1aad4035640>, 'Connection to bsestarmfdemo.bseindia.com timed out. (connect timeout=10)'))
+2026-02-06 17:09:07,497 - ALLOTMENT STATEMENT ERROR: HTTPSConnectionPool(host='bsestarmfdemo.bseindia.com', port=443): Max retries exceeded with url: /StarMFWebService/StarMFWebService.svc?singleWsdl (Caused by ConnectTimeoutError(<HTTPSConnection(host='bsestarmfdemo.bseindia.com', port=443) at 0x1aad4037290>, 'Connection to bsestarmfdemo.bseindia.com timed out. (connect timeout=10)'))
+2026-02-06 17:09:17,511 - REDEMPTION STATEMENT ERROR: HTTPSConnectionPool(host='bsestarmfdemo.bseindia.com', port=443): Max retries exceeded with url: /StarMFWebService/StarMFWebService.svc?singleWsdl (Caused by ConnectTimeoutError(<HTTPSConnection(host='bsestarmfdemo.bseindia.com', port=443) at 0x1aad4051160>, 'Connection to bsestarmfdemo.bseindia.com timed out. (connect timeout=10)'))
+2026-02-06 17:14:08,365 - ORDER STATUS ERROR: HTTPSConnectionPool(host='bsestarmfdemo.bseindia.com', port=443): Max retries exceeded with url: /StarMFWebService/StarMFWebService.svc?singleWsdl (Caused by ConnectTimeoutError(<HTTPSConnection(host='bsestarmfdemo.bseindia.com', port=443) at 0x2002e6a06b0>, 'Connection to bsestarmfdemo.bseindia.com timed out. (connect timeout=10)'))
+2026-02-06 17:14:28,096 - ORDER STATUS ERROR: HTTPSConnectionPool(host='bsestarmfdemo.bseindia.com', port=443): Max retries exceeded with url: /StarMFWebService/StarMFWebService.svc?singleWsdl (Caused by ConnectTimeoutError(<HTTPSConnection(host='bsestarmfdemo.bseindia.com', port=443) at 0x1e8360a67b0>, 'Connection to bsestarmfdemo.bseindia.com timed out. (connect timeout=10)'))
+2026-02-06 17:15:53,331 - ORDER STATUS ERROR: HTTPSConnectionPool(host='bsestarmfdemo.bseindia.com', port=443): Max retries exceeded with url: /StarMFWebService/StarMFWebService.svc?singleWsdl (Caused by ConnectTimeoutError(<HTTPSConnection(host='bsestarmfdemo.bseindia.com', port=443) at 0x2002fb891f0>, 'Connection to bsestarmfdemo.bseindia.com timed out. (connect timeout=10)'))
+2026-02-06 17:16:09,303 - ORDER STATUS ERROR: file: URLs with hostname components are not permitted
+2026-02-06 17:19:53,313 - ORDER STATUS Request: {'MemberCode': '24637', 'UserId': '2463702', 'Password': '********', 'FromDate': '09/01/2026', 'ToDate': '06/02/2026', 'ClientCode': '', 'OrderType': 'All', 'SubOrderType': 'All', 'OrderStatus': 'All', 'SettType': 'ALL', 'OrderNo': '', 'TransType': 'P'}
+2026-02-06 17:19:53,322 - BSE REQUEST XML:
 <soap-env:Envelope xmlns:soap-env="http://www.w3.org/2003/05/soap-envelope">
   <soap-env:Header xmlns:wsa="http://www.w3.org/2005/08/addressing">
-    <wsa:Action>http://www.bsestarmf.in/2016/01/IStarMFWebService/GetAccessToken</wsa:Action>
-    <wsa:MessageID>urn:uuid:015fb44c-f8ea-4eca-8e63-115cfcda29a6</wsa:MessageID>
-    <wsa:To>https://bsestarmfdemo.bseindia.com/StarMFWebService/StarMFWebService.svc/Secure</wsa:To>
+    <wsa:Action>http://www.bsestarmf.in/2016/01/IStarMFWebService/OrderStatus</wsa:Action>
+    <wsa:MessageID>urn:uuid:de83c4cd-0b93-42b0-b478-b8e9a9327824</wsa:MessageID>
+    <wsa:To>https://www.bsestarmf.in/StarMFWebService/StarMFWebService.svc/Secure</wsa:To>
   </soap-env:Header>
   <soap-env:Body>
-    <ns0:GetAccessToken xmlns:ns0="http://www.bsestarmf.in/2016/01/">
+    <ns0:OrderStatus xmlns:ns0="http://www.bsestarmf.in/2016/01/">
       <ns0:Param>
-        <ns1:MemberId xmlns:ns1="http://schemas.datacontract.org/2004/07/StarMFWebService">24637</ns1:MemberId>
-        <ns2:PassKey xmlns:ns2="http://schemas.datacontract.org/2004/07/StarMFWebService">o9sL4K3xuR</ns2:PassKey>
-        <ns3:Password xmlns:ns3="http://schemas.datacontract.org/2004/07/StarMFWebService">Abc@1234</ns3:Password>
-        <ns4:RequestType xmlns:ns4="http://schemas.datacontract.org/2004/07/StarMFWebService">MANDATE</ns4:RequestType>
-        <ns5:UserId xmlns:ns5="http://schemas.datacontract.org/2004/07/StarMFWebService">2463702</ns5:UserId>
+        <ns1:ClientCode xmlns:ns1="http://schemas.datacontract.org/2004/07/StarMFWebService"></ns1:ClientCode>
+        <ns2:FromDate xmlns:ns2="http://schemas.datacontract.org/2004/07/StarMFWebService">09/01/2026</ns2:FromDate>
+        <ns3:MemberCode xmlns:ns3="http://schemas.datacontract.org/2004/07/StarMFWebService">24637</ns3:MemberCode>
+        <ns4:OrderNo xmlns:ns4="http://schemas.datacontract.org/2004/07/StarMFWebService"></ns4:OrderNo>
+        <ns5:OrderStatus xmlns:ns5="http://schemas.datacontract.org/2004/07/StarMFWebService">All</ns5:OrderStatus>
+        <ns6:OrderType xmlns:ns6="http://schemas.datacontract.org/2004/07/StarMFWebService">All</ns6:OrderType>
+        <ns7:Password xmlns:ns7="http://schemas.datacontract.org/2004/07/StarMFWebService">BSE@2025</ns7:Password>
+        <ns8:SettType xmlns:ns8="http://schemas.datacontract.org/2004/07/StarMFWebService">ALL</ns8:SettType>
+        <ns9:SubOrderType xmlns:ns9="http://schemas.datacontract.org/2004/07/StarMFWebService">All</ns9:SubOrderType>
+        <ns10:ToDate xmlns:ns10="http://schemas.datacontract.org/2004/07/StarMFWebService">06/02/2026</ns10:ToDate>
+        <ns11:TransType xmlns:ns11="http://schemas.datacontract.org/2004/07/StarMFWebService">P</ns11:TransType>
+        <ns12:UserId xmlns:ns12="http://schemas.datacontract.org/2004/07/StarMFWebService">2463702</ns12:UserId>
       </ns0:Param>
-    </ns0:GetAccessToken>
+    </ns0:OrderStatus>
   </soap-env:Body>
 </soap-env:Envelope>
 
-2026-02-05 19:09:01,939 - BSE RESPONSE XML:
+2026-02-06 17:19:53,413 - BSE RESPONSE XML:
 <s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope" xmlns:a="http://www.w3.org/2005/08/addressing">
   <s:Header>
-    <a:Action s:mustUnderstand="1">http://www.bsestarmf.in/2016/01/IStarMFWebService/GetAccessTokenResponse</a:Action>
-    <a:RelatesTo>urn:uuid:015fb44c-f8ea-4eca-8e63-115cfcda29a6</a:RelatesTo>
+    <a:Action s:mustUnderstand="1">http://www.bsestarmf.in/2016/01/IStarMFWebService/OrderStatusResponse</a:Action>
+    <a:RelatesTo>urn:uuid:de83c4cd-0b93-42b0-b478-b8e9a9327824</a:RelatesTo>
   </s:Header>
   <s:Body>
-    <GetAccessTokenResponse xmlns="http://www.bsestarmf.in/2016/01/">
-      <GetAccessTokenResult xmlns:b="http://schemas.datacontract.org/2004/07/StarMFWebService" xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
-        <b:Filler i:nil="true"/>
-        <b:ResponseString>dm25bEOQ5jH6fKJQQx8C1OQqM/wM4YC16yn76EjpiYyZ5daikrwYoutJxbrPZxpT</b:ResponseString>
-        <b:Status>100</b:Status>
-      </GetAccessTokenResult>
-    </GetAccessTokenResponse>
-  </s:Body>
-</s:Envelope>
-
-2026-02-05 19:09:01,941 - BSE REQUEST XML:
-<soap-env:Envelope xmlns:soap-env="http://www.w3.org/2003/05/soap-envelope">
-  <soap-env:Header xmlns:wsa="http://www.w3.org/2005/08/addressing">
-    <wsa:Action>http://www.bsestarmf.in/2016/01/IStarMFWebService/MandateDetails</wsa:Action>
-    <wsa:MessageID>urn:uuid:d46f3e72-4d55-4986-b83d-51498fee3e07</wsa:MessageID>
-    <wsa:To>https://bsestarmfdemo.bseindia.com/StarMFWebService/StarMFWebService.svc/Secure</wsa:To>
-  </soap-env:Header>
-  <soap-env:Body>
-    <ns0:MandateDetails xmlns:ns0="http://www.bsestarmf.in/2016/01/">
-      <ns0:Param>
-        <ns1:ClientCode xmlns:ns1="http://schemas.datacontract.org/2004/07/StarMFWebService">BDAPK9533N</ns1:ClientCode>
-        <ns2:EncryptedPassword xmlns:ns2="http://schemas.datacontract.org/2004/07/StarMFWebService">dm25bEOQ5jH6fKJQQx8C1OQqM/wM4YC16yn76EjpiYyZ5daikrwYoutJxbrPZxpT</ns2:EncryptedPassword>
-        <ns3:FromDate xmlns:ns3="http://schemas.datacontract.org/2004/07/StarMFWebService">05/02/2025</ns3:FromDate>
-        <ns4:MandateId xmlns:ns4="http://schemas.datacontract.org/2004/07/StarMFWebService">896153</ns4:MandateId>
-        <ns5:MemberCode xmlns:ns5="http://schemas.datacontract.org/2004/07/StarMFWebService">24637</ns5:MemberCode>
-        <ns6:ToDate xmlns:ns6="http://schemas.datacontract.org/2004/07/StarMFWebService">05/02/2026</ns6:ToDate>
-      </ns0:Param>
-    </ns0:MandateDetails>
-  </soap-env:Body>
-</soap-env:Envelope>
-
-2026-02-05 19:09:02,067 - BSE RESPONSE XML:
-<s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope" xmlns:a="http://www.w3.org/2005/08/addressing">
-  <s:Header>
-    <a:Action s:mustUnderstand="1">http://www.bsestarmf.in/2016/01/IStarMFWebService/MandateDetailsResponse</a:Action>
-    <a:RelatesTo>urn:uuid:d46f3e72-4d55-4986-b83d-51498fee3e07</a:RelatesTo>
-  </s:Header>
-  <s:Body>
-    <MandateDetailsResponse xmlns="http://www.bsestarmf.in/2016/01/">
-      <MandateDetailsResult xmlns:b="http://schemas.datacontract.org/2004/07/StarMFWebService" xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
-        <b:MandateDetails>
-          <b:MandateDetails>
-            <b:Amount>80000.0000</b:Amount>
-            <b:ApprovedDate/>
-            <b:BankAccNo>521903721321</b:BankAccNo>
-            <b:BankBranch>BAMROLI ROAD,GODHRA</b:BankBranch>
-            <b:BankName>STATE BANK OF INDIA</b:BankName>
-            <b:ClientCode>BDAPK9533N</b:ClientCode>
-            <b:ClientName>Putul Kashyap</b:ClientName>
-            <b:CollectionType/>
-            <b:MandateId>896153</b:MandateId>
-            <b:MandateType>XSP</b:MandateType>
+    <OrderStatusResponse xmlns="http://www.bsestarmf.in/2016/01/">
+      <OrderStatusResult xmlns:b="http://schemas.datacontract.org/2004/07/StarMFWebService" xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+        <b:Message>Order Status Details</b:Message>
+        <b:OrderDetails>
+          <b:OrderDetails>
+            <b:ALLUnits>N</b:ALLUnits>
+            <b:Amount>100000.0000</b:Amount>
+            <b:BuySell>P</b:BuySell>
+            <b:BuySellType>FRESH</b:BuySellType>
+            <b:ClientCode>AADPL9888N</b:ClientCode>
+            <b:ClientName>HARSHAD MANILAL LIMBAJIYA</b:ClientName>
+            <b:DPC>Y</b:DPC>
+            <b:DPFolioNo/>
+            <b:DPTrans>PHYSICAL</b:DPTrans>
+            <b:Date>04/02/2026</b:Date>
+            <b:EUIN>E648009</b:EUIN>
+            <b:EUINDecl>Y</b:EUINDecl>
+            <b:EntryBy>102053</b:EntryBy>
+            <b:FirstOrder>N</b:FirstOrder>
+            <b:FolioNo/>
+            <b:ISIN>INF843K01013</b:ISIN>
+            <b:InternalRefNo/>
+            <b:KYCFlag>Y</b:KYCFlag>
+            <b:MINRedeemFlag>N</b:MINRedeemFlag>
             <b:MemberCode>24637</b:MemberCode>
-            <b:RegnDate>Jan 20 2026  9:55PM</b:RegnDate>
-            <b:Remarks/>
-            <b:Status>WAITING FOR CLIENT AUTHENTICATION</b:Status>
-            <b:UMRNNo/>
-            <b:UploadDate/>
-          </b:MandateDetails>
-        </b:MandateDetails>
-        <b:Message>Mandate Details </b:Message>
+            <b:MemberRemarks/>
+            <b:OrderNumber>2445504838</b:OrderNumber>
+            <b:OrderRemarks>PAYMENT NOT INITIATED</b:OrderRemarks>
+            <b:OrderStatus>INVALID</b:OrderStatus>
+            <b:OrderType>NRM</b:OrderType>
+            <b:SIPRegnDate/>
+            <b:SIPRegnNo>0</b:SIPRegnNo>
+            <b:SchemeCode>EDMSRG-GR</b:SchemeCode>
+            <b:SchemeName>EDELWEISS MID CAP FUND - REGULAR PLAN - GROWTH OPTION</b:SchemeName>
+            <b:SettNo>2526208</b:SettNo>
+            <b:SettType>T2</b:SettType>
+            <b:SubBrCode/>
+            <b:SubBrokerARNCode/>
+            <b:SubOrderType>NRM</b:SubOrderType>
+            <b:Time>14:25:26</b:Time>
+            <b:Units>0.0000</b:Units>
+          </b:OrderDetails>
+          <b:OrderDetails>
+            <b:ALLUnits>N</b:ALLUnits>
+            <b:Amount>100000.0000</b:Amount>
+            <b:BuySell>P</b:BuySell>
+            <b:BuySellType>FRESH</b:BuySellType>
+            <b:ClientCode>AADPL9888N</b:ClientCode>
+            <b:ClientName>HARSHAD MANILAL LIMBAJIYA</b:ClientName>
+            <b:DPC>Y</b:DPC>
+            <b:DPFolioNo/>
+            <b:DPTrans>PHYSICAL</b:DPTrans>
+            <b:Date>05/02/2026</b:Date>
+            <b:EUIN>E648009</b:EUIN>
+            <b:EUINDecl>Y</b:EUINDecl>
+            <b:EntryBy>102053</b:EntryBy>
+            <b:FirstOrder>N</b:FirstOrder>
+            <b:FolioNo/>
+            <b:ISIN>INF843K01013</b:ISIN>
+            <b:InternalRefNo/>
+            <b:KYCFlag>Y</b:KYCFlag>
+            <b:MINRedeemFlag>N</b:MINRedeemFlag>
+            <b:MemberCode>24637</b:MemberCode>
+            <b:MemberRemarks/>
+            <b:OrderNumber>2452232990</b:OrderNumber>
+            <b:OrderRemarks>2FA PURCHASE AUTHENTICATION NOT RECEIVED</b:OrderRemarks>
+            <b:OrderStatus>INVALID</b:OrderStatus>
+            <b:OrderType>NRM</b:OrderType>
+            <b:SIPRegnDate/>
+            <b:SIPRegnNo>0</b:SIPRegnNo>
+            <b:SchemeCode>EDMSRG-GR</b:SchemeCode>
+            <b:SchemeName>EDELWEISS MID CAP FUND - REGULAR PLAN - GROWTH OPTION</b:SchemeName>
+            <b:SettNo>2526211</b:SettNo>
+            <b:SettType>T2</b:SettType>
+            <b:SubBrCode/>
+            <b:SubBrokerARNCode/>
+            <b:SubOrderType>NRM</b:SubOrderType>
+            <b:Time>00:25:48</b:Time>
+            <b:Units>0.0000</b:Units>
+          </b:OrderDetails>
+          <b:OrderDetails>
+            <b:ALLUnits>N</b:ALLUnits>
+            <b:Amount>3000.0000</b:Amount>
+            <b:BuySell>P</b:BuySell>
+            <b:BuySellType>FRESH</b:BuySellType>
+            <b:ClientCode>CDZPT5204K</b:ClientCode>
+            <b:ClientName>TRIVEDI PRERAK</b:ClientName>
+            <b:DPC>Y</b:DPC>
+            <b:DPFolioNo>7778959571</b:DPFolioNo>
+            <b:DPTrans>PHYSICAL</b:DPTrans>
+            <b:Date>23/01/2026</b:Date>
+            <b:EUIN>E151743</b:EUIN>
+            <b:EUINDecl>Y</b:EUINDecl>
+            <b:EntryBy>102053</b:EntryBy>
+            <b:FirstOrder>N</b:FirstOrder>
+            <b:FolioNo/>
+            <b:ISIN>INF0QA701383</b:ISIN>
+            <b:InternalRefNo/>
+            <b:KYCFlag>Y</b:KYCFlag>
+            <b:MINRedeemFlag>N</b:MINRedeemFlag>
+            <b:MemberCode>24637</b:MemberCode>
+            <b:MemberRemarks/>
+            <b:OrderNumber>2406334472</b:OrderNumber>
+            <b:OrderRemarks>PAYMENT NOT RECEIVED TILL DATE</b:OrderRemarks>
+            <b:OrderStatus>INVALID</b:OrderStatus>
+            <b:OrderType>XSP</b:OrderType>
+            <b:SIPRegnDate>27/05/2025</b:SIPRegnDate>
+            <b:SIPRegnNo>142819088</b:SIPRegnNo>
+            <b:SchemeCode>BJFXRG-GR</b:SchemeCode>
+            <b:SchemeName>BAJAJ FINSERV FLEXI CAP FUND REGULAR PLAN - GROWTH</b:SchemeName>
+            <b:SettNo>2526202</b:SettNo>
+            <b:SettType>T2</b:SettType>
+            <b:SubBrCode/>
+            <b:SubBrokerARNCode/>
+            <b:SubOrderType>NRM</b:SubOrderType>
+            <b:Time>01:30:52</b:Time>
+            <b:Units>0.0000</b:Units>
+          </b:OrderDetails>
+          <b:OrderDetails>
+            <b:ALLUnits>N</b:ALLUnits>
+            <b:Amount>2000.0000</b:Amount>
+            <b:BuySell>P</b:BuySell>
+            <b:BuySellType>FRESH</b:BuySellType>
+            <b:ClientCode>CDZPT5204K</b:ClientCode>
+            <b:ClientName>TRIVEDI PRERAK</b:ClientName>
+            <b:DPC>Y</b:DPC>
+            <b:DPFolioNo>35650936</b:DPFolioNo>
+            <b:DPTrans>PHYSICAL</b:DPTrans>
+            <b:Date>23/01/2026</b:Date>
+            <b:EUIN>E151743</b:EUIN>
+            <b:EUINDecl>Y</b:EUINDecl>
+            <b:EntryBy>102053</b:EntryBy>
+            <b:FirstOrder>N</b:FirstOrder>
+            <b:FolioNo/>
+            <b:ISIN>INF179K01CR2</b:ISIN>
+            <b:InternalRefNo/>
+            <b:KYCFlag>Y</b:KYCFlag>
+            <b:MINRedeemFlag>N</b:MINRedeemFlag>
+            <b:MemberCode>24637</b:MemberCode>
+            <b:MemberRemarks/>
+            <b:OrderNumber>2406334471</b:OrderNumber>
+            <b:OrderRemarks>PAYMENT NOT RECEIVED TILL DATE</b:OrderRemarks>
+            <b:OrderStatus>INVALID</b:OrderStatus>
+            <b:OrderType>XSP</b:OrderType>
+            <b:SIPRegnDate>27/05/2025</b:SIPRegnDate>
+            <b:SIPRegnNo>142819086</b:SIPRegnNo>
+            <b:SchemeCode>HDFCMCOG-GR</b:SchemeCode>
+            <b:SchemeName>HDFC MID CAP FUND - GROWTH OPTION</b:SchemeName>
+            <b:SettNo>2526202</b:SettNo>
+            <b:SettType>T2</b:SettType>
+            <b:SubBrCode/>
+            <b:SubBrokerARNCode/>
+            <b:SubOrderType>NRM</b:SubOrderType>
+            <b:Time>01:30:52</b:Time>
+            <b:Units>0.0000</b:Units>
+          </b:OrderDetails>
+          <b:OrderDetails>
+            <b:ALLUnits>N</b:ALLUnits>
+            <b:Amount>1000.0000</b:Amount>
+            <b:BuySell>P</b:BuySell>
+            <b:BuySellType>FRESH</b:BuySellType>
+            <b:ClientCode>DCJPP7974L</b:ClientCode>
+            <b:ClientName>PAREKH DARSHNABEN YOGESHKUMAR</b:ClientName>
+            <b:DPC>Y</b:DPC>
+            <b:DPFolioNo>34973655</b:DPFolioNo>
+            <b:DPTrans>PHYSICAL</b:DPTrans>
+            <b:Date>02/02/2026</b:Date>
+            <b:EUIN>E151743</b:EUIN>
+            <b:EUINDecl>Y</b:EUINDecl>
+            <b:EntryBy>102053</b:EntryBy>
+            <b:FirstOrder>N</b:FirstOrder>
+            <b:FolioNo>34973655/55</b:FolioNo>
+            <b:ISIN>INF179K01CR2</b:ISIN>
+            <b:InternalRefNo/>
+            <b:KYCFlag>Y</b:KYCFlag>
+            <b:MINRedeemFlag>N</b:MINRedeemFlag>
+            <b:MemberCode>24637</b:MemberCode>
+            <b:MemberRemarks/>
+            <b:OrderNumber>2443889553</b:OrderNumber>
+            <b:OrderRemarks>ALLOTMENT DONE</b:OrderRemarks>
+            <b:OrderStatus>VALID</b:OrderStatus>
+            <b:OrderType>XSP</b:OrderType>
+            <b:SIPRegnDate>03/04/2025</b:SIPRegnDate>
+            <b:SIPRegnNo>135955904</b:SIPRegnNo>
+            <b:SchemeCode>HDFCMCOG-GR</b:SchemeCode>
+            <b:SchemeName>HDFC MID CAP FUND - GROWTH OPTION</b:SchemeName>
+            <b:SettNo>2526207</b:SettNo>
+            <b:SettType>T2</b:SettType>
+            <b:SubBrCode>NSPLBR006</b:SubBrCode>
+            <b:SubBrokerARNCode/>
+            <b:SubOrderType>NRM</b:SubOrderType>
+            <b:Time>01:30:46</b:Time>
+            <b:Units>0.0000</b:Units>
+          </b:OrderDetails>
+          <b:OrderDetails>
+            <b:ALLUnits>N</b:ALLUnits>
+            <b:Amount>3000.0000</b:Amount>
+            <b:BuySell>P</b:BuySell>
+            <b:BuySellType>FRESH</b:BuySellType>
+            <b:ClientCode>MAN4305</b:ClientCode>
+            <b:ClientName>MANN SONI</b:ClientName>
+            <b:DPC>Y</b:DPC>
+            <b:DPFolioNo>44175264</b:DPFolioNo>
+            <b:DPTrans>PHYSICAL</b:DPTrans>
+            <b:Date>05/02/2026</b:Date>
+            <b:EUIN>E151743</b:EUIN>
+            <b:EUINDecl>Y</b:EUINDecl>
+            <b:EntryBy>102053</b:EntryBy>
+            <b:FirstOrder>N</b:FirstOrder>
+            <b:FolioNo>44175264</b:FolioNo>
+            <b:ISIN>INF200K01T28</b:ISIN>
+            <b:InternalRefNo/>
+            <b:KYCFlag>Y</b:KYCFlag>
+            <b:MINRedeemFlag>N</b:MINRedeemFlag>
+            <b:MemberCode>24637</b:MemberCode>
+            <b:MemberRemarks/>
+            <b:OrderNumber>2456086340</b:OrderNumber>
+            <b:OrderRemarks>ALLOTMENT DONE</b:OrderRemarks>
+            <b:OrderStatus>VALID</b:OrderStatus>
+            <b:OrderType>XSP</b:OrderType>
+            <b:SIPRegnDate>18/03/2025</b:SIPRegnDate>
+            <b:SIPRegnNo>133953814</b:SIPRegnNo>
+            <b:SchemeCode>SB346G-GR</b:SchemeCode>
+            <b:SchemeName>SBI SMALL CAP FUND REGULAR GROWTH</b:SchemeName>
+            <b:SettNo>2526210</b:SettNo>
+            <b:SettType>T2</b:SettType>
+            <b:SubBrCode/>
+            <b:SubBrokerARNCode/>
+            <b:SubOrderType>NRM</b:SubOrderType>
+            <b:Time>01:31:11</b:Time>
+            <b:Units>0.0000</b:Units>
+          </b:OrderDetails>
+          <b:OrderDetails>
+            <b:ALLUnits>N</b:ALLUnits>
+            <b:Amount>2500.0000</b:Amount>
+            <b:BuySell>P</b:BuySell>
+            <b:BuySellType>FRESH</b:BuySellType>
+            <b:ClientCode>SAYA5711</b:ClientCode>
+            <b:ClientName>SAYLI SUNIL SURVE</b:ClientName>
+            <b:DPC>Y</b:DPC>
+            <b:DPFolioNo>25357546</b:DPFolioNo>
+            <b:DPTrans>PHYSICAL</b:DPTrans>
+            <b:Date>05/02/2026</b:Date>
+            <b:EUIN>E289807</b:EUIN>
+            <b:EUINDecl>Y</b:EUINDecl>
+            <b:EntryBy>102053</b:EntryBy>
+            <b:FirstOrder>N</b:FirstOrder>
+            <b:FolioNo>25357546/97</b:FolioNo>
+            <b:ISIN>INF109K01480</b:ISIN>
+            <b:InternalRefNo/>
+            <b:KYCFlag>Y</b:KYCFlag>
+            <b:MINRedeemFlag>N</b:MINRedeemFlag>
+            <b:MemberCode>24637</b:MemberCode>
+            <b:MemberRemarks/>
+            <b:OrderNumber>2456601487</b:OrderNumber>
+            <b:OrderRemarks>ALLOTMENT DONE</b:OrderRemarks>
+            <b:OrderStatus>VALID</b:OrderStatus>
+            <b:OrderType>XSP</b:OrderType>
+            <b:SIPRegnDate>16/02/2023</b:SIPRegnDate>
+            <b:SIPRegnNo>43012632</b:SIPRegnNo>
+            <b:SchemeCode>ICICI61-GR</b:SchemeCode>
+            <b:SchemeName>ICICI PRUDENTIAL EQUITY AND DEBT FUND - GROWTH</b:SchemeName>
+            <b:SettNo>2526210</b:SettNo>
+            <b:SettType>T2</b:SettType>
+            <b:SubBrCode>NSPLA0022</b:SubBrCode>
+            <b:SubBrokerARNCode>ARN-158330</b:SubBrokerARNCode>
+            <b:SubOrderType>NRM</b:SubOrderType>
+            <b:Time>01:31:11</b:Time>
+            <b:Units>0.0000</b:Units>
+          </b:OrderDetails>
+          <b:OrderDetails>
+            <b:ALLUnits>N</b:ALLUnits>
+            <b:Amount>2500.0000</b:Amount>
+            <b:BuySell>P</b:BuySell>
+            <b:BuySellType>FRESH</b:BuySellType>
+            <b:ClientCode>SAYA5711</b:ClientCode>
+            <b:ClientName>SAYLI SUNIL SURVE</b:ClientName>
+            <b:DPC>Y</b:DPC>
+            <b:DPFolioNo>77764241704</b:DPFolioNo>
+            <b:DPTrans>PHYSICAL</b:DPTrans>
+            <b:Date>05/02/2026</b:Date>
+            <b:EUIN>E289807</b:EUIN>
+            <b:EUINDecl>Y</b:EUINDecl>
+            <b:EntryBy>102053</b:EntryBy>
+            <b:FirstOrder>N</b:FirstOrder>
+            <b:FolioNo>77764241704</b:FolioNo>
+            <b:ISIN>INF769K01101</b:ISIN>
+            <b:InternalRefNo/>
+            <b:KYCFlag>Y</b:KYCFlag>
+            <b:MINRedeemFlag>N</b:MINRedeemFlag>
+            <b:MemberCode>24637</b:MemberCode>
+            <b:MemberRemarks/>
+            <b:OrderNumber>2456601488</b:OrderNumber>
+            <b:OrderRemarks>ALLOTMENT DONE</b:OrderRemarks>
+            <b:OrderStatus>VALID</b:OrderStatus>
+            <b:OrderType>XSP</b:OrderType>
+            <b:SIPRegnDate>16/02/2023</b:SIPRegnDate>
+            <b:SIPRegnNo>43012634</b:SIPRegnNo>
+            <b:SchemeCode>MAFEBRG-GR</b:SchemeCode>
+            <b:SchemeName>MIRAE ASSET LARGE &amp; MIDCAP FUND - REGULAR PLAN - GROWTH OPTION</b:SchemeName>
+            <b:SettNo>2526210</b:SettNo>
+            <b:SettType>T2</b:SettType>
+            <b:SubBrCode>NSPLA0022</b:SubBrCode>
+            <b:SubBrokerARNCode>ARN-158330</b:SubBrokerARNCode>
+            <b:SubOrderType>NRM</b:SubOrderType>
+            <b:Time>01:31:11</b:Time>
+            <b:Units>0.0000</b:Units>
+          </b:OrderDetails>
+          <b:OrderDetails>
+            <b:ALLUnits>N</b:ALLUnits>
+            <b:Amount>2000.0000</b:Amount>
+            <b:BuySell>P</b:BuySell>
+            <b:BuySellType>FRESH</b:BuySellType>
+            <b:ClientCode>UMA9430L</b:ClientCode>
+            <b:ClientName>UMANG BHATT</b:ClientName>
+            <b:DPC>Y</b:DPC>
+            <b:DPFolioNo>77755837662</b:DPFolioNo>
+            <b:DPTrans>PHYSICAL</b:DPTrans>
+            <b:Date>27/01/2026</b:Date>
+            <b:EUIN>E151743</b:EUIN>
+            <b:EUINDecl>Y</b:EUINDecl>
+            <b:EntryBy>102053</b:EntryBy>
+            <b:FirstOrder>N</b:FirstOrder>
+            <b:FolioNo>77755837662</b:FolioNo>
+            <b:ISIN>INF769K01EY2</b:ISIN>
+            <b:InternalRefNo/>
+            <b:KYCFlag>Y</b:KYCFlag>
+            <b:MINRedeemFlag>N</b:MINRedeemFlag>
+            <b:MemberCode>24637</b:MemberCode>
+            <b:MemberRemarks/>
+            <b:OrderNumber>2428659227</b:OrderNumber>
+            <b:OrderRemarks>ALLOTMENT DONE</b:OrderRemarks>
+            <b:OrderStatus>VALID</b:OrderStatus>
+            <b:OrderType>XSP</b:OrderType>
+            <b:SIPRegnDate>26/03/2022</b:SIPRegnDate>
+            <b:SIPRegnNo>27044677</b:SIPRegnNo>
+            <b:SchemeCode>MAMCRG-GR</b:SchemeCode>
+            <b:SchemeName>MIRAE ASSET MIDCAP FUND - REGULAR PLAN - GROWTH</b:SchemeName>
+            <b:SettNo>2526203</b:SettNo>
+            <b:SettType>T2</b:SettType>
+            <b:SubBrCode/>
+            <b:SubBrokerARNCode/>
+            <b:SubOrderType>NRM</b:SubOrderType>
+            <b:Time>01:30:43</b:Time>
+            <b:Units>0.0000</b:Units>
+          </b:OrderDetails>
+          <b:OrderDetails>
+            <b:ALLUnits>N</b:ALLUnits>
+            <b:Amount>5000.0000</b:Amount>
+            <b:BuySell>P</b:BuySell>
+            <b:BuySellType>FRESH</b:BuySellType>
+            <b:ClientCode>USHA4916</b:ClientCode>
+            <b:ClientName>USHA SHARMA</b:ClientName>
+            <b:DPC>Y</b:DPC>
+            <b:DPFolioNo>21264657</b:DPFolioNo>
+            <b:DPTrans>PHYSICAL</b:DPTrans>
+            <b:Date>05/02/2026</b:Date>
+            <b:EUIN>E289807</b:EUIN>
+            <b:EUINDecl>Y</b:EUINDecl>
+            <b:EntryBy>102053</b:EntryBy>
+            <b:FirstOrder>N</b:FirstOrder>
+            <b:FolioNo>21264657/19</b:FolioNo>
+            <b:ISIN>INF179K01830</b:ISIN>
+            <b:InternalRefNo/>
+            <b:KYCFlag>Y</b:KYCFlag>
+            <b:MINRedeemFlag>N</b:MINRedeemFlag>
+            <b:MemberCode>24637</b:MemberCode>
+            <b:MemberRemarks/>
+            <b:OrderNumber>2457087316</b:OrderNumber>
+            <b:OrderRemarks>ALLOTMENT DONE</b:OrderRemarks>
+            <b:OrderStatus>VALID</b:OrderStatus>
+            <b:OrderType>XSP</b:OrderType>
+            <b:SIPRegnDate>02/02/2023</b:SIPRegnDate>
+            <b:SIPRegnNo>42149446</b:SIPRegnNo>
+            <b:SchemeCode>GFG-HDFC</b:SchemeCode>
+            <b:SchemeName>HDFC BALANCED ADVANTAGE FUND - REGULAR PLAN - GROWTH</b:SchemeName>
+            <b:SettNo>2526210</b:SettNo>
+            <b:SettType>T2</b:SettType>
+            <b:SubBrCode>NSPLA0022</b:SubBrCode>
+            <b:SubBrokerARNCode>ARN-158330</b:SubBrokerARNCode>
+            <b:SubOrderType>NRM</b:SubOrderType>
+            <b:Time>01:31:11</b:Time>
+            <b:Units>0.0000</b:Units>
+          </b:OrderDetails>
+          <b:OrderDetails>
+            <b:ALLUnits>N</b:ALLUnits>
+            <b:Amount>5000.0000</b:Amount>
+            <b:BuySell>P</b:BuySell>
+            <b:BuySellType>FRESH</b:BuySellType>
+            <b:ClientCode>USHA4916</b:ClientCode>
+            <b:ClientName>USHA SHARMA</b:ClientName>
+            <b:DPC>Y</b:DPC>
+            <b:DPFolioNo>25183917</b:DPFolioNo>
+            <b:DPTrans>PHYSICAL</b:DPTrans>
+            <b:Date>05/02/2026</b:Date>
+            <b:EUIN>E289807</b:EUIN>
+            <b:EUINDecl>Y</b:EUINDecl>
+            <b:EntryBy>102053</b:EntryBy>
+            <b:FirstOrder>N</b:FirstOrder>
+            <b:FolioNo>25183917/94</b:FolioNo>
+            <b:ISIN>INF109K01480</b:ISIN>
+            <b:InternalRefNo/>
+            <b:KYCFlag>Y</b:KYCFlag>
+            <b:MINRedeemFlag>N</b:MINRedeemFlag>
+            <b:MemberCode>24637</b:MemberCode>
+            <b:MemberRemarks/>
+            <b:OrderNumber>2457087240</b:OrderNumber>
+            <b:OrderRemarks>ALLOTMENT DONE</b:OrderRemarks>
+            <b:OrderStatus>VALID</b:OrderStatus>
+            <b:OrderType>XSP</b:OrderType>
+            <b:SIPRegnDate>02/02/2023</b:SIPRegnDate>
+            <b:SIPRegnNo>42149445</b:SIPRegnNo>
+            <b:SchemeCode>ICICI61-GR</b:SchemeCode>
+            <b:SchemeName>ICICI PRUDENTIAL EQUITY AND DEBT FUND - GROWTH</b:SchemeName>
+            <b:SettNo>2526210</b:SettNo>
+            <b:SettType>T2</b:SettType>
+            <b:SubBrCode>NSPLA0022</b:SubBrCode>
+            <b:SubBrokerARNCode>ARN-158330</b:SubBrokerARNCode>
+            <b:SubOrderType>NRM</b:SubOrderType>
+            <b:Time>01:31:11</b:Time>
+            <b:Units>0.0000</b:Units>
+          </b:OrderDetails>
+        </b:OrderDetails>
         <b:Status>100</b:Status>
-      </MandateDetailsResult>
-    </MandateDetailsResponse>
+      </OrderStatusResult>
+    </OrderStatusResponse>
   </s:Body>
 </s:Envelope>
 
-2026-02-05 19:09:02,069 - MANDATE STATUS: 896153 | RESPONSE: {
-    'MandateDetails': {
-        'MandateDetails': [
+2026-02-06 17:19:53,421 - ORDER STATUS: None | RESPONSE: {
+    'Message': 'Order Status Details',
+    'OrderDetails': {
+        'OrderDetails': [
             {
-                'Amount': '80000.0000',
-                'ApprovedDate': None,
-                'BankAccNo': '521903721321',
-                'BankBranch': 'BAMROLI ROAD,GODHRA',
-                'BankName': 'STATE BANK OF INDIA',
-                'ClientCode': 'BDAPK9533N',
-                'ClientName': 'Putul Kashyap',
-                'CollectionType': None,
-                'MandateId': '896153',
-                'MandateType': 'XSP',
+                'ALLUnits': 'N',
+                'Amount': '100000.0000',
+                'BuySell': 'P',
+                'BuySellType': 'FRESH',
+                'ClientCode': 'AADPL9888N',
+                'ClientName': 'HARSHAD MANILAL LIMBAJIYA',
+                'DPC': 'Y',
+                'DPFolioNo': None,
+                'DPTrans': 'PHYSICAL',
+                'Date': '04/02/2026',
+                'EUIN': 'E648009',
+                'EUINDecl': 'Y',
+                'EntryBy': '102053',
+                'FirstOrder': 'N',
+                'FolioNo': None,
+                'ISIN': 'INF843K01013',
+                'InternalRefNo': None,
+                'KYCFlag': 'Y',
+                'MINRedeemFlag': 'N',
                 'MemberCode': '24637',
-                'RegnDate': 'Jan 20 2026  9:55PM',
-                'Remarks': None,
-                'Status': 'WAITING FOR CLIENT AUTHENTICATION',
-                'UMRNNo': None,
-                'UploadDate': None
+                'MemberRemarks': None,
+                'OrderNumber': '2445504838',
+                'OrderRemarks': 'PAYMENT NOT INITIATED',
+                'OrderStatus': 'INVALID',
+                'OrderType': 'NRM',
+                'SIPRegnDate': None,
+                'SIPRegnNo': '0',
+                'SchemeCode': 'EDMSRG-GR',
+                'SchemeName': 'EDELWEISS MID CAP FUND - REGULAR PLAN - GROWTH OPTION',
+                'SettNo': '2526208',
+                'SettType': 'T2',
+                'SubBrCode': None,
+                'SubBrokerARNCode': None,
+                'SubOrderType': 'NRM',
+                'Time': '14:25:26',
+                'Units': '0.0000'
+            },
+            {
+                'ALLUnits': 'N',
+                'Amount': '100000.0000',
+                'BuySell': 'P',
+                'BuySellType': 'FRESH',
+                'ClientCode': 'AADPL9888N',
+                'ClientName': 'HARSHAD MANILAL LIMBAJIYA',
+                'DPC': 'Y',
+                'DPFolioNo': None,
+                'DPTrans': 'PHYSICAL',
+                'Date': '05/02/2026',
+                'EUIN': 'E648009',
+                'EUINDecl': 'Y',
+                'EntryBy': '102053',
+                'FirstOrder': 'N',
+                'FolioNo': None,
+                'ISIN': 'INF843K01013',
+                'InternalRefNo': None,
+                'KYCFlag': 'Y',
+                'MINRedeemFlag': 'N',
+                'MemberCode': '24637',
+                'MemberRemarks': None,
+                'OrderNumber': '2452232990',
+                'OrderRemarks': '2FA PURCHASE AUTHENTICATION NOT RECEIVED',
+                'OrderStatus': 'INVALID',
+                'OrderType': 'NRM',
+                'SIPRegnDate': None,
+                'SIPRegnNo': '0',
+                'SchemeCode': 'EDMSRG-GR',
+                'SchemeName': 'EDELWEISS MID CAP FUND - REGULAR PLAN - GROWTH OPTION',
+                'SettNo': '2526211',
+                'SettType': 'T2',
+                'SubBrCode': None,
+                'SubBrokerARNCode': None,
+                'SubOrderType': 'NRM',
+                'Time': '00:25:48',
+                'Units': '0.0000'
+            },
+            {
+                'ALLUnits': 'N',
+                'Amount': '3000.0000',
+                'BuySell': 'P',
+                'BuySellType': 'FRESH',
+                'ClientCode': 'CDZPT5204K',
+                'ClientName': 'TRIVEDI PRERAK',
+                'DPC': 'Y',
+                'DPFolioNo': '7778959571',
+                'DPTrans': 'PHYSICAL',
+                'Date': '23/01/2026',
+                'EUIN': 'E151743',
+                'EUINDecl': 'Y',
+                'EntryBy': '102053',
+                'FirstOrder': 'N',
+                'FolioNo': None,
+                'ISIN': 'INF0QA701383',
+                'InternalRefNo': None,
+                'KYCFlag': 'Y',
+                'MINRedeemFlag': 'N',
+                'MemberCode': '24637',
+                'MemberRemarks': None,
+                'OrderNumber': '2406334472',
+                'OrderRemarks': 'PAYMENT NOT RECEIVED TILL DATE',
+                'OrderStatus': 'INVALID',
+                'OrderType': 'XSP',
+                'SIPRegnDate': '27/05/2025',
+                'SIPRegnNo': '142819088',
+                'SchemeCode': 'BJFXRG-GR',
+                'SchemeName': 'BAJAJ FINSERV FLEXI CAP FUND REGULAR PLAN - GROWTH',
+                'SettNo': '2526202',
+                'SettType': 'T2',
+                'SubBrCode': None,
+                'SubBrokerARNCode': None,
+                'SubOrderType': 'NRM',
+                'Time': '01:30:52',
+                'Units': '0.0000'
+            },
+            {
+                'ALLUnits': 'N',
+                'Amount': '2000.0000',
+                'BuySell': 'P',
+                'BuySellType': 'FRESH',
+                'ClientCode': 'CDZPT5204K',
+                'ClientName': 'TRIVEDI PRERAK',
+                'DPC': 'Y',
+                'DPFolioNo': '35650936',
+                'DPTrans': 'PHYSICAL',
+                'Date': '23/01/2026',
+                'EUIN': 'E151743',
+                'EUINDecl': 'Y',
+                'EntryBy': '102053',
+                'FirstOrder': 'N',
+                'FolioNo': None,
+                'ISIN': 'INF179K01CR2',
+                'InternalRefNo': None,
+                'KYCFlag': 'Y',
+                'MINRedeemFlag': 'N',
+                'MemberCode': '24637',
+                'MemberRemarks': None,
+                'OrderNumber': '2406334471',
+                'OrderRemarks': 'PAYMENT NOT RECEIVED TILL DATE',
+                'OrderStatus': 'INVALID',
+                'OrderType': 'XSP',
+                'SIPRegnDate': '27/05/2025',
+                'SIPRegnNo': '142819086',
+                'SchemeCode': 'HDFCMCOG-GR',
+                'SchemeName': 'HDFC MID CAP FUND - GROWTH OPTION',
+                'SettNo': '2526202',
+                'SettType': 'T2',
+                'SubBrCode': None,
+                'SubBrokerARNCode': None,
+                'SubOrderType': 'NRM',
+                'Time': '01:30:52',
+                'Units': '0.0000'
+            },
+            {
+                'ALLUnits': 'N',
+                'Amount': '1000.0000',
+                'BuySell': 'P',
+                'BuySellType': 'FRESH',
+                'ClientCode': 'DCJPP7974L',
+                'ClientName': 'PAREKH DARSHNABEN YOGESHKUMAR',
+                'DPC': 'Y',
+                'DPFolioNo': '34973655',
+                'DPTrans': 'PHYSICAL',
+                'Date': '02/02/2026',
+                'EUIN': 'E151743',
+                'EUINDecl': 'Y',
+                'EntryBy': '102053',
+                'FirstOrder': 'N',
+                'FolioNo': '34973655/55',
+                'ISIN': 'INF179K01CR2',
+                'InternalRefNo': None,
+                'KYCFlag': 'Y',
+                'MINRedeemFlag': 'N',
+                'MemberCode': '24637',
+                'MemberRemarks': None,
+                'OrderNumber': '2443889553',
+                'OrderRemarks': 'ALLOTMENT DONE',
+                'OrderStatus': 'VALID',
+                'OrderType': 'XSP',
+                'SIPRegnDate': '03/04/2025',
+                'SIPRegnNo': '135955904',
+                'SchemeCode': 'HDFCMCOG-GR',
+                'SchemeName': 'HDFC MID CAP FUND - GROWTH OPTION',
+                'SettNo': '2526207',
+                'SettType': 'T2',
+                'SubBrCode': 'NSPLBR006',
+                'SubBrokerARNCode': None,
+                'SubOrderType': 'NRM',
+                'Time': '01:30:46',
+                'Units': '0.0000'
+            },
+            {
+                'ALLUnits': 'N',
+                'Amount': '3000.0000',
+                'BuySell': 'P',
+                'BuySellType': 'FRESH',
+                'ClientCode': 'MAN4305',
+                'ClientName': 'MANN SONI',
+                'DPC': 'Y',
+                'DPFolioNo': '44175264',
+                'DPTrans': 'PHYSICAL',
+                'Date': '05/02/2026',
+                'EUIN': 'E151743',
+                'EUINDecl': 'Y',
+                'EntryBy': '102053',
+                'FirstOrder': 'N',
+                'FolioNo': '44175264',
+                'ISIN': 'INF200K01T28',
+                'InternalRefNo': None,
+                'KYCFlag': 'Y',
+                'MINRedeemFlag': 'N',
+                'MemberCode': '24637',
+                'MemberRemarks': None,
+                'OrderNumber': '2456086340',
+                'OrderRemarks': 'ALLOTMENT DONE',
+                'OrderStatus': 'VALID',
+                'OrderType': 'XSP',
+                'SIPRegnDate': '18/03/2025',
+                'SIPRegnNo': '133953814',
+                'SchemeCode': 'SB346G-GR',
+                'SchemeName': 'SBI SMALL CAP FUND REGULAR GROWTH',
+                'SettNo': '2526210',
+                'SettType': 'T2',
+                'SubBrCode': None,
+                'SubBrokerARNCode': None,
+                'SubOrderType': 'NRM',
+                'Time': '01:31:11',
+                'Units': '0.0000'
+            },
+            {
+                'ALLUnits': 'N',
+                'Amount': '2500.0000',
+                'BuySell': 'P',
+                'BuySellType': 'FRESH',
+                'ClientCode': 'SAYA5711',
+                'ClientName': 'SAYLI SUNIL SURVE',
+                'DPC': 'Y',
+                'DPFolioNo': '25357546',
+                'DPTrans': 'PHYSICAL',
+                'Date': '05/02/2026',
+                'EUIN': 'E289807',
+                'EUINDecl': 'Y',
+                'EntryBy': '102053',
+                'FirstOrder': 'N',
+                'FolioNo': '25357546/97',
+                'ISIN': 'INF109K01480',
+                'InternalRefNo': None,
+                'KYCFlag': 'Y',
+                'MINRedeemFlag': 'N',
+                'MemberCode': '24637',
+                'MemberRemarks': None,
+                'OrderNumber': '2456601487',
+                'OrderRemarks': 'ALLOTMENT DONE',
+                'OrderStatus': 'VALID',
+                'OrderType': 'XSP',
+                'SIPRegnDate': '16/02/2023',
+                'SIPRegnNo': '43012632',
+                'SchemeCode': 'ICICI61-GR',
+                'SchemeName': 'ICICI PRUDENTIAL EQUITY AND DEBT FUND - GROWTH',
+                'SettNo': '2526210',
+                'SettType': 'T2',
+                'SubBrCode': 'NSPLA0022',
+                'SubBrokerARNCode': 'ARN-158330',
+                'SubOrderType': 'NRM',
+                'Time': '01:31:11',
+                'Units': '0.0000'
+            },
+            {
+                'ALLUnits': 'N',
+                'Amount': '2500.0000',
+                'BuySell': 'P',
+                'BuySellType': 'FRESH',
+                'ClientCode': 'SAYA5711',
+                'ClientName': 'SAYLI SUNIL SURVE',
+                'DPC': 'Y',
+                'DPFolioNo': '77764241704',
+                'DPTrans': 'PHYSICAL',
+                'Date': '05/02/2026',
+                'EUIN': 'E289807',
+                'EUINDecl': 'Y',
+                'EntryBy': '102053',
+                'FirstOrder': 'N',
+                'FolioNo': '77764241704',
+                'ISIN': 'INF769K01101',
+                'InternalRefNo': None,
+                'KYCFlag': 'Y',
+                'MINRedeemFlag': 'N',
+                'MemberCode': '24637',
+                'MemberRemarks': None,
+                'OrderNumber': '2456601488',
+                'OrderRemarks': 'ALLOTMENT DONE',
+                'OrderStatus': 'VALID',
+                'OrderType': 'XSP',
+                'SIPRegnDate': '16/02/2023',
+                'SIPRegnNo': '43012634',
+                'SchemeCode': 'MAFEBRG-GR',
+                'SchemeName': 'MIRAE ASSET LARGE & MIDCAP FUND - REGULAR PLAN - GROWTH OPTION',
+                'SettNo': '2526210',
+                'SettType': 'T2',
+                'SubBrCode': 'NSPLA0022',
+                'SubBrokerARNCode': 'ARN-158330',
+                'SubOrderType': 'NRM',
+                'Time': '01:31:11',
+                'Units': '0.0000'
+            },
+            {
+                'ALLUnits': 'N',
+                'Amount': '2000.0000',
+                'BuySell': 'P',
+                'BuySellType': 'FRESH',
+                'ClientCode': 'UMA9430L',
+                'ClientName': 'UMANG BHATT',
+                'DPC': 'Y',
+                'DPFolioNo': '77755837662',
+                'DPTrans': 'PHYSICAL',
+                'Date': '27/01/2026',
+                'EUIN': 'E151743',
+                'EUINDecl': 'Y',
+                'EntryBy': '102053',
+                'FirstOrder': 'N',
+                'FolioNo': '77755837662',
+                'ISIN': 'INF769K01EY2',
+                'InternalRefNo': None,
+                'KYCFlag': 'Y',
+                'MINRedeemFlag': 'N',
+                'MemberCode': '24637',
+                'MemberRemarks': None,
+                'OrderNumber': '2428659227',
+                'OrderRemarks': 'ALLOTMENT DONE',
+                'OrderStatus': 'VALID',
+                'OrderType': 'XSP',
+                'SIPRegnDate': '26/03/2022',
+                'SIPRegnNo': '27044677',
+                'SchemeCode': 'MAMCRG-GR',
+                'SchemeName': 'MIRAE ASSET MIDCAP FUND - REGULAR PLAN - GROWTH',
+                'SettNo': '2526203',
+                'SettType': 'T2',
+                'SubBrCode': None,
+                'SubBrokerARNCode': None,
+                'SubOrderType': 'NRM',
+                'Time': '01:30:43',
+                'Units': '0.0000'
+            },
+            {
+                'ALLUnits': 'N',
+                'Amount': '5000.0000',
+                'BuySell': 'P',
+                'BuySellType': 'FRESH',
+                'ClientCode': 'USHA4916',
+                'ClientName': 'USHA SHARMA',
+                'DPC': 'Y',
+                'DPFolioNo': '21264657',
+                'DPTrans': 'PHYSICAL',
+                'Date': '05/02/2026',
+                'EUIN': 'E289807',
+                'EUINDecl': 'Y',
+                'EntryBy': '102053',
+                'FirstOrder': 'N',
+                'FolioNo': '21264657/19',
+                'ISIN': 'INF179K01830',
+                'InternalRefNo': None,
+                'KYCFlag': 'Y',
+                'MINRedeemFlag': 'N',
+                'MemberCode': '24637',
+                'MemberRemarks': None,
+                'OrderNumber': '2457087316',
+                'OrderRemarks': 'ALLOTMENT DONE',
+                'OrderStatus': 'VALID',
+                'OrderType': 'XSP',
+                'SIPRegnDate': '02/02/2023',
+                'SIPRegnNo': '42149446',
+                'SchemeCode': 'GFG-HDFC',
+                'SchemeName': 'HDFC BALANCED ADVANTAGE FUND - REGULAR PLAN - GROWTH',
+                'SettNo': '2526210',
+                'SettType': 'T2',
+                'SubBrCode': 'NSPLA0022',
+                'SubBrokerARNCode': 'ARN-158330',
+                'SubOrderType': 'NRM',
+                'Time': '01:31:11',
+                'Units': '0.0000'
+            },
+            {
+                'ALLUnits': 'N',
+                'Amount': '5000.0000',
+                'BuySell': 'P',
+                'BuySellType': 'FRESH',
+                'ClientCode': 'USHA4916',
+                'ClientName': 'USHA SHARMA',
+                'DPC': 'Y',
+                'DPFolioNo': '25183917',
+                'DPTrans': 'PHYSICAL',
+                'Date': '05/02/2026',
+                'EUIN': 'E289807',
+                'EUINDecl': 'Y',
+                'EntryBy': '102053',
+                'FirstOrder': 'N',
+                'FolioNo': '25183917/94',
+                'ISIN': 'INF109K01480',
+                'InternalRefNo': None,
+                'KYCFlag': 'Y',
+                'MINRedeemFlag': 'N',
+                'MemberCode': '24637',
+                'MemberRemarks': None,
+                'OrderNumber': '2457087240',
+                'OrderRemarks': 'ALLOTMENT DONE',
+                'OrderStatus': 'VALID',
+                'OrderType': 'XSP',
+                'SIPRegnDate': '02/02/2023',
+                'SIPRegnNo': '42149445',
+                'SchemeCode': 'ICICI61-GR',
+                'SchemeName': 'ICICI PRUDENTIAL EQUITY AND DEBT FUND - GROWTH',
+                'SettNo': '2526210',
+                'SettType': 'T2',
+                'SubBrCode': 'NSPLA0022',
+                'SubBrokerARNCode': 'ARN-158330',
+                'SubOrderType': 'NRM',
+                'Time': '01:31:11',
+                'Units': '0.0000'
             }
         ]
     },
-    'Message': 'Mandate Details ',
     'Status': '100'
 }
