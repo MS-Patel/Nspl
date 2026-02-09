@@ -48,3 +48,4 @@ tzdata==2025.3
 urllib3==2.6.3
 whitenoise==6.6.0
 zeep==4.3.2
+xlrd==2.0.1
