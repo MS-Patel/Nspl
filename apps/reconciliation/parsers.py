@@ -112,7 +112,7 @@ class BaseParser:
             scheme = Scheme.objects.filter(scheme_code=scheme_code).first()
             if not scheme:
                 # Try RTA Scheme Code match if we had such field populated
-                scheme = Scheme.objects.filter(rta_scheme_code=scheme_code).first()
+                scheme = Scheme.objects.filter(channel_partner_code=scheme_code).first()
 
         if not scheme and isin:
             scheme = Scheme.objects.filter(isin=isin).first()
