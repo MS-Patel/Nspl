@@ -1,5 +1,6 @@
 import csv
 import logging
+import pandas as pd
 from decimal import Decimal
 from datetime import datetime, timedelta
 from django.utils import timezone
@@ -18,8 +19,11 @@ class BaseParser:
     """
     Base parser containing shared logic for all RTA mailback parsers.
     """
-    def __init__(self, rta_file_obj):
+    def __init__(self, rta_file_obj=None, file_path=None):
         self.rta_file = rta_file_obj
+        self.file_path = file_path
+        if not self.file_path and self.rta_file:
+            self.file_path = self.rta_file.file.path
 
     def parse(self):
         raise NotImplementedError
@@ -28,8 +32,12 @@ class BaseParser:
         """Attempts to parse date from common formats."""
         if not date_str:
             return None
-        date_str = date_str.strip()
-        formats = ["%d-%b-%Y", "%d/%m/%Y", "%d-%m-%Y", "%Y-%m-%d"]
+        # Handle Pandas timestamp
+        if isinstance(date_str, (pd.Timestamp, datetime)):
+            return date_str.date()
+
+        date_str = str(date_str).strip()
+        formats = ["%d-%b-%Y", "%d/%m/%Y", "%d-%m-%Y", "%Y-%m-%d", "%Y-%m-%d %H:%M:%S"]
         for fmt in formats:
             try:
                 return datetime.strptime(date_str, fmt).date()
@@ -39,10 +47,19 @@ class BaseParser:
 
     def clean_decimal(self, value):
         """Cleans and returns a Decimal from string."""
-        if not value:
+        if value is None:
             return Decimal(0)
+
+        # Handle Pandas NaN/NaT
+        if pd.isna(value):
+            return Decimal(0)
+
+        val_str = str(value).strip()
+        if val_str == '' or val_str.lower() == 'nan':
+            return Decimal(0)
+
         try:
-            return Decimal(str(value).strip().replace(',', ''))
+            return Decimal(val_str.replace(',', ''))
         except:
             return Decimal(0)
 
@@ -58,6 +75,8 @@ class BaseParser:
         """
         Finds an investor by PAN or creates a provisional one.
         """
+        if not pan:
+            return None
         pan = pan.upper().strip()
         try:
             return InvestorProfile.objects.get(pan=pan)
@@ -89,6 +108,7 @@ class BaseParser:
         """
         scheme = None
         if scheme_code:
+            scheme_code = str(scheme_code).strip()
             scheme = Scheme.objects.filter(scheme_code=scheme_code).first()
             if not scheme:
                 # Try RTA Scheme Code match if we had such field populated
@@ -102,11 +122,37 @@ class BaseParser:
     def match_or_create_transaction(self, investor, scheme, folio_number, txn_number, date, amount, units, txn_type, rta_code):
         """
         Matches incoming RTA transaction with existing (Provisional) BSE transaction,
-        or creates a new one.
+        or creates a new one. Updates existing RTA transactions if changed.
         """
-        # 1. Check strict duplicate (already processed RTA txn)
-        if Transaction.objects.filter(txn_number=txn_number).exists():
-            return # Skip duplicate
+        if not txn_number:
+            return
+
+        # 1. Check strict duplicate (already processed RTA txn) or Update
+        existing_txn = Transaction.objects.filter(txn_number=txn_number).first()
+        if existing_txn:
+            # Update fields
+            existing_txn.date = date
+            existing_txn.amount = amount
+            existing_txn.units = units
+            existing_txn.txn_type_code = txn_type
+            existing_txn.rta_code = rta_code
+            existing_txn.source = Transaction.SOURCE_RTA
+            existing_txn.is_provisional = False
+            if self.rta_file:
+                existing_txn.source_file = self.rta_file
+
+            # Optionally update relation if missing
+            if not existing_txn.investor and investor:
+                existing_txn.investor = investor
+            if not existing_txn.scheme and scheme:
+                existing_txn.scheme = scheme
+
+            existing_txn.save()
+            logger.info(f"Updated existing transaction {txn_number}")
+
+            # Recalculate Holding
+            recalculate_holding(investor, scheme, folio_number)
+            return
 
         # 2. Try to find a Provisional Match
         # Strategy: Match on Investor + Scheme + Folio + Approx Date + Amount
@@ -137,7 +183,8 @@ class BaseParser:
             matched_txn.units = units
             matched_txn.source = Transaction.SOURCE_RTA
             matched_txn.is_provisional = False
-            matched_txn.source_file = self.rta_file
+            if self.rta_file:
+                matched_txn.source_file = self.rta_file
             matched_txn.save()
             logger.info(f"Matched and confirmed provisional transaction {matched_txn.id} with RTA ID {txn_number}")
 
@@ -155,7 +202,7 @@ class BaseParser:
                 units=units,
                 source=Transaction.SOURCE_RTA,
                 is_provisional=False,
-                source_file=self.rta_file
+                source_file=self.rta_file if self.rta_file else None
             )
 
         # Always Recalculate Holding
@@ -173,8 +220,7 @@ class CAMSParser(BaseParser):
 
     def parse(self):
         try:
-            file_path = self.rta_file.file.path
-            with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+            with open(self.file_path, 'r', encoding='utf-8', errors='ignore') as f:
                 reader = csv.reader(f, delimiter='|')
 
                 with transaction.atomic():
@@ -226,15 +272,65 @@ class CAMSParser(BaseParser):
                             investor, scheme, folio_number, txn_number, txn_date, amount, units, txn_type, 'CAMS'
                         )
 
-            self.rta_file.status = RTAFile.STATUS_PROCESSED
-            self.rta_file.processed_at = timezone.now()
-            self.rta_file.save()
+            if self.rta_file:
+                self.rta_file.status = RTAFile.STATUS_PROCESSED
+                self.rta_file.processed_at = timezone.now()
+                self.rta_file.save()
 
         except Exception as e:
-            self.rta_file.status = RTAFile.STATUS_FAILED
-            self.rta_file.error_log = str(e)
-            self.rta_file.save()
+            if self.rta_file:
+                self.rta_file.status = RTAFile.STATUS_FAILED
+                self.rta_file.error_log = str(e)
+                self.rta_file.save()
             logger.error(f"CAMS Parsing failed: {e}")
+
+class CAMSXLSParser(BaseParser):
+    """
+    Parses CAMS WBR2 Excel Format.
+    """
+    def parse(self):
+        try:
+            df = pd.read_excel(self.file_path)
+            with transaction.atomic():
+                for _, row in df.iterrows():
+                    pan = str(row.get('pan', '')).strip()
+                    if not pan or pan == 'nan': continue
+
+                    inv_name = str(row.get('inv_name', '')).strip()
+                    investor = self.get_or_create_provisional_investor(pan, inv_name)
+
+                    scheme_code = str(row.get('prodcode', '')).strip()
+                    # Fallback to scheme name if code fails? No, rely on mapping
+                    scheme = self.get_scheme(scheme_code)
+                    if not scheme:
+                        logger.warning(f"Scheme not found for CAMS XLS: {scheme_code}")
+                        continue
+
+                    folio_number = str(row.get('folio_no', '')).strip()
+                    txn_number = str(row.get('trxnno', '')).strip()
+
+                    date_val = row.get('traddate')
+                    txn_date = self.parse_date(date_val)
+                    if not txn_date: continue
+
+                    amount = self.clean_decimal(row.get('amount'))
+                    units = self.clean_decimal(row.get('units'))
+                    txn_type = str(row.get('trxntype', '')).strip()
+
+                    self.match_or_create_transaction(
+                        investor, scheme, folio_number, txn_number, txn_date, amount, units, txn_type, 'CAMS'
+                    )
+
+            if self.rta_file:
+                self.rta_file.status = RTAFile.STATUS_PROCESSED
+                self.rta_file.processed_at = timezone.now()
+                self.rta_file.save()
+        except Exception as e:
+            if self.rta_file:
+                self.rta_file.status = RTAFile.STATUS_FAILED
+                self.rta_file.error_log = str(e)
+                self.rta_file.save()
+            logger.error(f"CAMS XLS Parsing failed: {e}")
 
 
 class KarvyParser(BaseParser):
@@ -244,8 +340,7 @@ class KarvyParser(BaseParser):
 
     def parse(self):
         try:
-            file_path = self.rta_file.file.path
-            with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+            with open(self.file_path, 'r', encoding='utf-8', errors='ignore') as f:
                 reader = csv.reader(f, delimiter='|')
 
                 with transaction.atomic():
@@ -300,15 +395,68 @@ class KarvyParser(BaseParser):
                             amount, units, txn_type, 'KARVY'
                         )
 
-            self.rta_file.status = RTAFile.STATUS_PROCESSED
-            self.rta_file.processed_at = timezone.now()
-            self.rta_file.save()
+            if self.rta_file:
+                self.rta_file.status = RTAFile.STATUS_PROCESSED
+                self.rta_file.processed_at = timezone.now()
+                self.rta_file.save()
 
         except Exception as e:
-            self.rta_file.status = RTAFile.STATUS_FAILED
-            self.rta_file.error_log = str(e)
-            self.rta_file.save()
+            if self.rta_file:
+                self.rta_file.status = RTAFile.STATUS_FAILED
+                self.rta_file.error_log = str(e)
+                self.rta_file.save()
             logger.error(f"Karvy Parsing failed: {e}")
+
+class KarvyXLSParser(BaseParser):
+    """
+    Parses Karvy MFSD201 Excel Format.
+    """
+    def parse(self):
+        try:
+            # Skip first row (TRANSACTION REPORT) if exists, check header=1
+            # Based on inspection, header is at index 1
+            df = pd.read_excel(self.file_path, header=1)
+            with transaction.atomic():
+                for _, row in df.iterrows():
+                    pan = str(row.get('PAN1', '')).strip()
+                    if not pan or pan == 'nan': continue
+
+                    inv_name = str(row.get('INVNAME', '')).strip()
+                    investor = self.get_or_create_provisional_investor(pan, inv_name)
+
+                    scheme_code = str(row.get('FMCODE', '')).strip()
+                    scheme = self.get_scheme(scheme_code)
+                    if not scheme:
+                        logger.warning(f"Scheme not found for Karvy XLS: {scheme_code}")
+                        continue
+
+                    folio_number = str(row.get('TD_ACNO', '')).strip()
+                    txn_number = str(row.get('TD_TRNO', '')).strip()
+
+                    # Try NAVDATE, fallback to TD_PRDT
+                    date_val = row.get('NAVDATE')
+                    if pd.isna(date_val): date_val = row.get('TD_PRDT')
+                    txn_date = self.parse_date(date_val)
+                    if not txn_date: continue
+
+                    amount = self.clean_decimal(row.get('TD_AMT'))
+                    units = self.clean_decimal(row.get('TD_UNITS'))
+                    txn_type = str(row.get('TD_TRTYPE', '')).strip()
+
+                    self.match_or_create_transaction(
+                        investor, scheme, folio_number, txn_number, txn_date, amount, units, txn_type, 'KARVY'
+                    )
+
+            if self.rta_file:
+                self.rta_file.status = RTAFile.STATUS_PROCESSED
+                self.rta_file.processed_at = timezone.now()
+                self.rta_file.save()
+        except Exception as e:
+            if self.rta_file:
+                self.rta_file.status = RTAFile.STATUS_FAILED
+                self.rta_file.error_log = str(e)
+                self.rta_file.save()
+            logger.error(f"Karvy XLS Parsing failed: {e}")
 
 
 class FranklinParser(BaseParser):
@@ -318,8 +466,7 @@ class FranklinParser(BaseParser):
 
     def parse(self):
         try:
-            file_path = self.rta_file.file.path
-            with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+            with open(self.file_path, 'r', encoding='utf-8', errors='ignore') as f:
                 reader = csv.reader(f, delimiter='|')
 
                 with transaction.atomic():
@@ -355,18 +502,19 @@ class FranklinParser(BaseParser):
                         units = self.clean_decimal(row[7])
                         txn_type = row[5].strip().upper()
 
-                        # Delegate to helper
                         self.match_or_create_transaction(
                             investor, scheme, folio_number, txn_number, txn_date if txn_date else timezone.now().date(),
                             amount, units, txn_type, 'FRANKLIN'
                         )
 
-            self.rta_file.status = RTAFile.STATUS_PROCESSED
-            self.rta_file.processed_at = timezone.now()
-            self.rta_file.save()
+            if self.rta_file:
+                self.rta_file.status = RTAFile.STATUS_PROCESSED
+                self.rta_file.processed_at = timezone.now()
+                self.rta_file.save()
 
         except Exception as e:
-            self.rta_file.status = RTAFile.STATUS_FAILED
-            self.rta_file.error_log = str(e)
-            self.rta_file.save()
+            if self.rta_file:
+                self.rta_file.status = RTAFile.STATUS_FAILED
+                self.rta_file.error_log = str(e)
+                self.rta_file.save()
             logger.error(f"Franklin Parsing failed: {e}")
