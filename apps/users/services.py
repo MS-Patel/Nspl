@@ -1,5 +1,7 @@
 import re
-from apps.users.models import InvestorProfile
+import csv
+import io
+from apps.users.models import InvestorProfile, BankAccount, User
 
 def validate_investor_for_bse(investor: InvestorProfile) -> list[str]:
     """
@@ -126,3 +128,111 @@ def validate_investor_for_bse(investor: InvestorProfile) -> list[str]:
             errors.append("Investor is a Minor but Guardian Relationship is missing.")
 
     return errors
+
+def process_client_master_csv(file):
+    """
+    Parses BSE Client Master CSV/Pipe file and updates InvestorProfiles.
+    """
+    decoded_file = file.read().decode('utf-8', errors='ignore')
+    io_string = io.StringIO(decoded_file)
+
+    # Detect delimiter
+    import csv as csv_module
+    sniffer = csv_module.Sniffer()
+    try:
+        # Check first few lines to determine format
+        sample = decoded_file[:4096]
+        dialect = sniffer.sniff(sample)
+    except:
+        # Fallback to excel (comma) if sniffing fails
+        import csv
+        dialect = csv.excel
+
+    # Reset pointer
+    io_string.seek(0)
+
+    reader = csv.DictReader(io_string, dialect=dialect)
+
+    updated_count = 0
+
+    for row in reader:
+        # Normalize keys (strip spaces, lowercase)
+        clean_row = {k.strip().lower(): (v.strip() if v else '') for k, v in row.items() if k}
+
+        # Find PAN key
+        pan = clean_row.get('pan') or clean_row.get('pan no') or clean_row.get('pan_no')
+        if not pan:
+            continue
+
+        # Find Profile
+        try:
+            profile = InvestorProfile.objects.get(pan=pan)
+        except InvestorProfile.DoesNotExist:
+             continue
+
+        # Update Fields
+        client_code = clean_row.get('clientcode') or clean_row.get('client code') or clean_row.get('client_code')
+        if client_code:
+            profile.ucc_code = client_code
+
+        # Name
+        name = clean_row.get('clientname') or clean_row.get('client name') or clean_row.get('investor name')
+        if name:
+             # Always update name from BSE Client Master as it is more authoritative than RTA provisional data
+             profile.user.name = name
+             profile.user.save()
+
+        # Address
+        addr1 = clean_row.get('address1') or clean_row.get('add1')
+        if addr1: profile.address_1 = addr1
+
+        addr2 = clean_row.get('address2') or clean_row.get('add2')
+        if addr2: profile.address_2 = addr2
+
+        addr3 = clean_row.get('address3') or clean_row.get('add3')
+        if addr3: profile.address_3 = addr3
+
+        city = clean_row.get('city')
+        if city: profile.city = city
+
+        pin = clean_row.get('pincode') or clean_row.get('pin')
+        if pin: profile.pincode = pin
+
+        state = clean_row.get('state')
+        if state: profile.state = state
+
+        email = clean_row.get('email') or clean_row.get('emailid')
+        if email:
+            if not profile.email:
+                profile.email = email
+
+            if not profile.user.email or "placeholder" in profile.user.email:
+                profile.user.email = email
+                profile.user.save()
+
+        mobile = clean_row.get('mobile') or clean_row.get('mobileno')
+        if mobile: profile.mobile = mobile
+
+        # Bank Details
+        acc_no = clean_row.get('accountno') or clean_row.get('bank account no') or clean_row.get('account_no') or clean_row.get('bank_account_no')
+        if acc_no:
+             ifsc = clean_row.get('ifsc') or clean_row.get('ifsc code') or clean_row.get('ifsc_code')
+             bank_name = clean_row.get('bankname') or clean_row.get('bank name')
+
+             # Check if bank exists
+             bank_exists = profile.bank_accounts.filter(account_number=acc_no).exists()
+             if not bank_exists:
+                 BankAccount.objects.create(
+                     investor=profile,
+                     account_number=acc_no,
+                     ifsc_code=ifsc if ifsc else 'UNKNOWN',
+                     bank_name=bank_name if bank_name else '',
+                     is_default=True
+                 )
+
+        # Mark as somewhat onboarded (at least has data)
+        # Note: kyc_status logic depends on business rules.
+        profile.save()
+        updated_count += 1
+
+    return updated_count

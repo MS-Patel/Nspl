@@ -4,12 +4,14 @@ from decimal import Decimal
 from datetime import datetime, timedelta
 from django.utils import timezone
 from django.db import transaction
+from django.contrib.auth import get_user_model
 from .models import RTAFile, Transaction, Holding
 from apps.products.models import Scheme
 from apps.users.models import InvestorProfile
 from apps.investments.models import Folio
 from apps.reconciliation.utils.reconcile import recalculate_holding
 
+User = get_user_model()
 logger = logging.getLogger(__name__)
 
 class BaseParser:
@@ -51,6 +53,51 @@ class BaseParser:
                 amc=scheme.amc,
                 folio_number=folio_number
             )
+
+    def get_or_create_provisional_investor(self, pan, name=None):
+        """
+        Finds an investor by PAN or creates a provisional one.
+        """
+        pan = pan.upper().strip()
+        try:
+            return InvestorProfile.objects.get(pan=pan)
+        except InvestorProfile.DoesNotExist:
+            # Check if User exists (rare case where User exists but no Profile)
+            user = User.objects.filter(username=pan).first()
+            if not user:
+                # Create User
+                email = f"{pan}@placeholder.com"
+                user = User.objects.create_user(username=pan, email=email, password=pan)
+                user.user_type = User.Types.INVESTOR
+                if name:
+                    user.name = name
+                user.save()
+
+            # Create Profile
+            # Note: Detailed fields will be filled later via BSE Client Master sync
+            profile = InvestorProfile.objects.create(
+                user=user,
+                pan=pan,
+                kyc_status=False # Assumption until verified
+            )
+            logger.info(f"Created provisional investor for PAN {pan}")
+            return profile
+
+    def get_scheme(self, scheme_code, isin=None):
+        """
+        Tries to find scheme by Code (BSE/RTA) or ISIN.
+        """
+        scheme = None
+        if scheme_code:
+            scheme = Scheme.objects.filter(scheme_code=scheme_code).first()
+            if not scheme:
+                # Try RTA Scheme Code match if we had such field populated
+                scheme = Scheme.objects.filter(rta_scheme_code=scheme_code).first()
+
+        if not scheme and isin:
+            scheme = Scheme.objects.filter(isin=isin).first()
+
+        return scheme
 
     def match_or_create_transaction(self, investor, scheme, folio_number, txn_number, date, amount, units, txn_type, rta_code):
         """
@@ -140,23 +187,27 @@ class CAMSParser(BaseParser):
 
                         # Extract Data
                         # Map indices based on WBR9 / Standard CAMS Feed
-                        # 1: Folio, 3: Scheme Code, 8: Type, 9: Txn No, 12: Units, 13: Amount, 15: Date, 18: PAN
+                        # 0: AMC, 1: Folio, 3: Scheme Code, 4: Inv Name (Sometimes), 8: Type, 9: Txn No, 12: Units, 13: Amount, 15: Date, 18: PAN
 
                         # Validate PAN
                         pan = row[18].strip() if len(row) > 18 else None
                         if not pan:
                             continue
 
-                        # Fetch Investor
-                        try:
-                            investor = InvestorProfile.objects.get(pan=pan)
-                        except InvestorProfile.DoesNotExist:
-                            continue
+                        # Extract Name (Best Effort)
+                        inv_name = row[4].strip() if len(row) > 4 else None
+
+                        # Fetch or Create Investor
+                        investor = self.get_or_create_provisional_investor(pan, inv_name)
 
                         # Fetch Scheme
                         scheme_code = row[3].strip()
-                        scheme = Scheme.objects.filter(scheme_code=scheme_code).first()
+                        isin = row[20].strip() if len(row) > 20 else None # Try ISIN from col 20 (WBR9 standard vary)
+
+                        scheme = self.get_scheme(scheme_code, isin)
                         if not scheme:
+                            # Log warning but skip for now as we can't book transaction without scheme
+                            logger.warning(f"Scheme not found: Code={scheme_code}, ISIN={isin}")
                             continue
 
                         folio_number = row[1].strip()
@@ -208,7 +259,7 @@ class KarvyParser(BaseParser):
                             continue
 
                         # Assuming Standard Karvy/MFD Layout (Pipe):
-                        # 0: AMC, 1: Scheme Code, 3: Folio, 5: Type, 6: Trxn No, 7: Units, 8: Amount, 9: Date
+                        # 0: AMC, 1: Scheme Code, 3: Folio, 4: Name?, 5: Type, 6: Trxn No, 7: Units, 8: Amount, 9: Date
 
                         pan = None
                         # Try to find PAN in likely columns (often 14, 15, 18, 19)
@@ -220,14 +271,19 @@ class KarvyParser(BaseParser):
                         if not pan:
                             continue
 
-                        try:
-                            investor = InvestorProfile.objects.get(pan=pan)
-                        except InvestorProfile.DoesNotExist:
-                            continue
+                        inv_name = row[4].strip() if len(row) > 4 else None
+
+                        investor = self.get_or_create_provisional_investor(pan, inv_name)
 
                         scheme_code = row[1].strip()
-                        scheme = Scheme.objects.filter(scheme_code=scheme_code).first()
+                        isin = None
+                        # Try to find ISIN (often col 21 or 22)
+                        if len(row) > 21 and row[21].startswith('IN'):
+                            isin = row[21].strip()
+
+                        scheme = self.get_scheme(scheme_code, isin)
                         if not scheme:
+                            logger.warning(f"Scheme not found: Code={scheme_code}, ISIN={isin}")
                             continue
 
                         folio_number = row[3].strip()
@@ -283,13 +339,12 @@ class FranklinParser(BaseParser):
 
                         if not pan: continue
 
-                        try:
-                            investor = InvestorProfile.objects.get(pan=pan)
-                        except InvestorProfile.DoesNotExist:
-                            continue
+                        inv_name = row[4].strip() if len(row) > 4 else None
+
+                        investor = self.get_or_create_provisional_investor(pan, inv_name)
 
                         scheme_code = row[1].strip()
-                        scheme = Scheme.objects.filter(scheme_code=scheme_code).first()
+                        scheme = self.get_scheme(scheme_code)
                         if not scheme: continue
 
                         folio_number = row[3].strip()
