@@ -1,5 +1,5 @@
-from django.shortcuts import render, redirect
-from django.views.generic import TemplateView, ListView, DetailView, CreateView
+from django.shortcuts import render, redirect, get_object_or_404
+from django.views.generic import TemplateView, ListView, DetailView, CreateView, View
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth import get_user_model
@@ -7,7 +7,8 @@ from django.http import JsonResponse
 from django.db import transaction
 from .models import Payout, BrokerageImport, BrokerageTransaction, DistributorCategory
 from .forms import BrokerageUploadForm
-from .utils import process_brokerage_import
+from .utils import process_brokerage_import, reprocess_brokerage_import
+import ast
 
 User = get_user_model()
 
@@ -174,3 +175,45 @@ class BrokerageImportDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailV
 
     def test_func(self):
         return self.request.user.user_type == User.Types.ADMIN
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Fetch transactions, prioritizing unmapped ones
+        transactions = self.object.transactions.all().order_by('is_mapped', 'id')
+
+        parsed_transactions = []
+        for txn in transactions:
+            raw = txn.raw_data
+            if isinstance(raw, str):
+                try:
+                    raw = ast.literal_eval(raw)
+                except:
+                    raw = {}
+            else:
+                raw = txn.raw_data or {}
+
+            txn.parsed_raw_data = raw
+            # Normalize PAN for display to avoid template lookup errors
+            txn.display_pan = raw.get('InvPAN') or raw.get('PAN_NO') or raw.get('PAN_NUMBER') or '-'
+
+            parsed_transactions.append(txn)
+
+        context['transactions'] = parsed_transactions
+        return context
+
+class ReprocessImportView(LoginRequiredMixin, UserPassesTestMixin, View):
+    def test_func(self):
+        return self.request.user.user_type == User.Types.ADMIN
+
+    def post(self, request, pk, *args, **kwargs):
+        brokerage_import = get_object_or_404(BrokerageImport, pk=pk)
+        try:
+            mapped_count = reprocess_brokerage_import(brokerage_import)
+            if mapped_count > 0:
+                messages.success(request, f"Successfully mapped {mapped_count} transactions and recalculated payouts.")
+            else:
+                messages.info(request, "Reprocessing complete. No new transactions were mapped.")
+        except Exception as e:
+            messages.error(request, f"Error reprocessing import: {str(e)}")
+
+        return redirect('payouts:import_detail', pk=pk)

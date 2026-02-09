@@ -68,5 +68,58 @@
             </div>
         </div>
     </div>
+
+    <!-- Transactions List -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+            <h6 class="m-0 font-weight-bold text-primary">Transactions</h6>
+            <form method="post" action="{% url 'payouts:reprocess_import' object.id %}" onsubmit="return confirm('Are you sure you want to reprocess unmapped transactions? This will recalculate payouts.');">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-warning shadow-sm">
+                    <i class="fas fa-sync-alt fa-sm text-white-50"></i> Retry Mapping
+                </button>
+            </form>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-sm" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Status</th>
+                            <th>Source</th>
+                            <th>Investor (Raw)</th>
+                            <th>Folio</th>
+                            <th>PAN (Raw)</th>
+                            <th>Scheme</th>
+                            <th>Amount</th>
+                            <th>Brokerage</th>
+                            <th>Remark</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for txn in transactions %}
+                        <tr {% if not txn.is_mapped %}class="table-warning"{% endif %}>
+                            <td>
+                                {% if txn.is_mapped %}
+                                    <span class="badge badge-success">Mapped</span>
+                                {% else %}
+                                    <span class="badge badge-danger">Unmapped</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ txn.source }}</td>
+                            <td>{{ txn.investor_name }}</td>
+                            <td>{{ txn.folio_number }}</td>
+                            <td>{{ txn.display_pan }}</td>
+                            <td>{{ txn.scheme_name }}</td>
+                            <td>{{ txn.amount }}</td>
+                            <td>{{ txn.brokerage_amount }}</td>
+                            <td>{{ txn.mapping_remark }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
