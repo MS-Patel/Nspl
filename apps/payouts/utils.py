@@ -182,10 +182,35 @@ def map_transaction(transaction):
         transaction.distributor = distributor
         transaction.is_mapped = True
 
+def reprocess_brokerage_import(brokerage_import):
+    """
+    Retries mapping for unmapped transactions and recalculates payouts.
+    """
+    unmapped_transactions = BrokerageTransaction.objects.filter(
+        import_file=brokerage_import,
+        is_mapped=False
+    )
+
+    mapped_count = 0
+    for txn in unmapped_transactions:
+        # map_transaction modifies the object in-place
+        map_transaction(txn)
+        if txn.is_mapped:
+            txn.save()
+            mapped_count += 1
+
+    # Always recalculate payouts to reflect any changes
+    calculate_payouts(brokerage_import)
+
+    return mapped_count
+
 def calculate_payouts(brokerage_import):
     """
     Aggregates transactions and calculates final payout based on AUM tiers.
     """
+    # 0. Clear existing payouts for this import to avoid duplicates
+    Payout.objects.filter(brokerage_import=brokerage_import).delete()
+
     # 1. Identify all distributors involved in this import
     # (We only care about transactions that were successfully mapped)
     distributor_ids = BrokerageTransaction.objects.filter(
