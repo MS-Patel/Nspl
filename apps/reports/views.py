@@ -166,6 +166,7 @@ class MasterReportView(LoginRequiredMixin, TemplateView):
                 data.append({
                     'name': s.name,
                     'code': s.scheme_code,
+                    'rta_code': s.rta_scheme_code,
                     'isin': s.isin,
                     'category': s.category.name if s.category else '',
                     'amc': s.amc.name,

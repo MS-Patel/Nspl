@@ -21,6 +21,7 @@ class SchemeListView(LoginRequiredMixin, TemplateView):
                 'id': s.id,
                 'name': s.name,
                 'scheme_code': s.scheme_code,
+                'rta_code': s.rta_scheme_code,
                 'isin': s.isin,
                 'category': s.category.name if s.category else '',
                 'scheme_type': s.scheme_type or '',
