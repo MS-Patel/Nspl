@@ -30,7 +30,9 @@ class Scheme(models.Model):
     name = models.CharField(max_length=255)
     isin = models.CharField(max_length=20, db_index=True)
     scheme_code = models.CharField(max_length=50, unique=True, help_text="BSE Scheme Code")
+    unique_no = models.BigIntegerField(unique=True, null=True, blank=True, help_text="BSE Unique No")
     rta_scheme_code = models.CharField(max_length=50, blank=True, null=True)
+    amc_scheme_code = models.CharField(max_length=50, blank=True, null=True)
 
     # Classification
     scheme_type = models.CharField(max_length=50, blank=True, null=True, help_text="e.g. Open Ended")
@@ -38,14 +40,23 @@ class Scheme(models.Model):
 
     # Purchase Rules
     purchase_allowed = models.BooleanField(default=True)
+    purchase_transaction_mode = models.CharField(max_length=50, blank=True, null=True)
     min_purchase_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    additional_purchase_amount = models.DecimalField(max_digits=15, decimal_places=3, default=0)
     max_purchase_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     purchase_amount_multiplier = models.DecimalField(max_digits=15, decimal_places=2, default=1)
+    purchase_cutoff_time = models.TimeField(null=True, blank=True)
 
     # Redemption Rules
     redemption_allowed = models.BooleanField(default=True)
+    redemption_transaction_mode = models.CharField(max_length=50, blank=True, null=True)
     min_redemption_qty = models.DecimalField(max_digits=15, decimal_places=3, default=0)
+    redemption_qty_multiplier = models.DecimalField(max_digits=15, decimal_places=4, default=0)
+    max_redemption_qty = models.DecimalField(max_digits=15, decimal_places=3, default=0)
     min_redemption_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    max_redemption_amount = models.DecimalField(max_digits=15, decimal_places=2, default=0)
+    redemption_amount_multiple = models.DecimalField(max_digits=15, decimal_places=4, default=0)
+    redemption_cutoff_time = models.TimeField(null=True, blank=True)
 
     # Features
     is_sip_allowed = models.BooleanField(default=False)
@@ -61,6 +72,15 @@ class Scheme(models.Model):
     # Other
     face_value = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     settlement_type = models.CharField(max_length=20, blank=True, null=True)
+    rta_agent_code = models.CharField(max_length=50, null=True, blank=True)
+    amc_active_flag = models.BooleanField(default=True)
+    dividend_reinvestment_flag = models.BooleanField(default=False)
+    amc_ind = models.CharField(max_length=50, null=True, blank=True)
+    exit_load_flag = models.BooleanField(default=False)
+    exit_load = models.TextField(null=True, blank=True)
+    lock_in_period_flag = models.BooleanField(default=False)
+    lock_in_period = models.CharField(max_length=50, null=True, blank=True)
+    channel_partner_code = models.CharField(max_length=50, null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

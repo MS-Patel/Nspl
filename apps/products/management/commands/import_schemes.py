@@ -45,6 +45,9 @@ class Command(BaseCommand):
     def process_row(self, row):
         # 1. Get or Create AMC
         amc_code = row.get('AMC Code')
+        if not amc_code:
+             return
+
         # Simple name extraction from code for now, or use code as name if unknown
         amc_name = amc_code.replace('_MF', '').replace('_', ' ')
         amc, _ = AMC.objects.get_or_create(code=amc_code, defaults={'name': amc_name})
@@ -58,49 +61,81 @@ class Command(BaseCommand):
                 defaults={'name': cat_code}
             )
 
-        # 3. Parse Booleans
+        # 3. Helpers
         def parse_bool(val):
-            return val.strip().upper() == 'Y'
+            if not val: return False
+            val = val.strip().upper()
+            return val == 'Y' or val == '1'
 
-        # 4. Parse Dates
         def parse_date(val):
+            if not val: return None
             val = val.strip()
-            if not val:
-                return None
+            if not val: return None
             try:
                 # Format: Jul 19 2010
                 return datetime.strptime(val, '%b %d %Y').date()
             except ValueError:
                 return None
 
-        # 5. Parse Decimals (handle empty strings)
-        def parse_decimal(val):
+        def parse_time(val):
+            if not val: return None
             val = val.strip()
-            if not val:
-                return 0
+            if not val: return None
+            try:
+                # Format: 14:30:00
+                return datetime.strptime(val, '%H:%M:%S').time()
+            except ValueError:
+                return None
+
+        def parse_decimal(val):
+            if not val: return 0
+            val = val.strip()
+            if not val: return 0
             return val
 
-        # 6. Create/Update Scheme
+        def parse_int(val):
+            if not val: return None
+            val = val.strip()
+            if not val: return None
+            try:
+                return int(val)
+            except ValueError:
+                return None
+
+        # 4. Extract Data
+        unique_no = parse_int(row.get('Unique No'))
         scheme_code = row.get('Scheme Code')
-        isin = row.get('ISIN')
+
+        if not scheme_code:
+             return
 
         scheme_data = {
             'amc': amc,
             'category': category,
             'name': row.get('Scheme Name'),
-            'isin': isin,
+            'isin': row.get('ISIN') or '',
             'rta_scheme_code': row.get('RTA Scheme Code'),
+            'amc_scheme_code': row.get('AMC Scheme Code'),
             'scheme_type': row.get('Scheme Type'),
             'scheme_plan': row.get('Scheme Plan'),
 
             'purchase_allowed': parse_bool(row.get('Purchase Allowed')),
+            'purchase_transaction_mode': row.get('Purchase Transaction mode'),
             'min_purchase_amount': parse_decimal(row.get('Minimum Purchase Amount')),
+            'additional_purchase_amount': parse_decimal(row.get('Additional Purchase Amount')),
             'max_purchase_amount': parse_decimal(row.get('Maximum Purchase Amount')),
             'purchase_amount_multiplier': parse_decimal(row.get('Purchase Amount Multiplier')),
+            'purchase_cutoff_time': parse_time(row.get('Purchase Cutoff Time')),
 
             'redemption_allowed': parse_bool(row.get('Redemption Allowed')),
+            'redemption_transaction_mode': row.get('Redemption Transaction Mode'),
             'min_redemption_qty': parse_decimal(row.get('Minimum Redemption Qty')),
+            'redemption_qty_multiplier': parse_decimal(row.get('Redemption Qty Multiplier')),
+            'max_redemption_qty': parse_decimal(row.get('Maximum Redemption Qty')),
             'min_redemption_amount': parse_decimal(row.get('Redemption Amount - Minimum')),
+            'max_redemption_amount': parse_decimal(row.get('Redemption Amount – Maximum')),
+            'redemption_amount_multiple': parse_decimal(row.get('Redemption Amount Multiple')),
+            'redemption_cutoff_time': parse_time(row.get('Redemption Cut off Time')),
 
             'is_sip_allowed': parse_bool(row.get('SIP FLAG')),
             'is_stp_allowed': parse_bool(row.get('STP FLAG')),
@@ -113,9 +148,32 @@ class Command(BaseCommand):
 
             'face_value': parse_decimal(row.get('Face Value') or '0'),
             'settlement_type': row.get('SETTLEMENT TYPE'),
+
+            'unique_no': unique_no,
+            'rta_agent_code': row.get('RTA Agent Code'),
+            'amc_active_flag': parse_bool(row.get('AMC Active Flag')),
+            'dividend_reinvestment_flag': parse_bool(row.get('Dividend Reinvestment Flag')),
+            'amc_ind': row.get('AMC_IND'),
+            'exit_load_flag': parse_bool(row.get('Exit Load Flag')),
+            'exit_load': row.get('Exit Load'),
+            'lock_in_period_flag': parse_bool(row.get('Lock-in Period Flag')),
+            'lock_in_period': row.get('Lock-in Period'),
+            'channel_partner_code': row.get('Channel Partner Code'),
         }
 
-        Scheme.objects.update_or_create(
-            scheme_code=scheme_code,
-            defaults=scheme_data
-        )
+        # 5. Update or Create Logic
+        scheme = None
+        if unique_no:
+            scheme = Scheme.objects.filter(unique_no=unique_no).first()
+
+        if not scheme and scheme_code:
+            scheme = Scheme.objects.filter(scheme_code=scheme_code).first()
+
+        if scheme:
+            # Update existing
+            for key, value in scheme_data.items():
+                setattr(scheme, key, value)
+            scheme.save()
+        else:
+            # Create new
+            Scheme.objects.create(scheme_code=scheme_code, **scheme_data)
