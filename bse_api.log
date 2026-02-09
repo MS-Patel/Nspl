@@ -895,3 +895,997 @@
     },
     'Status': '100'
 }
+2026-02-09 11:27:34,251 - BSE REQUEST XML:
+<soap-env:Envelope xmlns:soap-env="http://www.w3.org/2003/05/soap-envelope">
+  <soap-env:Header xmlns:wsa="http://www.w3.org/2005/08/addressing">
+    <wsa:Action>http://bsestarmfdemo.bseindia.com/2016/01/IMFUploadService/getPassword</wsa:Action>
+    <wsa:MessageID>urn:uuid:e33714e5-1e4e-4755-a21f-5c18313a72b1</wsa:MessageID>
+    <wsa:To>https://bsestarmfdemo.bseindia.com/MFUploadService/MFUploadService.svc/Secure</wsa:To>
+  </soap-env:Header>
+  <soap-env:Body>
+    <ns0:getPassword xmlns:ns0="http://bsestarmfdemo.bseindia.com/2016/01/">
+      <ns0:UserId>2463702</ns0:UserId>
+      <ns0:MemberId>24637</ns0:MemberId>
+      <ns0:Password>********</ns0:Password>
+      <ns0:PassKey>********</ns0:PassKey>
+    </ns0:getPassword>
+  </soap-env:Body>
+</soap-env:Envelope>
+
+2026-02-09 11:27:34,251 - BSE REQUEST XML:
+<soap-env:Envelope xmlns:soap-env="http://www.w3.org/2003/05/soap-envelope">
+  <soap-env:Header xmlns:wsa="http://www.w3.org/2005/08/addressing">
+    <wsa:Action>http://bsestarmfdemo.bseindia.com/2016/01/IMFUploadService/getPassword</wsa:Action>
+    <wsa:MessageID>urn:uuid:f528db8c-e559-41c7-9a96-a6c0b3ff92e3</wsa:MessageID>
+    <wsa:To>https://bsestarmfdemo.bseindia.com/MFUploadService/MFUploadService.svc/Secure</wsa:To>
+  </soap-env:Header>
+  <soap-env:Body>
+    <ns0:getPassword xmlns:ns0="http://bsestarmfdemo.bseindia.com/2016/01/">
+      <ns0:UserId>2463702</ns0:UserId>
+      <ns0:MemberId>24637</ns0:MemberId>
+      <ns0:Password>********</ns0:Password>
+      <ns0:PassKey>********</ns0:PassKey>
+    </ns0:getPassword>
+  </soap-env:Body>
+</soap-env:Envelope>
+
+2026-02-09 11:27:34,251 - BSE REQUEST XML:
+<soap-env:Envelope xmlns:soap-env="http://www.w3.org/2003/05/soap-envelope">
+  <soap-env:Header xmlns:wsa="http://www.w3.org/2005/08/addressing">
+    <wsa:Action>http://bsestarmfdemo.bseindia.com/2016/01/IMFUploadService/getPassword</wsa:Action>
+    <wsa:MessageID>urn:uuid:af1bfcb2-d2f9-4f42-bf1a-f8b7218cd61a</wsa:MessageID>
+    <wsa:To>https://bsestarmfdemo.bseindia.com/MFUploadService/MFUploadService.svc/Secure</wsa:To>
+  </soap-env:Header>
+  <soap-env:Body>
+    <ns0:getPassword xmlns:ns0="http://bsestarmfdemo.bseindia.com/2016/01/">
+      <ns0:UserId>2463702</ns0:UserId>
+      <ns0:MemberId>24637</ns0:MemberId>
+      <ns0:Password>********</ns0:Password>
+      <ns0:PassKey>********</ns0:PassKey>
+    </ns0:getPassword>
+  </soap-env:Body>
+</soap-env:Envelope>
+
+2026-02-09 11:27:34,468 - BSE RESPONSE XML:
+<s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope" xmlns:a="http://www.w3.org/2005/08/addressing">
+  <s:Header>
+    <a:Action s:mustUnderstand="1">http://bsestarmfdemo.bseindia.com/2016/01/IMFUploadService/getPasswordResponse</a:Action>
+    <a:RelatesTo>urn:uuid:e33714e5-1e4e-4755-a21f-5c18313a72b1</a:RelatesTo>
+  </s:Header>
+  <s:Body>
+    <getPasswordResponse xmlns="http://bsestarmfdemo.bseindia.com/2016/01/">
+      <getPasswordResult>100|dm25bEOQ5jH6fKJQQx8C1OQqM/wM4YC1TPMSdP/35yNxKKWt2EW8NetJxbrPZxpT</getPasswordResult>
+    </getPasswordResponse>
+  </s:Body>
+</s:Envelope>
+
+2026-02-09 11:27:34,469 - PAYMENT STATUS Request: Flag=11, Param=EEFPP8024C|0000001769760820385|BSEMF
+2026-02-09 11:27:34,469 - BSE REQUEST XML:
+<soap-env:Envelope xmlns:soap-env="http://www.w3.org/2003/05/soap-envelope">
+  <soap-env:Header xmlns:wsa="http://www.w3.org/2005/08/addressing">
+    <wsa:Action>http://bsestarmfdemo.bseindia.com/2016/01/IMFUploadService/MFAPI</wsa:Action>
+    <wsa:MessageID>urn:uuid:1d1397ef-a4bd-43bc-a11d-1fd1949cb3ba</wsa:MessageID>
+    <wsa:To>https://bsestarmfdemo.bseindia.com/MFUploadService/MFUploadService.svc/Secure</wsa:To>
+  </soap-env:Header>
+  <soap-env:Body>
+    <ns0:MFAPI xmlns:ns0="http://bsestarmfdemo.bseindia.com/2016/01/">
+      <ns0:Flag>11</ns0:Flag>
+      <ns0:UserId>2463702</ns0:UserId>
+      <ns0:EncryptedPassword>********</ns0:EncryptedPassword>
+      <ns0:param>EEFPP8024C|0000001769760820385|BSEMF</ns0:param>
+    </ns0:MFAPI>
+  </soap-env:Body>
+</soap-env:Envelope>
+
+2026-02-09 11:27:34,486 - BSE RESPONSE XML:
+<s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope" xmlns:a="http://www.w3.org/2005/08/addressing">
+  <s:Header>
+    <a:Action s:mustUnderstand="1">http://bsestarmfdemo.bseindia.com/2016/01/IMFUploadService/getPasswordResponse</a:Action>
+    <a:RelatesTo>urn:uuid:af1bfcb2-d2f9-4f42-bf1a-f8b7218cd61a</a:RelatesTo>
+  </s:Header>
+  <s:Body>
+    <getPasswordResponse xmlns="http://bsestarmfdemo.bseindia.com/2016/01/">
+      <getPasswordResult>100|dm25bEOQ5jH6fKJQQx8C1OQqM/wM4YC1TPMSdP/35yNxKKWt2EW8NetJxbrPZxpT</getPasswordResult>
+    </getPasswordResponse>
+  </s:Body>
+</s:Envelope>
+
+2026-02-09 11:27:34,487 - PAYMENT STATUS Request: Flag=11, Param=EEFPP8024C|0000001769760957561|BSEMF
+2026-02-09 11:27:34,488 - BSE REQUEST XML:
+<soap-env:Envelope xmlns:soap-env="http://www.w3.org/2003/05/soap-envelope">
+  <soap-env:Header xmlns:wsa="http://www.w3.org/2005/08/addressing">
+    <wsa:Action>http://bsestarmfdemo.bseindia.com/2016/01/IMFUploadService/MFAPI</wsa:Action>
+    <wsa:MessageID>urn:uuid:7df41b3f-e619-419f-8f12-417d6f799058</wsa:MessageID>
+    <wsa:To>https://bsestarmfdemo.bseindia.com/MFUploadService/MFUploadService.svc/Secure</wsa:To>
+  </soap-env:Header>
+  <soap-env:Body>
+    <ns0:MFAPI xmlns:ns0="http://bsestarmfdemo.bseindia.com/2016/01/">
+      <ns0:Flag>11</ns0:Flag>
+      <ns0:UserId>2463702</ns0:UserId>
+      <ns0:EncryptedPassword>********</ns0:EncryptedPassword>
+      <ns0:param>EEFPP8024C|0000001769760957561|BSEMF</ns0:param>
+    </ns0:MFAPI>
+  </soap-env:Body>
+</soap-env:Envelope>
+
+2026-02-09 11:27:34,500 - BSE RESPONSE XML:
+<s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope" xmlns:a="http://www.w3.org/2005/08/addressing">
+  <s:Header>
+    <a:Action s:mustUnderstand="1">http://bsestarmfdemo.bseindia.com/2016/01/IMFUploadService/getPasswordResponse</a:Action>
+    <a:RelatesTo>urn:uuid:f528db8c-e559-41c7-9a96-a6c0b3ff92e3</a:RelatesTo>
+  </s:Header>
+  <s:Body>
+    <getPasswordResponse xmlns="http://bsestarmfdemo.bseindia.com/2016/01/">
+      <getPasswordResult>100|dm25bEOQ5jH6fKJQQx8C1OQqM/wM4YC1TPMSdP/35yNxKKWt2EW8NetJxbrPZxpT</getPasswordResult>
+    </getPasswordResponse>
+  </s:Body>
+</s:Envelope>
+
+2026-02-09 11:27:34,501 - PAYMENT STATUS Request: Flag=11, Param=EEFPP8024C|0000001769760770692|BSEMF
+2026-02-09 11:27:34,502 - BSE REQUEST XML:
+<soap-env:Envelope xmlns:soap-env="http://www.w3.org/2003/05/soap-envelope">
+  <soap-env:Header xmlns:wsa="http://www.w3.org/2005/08/addressing">
+    <wsa:Action>http://bsestarmfdemo.bseindia.com/2016/01/IMFUploadService/MFAPI</wsa:Action>
+    <wsa:MessageID>urn:uuid:b4ec9fde-716e-449b-8737-33019179af5c</wsa:MessageID>
+    <wsa:To>https://bsestarmfdemo.bseindia.com/MFUploadService/MFUploadService.svc/Secure</wsa:To>
+  </soap-env:Header>
+  <soap-env:Body>
+    <ns0:MFAPI xmlns:ns0="http://bsestarmfdemo.bseindia.com/2016/01/">
+      <ns0:Flag>11</ns0:Flag>
+      <ns0:UserId>2463702</ns0:UserId>
+      <ns0:EncryptedPassword>********</ns0:EncryptedPassword>
+      <ns0:param>EEFPP8024C|0000001769760770692|BSEMF</ns0:param>
+    </ns0:MFAPI>
+  </soap-env:Body>
+</soap-env:Envelope>
+
+2026-02-09 11:27:34,600 - BSE RESPONSE XML:
+<s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope" xmlns:a="http://www.w3.org/2005/08/addressing">
+  <s:Header>
+    <a:Action s:mustUnderstand="1">http://bsestarmfdemo.bseindia.com/2016/01/IMFUploadService/MFAPIResponse</a:Action>
+    <a:RelatesTo>urn:uuid:1d1397ef-a4bd-43bc-a11d-1fd1949cb3ba</a:RelatesTo>
+  </s:Header>
+  <s:Body>
+    <MFAPIResponse xmlns="http://bsestarmfdemo.bseindia.com/2016/01/">
+      <MFAPIResult>101|INVALID ORDER NUMBER</MFAPIResult>
+    </MFAPIResponse>
+  </s:Body>
+</s:Envelope>
+
+2026-02-09 11:27:34,601 - PAYMENT STATUS: 0000001769760820385 | RESPONSE: 101|INVALID ORDER NUMBER
+2026-02-09 11:27:34,630 - BSE RESPONSE XML:
+<s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope" xmlns:a="http://www.w3.org/2005/08/addressing">
+  <s:Header>
+    <a:Action s:mustUnderstand="1">http://bsestarmfdemo.bseindia.com/2016/01/IMFUploadService/MFAPIResponse</a:Action>
+    <a:RelatesTo>urn:uuid:7df41b3f-e619-419f-8f12-417d6f799058</a:RelatesTo>
+  </s:Header>
+  <s:Body>
+    <MFAPIResponse xmlns="http://bsestarmfdemo.bseindia.com/2016/01/">
+      <MFAPIResult>101|INVALID ORDER NUMBER</MFAPIResult>
+    </MFAPIResponse>
+  </s:Body>
+</s:Envelope>
+
+2026-02-09 11:27:34,630 - PAYMENT STATUS: 0000001769760957561 | RESPONSE: 101|INVALID ORDER NUMBER
+2026-02-09 11:27:34,656 - BSE RESPONSE XML:
+<s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope" xmlns:a="http://www.w3.org/2005/08/addressing">
+  <s:Header>
+    <a:Action s:mustUnderstand="1">http://bsestarmfdemo.bseindia.com/2016/01/IMFUploadService/MFAPIResponse</a:Action>
+    <a:RelatesTo>urn:uuid:b4ec9fde-716e-449b-8737-33019179af5c</a:RelatesTo>
+  </s:Header>
+  <s:Body>
+    <MFAPIResponse xmlns="http://bsestarmfdemo.bseindia.com/2016/01/">
+      <MFAPIResult>101|INVALID ORDER NUMBER</MFAPIResult>
+    </MFAPIResponse>
+  </s:Body>
+</s:Envelope>
+
+2026-02-09 11:27:34,657 - PAYMENT STATUS: 0000001769760770692 | RESPONSE: 101|INVALID ORDER NUMBER
+2026-02-09 11:27:34,757 - ORDER STATUS Request: {'MemberCode': '24637', 'UserId': '2463702', 'Password': '********', 'FromDate': '09/02/2026', 'ToDate': '09/02/2026', 'ClientCode': 'EEFPP8024C', 'OrderType': 'All', 'SubOrderType': 'All', 'OrderStatus': 'All', 'SettType': 'ALL', 'OrderNo': '0000001769760820385', 'TransType': 'P'}
+2026-02-09 11:27:34,757 - BSE REQUEST XML:
+<soap-env:Envelope xmlns:soap-env="http://www.w3.org/2003/05/soap-envelope">
+  <soap-env:Header xmlns:wsa="http://www.w3.org/2005/08/addressing">
+    <wsa:Action>http://www.bsestarmf.in/2016/01/IStarMFWebService/OrderStatus</wsa:Action>
+    <wsa:MessageID>urn:uuid:ea60d731-430f-4c83-8e80-5aabf78e70e3</wsa:MessageID>
+    <wsa:To>https://bsestarmfdemo.bseindia.com/StarMFWebService/StarMFWebService.svc/Secure</wsa:To>
+  </soap-env:Header>
+  <soap-env:Body>
+    <ns0:OrderStatus xmlns:ns0="http://www.bsestarmf.in/2016/01/">
+      <ns0:Param>
+        <ns1:ClientCode xmlns:ns1="http://schemas.datacontract.org/2004/07/StarMFWebService">EEFPP8024C</ns1:ClientCode>
+        <ns2:FromDate xmlns:ns2="http://schemas.datacontract.org/2004/07/StarMFWebService">09/02/2026</ns2:FromDate>
+        <ns3:MemberCode xmlns:ns3="http://schemas.datacontract.org/2004/07/StarMFWebService">24637</ns3:MemberCode>
+        <ns4:OrderNo xmlns:ns4="http://schemas.datacontract.org/2004/07/StarMFWebService">0000001769760820385</ns4:OrderNo>
+        <ns5:OrderStatus xmlns:ns5="http://schemas.datacontract.org/2004/07/StarMFWebService">All</ns5:OrderStatus>
+        <ns6:OrderType xmlns:ns6="http://schemas.datacontract.org/2004/07/StarMFWebService">All</ns6:OrderType>
+        <ns7:Password xmlns:ns7="http://schemas.datacontract.org/2004/07/StarMFWebService">Abc@1234</ns7:Password>
+        <ns8:SettType xmlns:ns8="http://schemas.datacontract.org/2004/07/StarMFWebService">ALL</ns8:SettType>
+        <ns9:SubOrderType xmlns:ns9="http://schemas.datacontract.org/2004/07/StarMFWebService">All</ns9:SubOrderType>
+        <ns10:ToDate xmlns:ns10="http://schemas.datacontract.org/2004/07/StarMFWebService">09/02/2026</ns10:ToDate>
+        <ns11:TransType xmlns:ns11="http://schemas.datacontract.org/2004/07/StarMFWebService">P</ns11:TransType>
+        <ns12:UserId xmlns:ns12="http://schemas.datacontract.org/2004/07/StarMFWebService">2463702</ns12:UserId>
+      </ns0:Param>
+    </ns0:OrderStatus>
+  </soap-env:Body>
+</soap-env:Envelope>
+
+2026-02-09 11:27:35,058 - BSE RESPONSE XML:
+<s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope" xmlns:a="http://www.w3.org/2005/08/addressing">
+  <s:Header>
+    <a:Action s:mustUnderstand="1">http://www.bsestarmf.in/2016/01/IStarMFWebService/OrderStatusResponse</a:Action>
+    <a:RelatesTo>urn:uuid:ea60d731-430f-4c83-8e80-5aabf78e70e3</a:RelatesTo>
+  </s:Header>
+  <s:Body>
+    <OrderStatusResponse xmlns="http://www.bsestarmf.in/2016/01/">
+      <OrderStatusResult xmlns:b="http://schemas.datacontract.org/2004/07/StarMFWebService" xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+        <b:Message>Order Status Details Not Found</b:Message>
+        <b:OrderDetails i:nil="true"/>
+        <b:Status>101</b:Status>
+      </OrderStatusResult>
+    </OrderStatusResponse>
+  </s:Body>
+</s:Envelope>
+
+2026-02-09 11:27:35,060 - ORDER STATUS: 0000001769760820385 | RESPONSE: {
+    'Message': 'Order Status Details Not Found',
+    'OrderDetails': {
+        'OrderDetails': []
+    },
+    'Status': '101'
+}
+2026-02-09 11:27:35,060 - ALLOTMENT STATEMENT Request: {'MemberCode': '24637', 'UserId': '2463702', 'Password': '********', 'FromDate': '09/02/2026', 'ToDate': '09/02/2026', 'ClientCode': 'EEFPP8024C', 'OrderType': 'All', 'SubOrderType': 'All', 'OrderStatus': 'All', 'SettType': 'ALL', 'OrderNo': '0000001769760820385', 'Filler1': ''}
+2026-02-09 11:27:35,061 - BSE REQUEST XML:
+<soap-env:Envelope xmlns:soap-env="http://www.w3.org/2003/05/soap-envelope">
+  <soap-env:Header xmlns:wsa="http://www.w3.org/2005/08/addressing">
+    <wsa:Action>http://www.bsestarmf.in/2016/01/IStarMFWebService/AllotmentStatement</wsa:Action>
+    <wsa:MessageID>urn:uuid:d8ad6e8e-477a-408b-af9c-ab9d1a2595ce</wsa:MessageID>
+    <wsa:To>https://bsestarmfdemo.bseindia.com/StarMFWebService/StarMFWebService.svc/Secure</wsa:To>
+  </soap-env:Header>
+  <soap-env:Body>
+    <ns0:AllotmentStatement xmlns:ns0="http://www.bsestarmf.in/2016/01/">
+      <ns0:Param>
+        <ns1:ClientCode xmlns:ns1="http://schemas.datacontract.org/2004/07/StarMFWebService">EEFPP8024C</ns1:ClientCode>
+        <ns2:Filler1 xmlns:ns2="http://schemas.datacontract.org/2004/07/StarMFWebService"></ns2:Filler1>
+        <ns3:FromDate xmlns:ns3="http://schemas.datacontract.org/2004/07/StarMFWebService">09/02/2026</ns3:FromDate>
+        <ns4:MemberCode xmlns:ns4="http://schemas.datacontract.org/2004/07/StarMFWebService">24637</ns4:MemberCode>
+        <ns5:OrderNo xmlns:ns5="http://schemas.datacontract.org/2004/07/StarMFWebService">0000001769760820385</ns5:OrderNo>
+        <ns6:OrderStatus xmlns:ns6="http://schemas.datacontract.org/2004/07/StarMFWebService">All</ns6:OrderStatus>
+        <ns7:OrderType xmlns:ns7="http://schemas.datacontract.org/2004/07/StarMFWebService">All</ns7:OrderType>
+        <ns8:Password xmlns:ns8="http://schemas.datacontract.org/2004/07/StarMFWebService">Abc@1234</ns8:Password>
+        <ns9:SettType xmlns:ns9="http://schemas.datacontract.org/2004/07/StarMFWebService">ALL</ns9:SettType>
+        <ns10:SubOrderType xmlns:ns10="http://schemas.datacontract.org/2004/07/StarMFWebService">All</ns10:SubOrderType>
+        <ns11:ToDate xmlns:ns11="http://schemas.datacontract.org/2004/07/StarMFWebService">09/02/2026</ns11:ToDate>
+        <ns12:UserId xmlns:ns12="http://schemas.datacontract.org/2004/07/StarMFWebService">2463702</ns12:UserId>
+      </ns0:Param>
+    </ns0:AllotmentStatement>
+  </soap-env:Body>
+</soap-env:Envelope>
+
+2026-02-09 11:27:35,147 - BSE RESPONSE XML:
+<s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope" xmlns:a="http://www.w3.org/2005/08/addressing">
+  <s:Header>
+    <a:Action s:mustUnderstand="1">http://www.bsestarmf.in/2016/01/IStarMFWebService/AllotmentStatementResponse</a:Action>
+    <a:RelatesTo>urn:uuid:d8ad6e8e-477a-408b-af9c-ab9d1a2595ce</a:RelatesTo>
+  </s:Header>
+  <s:Body>
+    <AllotmentStatementResponse xmlns="http://www.bsestarmf.in/2016/01/">
+      <AllotmentStatementResult xmlns:b="http://schemas.datacontract.org/2004/07/StarMFWebService" xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+        <b:AllotmentDetails i:nil="true"/>
+        <b:Message>FAILED: ORDER DETAILS NOT FOUND</b:Message>
+        <b:Status>101</b:Status>
+      </AllotmentStatementResult>
+    </AllotmentStatementResponse>
+  </s:Body>
+</s:Envelope>
+
+2026-02-09 11:27:35,148 - ALLOTMENT STATEMENT: 0000001769760820385 | RESPONSE: {
+    'AllotmentDetails': {
+        'AllotmentDetails': []
+    },
+    'Message': 'FAILED: ORDER DETAILS NOT FOUND',
+    'Status': '101'
+}
+2026-02-09 11:27:35,222 - ORDER STATUS Request: {'MemberCode': '24637', 'UserId': '2463702', 'Password': '********', 'FromDate': '09/02/2026', 'ToDate': '09/02/2026', 'ClientCode': 'EEFPP8024C', 'OrderType': 'All', 'SubOrderType': 'All', 'OrderStatus': 'All', 'SettType': 'ALL', 'OrderNo': '0000001769760957561', 'TransType': 'P'}
+2026-02-09 11:27:35,222 - BSE REQUEST XML:
+<soap-env:Envelope xmlns:soap-env="http://www.w3.org/2003/05/soap-envelope">
+  <soap-env:Header xmlns:wsa="http://www.w3.org/2005/08/addressing">
+    <wsa:Action>http://www.bsestarmf.in/2016/01/IStarMFWebService/OrderStatus</wsa:Action>
+    <wsa:MessageID>urn:uuid:45d9ea04-1365-4619-9cec-9d78b04e8b46</wsa:MessageID>
+    <wsa:To>https://bsestarmfdemo.bseindia.com/StarMFWebService/StarMFWebService.svc/Secure</wsa:To>
+  </soap-env:Header>
+  <soap-env:Body>
+    <ns0:OrderStatus xmlns:ns0="http://www.bsestarmf.in/2016/01/">
+      <ns0:Param>
+        <ns1:ClientCode xmlns:ns1="http://schemas.datacontract.org/2004/07/StarMFWebService">EEFPP8024C</ns1:ClientCode>
+        <ns2:FromDate xmlns:ns2="http://schemas.datacontract.org/2004/07/StarMFWebService">09/02/2026</ns2:FromDate>
+        <ns3:MemberCode xmlns:ns3="http://schemas.datacontract.org/2004/07/StarMFWebService">24637</ns3:MemberCode>
+        <ns4:OrderNo xmlns:ns4="http://schemas.datacontract.org/2004/07/StarMFWebService">0000001769760957561</ns4:OrderNo>
+        <ns5:OrderStatus xmlns:ns5="http://schemas.datacontract.org/2004/07/StarMFWebService">All</ns5:OrderStatus>
+        <ns6:OrderType xmlns:ns6="http://schemas.datacontract.org/2004/07/StarMFWebService">All</ns6:OrderType>
+        <ns7:Password xmlns:ns7="http://schemas.datacontract.org/2004/07/StarMFWebService">Abc@1234</ns7:Password>
+        <ns8:SettType xmlns:ns8="http://schemas.datacontract.org/2004/07/StarMFWebService">ALL</ns8:SettType>
+        <ns9:SubOrderType xmlns:ns9="http://schemas.datacontract.org/2004/07/StarMFWebService">All</ns9:SubOrderType>
+        <ns10:ToDate xmlns:ns10="http://schemas.datacontract.org/2004/07/StarMFWebService">09/02/2026</ns10:ToDate>
+        <ns11:TransType xmlns:ns11="http://schemas.datacontract.org/2004/07/StarMFWebService">P</ns11:TransType>
+        <ns12:UserId xmlns:ns12="http://schemas.datacontract.org/2004/07/StarMFWebService">2463702</ns12:UserId>
+      </ns0:Param>
+    </ns0:OrderStatus>
+  </soap-env:Body>
+</soap-env:Envelope>
+
+2026-02-09 11:27:35,287 - ORDER STATUS Request: {'MemberCode': '24637', 'UserId': '2463702', 'Password': '********', 'FromDate': '09/02/2026', 'ToDate': '09/02/2026', 'ClientCode': 'EEFPP8024C', 'OrderType': 'All', 'SubOrderType': 'All', 'OrderStatus': 'All', 'SettType': 'ALL', 'OrderNo': '0000001769760770692', 'TransType': 'P'}
+2026-02-09 11:27:35,288 - BSE REQUEST XML:
+<soap-env:Envelope xmlns:soap-env="http://www.w3.org/2003/05/soap-envelope">
+  <soap-env:Header xmlns:wsa="http://www.w3.org/2005/08/addressing">
+    <wsa:Action>http://www.bsestarmf.in/2016/01/IStarMFWebService/OrderStatus</wsa:Action>
+    <wsa:MessageID>urn:uuid:89a13fd6-72ea-485f-ad6b-e9da3bca7ed9</wsa:MessageID>
+    <wsa:To>https://bsestarmfdemo.bseindia.com/StarMFWebService/StarMFWebService.svc/Secure</wsa:To>
+  </soap-env:Header>
+  <soap-env:Body>
+    <ns0:OrderStatus xmlns:ns0="http://www.bsestarmf.in/2016/01/">
+      <ns0:Param>
+        <ns1:ClientCode xmlns:ns1="http://schemas.datacontract.org/2004/07/StarMFWebService">EEFPP8024C</ns1:ClientCode>
+        <ns2:FromDate xmlns:ns2="http://schemas.datacontract.org/2004/07/StarMFWebService">09/02/2026</ns2:FromDate>
+        <ns3:MemberCode xmlns:ns3="http://schemas.datacontract.org/2004/07/StarMFWebService">24637</ns3:MemberCode>
+        <ns4:OrderNo xmlns:ns4="http://schemas.datacontract.org/2004/07/StarMFWebService">0000001769760770692</ns4:OrderNo>
+        <ns5:OrderStatus xmlns:ns5="http://schemas.datacontract.org/2004/07/StarMFWebService">All</ns5:OrderStatus>
+        <ns6:OrderType xmlns:ns6="http://schemas.datacontract.org/2004/07/StarMFWebService">All</ns6:OrderType>
+        <ns7:Password xmlns:ns7="http://schemas.datacontract.org/2004/07/StarMFWebService">Abc@1234</ns7:Password>
+        <ns8:SettType xmlns:ns8="http://schemas.datacontract.org/2004/07/StarMFWebService">ALL</ns8:SettType>
+        <ns9:SubOrderType xmlns:ns9="http://schemas.datacontract.org/2004/07/StarMFWebService">All</ns9:SubOrderType>
+        <ns10:ToDate xmlns:ns10="http://schemas.datacontract.org/2004/07/StarMFWebService">09/02/2026</ns10:ToDate>
+        <ns11:TransType xmlns:ns11="http://schemas.datacontract.org/2004/07/StarMFWebService">P</ns11:TransType>
+        <ns12:UserId xmlns:ns12="http://schemas.datacontract.org/2004/07/StarMFWebService">2463702</ns12:UserId>
+      </ns0:Param>
+    </ns0:OrderStatus>
+  </soap-env:Body>
+</soap-env:Envelope>
+
+2026-02-09 11:27:35,375 - BSE RESPONSE XML:
+<s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope" xmlns:a="http://www.w3.org/2005/08/addressing">
+  <s:Header>
+    <a:Action s:mustUnderstand="1">http://www.bsestarmf.in/2016/01/IStarMFWebService/OrderStatusResponse</a:Action>
+    <a:RelatesTo>urn:uuid:45d9ea04-1365-4619-9cec-9d78b04e8b46</a:RelatesTo>
+  </s:Header>
+  <s:Body>
+    <OrderStatusResponse xmlns="http://www.bsestarmf.in/2016/01/">
+      <OrderStatusResult xmlns:b="http://schemas.datacontract.org/2004/07/StarMFWebService" xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+        <b:Message>Order Status Details Not Found</b:Message>
+        <b:OrderDetails i:nil="true"/>
+        <b:Status>101</b:Status>
+      </OrderStatusResult>
+    </OrderStatusResponse>
+  </s:Body>
+</s:Envelope>
+
+2026-02-09 11:27:35,376 - ORDER STATUS: 0000001769760957561 | RESPONSE: {
+    'Message': 'Order Status Details Not Found',
+    'OrderDetails': {
+        'OrderDetails': []
+    },
+    'Status': '101'
+}
+2026-02-09 11:27:35,376 - ALLOTMENT STATEMENT Request: {'MemberCode': '24637', 'UserId': '2463702', 'Password': '********', 'FromDate': '09/02/2026', 'ToDate': '09/02/2026', 'ClientCode': 'EEFPP8024C', 'OrderType': 'All', 'SubOrderType': 'All', 'OrderStatus': 'All', 'SettType': 'ALL', 'OrderNo': '0000001769760957561', 'Filler1': ''}
+2026-02-09 11:27:35,376 - BSE REQUEST XML:
+<soap-env:Envelope xmlns:soap-env="http://www.w3.org/2003/05/soap-envelope">
+  <soap-env:Header xmlns:wsa="http://www.w3.org/2005/08/addressing">
+    <wsa:Action>http://www.bsestarmf.in/2016/01/IStarMFWebService/AllotmentStatement</wsa:Action>
+    <wsa:MessageID>urn:uuid:12812648-311f-44a0-aa7a-3cb413ee1c76</wsa:MessageID>
+    <wsa:To>https://bsestarmfdemo.bseindia.com/StarMFWebService/StarMFWebService.svc/Secure</wsa:To>
+  </soap-env:Header>
+  <soap-env:Body>
+    <ns0:AllotmentStatement xmlns:ns0="http://www.bsestarmf.in/2016/01/">
+      <ns0:Param>
+        <ns1:ClientCode xmlns:ns1="http://schemas.datacontract.org/2004/07/StarMFWebService">EEFPP8024C</ns1:ClientCode>
+        <ns2:Filler1 xmlns:ns2="http://schemas.datacontract.org/2004/07/StarMFWebService"></ns2:Filler1>
+        <ns3:FromDate xmlns:ns3="http://schemas.datacontract.org/2004/07/StarMFWebService">09/02/2026</ns3:FromDate>
+        <ns4:MemberCode xmlns:ns4="http://schemas.datacontract.org/2004/07/StarMFWebService">24637</ns4:MemberCode>
+        <ns5:OrderNo xmlns:ns5="http://schemas.datacontract.org/2004/07/StarMFWebService">0000001769760957561</ns5:OrderNo>
+        <ns6:OrderStatus xmlns:ns6="http://schemas.datacontract.org/2004/07/StarMFWebService">All</ns6:OrderStatus>
+        <ns7:OrderType xmlns:ns7="http://schemas.datacontract.org/2004/07/StarMFWebService">All</ns7:OrderType>
+        <ns8:Password xmlns:ns8="http://schemas.datacontract.org/2004/07/StarMFWebService">Abc@1234</ns8:Password>
+        <ns9:SettType xmlns:ns9="http://schemas.datacontract.org/2004/07/StarMFWebService">ALL</ns9:SettType>
+        <ns10:SubOrderType xmlns:ns10="http://schemas.datacontract.org/2004/07/StarMFWebService">All</ns10:SubOrderType>
+        <ns11:ToDate xmlns:ns11="http://schemas.datacontract.org/2004/07/StarMFWebService">09/02/2026</ns11:ToDate>
+        <ns12:UserId xmlns:ns12="http://schemas.datacontract.org/2004/07/StarMFWebService">2463702</ns12:UserId>
+      </ns0:Param>
+    </ns0:AllotmentStatement>
+  </soap-env:Body>
+</soap-env:Envelope>
+
+2026-02-09 11:27:35,448 - BSE RESPONSE XML:
+<s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope" xmlns:a="http://www.w3.org/2005/08/addressing">
+  <s:Header>
+    <a:Action s:mustUnderstand="1">http://www.bsestarmf.in/2016/01/IStarMFWebService/OrderStatusResponse</a:Action>
+    <a:RelatesTo>urn:uuid:89a13fd6-72ea-485f-ad6b-e9da3bca7ed9</a:RelatesTo>
+  </s:Header>
+  <s:Body>
+    <OrderStatusResponse xmlns="http://www.bsestarmf.in/2016/01/">
+      <OrderStatusResult xmlns:b="http://schemas.datacontract.org/2004/07/StarMFWebService" xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+        <b:Message>Order Status Details Not Found</b:Message>
+        <b:OrderDetails i:nil="true"/>
+        <b:Status>101</b:Status>
+      </OrderStatusResult>
+    </OrderStatusResponse>
+  </s:Body>
+</s:Envelope>
+
+2026-02-09 11:27:35,448 - ORDER STATUS: 0000001769760770692 | RESPONSE: {
+    'Message': 'Order Status Details Not Found',
+    'OrderDetails': {
+        'OrderDetails': []
+    },
+    'Status': '101'
+}
+2026-02-09 11:27:35,448 - ALLOTMENT STATEMENT Request: {'MemberCode': '24637', 'UserId': '2463702', 'Password': '********', 'FromDate': '09/02/2026', 'ToDate': '09/02/2026', 'ClientCode': 'EEFPP8024C', 'OrderType': 'All', 'SubOrderType': 'All', 'OrderStatus': 'All', 'SettType': 'ALL', 'OrderNo': '0000001769760770692', 'Filler1': ''}
+2026-02-09 11:27:35,449 - BSE REQUEST XML:
+<soap-env:Envelope xmlns:soap-env="http://www.w3.org/2003/05/soap-envelope">
+  <soap-env:Header xmlns:wsa="http://www.w3.org/2005/08/addressing">
+    <wsa:Action>http://www.bsestarmf.in/2016/01/IStarMFWebService/AllotmentStatement</wsa:Action>
+    <wsa:MessageID>urn:uuid:efdb53a7-7e9a-4e6b-b666-d1342eda1526</wsa:MessageID>
+    <wsa:To>https://bsestarmfdemo.bseindia.com/StarMFWebService/StarMFWebService.svc/Secure</wsa:To>
+  </soap-env:Header>
+  <soap-env:Body>
+    <ns0:AllotmentStatement xmlns:ns0="http://www.bsestarmf.in/2016/01/">
+      <ns0:Param>
+        <ns1:ClientCode xmlns:ns1="http://schemas.datacontract.org/2004/07/StarMFWebService">EEFPP8024C</ns1:ClientCode>
+        <ns2:Filler1 xmlns:ns2="http://schemas.datacontract.org/2004/07/StarMFWebService"></ns2:Filler1>
+        <ns3:FromDate xmlns:ns3="http://schemas.datacontract.org/2004/07/StarMFWebService">09/02/2026</ns3:FromDate>
+        <ns4:MemberCode xmlns:ns4="http://schemas.datacontract.org/2004/07/StarMFWebService">24637</ns4:MemberCode>
+        <ns5:OrderNo xmlns:ns5="http://schemas.datacontract.org/2004/07/StarMFWebService">0000001769760770692</ns5:OrderNo>
+        <ns6:OrderStatus xmlns:ns6="http://schemas.datacontract.org/2004/07/StarMFWebService">All</ns6:OrderStatus>
+        <ns7:OrderType xmlns:ns7="http://schemas.datacontract.org/2004/07/StarMFWebService">All</ns7:OrderType>
+        <ns8:Password xmlns:ns8="http://schemas.datacontract.org/2004/07/StarMFWebService">Abc@1234</ns8:Password>
+        <ns9:SettType xmlns:ns9="http://schemas.datacontract.org/2004/07/StarMFWebService">ALL</ns9:SettType>
+        <ns10:SubOrderType xmlns:ns10="http://schemas.datacontract.org/2004/07/StarMFWebService">All</ns10:SubOrderType>
+        <ns11:ToDate xmlns:ns11="http://schemas.datacontract.org/2004/07/StarMFWebService">09/02/2026</ns11:ToDate>
+        <ns12:UserId xmlns:ns12="http://schemas.datacontract.org/2004/07/StarMFWebService">2463702</ns12:UserId>
+      </ns0:Param>
+    </ns0:AllotmentStatement>
+  </soap-env:Body>
+</soap-env:Envelope>
+
+2026-02-09 11:27:35,490 - BSE RESPONSE XML:
+<s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope" xmlns:a="http://www.w3.org/2005/08/addressing">
+  <s:Header>
+    <a:Action s:mustUnderstand="1">http://www.bsestarmf.in/2016/01/IStarMFWebService/AllotmentStatementResponse</a:Action>
+    <a:RelatesTo>urn:uuid:12812648-311f-44a0-aa7a-3cb413ee1c76</a:RelatesTo>
+  </s:Header>
+  <s:Body>
+    <AllotmentStatementResponse xmlns="http://www.bsestarmf.in/2016/01/">
+      <AllotmentStatementResult xmlns:b="http://schemas.datacontract.org/2004/07/StarMFWebService" xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+        <b:AllotmentDetails i:nil="true"/>
+        <b:Message>FAILED: ORDER DETAILS NOT FOUND</b:Message>
+        <b:Status>101</b:Status>
+      </AllotmentStatementResult>
+    </AllotmentStatementResponse>
+  </s:Body>
+</s:Envelope>
+
+2026-02-09 11:27:35,491 - ALLOTMENT STATEMENT: 0000001769760957561 | RESPONSE: {
+    'AllotmentDetails': {
+        'AllotmentDetails': []
+    },
+    'Message': 'FAILED: ORDER DETAILS NOT FOUND',
+    'Status': '101'
+}
+2026-02-09 11:27:35,610 - BSE RESPONSE XML:
+<s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope" xmlns:a="http://www.w3.org/2005/08/addressing">
+  <s:Header>
+    <a:Action s:mustUnderstand="1">http://www.bsestarmf.in/2016/01/IStarMFWebService/AllotmentStatementResponse</a:Action>
+    <a:RelatesTo>urn:uuid:efdb53a7-7e9a-4e6b-b666-d1342eda1526</a:RelatesTo>
+  </s:Header>
+  <s:Body>
+    <AllotmentStatementResponse xmlns="http://www.bsestarmf.in/2016/01/">
+      <AllotmentStatementResult xmlns:b="http://schemas.datacontract.org/2004/07/StarMFWebService" xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+        <b:AllotmentDetails i:nil="true"/>
+        <b:Message>FAILED: ORDER DETAILS NOT FOUND</b:Message>
+        <b:Status>101</b:Status>
+      </AllotmentStatementResult>
+    </AllotmentStatementResponse>
+  </s:Body>
+</s:Envelope>
+
+2026-02-09 11:27:35,611 - ALLOTMENT STATEMENT: 0000001769760770692 | RESPONSE: {
+    'AllotmentDetails': {
+        'AllotmentDetails': []
+    },
+    'Message': 'FAILED: ORDER DETAILS NOT FOUND',
+    'Status': '101'
+}
+2026-02-09 16:26:10,144 - BSE REQUEST XML:
+<soap-env:Envelope xmlns:soap-env="http://www.w3.org/2003/05/soap-envelope">
+  <soap-env:Header xmlns:wsa="http://www.w3.org/2005/08/addressing">
+    <wsa:Action>http://bsestarmfdemo.bseindia.com/2016/01/IMFUploadService/getPassword</wsa:Action>
+    <wsa:MessageID>urn:uuid:14034cc2-63e5-4a4e-92b6-5c9b220a5816</wsa:MessageID>
+    <wsa:To>https://bsestarmfdemo.bseindia.com/MFUploadService/MFUploadService.svc/Secure</wsa:To>
+  </soap-env:Header>
+  <soap-env:Body>
+    <ns0:getPassword xmlns:ns0="http://bsestarmfdemo.bseindia.com/2016/01/">
+      <ns0:UserId>2463702</ns0:UserId>
+      <ns0:MemberId>24637</ns0:MemberId>
+      <ns0:Password>********</ns0:Password>
+      <ns0:PassKey>********</ns0:PassKey>
+    </ns0:getPassword>
+  </soap-env:Body>
+</soap-env:Envelope>
+
+2026-02-09 16:26:10,144 - BSE REQUEST XML:
+<soap-env:Envelope xmlns:soap-env="http://www.w3.org/2003/05/soap-envelope">
+  <soap-env:Header xmlns:wsa="http://www.w3.org/2005/08/addressing">
+    <wsa:Action>http://bsestarmfdemo.bseindia.com/2016/01/IMFUploadService/getPassword</wsa:Action>
+    <wsa:MessageID>urn:uuid:5a9f0c39-7521-4575-8671-a0efe4f018e7</wsa:MessageID>
+    <wsa:To>https://bsestarmfdemo.bseindia.com/MFUploadService/MFUploadService.svc/Secure</wsa:To>
+  </soap-env:Header>
+  <soap-env:Body>
+    <ns0:getPassword xmlns:ns0="http://bsestarmfdemo.bseindia.com/2016/01/">
+      <ns0:UserId>2463702</ns0:UserId>
+      <ns0:MemberId>24637</ns0:MemberId>
+      <ns0:Password>********</ns0:Password>
+      <ns0:PassKey>********</ns0:PassKey>
+    </ns0:getPassword>
+  </soap-env:Body>
+</soap-env:Envelope>
+
+2026-02-09 16:26:10,144 - BSE REQUEST XML:
+<soap-env:Envelope xmlns:soap-env="http://www.w3.org/2003/05/soap-envelope">
+  <soap-env:Header xmlns:wsa="http://www.w3.org/2005/08/addressing">
+    <wsa:Action>http://bsestarmfdemo.bseindia.com/2016/01/IMFUploadService/getPassword</wsa:Action>
+    <wsa:MessageID>urn:uuid:e59ba534-01e2-4c47-b112-4227be37a6b4</wsa:MessageID>
+    <wsa:To>https://bsestarmfdemo.bseindia.com/MFUploadService/MFUploadService.svc/Secure</wsa:To>
+  </soap-env:Header>
+  <soap-env:Body>
+    <ns0:getPassword xmlns:ns0="http://bsestarmfdemo.bseindia.com/2016/01/">
+      <ns0:UserId>2463702</ns0:UserId>
+      <ns0:MemberId>24637</ns0:MemberId>
+      <ns0:Password>********</ns0:Password>
+      <ns0:PassKey>********</ns0:PassKey>
+    </ns0:getPassword>
+  </soap-env:Body>
+</soap-env:Envelope>
+
+2026-02-09 16:26:10,250 - BSE RESPONSE XML:
+<s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope" xmlns:a="http://www.w3.org/2005/08/addressing">
+  <s:Header>
+    <a:Action s:mustUnderstand="1">http://bsestarmfdemo.bseindia.com/2016/01/IMFUploadService/getPasswordResponse</a:Action>
+    <a:RelatesTo>urn:uuid:5a9f0c39-7521-4575-8671-a0efe4f018e7</a:RelatesTo>
+  </s:Header>
+  <s:Body>
+    <getPasswordResponse xmlns="http://bsestarmfdemo.bseindia.com/2016/01/">
+      <getPasswordResult>100|dm25bEOQ5jH6fKJQQx8C1OQqM/wM4YC1TPMSdP/35yNHtiF2bhzJ2OtJxbrPZxpT</getPasswordResult>
+    </getPasswordResponse>
+  </s:Body>
+</s:Envelope>
+
+2026-02-09 16:26:10,250 - PAYMENT STATUS Request: Flag=11, Param=EEFPP8024C|0000001769760820385|BSEMF
+2026-02-09 16:26:10,251 - BSE REQUEST XML:
+<soap-env:Envelope xmlns:soap-env="http://www.w3.org/2003/05/soap-envelope">
+  <soap-env:Header xmlns:wsa="http://www.w3.org/2005/08/addressing">
+    <wsa:Action>http://bsestarmfdemo.bseindia.com/2016/01/IMFUploadService/MFAPI</wsa:Action>
+    <wsa:MessageID>urn:uuid:9fa6d3d7-0ff3-42b3-8407-c8bd42acf2a7</wsa:MessageID>
+    <wsa:To>https://bsestarmfdemo.bseindia.com/MFUploadService/MFUploadService.svc/Secure</wsa:To>
+  </soap-env:Header>
+  <soap-env:Body>
+    <ns0:MFAPI xmlns:ns0="http://bsestarmfdemo.bseindia.com/2016/01/">
+      <ns0:Flag>11</ns0:Flag>
+      <ns0:UserId>2463702</ns0:UserId>
+      <ns0:EncryptedPassword>********</ns0:EncryptedPassword>
+      <ns0:param>EEFPP8024C|0000001769760820385|BSEMF</ns0:param>
+    </ns0:MFAPI>
+  </soap-env:Body>
+</soap-env:Envelope>
+
+2026-02-09 16:26:10,264 - BSE RESPONSE XML:
+<s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope" xmlns:a="http://www.w3.org/2005/08/addressing">
+  <s:Header>
+    <a:Action s:mustUnderstand="1">http://bsestarmfdemo.bseindia.com/2016/01/IMFUploadService/getPasswordResponse</a:Action>
+    <a:RelatesTo>urn:uuid:e59ba534-01e2-4c47-b112-4227be37a6b4</a:RelatesTo>
+  </s:Header>
+  <s:Body>
+    <getPasswordResponse xmlns="http://bsestarmfdemo.bseindia.com/2016/01/">
+      <getPasswordResult>100|dm25bEOQ5jH6fKJQQx8C1OQqM/wM4YC1TPMSdP/35yNHtiF2bhzJ2OtJxbrPZxpT</getPasswordResult>
+    </getPasswordResponse>
+  </s:Body>
+</s:Envelope>
+
+2026-02-09 16:26:10,264 - PAYMENT STATUS Request: Flag=11, Param=EEFPP8024C|0000001769760957561|BSEMF
+2026-02-09 16:26:10,264 - BSE REQUEST XML:
+<soap-env:Envelope xmlns:soap-env="http://www.w3.org/2003/05/soap-envelope">
+  <soap-env:Header xmlns:wsa="http://www.w3.org/2005/08/addressing">
+    <wsa:Action>http://bsestarmfdemo.bseindia.com/2016/01/IMFUploadService/MFAPI</wsa:Action>
+    <wsa:MessageID>urn:uuid:db449b75-abbb-4cbf-8925-492391cf661a</wsa:MessageID>
+    <wsa:To>https://bsestarmfdemo.bseindia.com/MFUploadService/MFUploadService.svc/Secure</wsa:To>
+  </soap-env:Header>
+  <soap-env:Body>
+    <ns0:MFAPI xmlns:ns0="http://bsestarmfdemo.bseindia.com/2016/01/">
+      <ns0:Flag>11</ns0:Flag>
+      <ns0:UserId>2463702</ns0:UserId>
+      <ns0:EncryptedPassword>********</ns0:EncryptedPassword>
+      <ns0:param>EEFPP8024C|0000001769760957561|BSEMF</ns0:param>
+    </ns0:MFAPI>
+  </soap-env:Body>
+</soap-env:Envelope>
+
+2026-02-09 16:26:10,324 - BSE RESPONSE XML:
+<s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope" xmlns:a="http://www.w3.org/2005/08/addressing">
+  <s:Header>
+    <a:Action s:mustUnderstand="1">http://bsestarmfdemo.bseindia.com/2016/01/IMFUploadService/getPasswordResponse</a:Action>
+    <a:RelatesTo>urn:uuid:14034cc2-63e5-4a4e-92b6-5c9b220a5816</a:RelatesTo>
+  </s:Header>
+  <s:Body>
+    <getPasswordResponse xmlns="http://bsestarmfdemo.bseindia.com/2016/01/">
+      <getPasswordResult>100|dm25bEOQ5jH6fKJQQx8C1OQqM/wM4YC1TPMSdP/35yNUFCJRu9MOdOtJxbrPZxpT</getPasswordResult>
+    </getPasswordResponse>
+  </s:Body>
+</s:Envelope>
+
+2026-02-09 16:26:10,324 - PAYMENT STATUS Request: Flag=11, Param=EEFPP8024C|0000001769760770692|BSEMF
+2026-02-09 16:26:10,325 - BSE REQUEST XML:
+<soap-env:Envelope xmlns:soap-env="http://www.w3.org/2003/05/soap-envelope">
+  <soap-env:Header xmlns:wsa="http://www.w3.org/2005/08/addressing">
+    <wsa:Action>http://bsestarmfdemo.bseindia.com/2016/01/IMFUploadService/MFAPI</wsa:Action>
+    <wsa:MessageID>urn:uuid:7ef8d515-4f5e-4b8d-bc07-b645537a392a</wsa:MessageID>
+    <wsa:To>https://bsestarmfdemo.bseindia.com/MFUploadService/MFUploadService.svc/Secure</wsa:To>
+  </soap-env:Header>
+  <soap-env:Body>
+    <ns0:MFAPI xmlns:ns0="http://bsestarmfdemo.bseindia.com/2016/01/">
+      <ns0:Flag>11</ns0:Flag>
+      <ns0:UserId>2463702</ns0:UserId>
+      <ns0:EncryptedPassword>********</ns0:EncryptedPassword>
+      <ns0:param>EEFPP8024C|0000001769760770692|BSEMF</ns0:param>
+    </ns0:MFAPI>
+  </soap-env:Body>
+</soap-env:Envelope>
+
+2026-02-09 16:26:10,328 - BSE RESPONSE XML:
+<s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope" xmlns:a="http://www.w3.org/2005/08/addressing">
+  <s:Header>
+    <a:Action s:mustUnderstand="1">http://bsestarmfdemo.bseindia.com/2016/01/IMFUploadService/MFAPIResponse</a:Action>
+    <a:RelatesTo>urn:uuid:db449b75-abbb-4cbf-8925-492391cf661a</a:RelatesTo>
+  </s:Header>
+  <s:Body>
+    <MFAPIResponse xmlns="http://bsestarmfdemo.bseindia.com/2016/01/">
+      <MFAPIResult>101|INVALID ORDER NUMBER</MFAPIResult>
+    </MFAPIResponse>
+  </s:Body>
+</s:Envelope>
+
+2026-02-09 16:26:10,329 - PAYMENT STATUS: 0000001769760957561 | RESPONSE: 101|INVALID ORDER NUMBER
+2026-02-09 16:26:10,430 - BSE RESPONSE XML:
+<s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope" xmlns:a="http://www.w3.org/2005/08/addressing">
+  <s:Header>
+    <a:Action s:mustUnderstand="1">http://bsestarmfdemo.bseindia.com/2016/01/IMFUploadService/MFAPIResponse</a:Action>
+    <a:RelatesTo>urn:uuid:9fa6d3d7-0ff3-42b3-8407-c8bd42acf2a7</a:RelatesTo>
+  </s:Header>
+  <s:Body>
+    <MFAPIResponse xmlns="http://bsestarmfdemo.bseindia.com/2016/01/">
+      <MFAPIResult>101|INVALID ORDER NUMBER</MFAPIResult>
+    </MFAPIResponse>
+  </s:Body>
+</s:Envelope>
+
+2026-02-09 16:26:10,430 - PAYMENT STATUS: 0000001769760820385 | RESPONSE: 101|INVALID ORDER NUMBER
+2026-02-09 16:26:10,466 - BSE RESPONSE XML:
+<s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope" xmlns:a="http://www.w3.org/2005/08/addressing">
+  <s:Header>
+    <a:Action s:mustUnderstand="1">http://bsestarmfdemo.bseindia.com/2016/01/IMFUploadService/MFAPIResponse</a:Action>
+    <a:RelatesTo>urn:uuid:7ef8d515-4f5e-4b8d-bc07-b645537a392a</a:RelatesTo>
+  </s:Header>
+  <s:Body>
+    <MFAPIResponse xmlns="http://bsestarmfdemo.bseindia.com/2016/01/">
+      <MFAPIResult>101|INVALID ORDER NUMBER</MFAPIResult>
+    </MFAPIResponse>
+  </s:Body>
+</s:Envelope>
+
+2026-02-09 16:26:10,467 - PAYMENT STATUS: 0000001769760770692 | RESPONSE: 101|INVALID ORDER NUMBER
+2026-02-09 16:26:10,507 - ORDER STATUS Request: {'MemberCode': '24637', 'UserId': '2463702', 'Password': '********', 'FromDate': '09/02/2026', 'ToDate': '09/02/2026', 'ClientCode': 'EEFPP8024C', 'OrderType': 'All', 'SubOrderType': 'All', 'OrderStatus': 'All', 'SettType': 'ALL', 'OrderNo': '0000001769760957561', 'TransType': 'P'}
+2026-02-09 16:26:10,508 - BSE REQUEST XML:
+<soap-env:Envelope xmlns:soap-env="http://www.w3.org/2003/05/soap-envelope">
+  <soap-env:Header xmlns:wsa="http://www.w3.org/2005/08/addressing">
+    <wsa:Action>http://www.bsestarmf.in/2016/01/IStarMFWebService/OrderStatus</wsa:Action>
+    <wsa:MessageID>urn:uuid:63b193e7-5e81-4292-a71b-147262d2ce08</wsa:MessageID>
+    <wsa:To>https://bsestarmfdemo.bseindia.com/StarMFWebService/StarMFWebService.svc/Secure</wsa:To>
+  </soap-env:Header>
+  <soap-env:Body>
+    <ns0:OrderStatus xmlns:ns0="http://www.bsestarmf.in/2016/01/">
+      <ns0:Param>
+        <ns1:ClientCode xmlns:ns1="http://schemas.datacontract.org/2004/07/StarMFWebService">EEFPP8024C</ns1:ClientCode>
+        <ns2:FromDate xmlns:ns2="http://schemas.datacontract.org/2004/07/StarMFWebService">09/02/2026</ns2:FromDate>
+        <ns3:MemberCode xmlns:ns3="http://schemas.datacontract.org/2004/07/StarMFWebService">24637</ns3:MemberCode>
+        <ns4:OrderNo xmlns:ns4="http://schemas.datacontract.org/2004/07/StarMFWebService">0000001769760957561</ns4:OrderNo>
+        <ns5:OrderStatus xmlns:ns5="http://schemas.datacontract.org/2004/07/StarMFWebService">All</ns5:OrderStatus>
+        <ns6:OrderType xmlns:ns6="http://schemas.datacontract.org/2004/07/StarMFWebService">All</ns6:OrderType>
+        <ns7:Password xmlns:ns7="http://schemas.datacontract.org/2004/07/StarMFWebService">Abc@1234</ns7:Password>
+        <ns8:SettType xmlns:ns8="http://schemas.datacontract.org/2004/07/StarMFWebService">ALL</ns8:SettType>
+        <ns9:SubOrderType xmlns:ns9="http://schemas.datacontract.org/2004/07/StarMFWebService">All</ns9:SubOrderType>
+        <ns10:ToDate xmlns:ns10="http://schemas.datacontract.org/2004/07/StarMFWebService">09/02/2026</ns10:ToDate>
+        <ns11:TransType xmlns:ns11="http://schemas.datacontract.org/2004/07/StarMFWebService">P</ns11:TransType>
+        <ns12:UserId xmlns:ns12="http://schemas.datacontract.org/2004/07/StarMFWebService">2463702</ns12:UserId>
+      </ns0:Param>
+    </ns0:OrderStatus>
+  </soap-env:Body>
+</soap-env:Envelope>
+
+2026-02-09 16:26:10,633 - ORDER STATUS Request: {'MemberCode': '24637', 'UserId': '2463702', 'Password': '********', 'FromDate': '09/02/2026', 'ToDate': '09/02/2026', 'ClientCode': 'EEFPP8024C', 'OrderType': 'All', 'SubOrderType': 'All', 'OrderStatus': 'All', 'SettType': 'ALL', 'OrderNo': '0000001769760820385', 'TransType': 'P'}
+2026-02-09 16:26:10,634 - BSE REQUEST XML:
+<soap-env:Envelope xmlns:soap-env="http://www.w3.org/2003/05/soap-envelope">
+  <soap-env:Header xmlns:wsa="http://www.w3.org/2005/08/addressing">
+    <wsa:Action>http://www.bsestarmf.in/2016/01/IStarMFWebService/OrderStatus</wsa:Action>
+    <wsa:MessageID>urn:uuid:09d678f5-3c99-4617-9013-936c2f38eafa</wsa:MessageID>
+    <wsa:To>https://bsestarmfdemo.bseindia.com/StarMFWebService/StarMFWebService.svc/Secure</wsa:To>
+  </soap-env:Header>
+  <soap-env:Body>
+    <ns0:OrderStatus xmlns:ns0="http://www.bsestarmf.in/2016/01/">
+      <ns0:Param>
+        <ns1:ClientCode xmlns:ns1="http://schemas.datacontract.org/2004/07/StarMFWebService">EEFPP8024C</ns1:ClientCode>
+        <ns2:FromDate xmlns:ns2="http://schemas.datacontract.org/2004/07/StarMFWebService">09/02/2026</ns2:FromDate>
+        <ns3:MemberCode xmlns:ns3="http://schemas.datacontract.org/2004/07/StarMFWebService">24637</ns3:MemberCode>
+        <ns4:OrderNo xmlns:ns4="http://schemas.datacontract.org/2004/07/StarMFWebService">0000001769760820385</ns4:OrderNo>
+        <ns5:OrderStatus xmlns:ns5="http://schemas.datacontract.org/2004/07/StarMFWebService">All</ns5:OrderStatus>
+        <ns6:OrderType xmlns:ns6="http://schemas.datacontract.org/2004/07/StarMFWebService">All</ns6:OrderType>
+        <ns7:Password xmlns:ns7="http://schemas.datacontract.org/2004/07/StarMFWebService">Abc@1234</ns7:Password>
+        <ns8:SettType xmlns:ns8="http://schemas.datacontract.org/2004/07/StarMFWebService">ALL</ns8:SettType>
+        <ns9:SubOrderType xmlns:ns9="http://schemas.datacontract.org/2004/07/StarMFWebService">All</ns9:SubOrderType>
+        <ns10:ToDate xmlns:ns10="http://schemas.datacontract.org/2004/07/StarMFWebService">09/02/2026</ns10:ToDate>
+        <ns11:TransType xmlns:ns11="http://schemas.datacontract.org/2004/07/StarMFWebService">P</ns11:TransType>
+        <ns12:UserId xmlns:ns12="http://schemas.datacontract.org/2004/07/StarMFWebService">2463702</ns12:UserId>
+      </ns0:Param>
+    </ns0:OrderStatus>
+  </soap-env:Body>
+</soap-env:Envelope>
+
+2026-02-09 16:26:10,672 - ORDER STATUS Request: {'MemberCode': '24637', 'UserId': '2463702', 'Password': '********', 'FromDate': '09/02/2026', 'ToDate': '09/02/2026', 'ClientCode': 'EEFPP8024C', 'OrderType': 'All', 'SubOrderType': 'All', 'OrderStatus': 'All', 'SettType': 'ALL', 'OrderNo': '0000001769760770692', 'TransType': 'P'}
+2026-02-09 16:26:10,673 - BSE REQUEST XML:
+<soap-env:Envelope xmlns:soap-env="http://www.w3.org/2003/05/soap-envelope">
+  <soap-env:Header xmlns:wsa="http://www.w3.org/2005/08/addressing">
+    <wsa:Action>http://www.bsestarmf.in/2016/01/IStarMFWebService/OrderStatus</wsa:Action>
+    <wsa:MessageID>urn:uuid:e1612ee2-4b07-4172-8b34-bbd119c8171a</wsa:MessageID>
+    <wsa:To>https://bsestarmfdemo.bseindia.com/StarMFWebService/StarMFWebService.svc/Secure</wsa:To>
+  </soap-env:Header>
+  <soap-env:Body>
+    <ns0:OrderStatus xmlns:ns0="http://www.bsestarmf.in/2016/01/">
+      <ns0:Param>
+        <ns1:ClientCode xmlns:ns1="http://schemas.datacontract.org/2004/07/StarMFWebService">EEFPP8024C</ns1:ClientCode>
+        <ns2:FromDate xmlns:ns2="http://schemas.datacontract.org/2004/07/StarMFWebService">09/02/2026</ns2:FromDate>
+        <ns3:MemberCode xmlns:ns3="http://schemas.datacontract.org/2004/07/StarMFWebService">24637</ns3:MemberCode>
+        <ns4:OrderNo xmlns:ns4="http://schemas.datacontract.org/2004/07/StarMFWebService">0000001769760770692</ns4:OrderNo>
+        <ns5:OrderStatus xmlns:ns5="http://schemas.datacontract.org/2004/07/StarMFWebService">All</ns5:OrderStatus>
+        <ns6:OrderType xmlns:ns6="http://schemas.datacontract.org/2004/07/StarMFWebService">All</ns6:OrderType>
+        <ns7:Password xmlns:ns7="http://schemas.datacontract.org/2004/07/StarMFWebService">Abc@1234</ns7:Password>
+        <ns8:SettType xmlns:ns8="http://schemas.datacontract.org/2004/07/StarMFWebService">ALL</ns8:SettType>
+        <ns9:SubOrderType xmlns:ns9="http://schemas.datacontract.org/2004/07/StarMFWebService">All</ns9:SubOrderType>
+        <ns10:ToDate xmlns:ns10="http://schemas.datacontract.org/2004/07/StarMFWebService">09/02/2026</ns10:ToDate>
+        <ns11:TransType xmlns:ns11="http://schemas.datacontract.org/2004/07/StarMFWebService">P</ns11:TransType>
+        <ns12:UserId xmlns:ns12="http://schemas.datacontract.org/2004/07/StarMFWebService">2463702</ns12:UserId>
+      </ns0:Param>
+    </ns0:OrderStatus>
+  </soap-env:Body>
+</soap-env:Envelope>
+
+2026-02-09 16:26:11,147 - BSE RESPONSE XML:
+<s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope" xmlns:a="http://www.w3.org/2005/08/addressing">
+  <s:Header>
+    <a:Action s:mustUnderstand="1">http://www.bsestarmf.in/2016/01/IStarMFWebService/OrderStatusResponse</a:Action>
+    <a:RelatesTo>urn:uuid:63b193e7-5e81-4292-a71b-147262d2ce08</a:RelatesTo>
+  </s:Header>
+  <s:Body>
+    <OrderStatusResponse xmlns="http://www.bsestarmf.in/2016/01/">
+      <OrderStatusResult xmlns:b="http://schemas.datacontract.org/2004/07/StarMFWebService" xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+        <b:Message>Order Status Details Not Found</b:Message>
+        <b:OrderDetails i:nil="true"/>
+        <b:Status>101</b:Status>
+      </OrderStatusResult>
+    </OrderStatusResponse>
+  </s:Body>
+</s:Envelope>
+
+2026-02-09 16:26:11,148 - ORDER STATUS: 0000001769760957561 | RESPONSE: {
+    'Message': 'Order Status Details Not Found',
+    'OrderDetails': {
+        'OrderDetails': []
+    },
+    'Status': '101'
+}
+2026-02-09 16:26:11,149 - BSE RESPONSE XML:
+<s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope" xmlns:a="http://www.w3.org/2005/08/addressing">
+  <s:Header>
+    <a:Action s:mustUnderstand="1">http://schemas.microsoft.com/net/2005/12/windowscommunicationfoundation/dispatcher/fault</a:Action>
+    <a:RelatesTo>urn:uuid:e1612ee2-4b07-4172-8b34-bbd119c8171a</a:RelatesTo>
+  </s:Header>
+  <s:Body>
+    <s:Fault>
+      <s:Code>
+        <s:Value>s:Receiver</s:Value>
+        <s:Subcode>
+          <s:Value xmlns:a="http://schemas.microsoft.com/net/2005/12/windowscommunicationfoundation/dispatcher">a:InternalServiceFault</s:Value>
+        </s:Subcode>
+      </s:Code>
+      <s:Reason>
+        <s:Text xml:lang="en-US">The server was unable to process the request due to an internal error.  For more information about the error, either turn on IncludeExceptionDetailInFaults (either from ServiceBehaviorAttribute or from the &lt;serviceDebug&gt; configuration behavior) on the server in order to send the exception information back to the client, or turn on tracing as per the Microsoft .NET Framework SDK documentation and inspect the server trace logs.</s:Text>
+      </s:Reason>
+    </s:Fault>
+  </s:Body>
+</s:Envelope>
+
+2026-02-09 16:26:11,149 - ALLOTMENT STATEMENT Request: {'MemberCode': '24637', 'UserId': '2463702', 'Password': '********', 'FromDate': '09/02/2026', 'ToDate': '09/02/2026', 'ClientCode': 'EEFPP8024C', 'OrderType': 'All', 'SubOrderType': 'All', 'OrderStatus': 'All', 'SettType': 'ALL', 'OrderNo': '0000001769760957561', 'Filler1': ''}
+2026-02-09 16:26:11,149 - ORDER STATUS ERROR: The server was unable to process the request due to an internal error.  For more information about the error, either turn on IncludeExceptionDetailInFaults (either from ServiceBehaviorAttribute or from the <serviceDebug> configuration behavior) on the server in order to send the exception information back to the client, or turn on tracing as per the Microsoft .NET Framework SDK documentation and inspect the server trace logs.
+2026-02-09 16:26:11,149 - ALLOTMENT STATEMENT Request: {'MemberCode': '24637', 'UserId': '2463702', 'Password': '********', 'FromDate': '09/02/2026', 'ToDate': '09/02/2026', 'ClientCode': 'EEFPP8024C', 'OrderType': 'All', 'SubOrderType': 'All', 'OrderStatus': 'All', 'SettType': 'ALL', 'OrderNo': '0000001769760770692', 'Filler1': ''}
+2026-02-09 16:26:11,150 - BSE REQUEST XML:
+<soap-env:Envelope xmlns:soap-env="http://www.w3.org/2003/05/soap-envelope">
+  <soap-env:Header xmlns:wsa="http://www.w3.org/2005/08/addressing">
+    <wsa:Action>http://www.bsestarmf.in/2016/01/IStarMFWebService/AllotmentStatement</wsa:Action>
+    <wsa:MessageID>urn:uuid:15a02927-0bb6-41a1-8e87-c2b63c011d9c</wsa:MessageID>
+    <wsa:To>https://bsestarmfdemo.bseindia.com/StarMFWebService/StarMFWebService.svc/Secure</wsa:To>
+  </soap-env:Header>
+  <soap-env:Body>
+    <ns0:AllotmentStatement xmlns:ns0="http://www.bsestarmf.in/2016/01/">
+      <ns0:Param>
+        <ns1:ClientCode xmlns:ns1="http://schemas.datacontract.org/2004/07/StarMFWebService">EEFPP8024C</ns1:ClientCode>
+        <ns2:Filler1 xmlns:ns2="http://schemas.datacontract.org/2004/07/StarMFWebService"></ns2:Filler1>
+        <ns3:FromDate xmlns:ns3="http://schemas.datacontract.org/2004/07/StarMFWebService">09/02/2026</ns3:FromDate>
+        <ns4:MemberCode xmlns:ns4="http://schemas.datacontract.org/2004/07/StarMFWebService">24637</ns4:MemberCode>
+        <ns5:OrderNo xmlns:ns5="http://schemas.datacontract.org/2004/07/StarMFWebService">0000001769760957561</ns5:OrderNo>
+        <ns6:OrderStatus xmlns:ns6="http://schemas.datacontract.org/2004/07/StarMFWebService">All</ns6:OrderStatus>
+        <ns7:OrderType xmlns:ns7="http://schemas.datacontract.org/2004/07/StarMFWebService">All</ns7:OrderType>
+        <ns8:Password xmlns:ns8="http://schemas.datacontract.org/2004/07/StarMFWebService">Abc@1234</ns8:Password>
+        <ns9:SettType xmlns:ns9="http://schemas.datacontract.org/2004/07/StarMFWebService">ALL</ns9:SettType>
+        <ns10:SubOrderType xmlns:ns10="http://schemas.datacontract.org/2004/07/StarMFWebService">All</ns10:SubOrderType>
+        <ns11:ToDate xmlns:ns11="http://schemas.datacontract.org/2004/07/StarMFWebService">09/02/2026</ns11:ToDate>
+        <ns12:UserId xmlns:ns12="http://schemas.datacontract.org/2004/07/StarMFWebService">2463702</ns12:UserId>
+      </ns0:Param>
+    </ns0:AllotmentStatement>
+  </soap-env:Body>
+</soap-env:Envelope>
+
+2026-02-09 16:26:11,150 - BSE REQUEST XML:
+<soap-env:Envelope xmlns:soap-env="http://www.w3.org/2003/05/soap-envelope">
+  <soap-env:Header xmlns:wsa="http://www.w3.org/2005/08/addressing">
+    <wsa:Action>http://www.bsestarmf.in/2016/01/IStarMFWebService/AllotmentStatement</wsa:Action>
+    <wsa:MessageID>urn:uuid:4dc7389f-5061-4ca7-8fda-fa8bca8cdbe3</wsa:MessageID>
+    <wsa:To>https://bsestarmfdemo.bseindia.com/StarMFWebService/StarMFWebService.svc/Secure</wsa:To>
+  </soap-env:Header>
+  <soap-env:Body>
+    <ns0:AllotmentStatement xmlns:ns0="http://www.bsestarmf.in/2016/01/">
+      <ns0:Param>
+        <ns1:ClientCode xmlns:ns1="http://schemas.datacontract.org/2004/07/StarMFWebService">EEFPP8024C</ns1:ClientCode>
+        <ns2:Filler1 xmlns:ns2="http://schemas.datacontract.org/2004/07/StarMFWebService"></ns2:Filler1>
+        <ns3:FromDate xmlns:ns3="http://schemas.datacontract.org/2004/07/StarMFWebService">09/02/2026</ns3:FromDate>
+        <ns4:MemberCode xmlns:ns4="http://schemas.datacontract.org/2004/07/StarMFWebService">24637</ns4:MemberCode>
+        <ns5:OrderNo xmlns:ns5="http://schemas.datacontract.org/2004/07/StarMFWebService">0000001769760770692</ns5:OrderNo>
+        <ns6:OrderStatus xmlns:ns6="http://schemas.datacontract.org/2004/07/StarMFWebService">All</ns6:OrderStatus>
+        <ns7:OrderType xmlns:ns7="http://schemas.datacontract.org/2004/07/StarMFWebService">All</ns7:OrderType>
+        <ns8:Password xmlns:ns8="http://schemas.datacontract.org/2004/07/StarMFWebService">Abc@1234</ns8:Password>
+        <ns9:SettType xmlns:ns9="http://schemas.datacontract.org/2004/07/StarMFWebService">ALL</ns9:SettType>
+        <ns10:SubOrderType xmlns:ns10="http://schemas.datacontract.org/2004/07/StarMFWebService">All</ns10:SubOrderType>
+        <ns11:ToDate xmlns:ns11="http://schemas.datacontract.org/2004/07/StarMFWebService">09/02/2026</ns11:ToDate>
+        <ns12:UserId xmlns:ns12="http://schemas.datacontract.org/2004/07/StarMFWebService">2463702</ns12:UserId>
+      </ns0:Param>
+    </ns0:AllotmentStatement>
+  </soap-env:Body>
+</soap-env:Envelope>
+
+2026-02-09 16:26:11,196 - BSE RESPONSE XML:
+<s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope" xmlns:a="http://www.w3.org/2005/08/addressing">
+  <s:Header>
+    <a:Action s:mustUnderstand="1">http://www.bsestarmf.in/2016/01/IStarMFWebService/OrderStatusResponse</a:Action>
+    <a:RelatesTo>urn:uuid:09d678f5-3c99-4617-9013-936c2f38eafa</a:RelatesTo>
+  </s:Header>
+  <s:Body>
+    <OrderStatusResponse xmlns="http://www.bsestarmf.in/2016/01/">
+      <OrderStatusResult xmlns:b="http://schemas.datacontract.org/2004/07/StarMFWebService" xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+        <b:Message>Order Status Details Not Found</b:Message>
+        <b:OrderDetails i:nil="true"/>
+        <b:Status>101</b:Status>
+      </OrderStatusResult>
+    </OrderStatusResponse>
+  </s:Body>
+</s:Envelope>
+
+2026-02-09 16:26:11,197 - ORDER STATUS: 0000001769760820385 | RESPONSE: {
+    'Message': 'Order Status Details Not Found',
+    'OrderDetails': {
+        'OrderDetails': []
+    },
+    'Status': '101'
+}
+2026-02-09 16:26:11,197 - ALLOTMENT STATEMENT Request: {'MemberCode': '24637', 'UserId': '2463702', 'Password': '********', 'FromDate': '09/02/2026', 'ToDate': '09/02/2026', 'ClientCode': 'EEFPP8024C', 'OrderType': 'All', 'SubOrderType': 'All', 'OrderStatus': 'All', 'SettType': 'ALL', 'OrderNo': '0000001769760820385', 'Filler1': ''}
+2026-02-09 16:26:11,197 - BSE REQUEST XML:
+<soap-env:Envelope xmlns:soap-env="http://www.w3.org/2003/05/soap-envelope">
+  <soap-env:Header xmlns:wsa="http://www.w3.org/2005/08/addressing">
+    <wsa:Action>http://www.bsestarmf.in/2016/01/IStarMFWebService/AllotmentStatement</wsa:Action>
+    <wsa:MessageID>urn:uuid:ea1f1f08-ecce-42bf-b0b6-06e07635e5e4</wsa:MessageID>
+    <wsa:To>https://bsestarmfdemo.bseindia.com/StarMFWebService/StarMFWebService.svc/Secure</wsa:To>
+  </soap-env:Header>
+  <soap-env:Body>
+    <ns0:AllotmentStatement xmlns:ns0="http://www.bsestarmf.in/2016/01/">
+      <ns0:Param>
+        <ns1:ClientCode xmlns:ns1="http://schemas.datacontract.org/2004/07/StarMFWebService">EEFPP8024C</ns1:ClientCode>
+        <ns2:Filler1 xmlns:ns2="http://schemas.datacontract.org/2004/07/StarMFWebService"></ns2:Filler1>
+        <ns3:FromDate xmlns:ns3="http://schemas.datacontract.org/2004/07/StarMFWebService">09/02/2026</ns3:FromDate>
+        <ns4:MemberCode xmlns:ns4="http://schemas.datacontract.org/2004/07/StarMFWebService">24637</ns4:MemberCode>
+        <ns5:OrderNo xmlns:ns5="http://schemas.datacontract.org/2004/07/StarMFWebService">0000001769760820385</ns5:OrderNo>
+        <ns6:OrderStatus xmlns:ns6="http://schemas.datacontract.org/2004/07/StarMFWebService">All</ns6:OrderStatus>
+        <ns7:OrderType xmlns:ns7="http://schemas.datacontract.org/2004/07/StarMFWebService">All</ns7:OrderType>
+        <ns8:Password xmlns:ns8="http://schemas.datacontract.org/2004/07/StarMFWebService">Abc@1234</ns8:Password>
+        <ns9:SettType xmlns:ns9="http://schemas.datacontract.org/2004/07/StarMFWebService">ALL</ns9:SettType>
+        <ns10:SubOrderType xmlns:ns10="http://schemas.datacontract.org/2004/07/StarMFWebService">All</ns10:SubOrderType>
+        <ns11:ToDate xmlns:ns11="http://schemas.datacontract.org/2004/07/StarMFWebService">09/02/2026</ns11:ToDate>
+        <ns12:UserId xmlns:ns12="http://schemas.datacontract.org/2004/07/StarMFWebService">2463702</ns12:UserId>
+      </ns0:Param>
+    </ns0:AllotmentStatement>
+  </soap-env:Body>
+</soap-env:Envelope>
+
+2026-02-09 16:26:11,349 - BSE RESPONSE XML:
+<s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope" xmlns:a="http://www.w3.org/2005/08/addressing">
+  <s:Header>
+    <a:Action s:mustUnderstand="1">http://www.bsestarmf.in/2016/01/IStarMFWebService/AllotmentStatementResponse</a:Action>
+    <a:RelatesTo>urn:uuid:4dc7389f-5061-4ca7-8fda-fa8bca8cdbe3</a:RelatesTo>
+  </s:Header>
+  <s:Body>
+    <AllotmentStatementResponse xmlns="http://www.bsestarmf.in/2016/01/">
+      <AllotmentStatementResult xmlns:b="http://schemas.datacontract.org/2004/07/StarMFWebService" xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+        <b:AllotmentDetails i:nil="true"/>
+        <b:Message>FAILED: ORDER DETAILS NOT FOUND</b:Message>
+        <b:Status>101</b:Status>
+      </AllotmentStatementResult>
+    </AllotmentStatementResponse>
+  </s:Body>
+</s:Envelope>
+
+2026-02-09 16:26:11,350 - ALLOTMENT STATEMENT: 0000001769760770692 | RESPONSE: {
+    'AllotmentDetails': {
+        'AllotmentDetails': []
+    },
+    'Message': 'FAILED: ORDER DETAILS NOT FOUND',
+    'Status': '101'
+}
+2026-02-09 16:26:11,377 - BSE RESPONSE XML:
+<s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope" xmlns:a="http://www.w3.org/2005/08/addressing">
+  <s:Header>
+    <a:Action s:mustUnderstand="1">http://www.bsestarmf.in/2016/01/IStarMFWebService/AllotmentStatementResponse</a:Action>
+    <a:RelatesTo>urn:uuid:15a02927-0bb6-41a1-8e87-c2b63c011d9c</a:RelatesTo>
+  </s:Header>
+  <s:Body>
+    <AllotmentStatementResponse xmlns="http://www.bsestarmf.in/2016/01/">
+      <AllotmentStatementResult xmlns:b="http://schemas.datacontract.org/2004/07/StarMFWebService" xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+        <b:AllotmentDetails i:nil="true"/>
+        <b:Message>FAILED: ORDER DETAILS NOT FOUND</b:Message>
+        <b:Status>101</b:Status>
+      </AllotmentStatementResult>
+    </AllotmentStatementResponse>
+  </s:Body>
+</s:Envelope>
+
+2026-02-09 16:26:11,379 - ALLOTMENT STATEMENT: 0000001769760957561 | RESPONSE: {
+    'AllotmentDetails': {
+        'AllotmentDetails': []
+    },
+    'Message': 'FAILED: ORDER DETAILS NOT FOUND',
+    'Status': '101'
+}
+2026-02-09 16:26:11,438 - BSE RESPONSE XML:
+<s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope" xmlns:a="http://www.w3.org/2005/08/addressing">
+  <s:Header>
+    <a:Action s:mustUnderstand="1">http://www.bsestarmf.in/2016/01/IStarMFWebService/AllotmentStatementResponse</a:Action>
+    <a:RelatesTo>urn:uuid:ea1f1f08-ecce-42bf-b0b6-06e07635e5e4</a:RelatesTo>
+  </s:Header>
+  <s:Body>
+    <AllotmentStatementResponse xmlns="http://www.bsestarmf.in/2016/01/">
+      <AllotmentStatementResult xmlns:b="http://schemas.datacontract.org/2004/07/StarMFWebService" xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+        <b:AllotmentDetails i:nil="true"/>
+        <b:Message>FAILED: ORDER DETAILS NOT FOUND</b:Message>
+        <b:Status>101</b:Status>
+      </AllotmentStatementResult>
+    </AllotmentStatementResponse>
+  </s:Body>
+</s:Envelope>
+
+2026-02-09 16:26:11,439 - ALLOTMENT STATEMENT: 0000001769760820385 | RESPONSE: {
+    'AllotmentDetails': {
+        'AllotmentDetails': []
+    },
+    'Message': 'FAILED: ORDER DETAILS NOT FOUND',
+    'Status': '101'
+}
