@@ -1,41 +1,222 @@
 {% extends "layout/base.html" %}
 {% load widget_tweaks %}
 
+{% block title %}Upload Brokerage - Buybestfin{% endblock %}
+
 {% block content %}
-<div class="container-fluid">
-    <div class="card shadow mb-4">
-        <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">Upload Brokerage Files</h6>
+<div class="flex items-center space-x-4 py-5 lg:py-6">
+    <h2 class="text-xl font-medium text-slate-800 dark:text-navy-50 lg:text-2xl">
+        Upload Brokerage Files
+    </h2>
+    <div class="hidden h-full py-1 sm:flex">
+        <div class="h-full w-px bg-slate-300 dark:bg-navy-600"></div>
+    </div>
+    <ul class="hidden flex-wrap items-center space-x-2 sm:flex">
+        <li class="flex items-center space-x-2">
+            <a class="text-primary transition-colors hover:text-primary-focus dark:text-accent-light dark:hover:text-accent" href="{% url 'payouts:dashboard' %}">Payouts</a>
+            <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+        </li>
+        <li>Upload</li>
+    </ul>
+</div>
+
+<div class="grid grid-cols-1 gap-4 sm:gap-5 lg:gap-6">
+    <div class="card px-4 pb-4 sm:px-5">
+        <div class="my-3 flex h-8 items-center justify-between">
+            <h2 class="font-medium tracking-wide text-slate-700 line-clamp-1 dark:text-navy-100 lg:text-base">
+                Brokerage Import Details
+            </h2>
         </div>
-        <div class="card-body">
-            <form method="post" enctype="multipart/form-data">
+        <div class="max-w-xl">
+            <p class="mb-4 text-slate-500 dark:text-navy-300">
+                Upload CAMS (.dbf/.csv) and Karvy (.csv) brokerage files for a specific month and year.
+                The system will automatically process transactions and calculate payouts.
+            </p>
+
+            <form id="uploadForm" method="post" enctype="multipart/form-data" class="space-y-4">
                 {% csrf_token %}
 
-                <div class="form-row">
-                    <div class="form-group col-md-6">
-                        <label for="{{ form.month.id_for_label }}">Month</label>
-                        {{ form.month|add_class:"form-control" }}
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div class="form-group">
+                        <label class="block text-sm font-medium text-slate-700 dark:text-navy-100 mb-1" for="{{ form.month.id_for_label }}">Month</label>
+                        {{ form.month }}
+                        {% if form.month.errors %}
+                            <span class="text-tiny+ text-error">{{ form.month.errors.0 }}</span>
+                        {% endif %}
                     </div>
-                    <div class="form-group col-md-6">
-                        <label for="{{ form.year.id_for_label }}">Year</label>
-                        {{ form.year|add_class:"form-control" }}
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group col-md-6">
-                        <label for="{{ form.cams_file.id_for_label }}">CAMS File (.dbf / .csv)</label>
-                        {{ form.cams_file|add_class:"form-control-file" }}
-                    </div>
-                    <div class="form-group col-md-6">
-                        <label for="{{ form.karvy_file.id_for_label }}">Karvy File (.csv)</label>
-                        {{ form.karvy_file|add_class:"form-control-file" }}
+                    <div class="form-group">
+                        <label class="block text-sm font-medium text-slate-700 dark:text-navy-100 mb-1" for="{{ form.year.id_for_label }}">Year</label>
+                        {{ form.year }}
+                        {% if form.year.errors %}
+                            <span class="text-tiny+ text-error">{{ form.year.errors.0 }}</span>
+                        {% endif %}
                     </div>
                 </div>
 
-                <button type="submit" class="btn btn-primary">Upload & Process</button>
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 mt-4">
+                    <!-- CAMS File -->
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 dark:text-navy-100 mb-1">CAMS File (.dbf / .csv)</label>
+                        <div class="flex items-center space-x-3">
+                             <label class="btn bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90 cursor-pointer">
+                                {{ form.cams_file }}
+                                <svg xmlns="http://www.w3.org/2000/svg" class="size-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                                </svg>
+                                <span>Choose File</span>
+                            </label>
+                            <span id="cams-filename" class="text-xs text-slate-500 truncate max-w-[150px]">No file chosen</span>
+                        </div>
+                         {% if form.cams_file.errors %}
+                            <span class="text-tiny+ text-error block mt-1">{{ form.cams_file.errors.0 }}</span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Karvy File -->
+                    <div>
+                         <label class="block text-sm font-medium text-slate-700 dark:text-navy-100 mb-1">Karvy File (.csv)</label>
+                         <div class="flex items-center space-x-3">
+                            <label class="btn bg-info font-medium text-white hover:bg-info-focus focus:bg-info-focus active:bg-info-focus/90 cursor-pointer">
+                                {{ form.karvy_file }}
+                                <svg xmlns="http://www.w3.org/2000/svg" class="size-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                                </svg>
+                                <span>Choose File</span>
+                            </label>
+                             <span id="karvy-filename" class="text-xs text-slate-500 truncate max-w-[150px]">No file chosen</span>
+                        </div>
+                        {% if form.karvy_file.errors %}
+                            <span class="text-tiny+ text-error block mt-1">{{ form.karvy_file.errors.0 }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="mt-6 flex justify-end">
+                    <button type="submit" id="submitBtn" class="btn bg-success font-medium text-white hover:bg-success-focus focus:bg-success-focus active:bg-success-focus/90">
+                        Upload & Process
+                    </button>
+                </div>
             </form>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block javascript %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // File Name Update Logic
+        const camsInput = document.getElementById('{{ form.cams_file.auto_id }}');
+        const karvyInput = document.getElementById('{{ form.karvy_file.auto_id }}');
+
+        camsInput.addEventListener('change', function(e) {
+            const fileName = e.target.files[0] ? e.target.files[0].name : "No file chosen";
+            document.getElementById('cams-filename').textContent = fileName;
+        });
+
+        karvyInput.addEventListener('change', function(e) {
+            const fileName = e.target.files[0] ? e.target.files[0].name : "No file chosen";
+            document.getElementById('karvy-filename').textContent = fileName;
+        });
+
+        // Form Submission Logic
+        const form = document.getElementById('uploadForm');
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            handleSubmission();
+        });
+
+        async function handleSubmission(overwrite = false) {
+            const formData = new FormData(form);
+            if (overwrite) {
+                formData.append('overwrite', 'true');
+            }
+
+            // Show Loading
+            Swal.fire({
+                title: 'Processing...',
+                text: 'Please wait while we process the brokerage files.',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            try {
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                const contentType = response.headers.get("content-type");
+                let data = {};
+
+                if (contentType && contentType.indexOf("application/json") !== -1) {
+                     data = await response.json();
+                } else {
+                    // Fallback if not JSON (e.g., standard HTML error page)
+                     throw new Error("Unexpected response from server");
+                }
+
+
+                if (response.ok) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: data.message || 'Files uploaded successfully.',
+                        confirmButtonText: 'Go to Dashboard'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                             window.location.href = data.redirect_url || "{% url 'payouts:dashboard' %}";
+                        }
+                    });
+                } else if (response.status === 409) {
+                    // Conflict - Duplicate Found
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Duplicate Report',
+                        text: data.message || 'A report for this month already exists. Do you want to overwrite it?',
+                        showCancelButton: true,
+                        confirmButtonColor: '#d33',
+                        cancelButtonColor: '#3085d6',
+                        confirmButtonText: 'Yes, Overwrite',
+                        cancelButtonText: 'Cancel'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            handleSubmission(true); // Retry with overwrite=true
+                        }
+                    });
+
+                } else if (response.status === 400) {
+                     // Validation Errors
+                    let errorMessage = data.message || 'Please check the form for errors.';
+                    if(data.errors) {
+                         errorMessage = Object.values(data.errors).flat().join('\n');
+                    }
+                     Swal.fire({
+                        icon: 'error',
+                        title: 'Validation Error',
+                        text: errorMessage
+                    });
+                } else {
+                    throw new Error(data.message || "Unknown error occurred.");
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Something went wrong. Please try again later.'
+                });
+            }
+        }
+    });
+</script>
 {% endblock %}
