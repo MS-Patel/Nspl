@@ -1,0 +1,17 @@
+Watching for file changes with StatReloader
+[10/Feb/2026 15:43:39] "GET /login/ HTTP/1.1" 200 7753
+[10/Feb/2026 15:43:39] "GET /static/images/illustrations/dashboard-check.svg HTTP/1.1" 200 130952
+[10/Feb/2026 15:43:39] "GET /static/images/logo12.png HTTP/1.1" 200 4636
+[10/Feb/2026 15:43:39] "GET /static/js/app.js HTTP/1.1" 200 147725
+[10/Feb/2026 15:43:39] "GET /static/css/app.css HTTP/1.1" 200 387118
+[10/Feb/2026 15:43:39] "GET /static/images/illustrations/dashboard-check-dark.svg HTTP/1.1" 200 130972
+[10/Feb/2026 15:43:39] "GET /static/js/pages/pages-sign-in-2.js HTTP/1.1" 200 340
+[10/Feb/2026 15:43:42] "POST /login/ HTTP/1.1" 302 0
+[10/Feb/2026 15:43:42] "GET /dashboard/investor/ HTTP/1.1" 200 57140
+[10/Feb/2026 15:43:42] "GET /static/css/style.css HTTP/1.1" 200 1
+[10/Feb/2026 15:43:42] "GET /static/images/user.png HTTP/1.1" 200 19456
+[10/Feb/2026 15:43:42] "GET /static/js/libs/components.js HTTP/1.1" 200 823854
+[10/Feb/2026 15:43:42] "GET /static/js/script.js HTTP/1.1" 200 10541
+[10/Feb/2026 15:43:42] "GET /static/js/libs/forms.js HTTP/1.1" 200 495466
+[10/Feb/2026 15:43:42] "GET /static/fonts/fontawesome/fa-solid-900.woff2 HTTP/1.1" 200 154228
+[10/Feb/2026 15:43:42] "GET /order/list/ HTTP/1.1" 200 66471

@@ -136,6 +136,7 @@
                         </div>`);
                     }
                 },
+                { id: 'bse_remarks', name: 'Remarks' },
                 { id: 'bse_order_id', name: 'BSE Ref' }
             ],
             data: gridData,
@@ -162,6 +163,7 @@
             { id: 'transaction_type', name: 'Type' },
             { id: 'amount', name: 'Amount' },
             { id: 'status', name: 'Status' },
+            { id: 'bse_remarks', name: 'Remarks' },
             { id: 'bse_order_id', name: 'BSE Ref' }
         ];
 
@@ -201,6 +203,7 @@
                     (row.unique_ref_no && row.unique_ref_no.toLowerCase().includes(keyword)) ||
                     (row.investor_name && row.investor_name.toLowerCase().includes(keyword)) ||
                     (row.scheme_name && row.scheme_name.toLowerCase().includes(keyword)) ||
+                    (row.bse_remarks && row.bse_remarks.toLowerCase().includes(keyword)) ||
                     (row.bse_order_id && row.bse_order_id.toLowerCase().includes(keyword));
 
                 // Status Filter
