@@ -71,7 +71,7 @@ class BaseParser:
                 folio_number=folio_number
             )
 
-    def get_or_create_provisional_investor(self, pan, name=None):
+    def get_or_create_provisional_investor(self, pan, name=None, is_offline=True):
         """
         Finds an investor by PAN or creates a provisional one.
         """
@@ -97,7 +97,8 @@ class BaseParser:
             profile = InvestorProfile.objects.create(
                 user=user,
                 pan=pan,
-                kyc_status=False # Assumption until verified
+                kyc_status=False, # Assumption until verified
+                is_offline=is_offline
             )
             logger.info(f"Created provisional investor for PAN {pan}")
             return profile
@@ -244,7 +245,7 @@ class CAMSParser(BaseParser):
                         inv_name = row[4].strip() if len(row) > 4 else None
 
                         # Fetch or Create Investor
-                        investor = self.get_or_create_provisional_investor(pan, inv_name)
+                        investor = self.get_or_create_provisional_investor(pan, inv_name, is_offline=True)
 
                         # Fetch Scheme
                         scheme_code = row[3].strip()
@@ -291,13 +292,16 @@ class CAMSXLSParser(BaseParser):
     def parse(self):
         try:
             df = pd.read_excel(self.file_path)
+            # Normalize columns to lowercase
+            df.columns = df.columns.str.lower()
+
             with transaction.atomic():
                 for _, row in df.iterrows():
                     pan = str(row.get('pan', '')).strip()
-                    if not pan or pan == 'nan': continue
+                    if not pan or pan.lower() == 'nan': continue
 
                     inv_name = str(row.get('inv_name', '')).strip()
-                    investor = self.get_or_create_provisional_investor(pan, inv_name)
+                    investor = self.get_or_create_provisional_investor(pan, inv_name, is_offline=True)
 
                     scheme_code = str(row.get('prodcode', '')).strip()
                     # Fallback to scheme name if code fails? No, rely on mapping
@@ -368,7 +372,7 @@ class KarvyParser(BaseParser):
 
                         inv_name = row[4].strip() if len(row) > 4 else None
 
-                        investor = self.get_or_create_provisional_investor(pan, inv_name)
+                        investor = self.get_or_create_provisional_investor(pan, inv_name, is_offline=True)
 
                         scheme_code = row[1].strip()
                         isin = None
@@ -416,32 +420,37 @@ class KarvyXLSParser(BaseParser):
             # Skip first row (TRANSACTION REPORT) if exists, check header=1
             # Based on inspection, header is at index 1
             df = pd.read_excel(self.file_path, header=1)
+            # Normalize columns to lowercase
+            df.columns = df.columns.str.lower()
+
             with transaction.atomic():
                 for _, row in df.iterrows():
-                    pan = str(row.get('PAN1', '')).strip()
-                    if not pan or pan == 'nan': continue
+                    # Use lowercase 'pan1'
+                    pan = str(row.get('pan1', '')).strip()
+                    if not pan or pan.lower() == 'nan': continue
 
-                    inv_name = str(row.get('INVNAME', '')).strip()
-                    investor = self.get_or_create_provisional_investor(pan, inv_name)
+                    inv_name = str(row.get('invname', '')).strip()
+                    investor = self.get_or_create_provisional_investor(pan, inv_name, is_offline=True)
 
-                    scheme_code = str(row.get('FMCODE', '')).strip()
+                    scheme_code = str(row.get('fmcode', '')).strip()
                     scheme = self.get_scheme(scheme_code)
                     if not scheme:
                         logger.warning(f"Scheme not found for Karvy XLS: {scheme_code}")
                         continue
 
-                    folio_number = str(row.get('TD_ACNO', '')).strip()
-                    txn_number = str(row.get('TD_TRNO', '')).strip()
+                    folio_number = str(row.get('td_acno', '')).strip()
+                    txn_number = str(row.get('td_trno', '')).strip()
 
                     # Try NAVDATE, fallback to TD_PRDT
-                    date_val = row.get('NAVDATE')
-                    if pd.isna(date_val): date_val = row.get('TD_PRDT')
+                    # keys are lowercase now
+                    date_val = row.get('navdate')
+                    if pd.isna(date_val): date_val = row.get('td_prdt')
                     txn_date = self.parse_date(date_val)
                     if not txn_date: continue
 
-                    amount = self.clean_decimal(row.get('TD_AMT'))
-                    units = self.clean_decimal(row.get('TD_UNITS'))
-                    txn_type = str(row.get('TD_TRTYPE', '')).strip()
+                    amount = self.clean_decimal(row.get('td_amt'))
+                    units = self.clean_decimal(row.get('td_units'))
+                    txn_type = str(row.get('td_trtype', '')).strip()
 
                     self.match_or_create_transaction(
                         investor, scheme, folio_number, txn_number, txn_date, amount, units, txn_type, 'KARVY'
@@ -488,7 +497,7 @@ class FranklinParser(BaseParser):
 
                         inv_name = row[4].strip() if len(row) > 4 else None
 
-                        investor = self.get_or_create_provisional_investor(pan, inv_name)
+                        investor = self.get_or_create_provisional_investor(pan, inv_name, is_offline=True)
 
                         scheme_code = row[1].strip()
                         scheme = self.get_scheme(scheme_code)

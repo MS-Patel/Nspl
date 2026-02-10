@@ -369,6 +369,11 @@ class InvestorProfile(models.Model):
     last_verified_at = models.DateTimeField(null=True, blank=True)
     bse_remarks = models.TextField(blank=True, help_text="Response remarks from BSE")
 
+    is_offline = models.BooleanField(
+        default=False,
+        help_text="True if investor is onboarded offline via RTA feed and not yet synced with BSE."
+    )
+
     def __str__(self):
         return f"{self.user.username} (PAN-{self.pan})"
 
