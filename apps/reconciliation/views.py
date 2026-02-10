@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django import forms
 from .models import RTAFile
-from .parsers import CAMSParser, KarvyParser, FranklinParser
+from .parsers import CAMSParser, KarvyParser, FranklinParser, CAMSXLSParser, KarvyXLSParser
 
 class RTAUploadForm(forms.ModelForm):
     class Meta:
@@ -26,10 +26,18 @@ def upload_rta_file(request):
 
             # Trigger Parser Sync
             parser = None
+            filename = rta_file.file_name.lower()
+
             if rta_file.rta_type == RTAFile.RTA_CAMS:
-                parser = CAMSParser(rta_file)
+                if filename.endswith('.xls') or filename.endswith('.xlsx'):
+                    parser = CAMSXLSParser(rta_file)
+                else:
+                    parser = CAMSParser(rta_file)
             elif rta_file.rta_type == RTAFile.RTA_KARVY:
-                parser = KarvyParser(rta_file)
+                if filename.endswith('.xls') or filename.endswith('.xlsx'):
+                     parser = KarvyXLSParser(rta_file)
+                else:
+                    parser = KarvyParser(rta_file)
             elif rta_file.rta_type == RTAFile.RTA_FRANKLIN:
                 parser = FranklinParser(rta_file)
 
