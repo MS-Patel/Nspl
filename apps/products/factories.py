@@ -1,5 +1,5 @@
 import factory
-from apps.products.models import AMC, Scheme, SchemeCategory
+from apps.products.models import AMC, Scheme, SchemeCategory, NAVHistory
 
 class AMCFactory(factory.django.DjangoModelFactory):
     class Meta:
@@ -32,3 +32,12 @@ class SchemeFactory(factory.django.DjangoModelFactory):
     min_purchase_amount = 5000
 
     redemption_allowed = True
+
+class NAVHistoryFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = NAVHistory
+        django_get_or_create = ('scheme', 'nav_date')
+
+    scheme = factory.SubFactory(SchemeFactory)
+    nav_date = factory.Faker('date_this_year')
+    net_asset_value = factory.Faker('pydecimal', left_digits=4, right_digits=4, positive=True)

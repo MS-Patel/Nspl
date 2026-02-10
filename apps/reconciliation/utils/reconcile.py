@@ -31,25 +31,23 @@ def recalculate_holding(investor, scheme, folio_number):
     # For now, we default to 0 or derive from specific transaction types if they existed.
     locked_units = Decimal(0)
 
+    # Standard Transaction Codes (Expanded List)
+    PURCHASE_CODES = {'P', 'SI', 'SIP', 'SIN', 'TI', 'PURCHASE', 'SWITCH IN', 'BSE_SIP', 'TRANSFER IN', 'ADDITIONAL PURCHASE', 'FRESH PURCHASE'}
+    DIVIDEND_REINVEST_CODES = {'DR', 'DIR', 'DIVIDEND REINVESTMENT'}
+    BONUS_CODES = {'B', 'BON', 'BONUS'}
+    REDEMPTION_CODES = {'R', 'SO', 'TO', 'REDEMPTION', 'SWITCH OUT', 'TRANSFER OUT'}
+    REVERSAL_CODES = {'J', 'REV', 'REVERSAL'}
+    PLEDGE_CODES = {'PL', 'PLEDGE'}
+    UNPLEDGE_CODES = {'UPL', 'UNPLEDGE'}
+
     for txn in transactions:
-        # Determine direction
-        # CAMS/Karvy types: P, R, SI, SO, SIP, etc.
-        # We need to standardize checks.
+        t_code = txn.txn_type_code.upper().strip()
 
-        t_code = txn.txn_type_code.upper()
-
-        # Positive Flows
-        if t_code in ['P', 'SI', 'SIP', 'PURCHASE', 'SWITCH IN', 'BSE_SIP', 'TI']:
+        # Positive Flows (Purchase/Switch In/SIP)
+        if t_code in PURCHASE_CODES:
             # Purchase or Inflow
             # Update WAC
             # New WAC = (Old Value + New Investment) / (Old Units + New Units)
-
-            # Use txn.amount (Total Investment) and txn.units
-            # Note: txn.amount is absolute.
-
-            # Handle edge case: Reversal of purchase? Usually RTA sends negative units?
-            # CAMS sends negative units for reversals? Or specific code.
-            # Assuming standard flows for now.
 
             if txn.units > 0:
                 total_cost = (total_units * weighted_avg_cost) + txn.amount
@@ -57,23 +55,29 @@ def recalculate_holding(investor, scheme, folio_number):
                 if total_units > 0:
                     weighted_avg_cost = total_cost / total_units
 
-        # Negative Flows
-        elif t_code in ['R', 'SO', 'REDEMPTION', 'SWITCH OUT', 'TO']:
+        # Dividend Reinvestment (Units Increase, Amount is considered reinvested)
+        elif t_code in DIVIDEND_REINVEST_CODES:
+             if txn.units > 0:
+                # Treated as new purchase at NAV
+                total_cost = (total_units * weighted_avg_cost) + txn.amount
+                total_units += txn.units
+                if total_units > 0:
+                    weighted_avg_cost = total_cost / total_units
+
+        # Bonus (Units Increase, Cost Basis of NEW units is 0)
+        # So Total Cost stays same, Total Units Increases -> WAC decreases
+        elif t_code in BONUS_CODES:
+             if txn.units > 0:
+                # Total Cost remains same (free units)
+                total_cost = (total_units * weighted_avg_cost) # + 0
+                total_units += txn.units
+                if total_units > 0:
+                    weighted_avg_cost = total_cost / total_units
+
+        # Negative Flows (Redemption/Switch Out)
+        elif t_code in REDEMPTION_CODES:
             # Redemption or Outflow
             # WAC stays the same, units decrease.
-            # RTA parsers usually store units as negative for Redemptions?
-            # Let's check parsers.py.
-            # Yes: CAMSParser says: effective_units = -abs(units) if R/SO.
-            # But the Transaction model stores `units` as the raw value from file?
-            # Let's re-read parsers.py carefully.
-
-            # CAMSParser:
-            # effective_units = -abs(units) ...
-            # Transaction.create(..., units=units, ...) -> It saves the RAW units (usually positive in file).
-            # So I need to apply sign here.
-
-            # But wait, CAMSParser update_holding used effective_units.
-            # Here in recalculate, I must derive effective units from Type.
 
             units_to_deduct = abs(txn.units)
             total_units -= units_to_deduct
@@ -83,10 +87,29 @@ def recalculate_holding(investor, scheme, folio_number):
                 total_units = Decimal(0)
                 weighted_avg_cost = Decimal(0)
 
+        # Reversals
+        # Assuming Reversal of Purchase (J)
+        elif t_code in REVERSAL_CODES:
+             # If we treat it as a "Negative Purchase":
+             units_to_reverse = abs(txn.units)
+             amount_to_reverse = abs(txn.amount)
+
+             # Reduce Total Cost and Total Units
+             current_total_cost = total_units * weighted_avg_cost
+             new_total_cost = current_total_cost - amount_to_reverse
+             total_units -= units_to_reverse
+
+             if total_units > 0 and new_total_cost > 0:
+                 weighted_avg_cost = new_total_cost / total_units
+             elif total_units <= 0:
+                 total_units = Decimal(0)
+                 weighted_avg_cost = Decimal(0)
+
+
         # Pledge Logic (If specific codes exist)
-        elif t_code in ['PL', 'PLEDGE']:
+        elif t_code in PLEDGE_CODES:
             pledged_units += abs(txn.units)
-        elif t_code in ['UPL', 'UNPLEDGE']:
+        elif t_code in UNPLEDGE_CODES:
             pledged_units -= abs(txn.units)
             if pledged_units < 0: pledged_units = Decimal(0)
 
