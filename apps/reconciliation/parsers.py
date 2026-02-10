@@ -224,54 +224,57 @@ class CAMSParser(BaseParser):
             with open(self.file_path, 'r', encoding='utf-8', errors='ignore') as f:
                 reader = csv.reader(f, delimiter='|')
 
-                with transaction.atomic():
-                    for row in reader:
-                        # Basic validation
-                        if not row or len(row) < 15:
-                            continue
-                        if row[0].startswith('HED') or row[0].startswith('TRL'):
-                            continue
+                for row in reader:
+                    try:
+                        with transaction.atomic():
+                            # Basic validation
+                            if not row or len(row) < 15:
+                                continue
+                            if row[0].startswith('HED') or row[0].startswith('TRL'):
+                                continue
 
-                        # Extract Data
-                        # Map indices based on WBR9 / Standard CAMS Feed
-                        # 0: AMC, 1: Folio, 3: Scheme Code, 4: Inv Name (Sometimes), 8: Type, 9: Txn No, 12: Units, 13: Amount, 15: Date, 18: PAN
+                            # Extract Data
+                            # Map indices based on WBR9 / Standard CAMS Feed
+                            # 0: AMC, 1: Folio, 3: Scheme Code, 4: Inv Name (Sometimes), 8: Type, 9: Txn No, 12: Units, 13: Amount, 15: Date, 18: PAN
 
-                        # Validate PAN
-                        pan = row[18].strip() if len(row) > 18 else None
-                        if not pan:
-                            continue
+                            # Validate PAN
+                            pan = row[18].strip() if len(row) > 18 else None
+                            if not pan:
+                                continue
 
-                        # Extract Name (Best Effort)
-                        inv_name = row[4].strip() if len(row) > 4 else None
+                            # Extract Name (Best Effort)
+                            inv_name = row[4].strip() if len(row) > 4 else None
 
-                        # Fetch or Create Investor
-                        investor = self.get_or_create_provisional_investor(pan, inv_name, is_offline=True)
+                            # Fetch or Create Investor
+                            investor = self.get_or_create_provisional_investor(pan, inv_name, is_offline=True)
 
-                        # Fetch Scheme
-                        scheme_code = row[3].strip()
-                        isin = row[20].strip() if len(row) > 20 else None # Try ISIN from col 20 (WBR9 standard vary)
+                            # Fetch Scheme
+                            scheme_code = row[3].strip()
+                            isin = row[20].strip() if len(row) > 20 else None # Try ISIN from col 20 (WBR9 standard vary)
 
-                        scheme = self.get_scheme(scheme_code, isin)
-                        if not scheme:
-                            # Log warning but skip for now as we can't book transaction without scheme
-                            logger.warning(f"Scheme not found: Code={scheme_code}, ISIN={isin}")
-                            continue
+                            scheme = self.get_scheme(scheme_code, isin)
+                            if not scheme:
+                                # Log warning but skip for now as we can't book transaction without scheme
+                                logger.warning(f"Scheme not found: Code={scheme_code}, ISIN={isin}")
+                                continue
 
-                        folio_number = row[1].strip()
-                        txn_number = row[9].strip()
+                            folio_number = row[1].strip()
+                            txn_number = row[9].strip()
 
-                        txn_date = self.parse_date(row[15])
-                        if not txn_date:
-                            continue
+                            txn_date = self.parse_date(row[15])
+                            if not txn_date:
+                                continue
 
-                        amount = self.clean_decimal(row[13])
-                        units = self.clean_decimal(row[12])
-                        txn_type = row[8].strip().upper()
+                            amount = self.clean_decimal(row[13])
+                            units = self.clean_decimal(row[12])
+                            txn_type = row[8].strip().upper()
 
-                        # Delegate to helper
-                        self.match_or_create_transaction(
-                            investor, scheme, folio_number, txn_number, txn_date, amount, units, txn_type, 'CAMS'
-                        )
+                            # Delegate to helper
+                            self.match_or_create_transaction(
+                                investor, scheme, folio_number, txn_number, txn_date, amount, units, txn_type, 'CAMS'
+                            )
+                    except Exception as e:
+                        logger.error(f"Error processing row {row}: {e}")
 
             if self.rta_file:
                 self.rta_file.status = RTAFile.STATUS_PROCESSED
@@ -295,35 +298,38 @@ class CAMSXLSParser(BaseParser):
             # Normalize columns to lowercase
             df.columns = df.columns.str.lower()
 
-            with transaction.atomic():
-                for _, row in df.iterrows():
-                    pan = str(row.get('pan', '')).strip()
-                    if not pan or pan.lower() == 'nan': continue
+            for _, row in df.iterrows():
+                try:
+                    with transaction.atomic():
+                        pan = str(row.get('pan', '')).strip()
+                        if not pan or pan.lower() == 'nan': continue
 
-                    inv_name = str(row.get('inv_name', '')).strip()
-                    investor = self.get_or_create_provisional_investor(pan, inv_name, is_offline=True)
+                        inv_name = str(row.get('inv_name', '')).strip()
+                        investor = self.get_or_create_provisional_investor(pan, inv_name, is_offline=True)
 
-                    scheme_code = str(row.get('prodcode', '')).strip()
-                    # Fallback to scheme name if code fails? No, rely on mapping
-                    scheme = self.get_scheme(scheme_code)
-                    if not scheme:
-                        logger.warning(f"Scheme not found for CAMS XLS: {scheme_code}")
-                        continue
+                        scheme_code = str(row.get('prodcode', '')).strip()
+                        # Fallback to scheme name if code fails? No, rely on mapping
+                        scheme = self.get_scheme(scheme_code)
+                        if not scheme:
+                            logger.warning(f"Scheme not found for CAMS XLS: {scheme_code}")
+                            continue
 
-                    folio_number = str(row.get('folio_no', '')).strip()
-                    txn_number = str(row.get('trxnno', '')).strip()
+                        folio_number = str(row.get('folio_no', '')).strip()
+                        txn_number = str(row.get('trxnno', '')).strip()
 
-                    date_val = row.get('traddate')
-                    txn_date = self.parse_date(date_val)
-                    if not txn_date: continue
+                        date_val = row.get('traddate')
+                        txn_date = self.parse_date(date_val)
+                        if not txn_date: continue
 
-                    amount = self.clean_decimal(row.get('amount'))
-                    units = self.clean_decimal(row.get('units'))
-                    txn_type = str(row.get('trxntype', '')).strip()
+                        amount = self.clean_decimal(row.get('amount'))
+                        units = self.clean_decimal(row.get('units'))
+                        txn_type = str(row.get('trxntype', '')).strip()
 
-                    self.match_or_create_transaction(
-                        investor, scheme, folio_number, txn_number, txn_date, amount, units, txn_type, 'CAMS'
-                    )
+                        self.match_or_create_transaction(
+                            investor, scheme, folio_number, txn_number, txn_date, amount, units, txn_type, 'CAMS'
+                        )
+                except Exception as e:
+                    logger.error(f"Error processing CAMS XLS row: {e}")
 
             if self.rta_file:
                 self.rta_file.status = RTAFile.STATUS_PROCESSED
@@ -347,57 +353,60 @@ class KarvyParser(BaseParser):
             with open(self.file_path, 'r', encoding='utf-8', errors='ignore') as f:
                 reader = csv.reader(f, delimiter='|')
 
-                with transaction.atomic():
-                    for row in reader:
-                        # Skip short rows
-                        if not row or len(row) < 10:
-                            continue
+                for row in reader:
+                    try:
+                        with transaction.atomic():
+                            # Skip short rows
+                            if not row or len(row) < 10:
+                                continue
 
-                        # Heuristic to detect Header or Data
-                        if "Header" in row[0] or "Product" in row[0]:
-                            continue
+                            # Heuristic to detect Header or Data
+                            if "Header" in row[0] or "Product" in row[0]:
+                                continue
 
-                        # Assuming Standard Karvy/MFD Layout (Pipe):
-                        # 0: AMC, 1: Scheme Code, 3: Folio, 4: Name?, 5: Type, 6: Trxn No, 7: Units, 8: Amount, 9: Date
+                            # Assuming Standard Karvy/MFD Layout (Pipe):
+                            # 0: AMC, 1: Scheme Code, 3: Folio, 4: Name?, 5: Type, 6: Trxn No, 7: Units, 8: Amount, 9: Date
 
-                        pan = None
-                        # Try to find PAN in likely columns (often 14, 15, 18, 19)
-                        for idx in [14, 15, 18, 19, 20]:
-                            if idx < len(row) and len(row[idx]) == 10 and row[idx].isalnum():
-                                pan = row[idx].strip()
-                                break
+                            pan = None
+                            # Try to find PAN in likely columns (often 14, 15, 18, 19)
+                            for idx in [14, 15, 18, 19, 20]:
+                                if idx < len(row) and len(row[idx]) == 10 and row[idx].isalnum():
+                                    pan = row[idx].strip()
+                                    break
 
-                        if not pan:
-                            continue
+                            if not pan:
+                                continue
 
-                        inv_name = row[4].strip() if len(row) > 4 else None
+                            inv_name = row[4].strip() if len(row) > 4 else None
 
-                        investor = self.get_or_create_provisional_investor(pan, inv_name, is_offline=True)
+                            investor = self.get_or_create_provisional_investor(pan, inv_name, is_offline=True)
 
-                        scheme_code = row[1].strip()
-                        isin = None
-                        # Try to find ISIN (often col 21 or 22)
-                        if len(row) > 21 and row[21].startswith('IN'):
-                            isin = row[21].strip()
+                            scheme_code = row[1].strip()
+                            isin = None
+                            # Try to find ISIN (often col 21 or 22)
+                            if len(row) > 21 and row[21].startswith('IN'):
+                                isin = row[21].strip()
 
-                        scheme = self.get_scheme(scheme_code, isin)
-                        if not scheme:
-                            logger.warning(f"Scheme not found: Code={scheme_code}, ISIN={isin}")
-                            continue
+                            scheme = self.get_scheme(scheme_code, isin)
+                            if not scheme:
+                                logger.warning(f"Scheme not found: Code={scheme_code}, ISIN={isin}")
+                                continue
 
-                        folio_number = row[3].strip()
-                        txn_number = row[6].strip()
+                            folio_number = row[3].strip()
+                            txn_number = row[6].strip()
 
-                        txn_date = self.parse_date(row[9])
-                        amount = self.clean_decimal(row[8])
-                        units = self.clean_decimal(row[7])
-                        txn_type = row[5].strip().upper()
+                            txn_date = self.parse_date(row[9])
+                            amount = self.clean_decimal(row[8])
+                            units = self.clean_decimal(row[7])
+                            txn_type = row[5].strip().upper()
 
-                        # Delegate to helper
-                        self.match_or_create_transaction(
-                            investor, scheme, folio_number, txn_number, txn_date if txn_date else timezone.now().date(),
-                            amount, units, txn_type, 'KARVY'
-                        )
+                            # Delegate to helper
+                            self.match_or_create_transaction(
+                                investor, scheme, folio_number, txn_number, txn_date if txn_date else timezone.now().date(),
+                                amount, units, txn_type, 'KARVY'
+                            )
+                    except Exception as e:
+                        logger.error(f"Error processing Karvy row: {e}")
 
             if self.rta_file:
                 self.rta_file.status = RTAFile.STATUS_PROCESSED
@@ -423,38 +432,41 @@ class KarvyXLSParser(BaseParser):
             # Normalize columns to lowercase
             df.columns = df.columns.str.lower()
 
-            with transaction.atomic():
-                for _, row in df.iterrows():
-                    # Use lowercase 'pan1'
-                    pan = str(row.get('pan1', '')).strip()
-                    if not pan or pan.lower() == 'nan': continue
+            for _, row in df.iterrows():
+                try:
+                    with transaction.atomic():
+                        # Use lowercase 'pan1'
+                        pan = str(row.get('pan1', '')).strip()
+                        if not pan or pan.lower() == 'nan': continue
 
-                    inv_name = str(row.get('invname', '')).strip()
-                    investor = self.get_or_create_provisional_investor(pan, inv_name, is_offline=True)
+                        inv_name = str(row.get('invname', '')).strip()
+                        investor = self.get_or_create_provisional_investor(pan, inv_name, is_offline=True)
 
-                    scheme_code = str(row.get('fmcode', '')).strip()
-                    scheme = self.get_scheme(scheme_code)
-                    if not scheme:
-                        logger.warning(f"Scheme not found for Karvy XLS: {scheme_code}")
-                        continue
+                        scheme_code = str(row.get('fmcode', '')).strip()
+                        scheme = self.get_scheme(scheme_code)
+                        if not scheme:
+                            logger.warning(f"Scheme not found for Karvy XLS: {scheme_code}")
+                            continue
 
-                    folio_number = str(row.get('td_acno', '')).strip()
-                    txn_number = str(row.get('td_trno', '')).strip()
+                        folio_number = str(row.get('td_acno', '')).strip()
+                        txn_number = str(row.get('td_trno', '')).strip()
 
-                    # Try NAVDATE, fallback to TD_PRDT
-                    # keys are lowercase now
-                    date_val = row.get('navdate')
-                    if pd.isna(date_val): date_val = row.get('td_prdt')
-                    txn_date = self.parse_date(date_val)
-                    if not txn_date: continue
+                        # Try NAVDATE, fallback to TD_PRDT
+                        # keys are lowercase now
+                        date_val = row.get('navdate')
+                        if pd.isna(date_val): date_val = row.get('td_prdt')
+                        txn_date = self.parse_date(date_val)
+                        if not txn_date: continue
 
-                    amount = self.clean_decimal(row.get('td_amt'))
-                    units = self.clean_decimal(row.get('td_units'))
-                    txn_type = str(row.get('td_trtype', '')).strip()
+                        amount = self.clean_decimal(row.get('td_amt'))
+                        units = self.clean_decimal(row.get('td_units'))
+                        txn_type = str(row.get('td_trtype', '')).strip()
 
-                    self.match_or_create_transaction(
-                        investor, scheme, folio_number, txn_number, txn_date, amount, units, txn_type, 'KARVY'
-                    )
+                        self.match_or_create_transaction(
+                            investor, scheme, folio_number, txn_number, txn_date, amount, units, txn_type, 'KARVY'
+                        )
+                except Exception as e:
+                    logger.error(f"Error processing Karvy XLS row: {e}")
 
             if self.rta_file:
                 self.rta_file.status = RTAFile.STATUS_PROCESSED
@@ -478,43 +490,46 @@ class FranklinParser(BaseParser):
             with open(self.file_path, 'r', encoding='utf-8', errors='ignore') as f:
                 reader = csv.reader(f, delimiter='|')
 
-                with transaction.atomic():
-                    for row in reader:
-                        if not row or len(row) < 10:
-                            continue
+                for row in reader:
+                    try:
+                        with transaction.atomic():
+                            if not row or len(row) < 10:
+                                continue
 
-                        if "Header" in row[0]: continue
+                            if "Header" in row[0]: continue
 
-                        # Franklin Layout Assumptions:
-                        # 1: Scheme Code, 3: Folio, 5: Type, 6: Trxn No, 7: Units, 8: Amount, 9: Date
+                            # Franklin Layout Assumptions:
+                            # 1: Scheme Code, 3: Folio, 5: Type, 6: Trxn No, 7: Units, 8: Amount, 9: Date
 
-                        pan = None
-                        if len(row) > 18: pan = row[18].strip()
-                        if not pan:
-                            if len(row) > 14 and len(row[14]) == 10: pan = row[14].strip()
+                            pan = None
+                            if len(row) > 18: pan = row[18].strip()
+                            if not pan:
+                                if len(row) > 14 and len(row[14]) == 10: pan = row[14].strip()
 
-                        if not pan: continue
+                            if not pan: continue
 
-                        inv_name = row[4].strip() if len(row) > 4 else None
+                            inv_name = row[4].strip() if len(row) > 4 else None
 
-                        investor = self.get_or_create_provisional_investor(pan, inv_name, is_offline=True)
+                            investor = self.get_or_create_provisional_investor(pan, inv_name, is_offline=True)
 
-                        scheme_code = row[1].strip()
-                        scheme = self.get_scheme(scheme_code)
-                        if not scheme: continue
+                            scheme_code = row[1].strip()
+                            scheme = self.get_scheme(scheme_code)
+                            if not scheme: continue
 
-                        folio_number = row[3].strip()
-                        txn_number = row[6].strip()
+                            folio_number = row[3].strip()
+                            txn_number = row[6].strip()
 
-                        txn_date = self.parse_date(row[9])
-                        amount = self.clean_decimal(row[8])
-                        units = self.clean_decimal(row[7])
-                        txn_type = row[5].strip().upper()
+                            txn_date = self.parse_date(row[9])
+                            amount = self.clean_decimal(row[8])
+                            units = self.clean_decimal(row[7])
+                            txn_type = row[5].strip().upper()
 
-                        self.match_or_create_transaction(
-                            investor, scheme, folio_number, txn_number, txn_date if txn_date else timezone.now().date(),
-                            amount, units, txn_type, 'FRANKLIN'
-                        )
+                            self.match_or_create_transaction(
+                                investor, scheme, folio_number, txn_number, txn_date if txn_date else timezone.now().date(),
+                                amount, units, txn_type, 'FRANKLIN'
+                            )
+                    except Exception as e:
+                        logger.error(f"Error processing Franklin row: {e}")
 
             if self.rta_file:
                 self.rta_file.status = RTAFile.STATUS_PROCESSED
