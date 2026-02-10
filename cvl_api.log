@@ -67,3 +67,169 @@
 </s:Envelope>
 
 2026-02-05 19:07:51,270 - PAN CHECK: DZKPP0598E | RESULT: <Element APP_RES_ROOT at 0x10ad02bc0>
+2026-02-07 12:39:00,743 - CVL REQUEST XML:
+<soap-env:Envelope xmlns:soap-env="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap-env:Header xmlns:wsa="http://www.w3.org/2005/08/addressing">
+    <wsa:Action>https://pancheck.www.kracvl.com/ICVLPanInquiry/GetPassword</wsa:Action>
+    <wsa:MessageID>urn:uuid:431e0bcd-5ece-4d65-88af-17c170b64602</wsa:MessageID>
+    <wsa:To>https://pancheck.www.kracvl.com/CVLPanInquiry.svc</wsa:To>
+  </soap-env:Header>
+  <soap-env:Body>
+    <ns0:GetPassword xmlns:ns0="https://pancheck.www.kracvl.com">
+      <ns0:webApi>
+        <ns0:userName>WEBADMIN</ns0:userName>
+        <ns0:posCode>5100147231</ns0:posCode>
+        <ns0:password>********</ns0:password>
+        <ns0:passKey>********</ns0:passKey>
+      </ns0:webApi>
+    </ns0:GetPassword>
+  </soap-env:Body>
+</soap-env:Envelope>
+
+2026-02-07 12:39:00,771 - CVL RESPONSE XML:
+<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">
+  <s:Body xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <GetPasswordResponse xmlns="https://pancheck.www.kracvl.com">
+      <GetPasswordResult>********</GetPasswordResult>
+    </GetPasswordResponse>
+  </s:Body>
+</s:Envelope>
+
+2026-02-07 12:39:00,772 - CVL REQUEST XML:
+<soap-env:Envelope xmlns:soap-env="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap-env:Header xmlns:wsa="http://www.w3.org/2005/08/addressing">
+    <wsa:Action>https://pancheck.www.kracvl.com/ICVLPanInquiry/GetPanStatus</wsa:Action>
+    <wsa:MessageID>urn:uuid:a021ed64-a261-4299-82cd-743dbaea7846</wsa:MessageID>
+    <wsa:To>https://pancheck.www.kracvl.com/CVLPanInquiry.svc</wsa:To>
+  </soap-env:Header>
+  <soap-env:Body>
+    <ns0:GetPanStatus xmlns:ns0="https://pancheck.www.kracvl.com">
+      <ns0:webApi>
+        <ns0:pan>EEFPP8024C</ns0:pan>
+        <ns0:userName>WEBADMIN</ns0:userName>
+        <ns0:posCode>5100147231</ns0:posCode>
+        <ns0:password>********</ns0:password>
+        <ns0:passKey>********</ns0:passKey>
+      </ns0:webApi>
+    </ns0:GetPanStatus>
+  </soap-env:Body>
+</soap-env:Envelope>
+
+2026-02-07 12:39:00,965 - CVL RESPONSE XML:
+<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">
+  <s:Body xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <GetPanStatusResponse xmlns="https://pancheck.www.kracvl.com">
+      <GetPanStatusResult>
+        <APP_RES_ROOT xmlns="">
+          <APP_PAN_INQ>
+            <APP_PAN_NO>EEFPP8024C</APP_PAN_NO>
+            <APP_NAME>Milindbhai Patel</APP_NAME>
+            <APP_STATUS>107</APP_STATUS>
+            <APP_STATUSDT>30-12-2017 13:04:16</APP_STATUSDT>
+            <APP_ENTRYDT>19-12-2017 14:54:39</APP_ENTRYDT>
+            <APP_MODDT>27-08-2024 18:16:56</APP_MODDT>
+            <APP_STATUS_DELTA>00</APP_STATUS_DELTA>
+            <APP_UPDT_STATUS>107</APP_UPDT_STATUS>
+            <APP_HOLD_DEACTIVE_RMKS/>
+            <APP_UPDT_RMKS/>
+            <APP_KYC_MODE>5</APP_KYC_MODE>
+            <APP_IPV_FLAG>Y</APP_IPV_FLAG>
+            <APP_UBO_FLAG/>
+            <APP_PER_ADD_PROOF>31</APP_PER_ADD_PROOF>
+            <APP_COR_ADD_PROOF>31</APP_COR_ADD_PROOF>
+          </APP_PAN_INQ>
+          <APP_PAN_SUMM>
+            <BATCH_ID/>
+            <APP_RESPONSE_DATE>07-02-2026 12:39:01</APP_RESPONSE_DATE>
+            <APP_TOTAL_REC>1</APP_TOTAL_REC>
+          </APP_PAN_SUMM>
+        </APP_RES_ROOT>
+      </GetPanStatusResult>
+    </GetPanStatusResponse>
+  </s:Body>
+</s:Envelope>
+
+2026-02-07 12:39:00,965 - PAN CHECK: EEFPP8024C | RESULT: <Element APP_RES_ROOT at 0x1eaf37fd540>
+2026-02-07 13:31:34,762 - CVL REQUEST XML:
+<soap-env:Envelope xmlns:soap-env="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap-env:Header xmlns:wsa="http://www.w3.org/2005/08/addressing">
+    <wsa:Action>https://pancheck.www.kracvl.com/ICVLPanInquiry/GetPassword</wsa:Action>
+    <wsa:MessageID>urn:uuid:e3a87c8c-3aa3-4b37-8f10-8c7c6537b7b5</wsa:MessageID>
+    <wsa:To>https://pancheck.www.kracvl.com/CVLPanInquiry.svc</wsa:To>
+  </soap-env:Header>
+  <soap-env:Body>
+    <ns0:GetPassword xmlns:ns0="https://pancheck.www.kracvl.com">
+      <ns0:webApi>
+        <ns0:userName>WEBADMIN</ns0:userName>
+        <ns0:posCode>5100147231</ns0:posCode>
+        <ns0:password>********</ns0:password>
+        <ns0:passKey>********</ns0:passKey>
+      </ns0:webApi>
+    </ns0:GetPassword>
+  </soap-env:Body>
+</soap-env:Envelope>
+
+2026-02-07 13:31:35,136 - CVL RESPONSE XML:
+<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">
+  <s:Body xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <GetPasswordResponse xmlns="https://pancheck.www.kracvl.com">
+      <GetPasswordResult>********</GetPasswordResult>
+    </GetPasswordResponse>
+  </s:Body>
+</s:Envelope>
+
+2026-02-07 13:31:35,139 - CVL REQUEST XML:
+<soap-env:Envelope xmlns:soap-env="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap-env:Header xmlns:wsa="http://www.w3.org/2005/08/addressing">
+    <wsa:Action>https://pancheck.www.kracvl.com/ICVLPanInquiry/GetPanStatus</wsa:Action>
+    <wsa:MessageID>urn:uuid:dc9237c0-67d8-4ebf-b6ab-1c60bcee9c3e</wsa:MessageID>
+    <wsa:To>https://pancheck.www.kracvl.com/CVLPanInquiry.svc</wsa:To>
+  </soap-env:Header>
+  <soap-env:Body>
+    <ns0:GetPanStatus xmlns:ns0="https://pancheck.www.kracvl.com">
+      <ns0:webApi>
+        <ns0:pan>BNIPC6749Q</ns0:pan>
+        <ns0:userName>WEBADMIN</ns0:userName>
+        <ns0:posCode>5100147231</ns0:posCode>
+        <ns0:password>********</ns0:password>
+        <ns0:passKey>********</ns0:passKey>
+      </ns0:webApi>
+    </ns0:GetPanStatus>
+  </soap-env:Body>
+</soap-env:Envelope>
+
+2026-02-07 13:31:36,039 - CVL RESPONSE XML:
+<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">
+  <s:Body xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <GetPanStatusResponse xmlns="https://pancheck.www.kracvl.com">
+      <GetPanStatusResult>
+        <APP_RES_ROOT xmlns="">
+          <APP_PAN_INQ>
+            <APP_PAN_NO>BNIPC6749Q</APP_PAN_NO>
+            <APP_NAME/>
+            <APP_STATUS>005</APP_STATUS>
+            <APP_STATUSDT/>
+            <APP_ENTRYDT/>
+            <APP_MODDT/>
+            <APP_STATUS_DELTA/>
+            <APP_UPDT_STATUS>005</APP_UPDT_STATUS>
+            <APP_HOLD_DEACTIVE_RMKS/>
+            <APP_UPDT_RMKS/>
+            <APP_KYC_MODE>0</APP_KYC_MODE>
+            <APP_IPV_FLAG/>
+            <APP_UBO_FLAG/>
+            <APP_PER_ADD_PROOF/>
+            <APP_COR_ADD_PROOF/>
+          </APP_PAN_INQ>
+          <APP_PAN_SUMM>
+            <BATCH_ID>07-02-2026 13:31:35</BATCH_ID>
+            <APP_RESPONSE_DATE>07-02-2026 13:31:35</APP_RESPONSE_DATE>
+            <APP_TOTAL_REC>1</APP_TOTAL_REC>
+          </APP_PAN_SUMM>
+        </APP_RES_ROOT>
+      </GetPanStatusResult>
+    </GetPanStatusResponse>
+  </s:Body>
+</s:Envelope>
+
+2026-02-07 13:31:36,040 - PAN CHECK: BNIPC6749Q | RESULT: <Element APP_RES_ROOT at 0x1eaf3475b40>

@@ -8,7 +8,7 @@ class Command(BaseCommand):
         parser.add_argument(
             '--days',
             type=int,
-            default=3,
+            default=30,
             help='Number of past days to sync (default: 3)'
         )
 

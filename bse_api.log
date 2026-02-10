@@ -1889,3 +1889,284 @@
     'Message': 'FAILED: ORDER DETAILS NOT FOUND',
     'Status': '101'
 }
+2026-02-10 13:30:14,308 - BSE REQUEST XML:
+<soap-env:Envelope xmlns:soap-env="http://www.w3.org/2003/05/soap-envelope">
+  <soap-env:Header xmlns:wsa="http://www.w3.org/2005/08/addressing">
+    <wsa:Action>http://bsestarmf.in/MFOrderEntry/getPassword</wsa:Action>
+    <wsa:MessageID>urn:uuid:12893411-ab3c-409a-99ca-1f41d0f672bb</wsa:MessageID>
+    <wsa:To>https://www.bsestarmf.in/MFOrderEntry/MFOrder.svc/Secure</wsa:To>
+  </soap-env:Header>
+  <soap-env:Body>
+    <ns0:getPassword xmlns:ns0="http://bsestarmf.in/">
+      <ns0:UserId>2463702</ns0:UserId>
+      <ns0:Password>********</ns0:Password>
+      <ns0:PassKey>********</ns0:PassKey>
+    </ns0:getPassword>
+  </soap-env:Body>
+</soap-env:Envelope>
+
+2026-02-10 13:30:14,375 - BSE RESPONSE XML:
+<s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope" xmlns:a="http://www.w3.org/2005/08/addressing">
+  <s:Header>
+    <a:Action s:mustUnderstand="1">http://bsestarmf.in/MFOrderEntry/getPasswordResponse</a:Action>
+    <a:RelatesTo>urn:uuid:12893411-ab3c-409a-99ca-1f41d0f672bb</a:RelatesTo>
+  </s:Header>
+  <s:Body>
+    <getPasswordResponse xmlns="http://bsestarmf.in/">
+      <getPasswordResult>100|dm25bEOQ5jFhLtPRSI9p7W6SHKjw90/2vfYTSTmM33O0AMGxmGLB+cGC7GPOLE8L</getPasswordResult>
+    </getPasswordResponse>
+  </s:Body>
+</s:Envelope>
+
+2026-02-10 13:30:14,376 - SIP ENTRY: 1 | Params: {'TransactionCode': 'NEW', 'UniqueRefNo': '0000001770710413825', 'SchemeCode': 'AXGADG-GR', 'MemberCode': '24637', 'ClientCode': 'Put71687', 'UserId': '2463702', 'InternalRefNo': '', 'TransMode': 'P', 'DpTxnMode': 'P', 'StartDate': '11/02/2026', 'FrequencyType': 'MONTHLY', 'FrequencyAllowed': '1', 'InstallmentAmount': '100.00', 'NoOfInstallment': '10', 'Remarks': '', 'FolioNo': '', 'FirstOrderFlag': 'Y', 'Brokerage': '', 'MandateID': '8646982', 'SubberCode': '', 'Euin': 'E123456', 'EuinVal': 'Y', 'DPC': 'Y', 'XsipRegID': '', 'IPAdd': '', 'Password': 'dm25bEOQ5jFhLtPRSI9p7W6SHKjw90/2vfYTSTmM33O0AMGxmGLB+cGC7GPOLE8L', 'PassKey': 'OL9yxHkaJT', 'Param1': '', 'Param2': '', 'Param3': '', 'Filler1': '', 'Filler2': '', 'Filler3': '', 'Filler4': '', 'Filler5': '', 'Filler6': ''}
+2026-02-10 13:30:14,377 - BSE REQUEST XML:
+<soap-env:Envelope xmlns:soap-env="http://www.w3.org/2003/05/soap-envelope">
+  <soap-env:Header xmlns:wsa="http://www.w3.org/2005/08/addressing">
+    <wsa:Action>http://bsestarmf.in/MFOrderEntry/xsipOrderEntryParam</wsa:Action>
+    <wsa:MessageID>urn:uuid:f460521b-94a7-4c39-b751-100879608e10</wsa:MessageID>
+    <wsa:To>https://www.bsestarmf.in/MFOrderEntry/MFOrder.svc/Secure</wsa:To>
+  </soap-env:Header>
+  <soap-env:Body>
+    <ns0:xsipOrderEntryParam xmlns:ns0="http://bsestarmf.in/">
+      <ns0:TransactionCode>NEW</ns0:TransactionCode>
+      <ns0:UniqueRefNo>0000001770710413825</ns0:UniqueRefNo>
+      <ns0:SchemeCode>AXGADG-GR</ns0:SchemeCode>
+      <ns0:MemberCode>24637</ns0:MemberCode>
+      <ns0:ClientCode>Put71687</ns0:ClientCode>
+      <ns0:UserId>2463702</ns0:UserId>
+      <ns0:InternalRefNo></ns0:InternalRefNo>
+      <ns0:TransMode>P</ns0:TransMode>
+      <ns0:DpTxnMode>P</ns0:DpTxnMode>
+      <ns0:StartDate>11/02/2026</ns0:StartDate>
+      <ns0:FrequencyType>MONTHLY</ns0:FrequencyType>
+      <ns0:FrequencyAllowed>1</ns0:FrequencyAllowed>
+      <ns0:InstallmentAmount>100.00</ns0:InstallmentAmount>
+      <ns0:NoOfInstallment>10</ns0:NoOfInstallment>
+      <ns0:Remarks></ns0:Remarks>
+      <ns0:FolioNo></ns0:FolioNo>
+      <ns0:FirstOrderFlag>Y</ns0:FirstOrderFlag>
+      <ns0:Brokerage></ns0:Brokerage>
+      <ns0:MandateID>8646982</ns0:MandateID>
+      <ns0:SubberCode></ns0:SubberCode>
+      <ns0:Euin>E123456</ns0:Euin>
+      <ns0:EuinVal>Y</ns0:EuinVal>
+      <ns0:DPC>Y</ns0:DPC>
+      <ns0:XsipRegID></ns0:XsipRegID>
+      <ns0:IPAdd></ns0:IPAdd>
+      <ns0:Password>********</ns0:Password>
+      <ns0:PassKey>********</ns0:PassKey>
+      <ns0:Param1></ns0:Param1>
+      <ns0:Param2></ns0:Param2>
+      <ns0:Param3></ns0:Param3>
+      <ns0:Filler1></ns0:Filler1>
+      <ns0:Filler2></ns0:Filler2>
+      <ns0:Filler3></ns0:Filler3>
+      <ns0:Filler4></ns0:Filler4>
+      <ns0:Filler5></ns0:Filler5>
+      <ns0:Filler6></ns0:Filler6>
+    </ns0:xsipOrderEntryParam>
+  </soap-env:Body>
+</soap-env:Envelope>
+
+2026-02-10 13:30:14,427 - BSE RESPONSE XML:
+<s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope" xmlns:a="http://www.w3.org/2005/08/addressing">
+  <s:Header>
+    <a:Action s:mustUnderstand="1">http://bsestarmf.in/MFOrderEntry/xsipOrderEntryParamResponse</a:Action>
+    <a:RelatesTo>urn:uuid:f460521b-94a7-4c39-b751-100879608e10</a:RelatesTo>
+  </s:Header>
+  <s:Body>
+    <xsipOrderEntryParamResponse xmlns="http://bsestarmf.in/">
+      <xsipOrderEntryParamResult>NEW|0000001770710413825|24637|Put71687|2463702|0|FAILED : IN-COMPLETED CLIENT NOMINEE DETAILS|1|0</xsipOrderEntryParamResult>
+    </xsipOrderEntryParamResponse>
+  </s:Body>
+</s:Envelope>
+
+2026-02-10 13:30:14,428 - SIP ENTRY: 1 | RESPONSE: NEW|0000001770710413825|24637|Put71687|2463702|0|FAILED : IN-COMPLETED CLIENT NOMINEE DETAILS|1|0
+2026-02-10 14:50:09,425 - BSE REQUEST XML:
+<soap-env:Envelope xmlns:soap-env="http://www.w3.org/2003/05/soap-envelope">
+  <soap-env:Header xmlns:wsa="http://www.w3.org/2005/08/addressing">
+    <wsa:Action>http://bsestarmf.in/MFOrderEntry/getPassword</wsa:Action>
+    <wsa:MessageID>urn:uuid:9736d167-ebd1-405c-bf83-92ff53f093f2</wsa:MessageID>
+    <wsa:To>https://www.bsestarmf.in/MFOrderEntry/MFOrder.svc/Secure</wsa:To>
+  </soap-env:Header>
+  <soap-env:Body>
+    <ns0:getPassword xmlns:ns0="http://bsestarmf.in/">
+      <ns0:UserId>2463702</ns0:UserId>
+      <ns0:Password>********</ns0:Password>
+      <ns0:PassKey>********</ns0:PassKey>
+    </ns0:getPassword>
+  </soap-env:Body>
+</soap-env:Envelope>
+
+2026-02-10 14:50:10,671 - BSE RESPONSE XML:
+<s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope" xmlns:a="http://www.w3.org/2005/08/addressing">
+  <s:Header>
+    <a:Action s:mustUnderstand="1">http://bsestarmf.in/MFOrderEntry/getPasswordResponse</a:Action>
+    <a:RelatesTo>urn:uuid:9736d167-ebd1-405c-bf83-92ff53f093f2</a:RelatesTo>
+  </s:Header>
+  <s:Body>
+    <getPasswordResponse xmlns="http://bsestarmf.in/">
+      <getPasswordResult>100|dm25bEOQ5jFhLtPRSI9p7aNKqfVbA5EKJpP0BDHS5A92DXJ0SZ/lzeRBh6k/C2d7</getPasswordResult>
+    </getPasswordResponse>
+  </s:Body>
+</s:Envelope>
+
+2026-02-10 14:50:10,671 - SIP ENTRY: 2 | Params: {'TransactionCode': 'NEW', 'UniqueRefNo': '0000001770715208758', 'SchemeCode': 'AXGADG-GR', 'MemberCode': '24637', 'ClientCode': 'Put71687', 'UserId': '2463702', 'InternalRefNo': '', 'TransMode': 'P', 'DpTxnMode': 'P', 'StartDate': '11/02/2026', 'FrequencyType': 'MONTHLY', 'FrequencyAllowed': '1', 'InstallmentAmount': '100.00', 'NoOfInstallment': '30', 'Remarks': '', 'FolioNo': '', 'FirstOrderFlag': 'Y', 'Brokerage': '', 'MandateID': '8646982', 'SubberCode': '', 'Euin': 'E123456', 'EuinVal': 'Y', 'DPC': 'Y', 'XsipRegID': '', 'IPAdd': '', 'Password': 'dm25bEOQ5jFhLtPRSI9p7aNKqfVbA5EKJpP0BDHS5A92DXJ0SZ/lzeRBh6k/C2d7', 'PassKey': 'WE6QhlFPQK', 'Param1': '', 'Param2': '', 'Param3': '', 'Filler1': '', 'Filler2': '', 'Filler3': '', 'Filler4': '', 'Filler5': '', 'Filler6': ''}
+2026-02-10 14:50:10,671 - BSE REQUEST XML:
+<soap-env:Envelope xmlns:soap-env="http://www.w3.org/2003/05/soap-envelope">
+  <soap-env:Header xmlns:wsa="http://www.w3.org/2005/08/addressing">
+    <wsa:Action>http://bsestarmf.in/MFOrderEntry/xsipOrderEntryParam</wsa:Action>
+    <wsa:MessageID>urn:uuid:dad99440-a34b-46a5-bf8b-8107a7d54288</wsa:MessageID>
+    <wsa:To>https://www.bsestarmf.in/MFOrderEntry/MFOrder.svc/Secure</wsa:To>
+  </soap-env:Header>
+  <soap-env:Body>
+    <ns0:xsipOrderEntryParam xmlns:ns0="http://bsestarmf.in/">
+      <ns0:TransactionCode>NEW</ns0:TransactionCode>
+      <ns0:UniqueRefNo>0000001770715208758</ns0:UniqueRefNo>
+      <ns0:SchemeCode>AXGADG-GR</ns0:SchemeCode>
+      <ns0:MemberCode>24637</ns0:MemberCode>
+      <ns0:ClientCode>Put71687</ns0:ClientCode>
+      <ns0:UserId>2463702</ns0:UserId>
+      <ns0:InternalRefNo></ns0:InternalRefNo>
+      <ns0:TransMode>P</ns0:TransMode>
+      <ns0:DpTxnMode>P</ns0:DpTxnMode>
+      <ns0:StartDate>11/02/2026</ns0:StartDate>
+      <ns0:FrequencyType>MONTHLY</ns0:FrequencyType>
+      <ns0:FrequencyAllowed>1</ns0:FrequencyAllowed>
+      <ns0:InstallmentAmount>100.00</ns0:InstallmentAmount>
+      <ns0:NoOfInstallment>30</ns0:NoOfInstallment>
+      <ns0:Remarks></ns0:Remarks>
+      <ns0:FolioNo></ns0:FolioNo>
+      <ns0:FirstOrderFlag>Y</ns0:FirstOrderFlag>
+      <ns0:Brokerage></ns0:Brokerage>
+      <ns0:MandateID>8646982</ns0:MandateID>
+      <ns0:SubberCode></ns0:SubberCode>
+      <ns0:Euin>E123456</ns0:Euin>
+      <ns0:EuinVal>Y</ns0:EuinVal>
+      <ns0:DPC>Y</ns0:DPC>
+      <ns0:XsipRegID></ns0:XsipRegID>
+      <ns0:IPAdd></ns0:IPAdd>
+      <ns0:Password>********</ns0:Password>
+      <ns0:PassKey>********</ns0:PassKey>
+      <ns0:Param1></ns0:Param1>
+      <ns0:Param2></ns0:Param2>
+      <ns0:Param3></ns0:Param3>
+      <ns0:Filler1></ns0:Filler1>
+      <ns0:Filler2></ns0:Filler2>
+      <ns0:Filler3></ns0:Filler3>
+      <ns0:Filler4></ns0:Filler4>
+      <ns0:Filler5></ns0:Filler5>
+      <ns0:Filler6></ns0:Filler6>
+    </ns0:xsipOrderEntryParam>
+  </soap-env:Body>
+</soap-env:Envelope>
+
+2026-02-10 14:50:10,796 - BSE RESPONSE XML:
+<s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope" xmlns:a="http://www.w3.org/2005/08/addressing">
+  <s:Header>
+    <a:Action s:mustUnderstand="1">http://bsestarmf.in/MFOrderEntry/xsipOrderEntryParamResponse</a:Action>
+    <a:RelatesTo>urn:uuid:dad99440-a34b-46a5-bf8b-8107a7d54288</a:RelatesTo>
+  </s:Header>
+  <s:Body>
+    <xsipOrderEntryParamResponse xmlns="http://bsestarmf.in/">
+      <xsipOrderEntryParamResult>NEW|0000001770715208758|24637|Put71687|2463702|0|FAILED : IN-COMPLETED CLIENT NOMINEE DETAILS|1|0</xsipOrderEntryParamResult>
+    </xsipOrderEntryParamResponse>
+  </s:Body>
+</s:Envelope>
+
+2026-02-10 14:50:10,796 - SIP ENTRY: 2 | RESPONSE: NEW|0000001770715208758|24637|Put71687|2463702|0|FAILED : IN-COMPLETED CLIENT NOMINEE DETAILS|1|0
+2026-02-10 14:51:01,359 - BSE REQUEST XML:
+<soap-env:Envelope xmlns:soap-env="http://www.w3.org/2003/05/soap-envelope">
+  <soap-env:Header xmlns:wsa="http://www.w3.org/2005/08/addressing">
+    <wsa:Action>http://bsestarmf.in/MFOrderEntry/getPassword</wsa:Action>
+    <wsa:MessageID>urn:uuid:8578d62b-45ee-460a-969f-74449e0d2617</wsa:MessageID>
+    <wsa:To>https://www.bsestarmf.in/MFOrderEntry/MFOrder.svc/Secure</wsa:To>
+  </soap-env:Header>
+  <soap-env:Body>
+    <ns0:getPassword xmlns:ns0="http://bsestarmf.in/">
+      <ns0:UserId>2463702</ns0:UserId>
+      <ns0:Password>********</ns0:Password>
+      <ns0:PassKey>********</ns0:PassKey>
+    </ns0:getPassword>
+  </soap-env:Body>
+</soap-env:Envelope>
+
+2026-02-10 14:51:01,421 - BSE RESPONSE XML:
+<s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope" xmlns:a="http://www.w3.org/2005/08/addressing">
+  <s:Header>
+    <a:Action s:mustUnderstand="1">http://bsestarmf.in/MFOrderEntry/getPasswordResponse</a:Action>
+    <a:RelatesTo>urn:uuid:8578d62b-45ee-460a-969f-74449e0d2617</a:RelatesTo>
+  </s:Header>
+  <s:Body>
+    <getPasswordResponse xmlns="http://bsestarmf.in/">
+      <getPasswordResult>100|dm25bEOQ5jFhLtPRSI9p7e+fA3/bFBJVM8wrcPVLpE7Gv9U/S2Tv/1f7mLVtlMKj</getPasswordResult>
+    </getPasswordResponse>
+  </s:Body>
+</s:Envelope>
+
+2026-02-10 14:51:01,421 - SIP ENTRY: 3 | Params: {'TransactionCode': 'NEW', 'UniqueRefNo': '0000001770715260028', 'SchemeCode': 'AXGADG-GR', 'MemberCode': '24637', 'ClientCode': 'Put71687', 'UserId': '2463702', 'InternalRefNo': '', 'TransMode': 'P', 'DpTxnMode': 'P', 'StartDate': '11/02/2026', 'FrequencyType': 'MONTHLY', 'FrequencyAllowed': '1', 'InstallmentAmount': '100.00', 'NoOfInstallment': '30', 'Remarks': '', 'FolioNo': '', 'FirstOrderFlag': 'Y', 'Brokerage': '', 'MandateID': '8646982', 'SubberCode': '', 'Euin': 'E123456', 'EuinVal': 'Y', 'DPC': 'Y', 'XsipRegID': '', 'IPAdd': '', 'Password': 'dm25bEOQ5jFhLtPRSI9p7e+fA3/bFBJVM8wrcPVLpE7Gv9U/S2Tv/1f7mLVtlMKj', 'PassKey': 'PZ0J0V81Sn', 'Param1': '', 'Param2': '', 'Param3': '', 'Filler1': '', 'Filler2': '', 'Filler3': '', 'Filler4': '', 'Filler5': '', 'Filler6': ''}
+2026-02-10 14:51:01,421 - BSE REQUEST XML:
+<soap-env:Envelope xmlns:soap-env="http://www.w3.org/2003/05/soap-envelope">
+  <soap-env:Header xmlns:wsa="http://www.w3.org/2005/08/addressing">
+    <wsa:Action>http://bsestarmf.in/MFOrderEntry/xsipOrderEntryParam</wsa:Action>
+    <wsa:MessageID>urn:uuid:23a52633-4305-4f0a-a96b-8e98d799fe04</wsa:MessageID>
+    <wsa:To>https://www.bsestarmf.in/MFOrderEntry/MFOrder.svc/Secure</wsa:To>
+  </soap-env:Header>
+  <soap-env:Body>
+    <ns0:xsipOrderEntryParam xmlns:ns0="http://bsestarmf.in/">
+      <ns0:TransactionCode>NEW</ns0:TransactionCode>
+      <ns0:UniqueRefNo>0000001770715260028</ns0:UniqueRefNo>
+      <ns0:SchemeCode>AXGADG-GR</ns0:SchemeCode>
+      <ns0:MemberCode>24637</ns0:MemberCode>
+      <ns0:ClientCode>Put71687</ns0:ClientCode>
+      <ns0:UserId>2463702</ns0:UserId>
+      <ns0:InternalRefNo></ns0:InternalRefNo>
+      <ns0:TransMode>P</ns0:TransMode>
+      <ns0:DpTxnMode>P</ns0:DpTxnMode>
+      <ns0:StartDate>11/02/2026</ns0:StartDate>
+      <ns0:FrequencyType>MONTHLY</ns0:FrequencyType>
+      <ns0:FrequencyAllowed>1</ns0:FrequencyAllowed>
+      <ns0:InstallmentAmount>100.00</ns0:InstallmentAmount>
+      <ns0:NoOfInstallment>30</ns0:NoOfInstallment>
+      <ns0:Remarks></ns0:Remarks>
+      <ns0:FolioNo></ns0:FolioNo>
+      <ns0:FirstOrderFlag>Y</ns0:FirstOrderFlag>
+      <ns0:Brokerage></ns0:Brokerage>
+      <ns0:MandateID>8646982</ns0:MandateID>
+      <ns0:SubberCode></ns0:SubberCode>
+      <ns0:Euin>E123456</ns0:Euin>
+      <ns0:EuinVal>Y</ns0:EuinVal>
+      <ns0:DPC>Y</ns0:DPC>
+      <ns0:XsipRegID></ns0:XsipRegID>
+      <ns0:IPAdd></ns0:IPAdd>
+      <ns0:Password>********</ns0:Password>
+      <ns0:PassKey>********</ns0:PassKey>
+      <ns0:Param1></ns0:Param1>
+      <ns0:Param2></ns0:Param2>
+      <ns0:Param3></ns0:Param3>
+      <ns0:Filler1></ns0:Filler1>
+      <ns0:Filler2></ns0:Filler2>
+      <ns0:Filler3></ns0:Filler3>
+      <ns0:Filler4></ns0:Filler4>
+      <ns0:Filler5></ns0:Filler5>
+      <ns0:Filler6></ns0:Filler6>
+    </ns0:xsipOrderEntryParam>
+  </soap-env:Body>
+</soap-env:Envelope>
+
+2026-02-10 14:51:01,483 - BSE RESPONSE XML:
+<s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope" xmlns:a="http://www.w3.org/2005/08/addressing">
+  <s:Header>
+    <a:Action s:mustUnderstand="1">http://bsestarmf.in/MFOrderEntry/xsipOrderEntryParamResponse</a:Action>
+    <a:RelatesTo>urn:uuid:23a52633-4305-4f0a-a96b-8e98d799fe04</a:RelatesTo>
+  </s:Header>
+  <s:Body>
+    <xsipOrderEntryParamResponse xmlns="http://bsestarmf.in/">
+      <xsipOrderEntryParamResult>NEW|0000001770715260028|24637|Put71687|2463702|0|FAILED : IN-COMPLETED CLIENT NOMINEE DETAILS|1|0</xsipOrderEntryParamResult>
+    </xsipOrderEntryParamResponse>
+  </s:Body>
+</s:Envelope>
+
+2026-02-10 14:51:01,483 - SIP ENTRY: 3 | RESPONSE: NEW|0000001770715260028|24637|Put71687|2463702|0|FAILED : IN-COMPLETED CLIENT NOMINEE DETAILS|1|0
+2026-02-10 14:53:09,710 - API: https://www.bsestarmf.in/BSEMFWEBAPI/UCCAPI/UCCRegistrationV183 | REGN TYPE: MOD | REQUEST BODY: {'UserId': '2463702', 'MemberCode': '24637', 'Password': '********', 'RegnType': 'MOD', 'Param': 'Put71687|Putul||Kumar|01|M|29/12/1984|02|SI|||||||||||||N||||BDAPK9533N||||||||P||||||||SB|32603798676||SBIN0030158|Y|SB|77770132471489||FDRL0007777|N||||||||||||||||Putul Kumar|04|C8 404 Akshar Pavillion Gotri|||Vadodara|GU|390021|INDIA|||||bullseye.bsct@gmail.com|M||||||||||||9999286005|K||||||||||||||P|||SE|SE||||||||||Y|W|Ranjita Rai|20|100|N||||1|AMAPR1170Q|bullseye.bsct@gmail.com|9315494820|C8 404 Akshar Pavilion Gotri|||Vadodara|390021|India|||||||||||||||||||||||||||||||||||N||||||||', 'Filler1': '', 'Filler2': ''}
+2026-02-10 14:53:11,401 - API: https://www.bsestarmf.in/BSEMFWEBAPI/UCCAPI/UCCRegistrationV183 | RESPONSE: {"Status":"1","Remarks":"FAILED : NOMINEE DETAILS ALREADY AUTHENTICATED. YOU CAN NOT CHANGE NOMINEE DETAILS NOW.","Filler1":"","Filler2":""}

@@ -85,11 +85,13 @@ class SIP(models.Model):
     # Frequencies
     MONTHLY = 'MONTHLY'
     WEEKLY = 'WEEKLY'
+    DAILY = 'DAILY'
     QUARTERLY = 'QUARTERLY'
 
     FREQUENCY_CHOICES = [
         (MONTHLY, 'Monthly'),
         (WEEKLY, 'Weekly'),
+        (DAILY, 'Daily'),
         (QUARTERLY, 'Quarterly'),
     ]
 
