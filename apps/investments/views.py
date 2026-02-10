@@ -479,7 +479,7 @@ def order_list(request):
             'investor_name': order.investor.user.name if order.investor.user.name else order.investor.user.username,
             'scheme_name': order.scheme.name,
             'transaction_type': order.get_transaction_type_display(),
-            'amount': float(order.amount),
+            'amount': round(float(order.amount), 2),
             'status': order.get_status_display(),
             'bse_remarks': order.bse_remarks if order.bse_remarks else '-',
             'bse_order_id': order.bse_order_id if order.bse_order_id else '-',
@@ -623,10 +623,10 @@ class HoldingListView(LoginRequiredMixin, ListView):
                 'investor_name': holding.investor.user.name or holding.investor.user.username,
                 'folio_number': holding.folio_number,
                 'scheme_name': holding.scheme.name,
-                'units': float(holding.units),
-                'average_cost': float(holding.average_cost),
-                'current_value': float(holding.current_value) if holding.current_value else 0.0,
-                'current_nav': float(holding.current_nav) if holding.current_nav else 0.0,
+                'units': round(float(holding.units), 2),
+                'average_cost': round(float(holding.average_cost), 2),
+                'current_value': round(float(holding.current_value) if holding.current_value else 0.0, 2),
+                'current_nav': round(float(holding.current_nav) if holding.current_nav else 0.0, 2),
                 'action_url': {
                     'redeem': reverse('investments:redemption_create', args=[holding.id]),
                     'switch': reverse('investments:order_create') + f"?holding_id={holding.id}"

@@ -62,13 +62,13 @@ def calculate_portfolio_valuation(investor_profile):
             'id': holding.id,
             'scheme_name': scheme.name,
             'folio': holding.folio_number,
-            'units': float(holding.units),
-            'average_cost': float(holding.average_cost),
-            'current_nav': float(holding.current_nav) if holding.current_nav else 0.0,
-            'current_value': float(holding.current_value) if holding.current_value else 0.0,
-            'invested_value': float(invested_value),
-            'gain_loss': float(gain_loss),
-            'gain_loss_percent': float(gain_loss_percent),
+            'units': round(float(holding.units), 2),
+            'average_cost': round(float(holding.average_cost), 2),
+            'current_nav': round(float(holding.current_nav) if holding.current_nav else 0.0, 2),
+            'current_value': round(float(holding.current_value) if holding.current_value else 0.0, 2),
+            'invested_value': round(float(invested_value), 2),
+            'gain_loss': round(float(gain_loss), 2),
+            'gain_loss_percent': round(float(gain_loss_percent), 2),
             'nav_date': str(nav_date) if nav_date else None
         })
 

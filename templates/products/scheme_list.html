@@ -187,6 +187,7 @@ const GridJSExportUtils = (() => {
     const tableData = {{ grid_data_json|safe }};
     const gridContainer = document.querySelector("#scheme_list");
     const investUrl = "{% url 'investments:order_create' %}";
+    const detailBaseUrl = "{% url 'products:scheme_list' %}";
 
     const gridConfig = {
       columns: [
@@ -194,7 +195,10 @@ const GridJSExportUtils = (() => {
         {
           id: "name",
           name: "Scheme Name",
-          formatter: (cell) => Gridjs.html(`<span class="font-medium text-slate-700 dark:text-navy-100">${cell}</span>`)
+          formatter: (cell, row) => {
+             const schemeId = row.cells[0].data;
+             return Gridjs.html(`<a href="${detailBaseUrl}${schemeId}/" class="font-medium text-primary hover:underline dark:text-accent-light">${cell}</a>`);
+          }
         },
         { id: "scheme_code", name: "Code" },
         { id: "rta_code", name: "RTA Code" },
