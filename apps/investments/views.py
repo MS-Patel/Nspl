@@ -481,6 +481,7 @@ def order_list(request):
             'transaction_type': order.get_transaction_type_display(),
             'amount': float(order.amount),
             'status': order.get_status_display(),
+            'bse_remarks': order.bse_remarks if order.bse_remarks else '-',
             'bse_order_id': order.bse_order_id if order.bse_order_id else '-',
         })
 

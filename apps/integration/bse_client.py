@@ -241,9 +241,13 @@ class BSEStarMFClient:
                     'remarks': parts[2] if len(parts) > 2 else 'Order Placed'
                 }
             else:
+                remarks = parts[1] if len(parts) > 1 else str(response)
+                # Handle Echo format where remarks are at index 6
+                if len(parts) > 6 and not parts[0].isdigit():
+                     remarks = parts[6]
                 return {
                     'status': 'error',
-                    'remarks': parts[1] if len(parts) > 1 else response
+                    'remarks': remarks
                 }
         except Exception as e:
             bse_logger.error(f"ORDER ENTRY ERROR: {str(e)}")
@@ -280,9 +284,13 @@ class BSEStarMFClient:
                     'remarks': parts[2] if len(parts) > 2 else 'Switch Order Placed'
                 }
             else:
+                remarks = parts[1] if len(parts) > 1 else str(response)
+                # Handle Echo format where remarks are at index 6
+                if len(parts) > 6 and not parts[0].isdigit():
+                     remarks = parts[6]
                 return {
                     'status': 'error',
-                    'remarks': parts[1] if len(parts) > 1 else response
+                    'remarks': remarks
                 }
         except Exception as e:
             bse_logger.error(f"SWITCH ORDER ENTRY ERROR: {str(e)}")
@@ -319,9 +327,13 @@ class BSEStarMFClient:
                     'bse_sip_id': parts[1]
                 }
             else:
+                remarks = parts[1] if len(parts) > 1 else str(response)
+                # Handle Echo format where remarks are at index 6
+                if len(parts) > 6 and not parts[0].isdigit():
+                     remarks = parts[6]
                 return {
                     'status': 'error',
-                    'remarks': parts[1] if len(parts) > 1 else response
+                    'remarks': remarks
                 }
         except Exception as e:
             bse_logger.error(f"SIP ENTRY ERROR: {str(e)}")
