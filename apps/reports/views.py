@@ -102,7 +102,7 @@ class TransactionReportView(LoginRequiredMixin, TemplateView):
                 'investor': order.investor.user.name or order.investor.user.username,
                 'scheme': order.scheme.name,
                 'type': txn_type_display,
-                'amount': float(order.amount) if order.amount else 0,
+                'amount': round(float(order.amount) if order.amount else 0, 2),
                 'status': order.get_status_display(),
                 'remarks': order.bse_remarks or '',
             }
@@ -171,7 +171,7 @@ class MasterReportView(LoginRequiredMixin, TemplateView):
                     'category': s.category.name if s.category else '',
                     'amc': s.amc.name,
                     'type': s.scheme_type,
-                    'min_purchase': float(s.min_purchase_amount)
+                    'min_purchase': round(float(s.min_purchase_amount), 2)
                 })
 
         context['grid_data_json'] = json.dumps(data, cls=DjangoJSONEncoder)
@@ -236,7 +236,7 @@ class OrderStatusReportView(LoginRequiredMixin, TemplateView):
                 'SchemeCode': order.scheme.scheme_code,
                 'OrderType': order.get_transaction_type_display(),
                 'BuySell': 'P' if order.transaction_type == 'P' else 'R' if order.transaction_type == 'R' else order.transaction_type,
-                'OrderVal': float(order.amount),
+                'OrderVal': round(float(order.amount), 2),
                 'OrderStatus': order.get_status_display(), # Or raw status if preferred
                 'OrderRemarks': order.bse_remarks or '',
                 'TransNo': order.bse_order_id or '' # Assuming TransNo == OrderNo locally
@@ -301,9 +301,9 @@ class AllotmentReportView(LoginRequiredMixin, TemplateView):
                 'ClientCode': txn.investor.ucc_code,
                 'SchemeCode': txn.scheme.scheme_code if txn.scheme else '',
                 'FolioNo': txn.folio_number,
-                'AllottedUnit': float(txn.units),
-                'AllottedAmt': float(txn.amount),
-                'Nav': float(txn.nav) if txn.nav else 0,
+                'AllottedUnit': round(float(txn.units), 2),
+                'AllottedAmt': round(float(txn.amount), 2),
+                'Nav': round(float(txn.nav) if txn.nav else 0, 2),
                 'AllotmentDate': txn.date.strftime("%d/%m/%Y"),
                 'TransNo': txn.bse_order_id or ''
             })
@@ -364,9 +364,9 @@ class RedemptionReportView(LoginRequiredMixin, TemplateView):
                 'ClientCode': txn.investor.ucc_code,
                 'SchemeCode': txn.scheme.scheme_code if txn.scheme else '',
                 'FolioNo': txn.folio_number,
-                'Units': float(txn.units),
-                'Amount': float(txn.amount),
-                'Nav': float(txn.nav) if txn.nav else 0,
+                'Units': round(float(txn.units), 2),
+                'Amount': round(float(txn.amount), 2),
+                'Nav': round(float(txn.nav) if txn.nav else 0, 2),
                 'Date': txn.date.strftime("%d/%m/%Y"),
                 'Remarks': 'Redeemed',
                 'TransNo': txn.bse_order_id or ''
