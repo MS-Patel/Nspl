@@ -2,7 +2,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.views import LoginView, LogoutView
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
-from django.views.generic import TemplateView, ListView, CreateView, DetailView
+from django.views.generic import TemplateView, ListView, CreateView, DetailView, FormView
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.contrib import messages
@@ -12,7 +12,8 @@ from django.views import View
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from .models import RMProfile, DistributorProfile, InvestorProfile, BankAccount, Nominee, Document
-from .forms import RMCreationForm, DistributorCreationForm, InvestorCreationForm, InvestorProfileForm, BankAccountFormSet, NomineeFormSet, DocumentForm
+from .forms import RMCreationForm, DistributorCreationForm, InvestorCreationForm, InvestorProfileForm, BankAccountFormSet, NomineeFormSet, DocumentForm, InvestorUploadForm, DistributorUploadForm
+from .utils.parsers import import_investors_from_file, import_distributors_from_file
 from .services import validate_investor_for_bse
 from apps.integration.bse_client import BSEStarMFClient
 from apps.integration.utils import map_investor_to_bse_param_string
@@ -862,3 +863,35 @@ class ToggleKYCView(LoginRequiredMixin, View):
         messages.success(request, f"KYC Status {status_msg}.")
 
         return redirect('users:investor_detail', pk=pk)
+
+class InvestorUploadView(LoginRequiredMixin, IsAdminMixin, FormView):
+    template_name = 'users/upload_investor.html'
+    form_class = InvestorUploadForm
+    success_url = reverse_lazy('users:investor_list')
+
+    def form_valid(self, form):
+        file_obj = self.request.FILES['file']
+        count, errors = import_investors_from_file(file_obj)
+
+        if errors:
+            messages.warning(self.request, f"Processed {count} investors with errors: {errors[:5]}...")
+        else:
+            messages.success(self.request, f"Successfully imported {count} investors.")
+
+        return super().form_valid(form)
+
+class DistributorUploadView(LoginRequiredMixin, IsAdminMixin, FormView):
+    template_name = 'users/upload_distributor.html'
+    form_class = DistributorUploadForm
+    success_url = reverse_lazy('users:distributor_list')
+
+    def form_valid(self, form):
+        file_obj = self.request.FILES['file']
+        count, errors = import_distributors_from_file(file_obj)
+
+        if errors:
+             messages.warning(self.request, f"Processed {count} distributors with errors: {errors[:5]}...")
+        else:
+             messages.success(self.request, f"Successfully imported {count} distributors.")
+
+        return super().form_valid(form)

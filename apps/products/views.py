@@ -1,8 +1,16 @@
-from django.views.generic import TemplateView, DetailView
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import TemplateView, DetailView, FormView
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib import messages
+from django.shortcuts import redirect
+from django.urls import reverse_lazy
+from django.contrib.auth import get_user_model
 from .models import Scheme
+from .forms import SchemeUploadForm, NAVUploadForm
+from .utils.parsers import import_schemes_from_file, import_navs_from_file
 import json
 from django.core.serializers.json import DjangoJSONEncoder
+
+User = get_user_model()
 
 class SchemeListView(LoginRequiredMixin, TemplateView):
     template_name = 'products/scheme_list.html'
@@ -60,3 +68,41 @@ class SchemeDetailView(LoginRequiredMixin, DetailView):
         context['latest_nav_date'] = latest_nav.nav_date if latest_nav else ""
 
         return context
+
+class SchemeUploadView(LoginRequiredMixin, UserPassesTestMixin, FormView):
+    template_name = 'products/upload_scheme.html'
+    form_class = SchemeUploadForm
+    success_url = reverse_lazy('products:scheme_list')
+
+    def test_func(self):
+        return self.request.user.user_type == User.Types.ADMIN
+
+    def form_valid(self, form):
+        file_obj = self.request.FILES['file']
+        count, errors = import_schemes_from_file(file_obj)
+
+        if errors:
+            messages.warning(self.request, f"Processed {count} schemes with errors: {errors[:5]}...") # Limit errors
+        else:
+            messages.success(self.request, f"Successfully imported/updated {count} schemes.")
+
+        return super().form_valid(form)
+
+class NAVUploadView(LoginRequiredMixin, UserPassesTestMixin, FormView):
+    template_name = 'products/upload_nav.html'
+    form_class = NAVUploadForm
+    success_url = reverse_lazy('products:scheme_list') # Redirect to list for now
+
+    def test_func(self):
+        return self.request.user.user_type == User.Types.ADMIN
+
+    def form_valid(self, form):
+        file_obj = self.request.FILES['file']
+        count, errors = import_navs_from_file(file_obj)
+
+        if errors:
+             messages.warning(self.request, f"Processed {count} NAV records with errors: {errors[:5]}...")
+        else:
+             messages.success(self.request, f"Successfully imported {count} NAV records.")
+
+        return super().form_valid(form)

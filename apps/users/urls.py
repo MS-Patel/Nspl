@@ -19,6 +19,7 @@ urlpatterns = [
 
     path('users/distributor/', views.DistributorListView.as_view(), name='distributor_list'),
     path('users/distributor/create/', views.DistributorCreateView.as_view(), name='distributor_create'),
+    path('users/distributor/upload/', views.DistributorUploadView.as_view(), name='distributor_upload'),
 
     path('users/investor/', views.InvestorListView.as_view(), name='investor_list'),
     path('users/investor/mapping/', views.DistributorMappingView.as_view(), name='distributor_mapping'),
@@ -30,4 +31,5 @@ urlpatterns = [
     path('users/investor/<int:pk>/fatca-upload/', views.FATCAUploadView.as_view(), name='fatca_upload'),
     path('users/investor/<int:pk>/trigger-auth/', views.TriggerNomineeAuthView.as_view(), name='trigger_nominee_auth'),
     path('users/investor/<int:pk>/toggle-kyc/', views.ToggleKYCView.as_view(), name='toggle_kyc'),
+    path('users/investor/upload/', views.InvestorUploadView.as_view(), name='investor_upload'),
 ]
