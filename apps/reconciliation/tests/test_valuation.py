@@ -101,3 +101,37 @@ class ValuationTest(TestCase):
         # 2. Bulk Update Holdings
         with self.assertNumQueries(2):
             calculate_portfolio_valuation(self.investor)
+
+    def test_calculate_valuation_rounding(self):
+        """
+        Verify that total valuation figures are rounded to 2 decimal places.
+        Scenario:
+        Units: 10.1234
+        NAV: 123.4567
+        Current Value (Raw): 1249.79607778
+        Rounded Value: 1249.80
+        """
+        # Update existing holding with high precision values
+        self.holding.units = Decimal("10.1234")
+        self.holding.average_cost = Decimal("100.1234")
+        self.holding.save()
+
+        # Update NAV history with high precision
+        nav = NAVHistory.objects.get(scheme=self.scheme)
+        nav.net_asset_value = Decimal("123.4567")
+        nav.save()
+
+        summary = calculate_portfolio_valuation(self.investor)
+
+        # Expected Calculation:
+        # Invested: 10.1234 * 100.1234 = 1013.58920356 -> Rounded: 1013.59
+        # Current: 10.1234 * 123.4567 = 1249.79607778 -> Rounded: 1249.80
+        # Gain: 1249.79607778 - 1013.58920356 = 236.20687422 -> Rounded: 236.21
+
+        self.assertEqual(summary['total_invested_value'], Decimal("1013.59"))
+        self.assertEqual(summary['total_current_value'], Decimal("1249.80"))
+
+        # Note: Depending on how gain is calculated (A-B or sum of gains)
+        # In code: round(total_current - total_invested, 2)
+        # Unrounded Diff: 236.20687422 -> Rounded: 236.21
+        self.assertEqual(summary['total_gain_loss'], Decimal("236.21"))
