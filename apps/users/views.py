@@ -847,6 +847,57 @@ class TriggerNomineeAuthView(LoginRequiredMixin, View):
 
         return redirect('users:investor_detail', pk=pk)
 
+class OptOutNomineeView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        investor = get_object_or_404(InvestorProfile, pk=pk)
+
+        # Permission Check
+        if request.user.user_type not in [User.Types.RM, User.Types.ADMIN]:
+             messages.error(request, "Permission denied.")
+             return redirect('users:investor_detail', pk=pk)
+
+        # Update Flag in memory (Do not save yet)
+        investor.nomination_opt = 'N'
+
+        # Ensure we have a UCC Code
+        if not investor.ucc_code:
+            # We can't update BSE without UCC.
+            # Do we still save locally? The requirement is to "update the ucc".
+            # If we update locally but not BSE, data is inconsistent.
+            # However, if UCC is missing, maybe they aren't on BSE yet?
+            # But the button is likely only visible if UCC is present (per template logic check I should add).
+            # If they click it, we should probably fail gracefully.
+            messages.error(request, "Cannot update BSE: UCC Code is missing.")
+            return redirect('users:investor_detail', pk=pk)
+
+        # Validate (Optional but good practice)
+        validation_errors = validate_investor_for_bse(investor)
+        if validation_errors:
+             for err in validation_errors:
+                messages.error(request, f"BSE Validation Warning: {err}")
+             # Should we abort? If validation fails, BSE API will likely fail anyway.
+             # We proceed to try.
+
+        try:
+            # Generate param string with nomination_opt='N' (in memory)
+            param_string = map_investor_to_bse_param_string(investor)
+            client = BSEStarMFClient()
+            response = client.register_client({'Param': param_string}, regn_type="MOD")
+
+            if response['status'] == 'success':
+                 # Success! Now update DB.
+                 investor.nominee_auth_status = InvestorProfile.AUTH_NOT_AVAILABLE
+                 investor.bse_remarks = response.get('remarks', '')
+                 investor.last_verified_at = timezone.now()
+                 investor.save() # Saves nomination_opt='N'
+                 messages.success(request, f"Nomination Opt-Out successful on BSE: {response.get('remarks')}")
+            else:
+                 # Failure! Do not save changes.
+                 messages.error(request, f"BSE Update Failed: {response.get('remarks')}")
+        except Exception as e:
+            messages.error(request, f"API Error: {str(e)}")
+
+        return redirect('users:investor_detail', pk=pk)
 
 class ToggleKYCView(LoginRequiredMixin, View):
     def post(self, request, pk):

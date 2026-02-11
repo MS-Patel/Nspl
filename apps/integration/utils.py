@@ -331,7 +331,7 @@ def map_investor_to_bse_param_string(investor):
 
     # Helper to split name
     def split_name(full_name):
-        if not full_name: return "", "", ""
+        if not full_name or not full_name.strip(): return "", "", ""
         parts = full_name.strip().split()
         first = parts[0]
         last = parts[-1] if len(parts) > 1 else ""
@@ -557,7 +557,7 @@ def map_investor_to_bse_param_string(investor):
     f_nom_detailed = []
 
     for i in range(3):
-        if i < len(nominees):
+        if i < len(nominees) and investor.nomination_opt == 'Y':
             n = nominees[i]
             minor_flag = "Y" if n.guardian_name else "N"
             perc = str(int(n.percentage)) if n.percentage % 1 == 0 else str(n.percentage)
