@@ -76,9 +76,9 @@ def calculate_portfolio_valuation(investor_profile):
         Holding.objects.bulk_update(holdings_to_update, ['current_nav', 'current_value', 'last_updated'])
 
     summary = {
-        'total_current_value': total_current_value,
-        'total_invested_value': total_invested_value,
-        'total_gain_loss': total_current_value - total_invested_value,
+        'total_current_value': round(total_current_value, 2),
+        'total_invested_value': round(total_invested_value, 2),
+        'total_gain_loss': round(total_current_value - total_invested_value, 2),
         'holdings': holdings_data
     }
 
