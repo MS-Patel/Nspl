@@ -1,0 +1,317 @@
+{% load static %}
+<!-- Sidebar -->
+<div class="sidebar print:hidden sm:hidden">
+  <!-- Main Sidebar -->
+  <div class="main-sidebar">
+    <div class="flex h-full w-full flex-col items-center border-r border-slate-150 bg-white dark:border-navy-700 dark:bg-navy-800">
+      <!-- Application Logo -->
+      <div class="flex pt-4">
+        <a href="/">
+          <img class="size-11 transition-transform duration-500 ease-in-out hover:rotate-[360deg]" src="{% static 'images/logo12.png' %}" alt="logo" />
+        </a>
+      </div>
+
+      <!-- Main Sections Links -->
+      <div class="is-scrollbar-hidden flex grow flex-col space-y-4 overflow-y-auto pt-6">
+
+        <!-- Dashboard -->
+        {% if user.user_type == 'RM' %}
+        <a href="{% url 'users:rm_dashboard' %}" class="tooltip-main-sidebar flex size-11 items-center justify-center rounded-lg outline-hidden transition-colors duration-200 hover:bg-primary/20 focus:bg-primary/20 active:bg-primary/25 dark:hover:bg-navy-300/20 dark:focus:bg-navy-300/20 dark:active:bg-navy-300/25" data-tooltip="Dashboard" data-placement="right">
+        {% elif user.user_type == 'DISTRIBUTOR' %}
+        <a href="{% url 'users:distributor_dashboard' %}" class="tooltip-main-sidebar flex size-11 items-center justify-center rounded-lg outline-hidden transition-colors duration-200 hover:bg-primary/20 focus:bg-primary/20 active:bg-primary/25 dark:hover:bg-navy-300/20 dark:focus:bg-navy-300/20 dark:active:bg-navy-300/25" data-tooltip="Dashboard" data-placement="right">
+        {% elif user.user_type == 'INVESTOR' %}
+        <a href="{% url 'users:investor_dashboard' %}" class="tooltip-main-sidebar flex size-11 items-center justify-center rounded-lg outline-hidden transition-colors duration-200 hover:bg-primary/20 focus:bg-primary/20 active:bg-primary/25 dark:hover:bg-navy-300/20 dark:focus:bg-navy-300/20 dark:active:bg-navy-300/25" data-tooltip="Dashboard" data-placement="right">
+        {% else %}
+        <a href="{% url 'users:admin_dashboard' %}" class="tooltip-main-sidebar flex size-11 items-center justify-center rounded-lg outline-hidden transition-colors duration-200 hover:bg-primary/20 focus:bg-primary/20 active:bg-primary/25 dark:hover:bg-navy-300/20 dark:focus:bg-navy-300/20 dark:active:bg-navy-300/25" data-tooltip="Dashboard" data-placement="right">
+        {% endif %}
+          <svg class="size-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <path fill="currentColor" fill-opacity=".3" d="M5 14.059c0-1.01 0-1.514.222-1.945.221-.43.632-.724 1.453-1.31l4.163-2.974c.56-.4.842-.601 1.162-.601.32 0 .601.2 1.162.601l4.163 2.974c.821.586 1.232.88 1.453 1.31.222.43.222.935.222 1.945V19c0 .943 0 1.414-.293 1.707C18.414 21 17.943 21 17 21H7c-.943 0-1.414 0-1.707-.293C5 20.414 5 19.943 5 19v-4.94Z" />
+            <path fill="currentColor" d="M3 12.387c0 .267 0 .4.084.441.084.041.19-.04.4-.204l7.288-5.669c.59-.459.885-.688 1.228-.688.343 0 .638.23 1.228.688l7.288 5.669c.21.163.316.245.4.204.084-.04.084-.174.084-.441v-.409c0-.48 0-.72-.102-.928-.101-.208-.291-.355-.67-.65l-7-5.445c-.59-.459-.885-.688-1.228-.688-.343 0-.638.23-1.228.688l-7 5.445c-.379.295-.569.442-.67.65-.102.208-.102.448-.102.928v.409Z" />
+            <path fill="currentColor" d="M11.5 15.5h1A1.5 1.5 0 0 1 14 17v3.5h-4V17a1.5 1.5 0 0 1 1.5-1.5Z" />
+            <path fill="currentColor" d="M17.5 5h-1a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5Z" />
+          </svg>
+        </a>
+
+        <!-- Payouts (Admin, RM, Distributor) -->
+        {% if user.is_staff or user.user_type == 'ADMIN' or user.user_type == 'RM' or user.user_type == 'DISTRIBUTOR' %}
+        <button class="tooltip-main-sidebar flex size-11 items-center justify-center rounded-lg outline-hidden transition-colors duration-200 hover:bg-primary/20 focus:bg-primary/20 active:bg-primary/25 dark:hover:bg-navy-300/20 dark:focus:bg-navy-300/20 dark:active:bg-navy-300/25" data-tooltip="Payouts" data-placement="right">
+           <svg xmlns="http://www.w3.org/2000/svg" class="size-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </button>
+        {% endif %}
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Sidebar Panel -->
+  <div class="sidebar-panel">
+    <div class="flex h-full grow flex-col bg-white pl-[var(--main-sidebar-width)] dark:bg-navy-750">
+      <!-- Sidebar Panel Header -->
+      <div class="flex h-18 w-full items-center justify-between pl-4 pr-1">
+        <p class="text-base tracking-wider text-slate-800 dark:text-navy-100">Menu</p>
+        <button class="sidebar-close btn size-7 rounded-full p-0 text-primary hover:bg-slate-300/20 focus:bg-slate-300/20 active:bg-slate-300/25 dark:text-accent-light/80 dark:hover:bg-navy-300/20 dark:focus:bg-navy-300/20 dark:active:bg-navy-300/25 xl:hidden">
+          <svg xmlns="http://www.w3.org/2000/svg" class="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Sidebar Panel Body -->
+      <div class="nav-wrapper h-[calc(100%-4.5rem)] overflow-x-hidden pb-6" data-simplebar>
+        <ul class="flex flex-1 flex-col px-4 font-inter">
+
+            <!-- Dashboard -->
+             <li>
+                {% if user.user_type == 'RM' %}
+                <a href="{% url 'users:rm_dashboard' %}" class="nav-link flex items-center justify-between py-2 text-xs-plus tracking-wide outline-hidden transition-[color,padding-left] duration-300 ease-in-out hover:text-slate-800 dark:text-navy-200 dark:hover:text-navy-50" data-default-class="text-slate-600 hover:text-slate-800 dark:text-navy-200 dark:hover:text-navy-50" data-active-class="font-medium text-primary dark:text-accent-light">
+                {% elif user.user_type == 'DISTRIBUTOR' %}
+                <a href="{% url 'users:distributor_dashboard' %}" class="nav-link flex items-center justify-between py-2 text-xs-plus tracking-wide outline-hidden transition-[color,padding-left] duration-300 ease-in-out hover:text-slate-800 dark:text-navy-200 dark:hover:text-navy-50" data-default-class="text-slate-600 hover:text-slate-800 dark:text-navy-200 dark:hover:text-navy-50" data-active-class="font-medium text-primary dark:text-accent-light">
+                {% elif user.user_type == 'INVESTOR' %}
+                <a href="{% url 'users:investor_dashboard' %}" class="nav-link flex items-center justify-between py-2 text-xs-plus tracking-wide outline-hidden transition-[color,padding-left] duration-300 ease-in-out hover:text-slate-800 dark:text-navy-200 dark:hover:text-navy-50" data-default-class="text-slate-600 hover:text-slate-800 dark:text-navy-200 dark:hover:text-navy-50" data-active-class="font-medium text-primary dark:text-accent-light">
+                {% else %}
+                <a href="{% url 'users:admin_dashboard' %}" class="nav-link flex items-center justify-between py-2 text-xs-plus tracking-wide outline-hidden transition-[color,padding-left] duration-300 ease-in-out hover:text-slate-800 dark:text-navy-200 dark:hover:text-navy-50" data-default-class="text-slate-600 hover:text-slate-800 dark:text-navy-200 dark:hover:text-navy-50" data-active-class="font-medium text-primary dark:text-accent-light">
+                {% endif %}
+                    <span>Dashboard</span>
+                </a>
+             </li>
+
+            <!-- Payouts -->
+            {% if user.is_staff or user.user_type == 'ADMIN' or user.user_type == 'RM' or user.user_type == 'DISTRIBUTOR' %}
+            <li class="ac nav-parent [&.is-active_svg]:rotate-90 [&.is-active_.ac-trigger]:font-semibold [&.is-active_.ac-trigger]:text-slate-800 dark:[&.is-active_.ac-trigger]:text-navy-50">
+                <button class="ac-trigger flex w-full items-center justify-between py-2 text-xs-plus tracking-wide text-slate-600 outline-hidden transition-[color,padding-left] duration-300 ease-in-out hover:text-slate-800 dark:text-navy-200 dark:hover:text-navy-50">
+                  <span>Payouts</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-slate-400 transition-transform ease-in-out" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                  </svg>
+                </button>
+                <ul class="ac-panel">
+                  <li>
+                    <a href="{% url 'payouts:payout_list' %}" class="nav-link flex items-center justify-between p-2 text-xs-plus tracking-wide outline-hidden transition-[color,padding-left] duration-300 ease-in-out hover:pl-4" data-default-class="text-slate-600 hover:text-slate-800 dark:text-navy-200 dark:hover:text-navy-50" data-active-class="font-medium text-primary dark:text-accent-light">
+                      <div class="flex items-center space-x-2">
+                        <div class="size-1.5 rounded-full border border-current opacity-40"></div>
+                        <span>Payout Reports</span>
+                      </div>
+                    </a>
+                  </li>
+                  {% if user.is_staff or user.user_type == 'ADMIN' %}
+                  <li>
+                    <a href="{% url 'payouts:upload' %}" class="nav-link flex items-center justify-between p-2 text-xs-plus tracking-wide outline-hidden transition-[color,padding-left] duration-300 ease-in-out hover:pl-4" data-default-class="text-slate-600 hover:text-slate-800 dark:text-navy-200 dark:hover:text-navy-50" data-active-class="font-medium text-primary dark:text-accent-light">
+                      <div class="flex items-center space-x-2">
+                        <div class="size-1.5 rounded-full border border-current opacity-40"></div>
+                        <span>Generate Payouts</span>
+                      </div>
+                    </a>
+                  </li>
+                  {% endif %}
+                </ul>
+            </li>
+            {% endif %}
+
+            <!-- Investments -->
+            <li class="ac nav-parent [&.is-active_svg]:rotate-90 [&.is-active_.ac-trigger]:font-semibold [&.is-active_.ac-trigger]:text-slate-800 dark:[&.is-active_.ac-trigger]:text-navy-50">
+                <button class="ac-trigger flex w-full items-center justify-between py-2 text-xs-plus tracking-wide text-slate-600 outline-hidden transition-[color,padding-left] duration-300 ease-in-out hover:text-slate-800 dark:text-navy-200 dark:hover:text-navy-50">
+                  <span>Investments</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-slate-400 transition-transform ease-in-out" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                  </svg>
+                </button>
+                <ul class="ac-panel">
+                  <li>
+                    <a href="{% url 'investments:order_list' %}" class="nav-link flex items-center justify-between p-2 text-xs-plus tracking-wide outline-hidden transition-[color,padding-left] duration-300 ease-in-out hover:pl-4" data-default-class="text-slate-600 hover:text-slate-800 dark:text-navy-200 dark:hover:text-navy-50" data-active-class="font-medium text-primary dark:text-accent-light">
+                      <div class="flex items-center space-x-2">
+                        <div class="size-1.5 rounded-full border border-current opacity-40"></div>
+                        <span>Order Book</span>
+                      </div>
+                    </a>
+                  </li>
+                  <li>
+                    <a href="{% url 'products:scheme_list' %}" class="nav-link flex items-center justify-between p-2 text-xs-plus tracking-wide outline-hidden transition-[color,padding-left] duration-300 ease-in-out hover:pl-4" data-default-class="text-slate-600 hover:text-slate-800 dark:text-navy-200 dark:hover:text-navy-50" data-active-class="font-medium text-primary dark:text-accent-light">
+                      <div class="flex items-center space-x-2">
+                        <div class="size-1.5 rounded-full border border-current opacity-40"></div>
+                        <span>Scheme Explorer</span>
+                      </div>
+                    </a>
+                  </li>
+                  <li>
+                    <a href="{% url 'investments:holding_list' %}" class="nav-link flex items-center justify-between p-2 text-xs-plus tracking-wide outline-hidden transition-[color,padding-left] duration-300 ease-in-out hover:pl-4" data-default-class="text-slate-600 hover:text-slate-800 dark:text-navy-200 dark:hover:text-navy-50" data-active-class="font-medium text-primary dark:text-accent-light">
+                      <div class="flex items-center space-x-2">
+                        <div class="size-1.5 rounded-full border border-current opacity-40"></div>
+                        <span>Portfolio Holdings</span>
+                      </div>
+                    </a>
+                  </li>
+                </ul>
+            </li>
+
+            <!-- Reports -->
+            <li class="ac nav-parent [&.is-active_svg]:rotate-90 [&.is-active_.ac-trigger]:font-semibold [&.is-active_.ac-trigger]:text-slate-800 dark:[&.is-active_.ac-trigger]:text-navy-50">
+                <button class="ac-trigger flex w-full items-center justify-between py-2 text-xs-plus tracking-wide text-slate-600 outline-hidden transition-[color,padding-left] duration-300 ease-in-out hover:text-slate-800 dark:text-navy-200 dark:hover:text-navy-50">
+                  <span>Reports</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-slate-400 transition-transform ease-in-out" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                  </svg>
+                </button>
+                <ul class="ac-panel">
+                  <li>
+                    <a href="{% url 'reports:dashboard' %}" class="nav-link flex items-center justify-between p-2 text-xs-plus tracking-wide outline-hidden transition-[color,padding-left] duration-300 ease-in-out hover:pl-4" data-default-class="text-slate-600 hover:text-slate-800 dark:text-navy-200 dark:hover:text-navy-50" data-active-class="font-medium text-primary dark:text-accent-light">
+                      <div class="flex items-center space-x-2">
+                        <div class="size-1.5 rounded-full border border-current opacity-40"></div>
+                        <span>Dashboard</span>
+                      </div>
+                    </a>
+                  </li>
+                  {% if user.user_type != 'INVESTOR' %}
+                  <li>
+                    <a href="{% url 'reports:investor_report' %}" class="nav-link flex items-center justify-between p-2 text-xs-plus tracking-wide outline-hidden transition-[color,padding-left] duration-300 ease-in-out hover:pl-4" data-default-class="text-slate-600 hover:text-slate-800 dark:text-navy-200 dark:hover:text-navy-50" data-active-class="font-medium text-primary dark:text-accent-light">
+                      <div class="flex items-center space-x-2">
+                        <div class="size-1.5 rounded-full border border-current opacity-40"></div>
+                        <span>Investor Report</span>
+                      </div>
+                    </a>
+                  </li>
+                  {% endif %}
+                  <li>
+                    <a href="{% url 'reports:transaction_report' %}" class="nav-link flex items-center justify-between p-2 text-xs-plus tracking-wide outline-hidden transition-[color,padding-left] duration-300 ease-in-out hover:pl-4" data-default-class="text-slate-600 hover:text-slate-800 dark:text-navy-200 dark:hover:text-navy-50" data-active-class="font-medium text-primary dark:text-accent-light">
+                      <div class="flex items-center space-x-2">
+                        <div class="size-1.5 rounded-full border border-current opacity-40"></div>
+                        <span>Transaction Report</span>
+                      </div>
+                    </a>
+                  </li>
+                  {% if user.user_type != 'INVESTOR' %}
+                  <li>
+                    <a href="{% url 'reports:order_status_report' %}" class="nav-link flex items-center justify-between p-2 text-xs-plus tracking-wide outline-hidden transition-[color,padding-left] duration-300 ease-in-out hover:pl-4" data-default-class="text-slate-600 hover:text-slate-800 dark:text-navy-200 dark:hover:text-navy-50" data-active-class="font-medium text-primary dark:text-accent-light">
+                      <div class="flex items-center space-x-2">
+                        <div class="size-1.5 rounded-full border border-current opacity-40"></div>
+                        <span>Order Status</span>
+                      </div>
+                    </a>
+                  </li>
+                  <li>
+                    <a href="{% url 'reports:allotment_report' %}" class="nav-link flex items-center justify-between p-2 text-xs-plus tracking-wide outline-hidden transition-[color,padding-left] duration-300 ease-in-out hover:pl-4" data-default-class="text-slate-600 hover:text-slate-800 dark:text-navy-200 dark:hover:text-navy-50" data-active-class="font-medium text-primary dark:text-accent-light">
+                      <div class="flex items-center space-x-2">
+                        <div class="size-1.5 rounded-full border border-current opacity-40"></div>
+                        <span>Allotment Statement</span>
+                      </div>
+                    </a>
+                  </li>
+                  <li>
+                    <a href="{% url 'reports:redemption_report' %}" class="nav-link flex items-center justify-between p-2 text-xs-plus tracking-wide outline-hidden transition-[color,padding-left] duration-300 ease-in-out hover:pl-4" data-default-class="text-slate-600 hover:text-slate-800 dark:text-navy-200 dark:hover:text-navy-50" data-active-class="font-medium text-primary dark:text-accent-light">
+                      <div class="flex items-center space-x-2">
+                        <div class="size-1.5 rounded-full border border-current opacity-40"></div>
+                        <span>Redemption Statement</span>
+                      </div>
+                    </a>
+                  </li>
+                  {% endif %}
+                </ul>
+            </li>
+
+            <!-- Masters / Corporate (Admin & RM) -->
+            {% if user.is_staff or user.user_type == 'ADMIN' or user.user_type == 'RM' %}
+            <li class="ac nav-parent [&.is-active_svg]:rotate-90 [&.is-active_.ac-trigger]:font-semibold [&.is-active_.ac-trigger]:text-slate-800 dark:[&.is-active_.ac-trigger]:text-navy-50">
+                <button class="ac-trigger flex w-full items-center justify-between py-2 text-xs-plus tracking-wide text-slate-600 outline-hidden transition-[color,padding-left] duration-300 ease-in-out hover:text-slate-800 dark:text-navy-200 dark:hover:text-navy-50">
+                  <span>Masters</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-slate-400 transition-transform ease-in-out" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                  </svg>
+                </button>
+                <ul class="ac-panel">
+                  {% if user.is_staff or user.user_type == 'ADMIN' %}
+                  <li>
+                    <a href="{% url 'users:rm_list' %}" class="nav-link flex items-center justify-between p-2 text-xs-plus tracking-wide outline-hidden transition-[color,padding-left] duration-300 ease-in-out hover:pl-4" data-default-class="text-slate-600 hover:text-slate-800 dark:text-navy-200 dark:hover:text-navy-50" data-active-class="font-medium text-primary dark:text-accent-light">
+                      <div class="flex items-center space-x-2">
+                        <div class="size-1.5 rounded-full border border-current opacity-40"></div>
+                        <span>Employee (RM)</span>
+                      </div>
+                    </a>
+                  </li>
+                  {% endif %}
+                  <li>
+                    <a href="{% url 'users:distributor_list' %}" class="nav-link flex items-center justify-between p-2 text-xs-plus tracking-wide outline-hidden transition-[color,padding-left] duration-300 ease-in-out hover:pl-4" data-default-class="text-slate-600 hover:text-slate-800 dark:text-navy-200 dark:hover:text-navy-50" data-active-class="font-medium text-primary dark:text-accent-light">
+                      <div class="flex items-center space-x-2">
+                        <div class="size-1.5 rounded-full border border-current opacity-40"></div>
+                        <span>Distributor</span>
+                      </div>
+                    </a>
+                  </li>
+                  <li>
+                    <a href="{% url 'products:scheme_list' %}" class="nav-link flex items-center justify-between p-2 text-xs-plus tracking-wide outline-hidden transition-[color,padding-left] duration-300 ease-in-out hover:pl-4" data-default-class="text-slate-600 hover:text-slate-800 dark:text-navy-200 dark:hover:text-navy-50" data-active-class="font-medium text-primary dark:text-accent-light">
+                      <div class="flex items-center space-x-2">
+                        <div class="size-1.5 rounded-full border border-current opacity-40"></div>
+                        <span>Scheme Master</span>
+                      </div>
+                    </a>
+                  </li>
+                </ul>
+            </li>
+            {% endif %}
+
+            <!-- Data Import (Admin Only) -->
+            {% if user.is_staff or user.user_type == 'ADMIN' %}
+            <li class="ac nav-parent [&.is-active_svg]:rotate-90 [&.is-active_.ac-trigger]:font-semibold [&.is-active_.ac-trigger]:text-slate-800 dark:[&.is-active_.ac-trigger]:text-navy-50">
+                <button class="ac-trigger flex w-full items-center justify-between py-2 text-xs-plus tracking-wide text-slate-600 outline-hidden transition-[color,padding-left] duration-300 ease-in-out hover:text-slate-800 dark:text-navy-200 dark:hover:text-navy-50">
+                  <span>Data Import</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-slate-400 transition-transform ease-in-out" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                  </svg>
+                </button>
+                <ul class="ac-panel">
+                  <li>
+                    <a href="{% url 'reconciliation:rta_upload' %}" class="nav-link flex items-center justify-between p-2 text-xs-plus tracking-wide outline-hidden transition-[color,padding-left] duration-300 ease-in-out hover:pl-4" data-default-class="text-slate-600 hover:text-slate-800 dark:text-navy-200 dark:hover:text-navy-50" data-active-class="font-medium text-primary dark:text-accent-light">
+                      <div class="flex items-center space-x-2">
+                        <div class="size-1.5 rounded-full border border-current opacity-40"></div>
+                        <span>RTA Transactions</span>
+                      </div>
+                    </a>
+                  </li>
+                  <li>
+                    <a href="{% url 'products:scheme_upload' %}" class="nav-link flex items-center justify-between p-2 text-xs-plus tracking-wide outline-hidden transition-[color,padding-left] duration-300 ease-in-out hover:pl-4" data-default-class="text-slate-600 hover:text-slate-800 dark:text-navy-200 dark:hover:text-navy-50" data-active-class="font-medium text-primary dark:text-accent-light">
+                      <div class="flex items-center space-x-2">
+                        <div class="size-1.5 rounded-full border border-current opacity-40"></div>
+                        <span>Scheme Master</span>
+                      </div>
+                    </a>
+                  </li>
+                  <li>
+                    <a href="{% url 'products:nav_upload' %}" class="nav-link flex items-center justify-between p-2 text-xs-plus tracking-wide outline-hidden transition-[color,padding-left] duration-300 ease-in-out hover:pl-4" data-default-class="text-slate-600 hover:text-slate-800 dark:text-navy-200 dark:hover:text-navy-50" data-active-class="font-medium text-primary dark:text-accent-light">
+                      <div class="flex items-center space-x-2">
+                        <div class="size-1.5 rounded-full border border-current opacity-40"></div>
+                        <span>NAV History</span>
+                      </div>
+                    </a>
+                  </li>
+                  <li>
+                    <a href="{% url 'users:investor_upload' %}" class="nav-link flex items-center justify-between p-2 text-xs-plus tracking-wide outline-hidden transition-[color,padding-left] duration-300 ease-in-out hover:pl-4" data-default-class="text-slate-600 hover:text-slate-800 dark:text-navy-200 dark:hover:text-navy-50" data-active-class="font-medium text-primary dark:text-accent-light">
+                      <div class="flex items-center space-x-2">
+                        <div class="size-1.5 rounded-full border border-current opacity-40"></div>
+                        <span>Investors</span>
+                      </div>
+                    </a>
+                  </li>
+                  <li>
+                    <a href="{% url 'users:distributor_upload' %}" class="nav-link flex items-center justify-between p-2 text-xs-plus tracking-wide outline-hidden transition-[color,padding-left] duration-300 ease-in-out hover:pl-4" data-default-class="text-slate-600 hover:text-slate-800 dark:text-navy-200 dark:hover:text-navy-50" data-active-class="font-medium text-primary dark:text-accent-light">
+                      <div class="flex items-center space-x-2">
+                        <div class="size-1.5 rounded-full border border-current opacity-40"></div>
+                        <span>Distributors</span>
+                      </div>
+                    </a>
+                  </li>
+                </ul>
+            </li>
+            {% endif %}
+
+            <!-- Investor Link -->
+            <li>
+                <a href="{% url 'users:investor_list' %}" class="nav-link flex items-center justify-between py-2 text-xs-plus tracking-wide outline-hidden transition-[color,padding-left] duration-300 ease-in-out hover:text-slate-800 dark:text-navy-200 dark:hover:text-navy-50" data-default-class="text-slate-600 hover:text-slate-800 dark:text-navy-200 dark:hover:text-navy-50" data-active-class="font-medium text-primary dark:text-accent-light">
+                    <span>Investor</span>
+                </a>
+            </li>
+
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>

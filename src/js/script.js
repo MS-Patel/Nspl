@@ -341,6 +341,9 @@ function initHeaderDropdowns() {
     if(document.querySelector("#reports-menu-dropdown")) {
         new window.Popper("#reports-menu-dropdown", ".popper-ref", ".popper-root", o);
     }
+    if(document.querySelector("#import-menu-dropdown")) {
+        new window.Popper("#import-menu-dropdown", ".popper-ref", ".popper-root", o);
+    }
     if(document.querySelector("#user-menu-wrapper")) {
         new window.Popper("#user-menu-wrapper", ".popper-ref", ".popper-root", o);
     }
