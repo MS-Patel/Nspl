@@ -365,3 +365,15 @@ NomineeFormSet = inlineformset_factory(
     extra=1,
     can_delete=True
 )
+
+class InvestorUploadForm(forms.Form):
+    file = forms.FileField(
+        label='Investor CSV File',
+        help_text='CSV file with columns: PAN, Name, Email, Mobile'
+    )
+
+class DistributorUploadForm(forms.Form):
+    file = forms.FileField(
+        label='Distributor CSV File',
+        help_text='CSV file with columns: ARN, Name, Email, Mobile, PAN'
+    )

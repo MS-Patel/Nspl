@@ -1,0 +1,47 @@
+{% extends "layout/base.html" %}
+{% load widget_tweaks %}
+
+{% block content %}
+<div class="flex items-center justify-between py-5 lg:py-6">
+    <div class="flex items-center space-x-1">
+        <h2 class="text-xl font-medium text-slate-700 line-clamp-1 dark:text-navy-50">
+            Upload Distributors
+        </h2>
+    </div>
+</div>
+
+<div class="grid grid-cols-12 gap-4 sm:gap-5 lg:gap-6">
+    <div class="col-span-12 lg:col-span-6">
+        <div class="card p-4 sm:p-5">
+             <h4 class="text-lg font-medium text-slate-700 dark:text-navy-100 mb-4">Upload Distributor CSV</h4>
+
+             <form method="post" enctype="multipart/form-data" class="space-y-4">
+                 {% csrf_token %}
+
+                 {% if form.non_field_errors %}
+                    <div class="alert flex rounded-lg bg-error/10 py-4 px-4 text-error dark:bg-error/15 sm:px-5">
+                        {{ form.non_field_errors }}
+                    </div>
+                 {% endif %}
+
+                 <div>
+                     <label class="block">
+                        <span class="font-medium text-slate-600 dark:text-navy-100">{{ form.file.label }}</span>
+                        <span class="text-xs text-slate-400 block mb-1">{{ form.file.help_text }}</span>
+                        {% render_field form.file class="form-file mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" %}
+                         {% if form.file.errors %}
+                            <span class="text-tiny text-error">{{ form.file.errors.0 }}</span>
+                        {% endif %}
+                    </label>
+                 </div>
+
+                 <div class="flex justify-end pt-4">
+                     <button type="submit" class="btn bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90">
+                        Upload & Process
+                    </button>
+                 </div>
+             </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
