@@ -2188,3 +2188,85 @@
 2026-02-10 15:39:37,752 - SIP ENTRY: 1 | RESPONSE: 0|123456|SIP Registered
 2026-02-10 15:39:40,896 - MANDATE REG Request: Flag=06, Param=TEST001|50000.00|I|GB28ABNB18309816311379|SB|TEST0000001||25/01/2026|31/12/2099
 2026-02-10 15:39:40,897 - MANDATE REG: 1 | RESPONSE: 100|Success|UMRN123
+2026-02-11 10:25:47,136 - BSE REQUEST XML:
+<soap-env:Envelope xmlns:soap-env="http://www.w3.org/2003/05/soap-envelope">
+  <soap-env:Header xmlns:wsa="http://www.w3.org/2005/08/addressing">
+    <wsa:Action>http://www.bsestarmf.in/2016/01/IStarMFWebService/GetAccessToken</wsa:Action>
+    <wsa:MessageID>urn:uuid:ac79f73e-3cd4-400e-aad8-f9218a2f5b24</wsa:MessageID>
+    <wsa:To>https://bsestarmfdemo.bseindia.com/StarMFWebService/StarMFWebService.svc/Secure</wsa:To>
+  </soap-env:Header>
+  <soap-env:Body>
+    <ns0:GetAccessToken xmlns:ns0="http://www.bsestarmf.in/2016/01/">
+      <ns0:Param>
+        <ns1:MemberId xmlns:ns1="http://schemas.datacontract.org/2004/07/StarMFWebService">24637</ns1:MemberId>
+        <ns2:PassKey xmlns:ns2="http://schemas.datacontract.org/2004/07/StarMFWebService">agOewvcDTJ</ns2:PassKey>
+        <ns3:Password xmlns:ns3="http://schemas.datacontract.org/2004/07/StarMFWebService">Abc@1234</ns3:Password>
+        <ns4:RequestType xmlns:ns4="http://schemas.datacontract.org/2004/07/StarMFWebService">MANDATE</ns4:RequestType>
+        <ns5:UserId xmlns:ns5="http://schemas.datacontract.org/2004/07/StarMFWebService">2463702</ns5:UserId>
+      </ns0:Param>
+    </ns0:GetAccessToken>
+  </soap-env:Body>
+</soap-env:Envelope>
+
+2026-02-11 10:25:47,191 - BSE RESPONSE XML:
+<s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope" xmlns:a="http://www.w3.org/2005/08/addressing">
+  <s:Header>
+    <a:Action s:mustUnderstand="1">http://www.bsestarmf.in/2016/01/IStarMFWebService/GetAccessTokenResponse</a:Action>
+    <a:RelatesTo>urn:uuid:ac79f73e-3cd4-400e-aad8-f9218a2f5b24</a:RelatesTo>
+  </s:Header>
+  <s:Body>
+    <GetAccessTokenResponse xmlns="http://www.bsestarmf.in/2016/01/">
+      <GetAccessTokenResult xmlns:b="http://schemas.datacontract.org/2004/07/StarMFWebService" xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+        <b:Filler i:nil="true"/>
+        <b:ResponseString>dm25bEOQ5jH6fKJQQx8C1OQqM/wM4YC1gK6tWgQ0ZOiiXuTn4Jo8IetJxbrPZxpT</b:ResponseString>
+        <b:Status>100</b:Status>
+      </GetAccessTokenResult>
+    </GetAccessTokenResponse>
+  </s:Body>
+</s:Envelope>
+
+2026-02-11 10:25:47,194 - BSE REQUEST XML:
+<soap-env:Envelope xmlns:soap-env="http://www.w3.org/2003/05/soap-envelope">
+  <soap-env:Header xmlns:wsa="http://www.w3.org/2005/08/addressing">
+    <wsa:Action>http://www.bsestarmf.in/2016/01/IStarMFWebService/MandateDetails</wsa:Action>
+    <wsa:MessageID>urn:uuid:0108873e-5bae-4344-9e85-eef20e902fb2</wsa:MessageID>
+    <wsa:To>https://bsestarmfdemo.bseindia.com/StarMFWebService/StarMFWebService.svc/Secure</wsa:To>
+  </soap-env:Header>
+  <soap-env:Body>
+    <ns0:MandateDetails xmlns:ns0="http://www.bsestarmf.in/2016/01/">
+      <ns0:Param>
+        <ns1:ClientCode xmlns:ns1="http://schemas.datacontract.org/2004/07/StarMFWebService">APDPR7516Q</ns1:ClientCode>
+        <ns2:EncryptedPassword xmlns:ns2="http://schemas.datacontract.org/2004/07/StarMFWebService">dm25bEOQ5jH6fKJQQx8C1OQqM/wM4YC1gK6tWgQ0ZOiiXuTn4Jo8IetJxbrPZxpT</ns2:EncryptedPassword>
+        <ns3:FromDate xmlns:ns3="http://schemas.datacontract.org/2004/07/StarMFWebService">11/02/2025</ns3:FromDate>
+        <ns4:MandateId xmlns:ns4="http://schemas.datacontract.org/2004/07/StarMFWebService">2592556</ns4:MandateId>
+        <ns5:MemberCode xmlns:ns5="http://schemas.datacontract.org/2004/07/StarMFWebService">24637</ns5:MemberCode>
+        <ns6:ToDate xmlns:ns6="http://schemas.datacontract.org/2004/07/StarMFWebService">11/02/2026</ns6:ToDate>
+      </ns0:Param>
+    </ns0:MandateDetails>
+  </soap-env:Body>
+</soap-env:Envelope>
+
+2026-02-11 10:25:47,485 - BSE RESPONSE XML:
+<s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope" xmlns:a="http://www.w3.org/2005/08/addressing">
+  <s:Header>
+    <a:Action s:mustUnderstand="1">http://www.bsestarmf.in/2016/01/IStarMFWebService/MandateDetailsResponse</a:Action>
+    <a:RelatesTo>urn:uuid:0108873e-5bae-4344-9e85-eef20e902fb2</a:RelatesTo>
+  </s:Header>
+  <s:Body>
+    <MandateDetailsResponse xmlns="http://www.bsestarmf.in/2016/01/">
+      <MandateDetailsResult xmlns:b="http://schemas.datacontract.org/2004/07/StarMFWebService" xmlns:i="http://www.w3.org/2001/XMLSchema-instance">
+        <b:MandateDetails i:nil="true"/>
+        <b:Message>FAILED: INVALID CLIENT CODE FOR GIVEN MEMBER CODE</b:Message>
+        <b:Status>101</b:Status>
+      </MandateDetailsResult>
+    </MandateDetailsResponse>
+  </s:Body>
+</s:Envelope>
+
+2026-02-11 10:25:47,487 - MANDATE STATUS: 2592556 | RESPONSE: {
+    'MandateDetails': {
+        'MandateDetails': []
+    },
+    'Message': 'FAILED: INVALID CLIENT CODE FOR GIVEN MEMBER CODE',
+    'Status': '101'
+}

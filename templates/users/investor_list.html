@@ -157,12 +157,12 @@
       columns: [
         {
             id: 'checkbox',
-            name: Gridjs.html('<input type="checkbox" id="select-all" class="form-checkbox is-basic h-4 w-4 rounded border-slate-400/70 checked:bg-primary checked:border-primary hover:border-primary focus:border-primary dark:border-navy-400 dark:checked:bg-accent dark:checked:border-accent dark:hover:border-accent dark:focus:border-accent" />'),
+            name: Gridjs.html('<input type="checkbox" id="select-all" class="form-checkbox is-basic h-4 w-3 rounded border-slate-400/70 checked:bg-primary checked:border-primary hover:border-primary focus:border-primary dark:border-navy-400 dark:checked:bg-accent dark:checked:border-accent dark:hover:border-accent dark:focus:border-accent" />'),
             plugin: {
               component: Gridjs.RowSelection,
             },
             formatter: (cell, row) => {
-                return Gridjs.html(`<input type="checkbox" class="row-checkbox form-checkbox is-basic h-4 w-4 rounded border-slate-400/70 checked:bg-primary checked:border-primary hover:border-primary focus:border-primary dark:border-navy-400 dark:checked:bg-accent dark:checked:border-accent dark:hover:border-accent dark:focus:border-accent" data-id="${row.cells[1].data}" ${selectedIds.has(String(row.cells[1].data)) ? 'checked' : ''} />`);
+                return Gridjs.html(`<input type="checkbox" class="row-checkbox form-checkbox is-basic h-4 w-3 rounded border-slate-400/70 checked:bg-primary checked:border-primary hover:border-primary focus:border-primary dark:border-navy-400 dark:checked:bg-accent dark:checked:border-accent dark:hover:border-accent dark:focus:border-accent" data-id="${row.cells[1].data}" ${selectedIds.has(String(row.cells[1].data)) ? 'checked' : ''} />`);
             },
             width: '50px'
         },
