@@ -30,6 +30,7 @@ urlpatterns = [
     path('users/investor/<int:pk>/push-bse/', views.PushToBSEView.as_view(), name='push_to_bse'),
     path('users/investor/<int:pk>/fatca-upload/', views.FATCAUploadView.as_view(), name='fatca_upload'),
     path('users/investor/<int:pk>/trigger-auth/', views.TriggerNomineeAuthView.as_view(), name='trigger_nominee_auth'),
+    path('users/investor/<int:pk>/opt-out-nominee/', views.OptOutNomineeView.as_view(), name='opt_out_nominee'),
     path('users/investor/<int:pk>/toggle-kyc/', views.ToggleKYCView.as_view(), name='toggle_kyc'),
     path('users/investor/upload/', views.InvestorUploadView.as_view(), name='investor_upload'),
 ]
