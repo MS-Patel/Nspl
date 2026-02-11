@@ -1,6 +1,7 @@
 import os
 import random
 import string
+import json
 import requests
 import logging
 import re
@@ -65,6 +66,7 @@ class BSEStarMFClient:
         self.common_api_url = settings.BSE_COMMON_API_URL
         self.emandate_auth_url = settings.BSE_EMANDATE_AUTH_URL
         self.emandate_api_url = settings.BSE_EMANDATE_API_URL
+        self.nominee_api_url = settings.BSE_NOMINEE_API_URL
 
     def _generate_pass_key(self):
         """Generates a random 10-character alphanumeric pass key."""
@@ -669,4 +671,61 @@ class BSEStarMFClient:
             }
         except Exception as e:
             bse_logger.error(f"PAN CHECK ERROR: {str(e)}")
+            return {'status': 'error', 'remarks': str(e)}
+
+    def bulk_update_nominee_flags(self, investor_list):
+        """
+        Updates the nominee flag for a list of investors to 'N'.
+        investor_list: List of dicts (with 'client_code') or objects (with 'ucc_code').
+        """
+        try:
+            req_array = []
+            for idx, investor in enumerate(investor_list, start=1):
+                client_code = investor.get('client_code') if isinstance(investor, dict) else investor.ucc_code
+                req_array.append({
+                    "request_no": str(idx),
+                    "client_code": client_code,
+                    "nom_flag": "N"
+                })
+
+            if not req_array:
+                return {'status': 'error', 'remarks': 'No investors provided'}
+
+            int_ref_no = f"nom{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}"
+
+            payload = {
+                "login_id": self.user_id,
+                "member_id": self.member_id,
+                "password": self.password,
+                "int_ref_no": int_ref_no,
+                "req_type": "nom_flag",
+                "total_request_count": str(len(req_array)),
+                "req_array": req_array
+            }
+
+            # Mask password for logging
+            log_payload = payload.copy()
+            log_payload['password'] = '********'
+
+            bse_logger.info(f"NOMINEE FLAG UPDATE Request: {self.nominee_api_url} | PAYLOAD: {json.dumps(log_payload)}")
+
+            headers = {'Content-Type': 'application/json'}
+            # Using verify=False to match existing pattern in this file, though unsafe.
+            # Ideally should be True for production with valid certs.
+            response = requests.post(self.nominee_api_url, json=payload, headers=headers, verify=False)
+
+            bse_logger.info(f"NOMINEE FLAG UPDATE Response: {response.text}")
+
+            response.raise_for_status()
+            result = response.json()
+
+            # Normalize response to match other methods
+            # Assuming "Status": "0" is success based on other BSE APIs
+            if result.get("Status") == "0":
+                return {"status": "success", "remarks": result.get("Remarks", "Success"), "data": result}
+            else:
+                return {"status": "error", "remarks": result.get("Remarks", str(result)), "data": result}
+
+        except Exception as e:
+            bse_logger.error(f"NOMINEE FLAG UPDATE ERROR: {str(e)}")
             return {'status': 'error', 'remarks': str(e)}

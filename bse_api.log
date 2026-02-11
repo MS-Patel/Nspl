@@ -2270,3 +2270,7 @@
     'Message': 'FAILED: INVALID CLIENT CODE FOR GIVEN MEMBER CODE',
     'Status': '101'
 }
+2026-02-11 20:36:45,509 - NOMINEE FLAG UPDATE Request: http://mock-url | PAYLOAD: {"login_id": "2463702", "member_id": "24637", "password": "********", "int_ref_no": "nom20260211203645", "req_type": "nom_flag", "total_request_count": "2", "req_array": [{"request_no": "1", "client_code": "TEST001", "nom_flag": "N"}, {"request_no": "2", "client_code": "TEST002", "nom_flag": "N"}]}
+2026-02-11 20:36:45,510 - NOMINEE FLAG UPDATE Response: {"Status": "0", "Remarks": "Success"}
+2026-02-11 20:38:43,588 - NOMINEE FLAG UPDATE Request: http://mock-url | PAYLOAD: {"login_id": "2463702", "member_id": "24637", "password": "********", "int_ref_no": "nom20260211203843", "req_type": "nom_flag", "total_request_count": "2", "req_array": [{"request_no": "1", "client_code": "TEST001", "nom_flag": "N"}, {"request_no": "2", "client_code": "TEST002", "nom_flag": "N"}]}
+2026-02-11 20:38:43,588 - NOMINEE FLAG UPDATE Response: {"Status": "0", "Remarks": "Success"}

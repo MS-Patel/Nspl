@@ -169,6 +169,7 @@ if BSE_ENV == 'PROD':
     BSE_COMMON_API_URL = os.environ.get('BSE_COMMON_API_URL', "https://bsestarmf.in/BSEMFWEBAPI/UCCAPI/UCCRegistrationV183")
     BSE_EMANDATE_AUTH_URL = os.environ.get('BSE_EMANDATE_AUTH_URL', "https://bsestarmf.in/Emandate/EmandateAuthURL.aspx")
     BSE_EMANDATE_API_URL = os.environ.get('BSE_EMANDATE_API_URL', "https://bsestarmf.in/StarMFWebService/StarMFWebService.svc/EMandateAuthURL")
+    BSE_NOMINEE_API_URL = os.environ.get('BSE_NOMINEE_API_URL', "https://bsestarmf.in/BSEMFWEBAPI/api/NomineeFlag/Change")
 else:
     # Defaults to DEMO
     BSE_ORDER_WSDL = os.environ.get('BSE_ORDER_WSDL', f"file://{os.path.join(WSDL_DIR, 'MFOrder.wsdl')}")
@@ -179,6 +180,7 @@ else:
     BSE_COMMON_API_URL = os.environ.get('BSE_COMMON_API_URL', "https://bsestarmfdemo.bseindia.com/BSEMFWEBAPI/UCCAPI/UCCRegistrationV183")
     BSE_EMANDATE_AUTH_URL = os.environ.get('BSE_EMANDATE_AUTH_URL', "https://bsestarmfdemo.bseindia.com/Emandate/EmandateAuthURL.aspx")
     BSE_EMANDATE_API_URL = os.environ.get('BSE_EMANDATE_API_URL', "https://bsestarmfdemo.bseindia.com/StarMFWebService/StarMFWebService.svc/EMandateAuthURL")
+    BSE_NOMINEE_API_URL = os.environ.get('BSE_NOMINEE_API_URL', "https://bsestarmfdemo.bseindia.com/BSEMFWEBAPI/api/NomineeFlag/Change")
 
 # CVL KRA API Configuration
 CVL_USER_NAME = os.environ.get('CVL_USER_NAME', "WEBADMIN")
