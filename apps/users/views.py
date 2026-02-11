@@ -20,6 +20,8 @@ from apps.reconciliation.utils.valuation import calculate_portfolio_valuation
 from apps.integration.sync_utils import sync_pending_mandates, sync_pending_orders, sync_sip_child_orders
 import logging
 import json
+import csv
+import io
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
@@ -557,6 +559,190 @@ class PushToBSEView(LoginRequiredMixin, View):
              messages.error(request, f"API Call Failed: {str(e)}")
 
         return redirect('users:investor_detail', pk=pk)
+
+
+class DistributorMappingView(LoginRequiredMixin, IsAdminOrRMMixin, TemplateView):
+    template_name = 'users/distributor_mapping.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+
+        # Get selected investor IDs from query string
+        investor_ids = self.request.GET.get('ids', '')
+        context['investor_ids'] = investor_ids
+        context['selected_count'] = len([x for x in investor_ids.split(',') if x.strip()]) if investor_ids else 0
+
+        # Fetch Distributors based on Role
+        if user.user_type == User.Types.ADMIN:
+            context['distributors'] = DistributorProfile.objects.select_related('user').all()
+        elif user.user_type == User.Types.RM:
+            context['distributors'] = DistributorProfile.objects.select_related('user').filter(rm__user=user)
+
+        return context
+
+    def post(self, request, *args, **kwargs):
+        action = request.POST.get('action')
+
+        if action == 'assign_selected':
+            return self.handle_manual_assignment(request)
+        elif action == 'upload_csv':
+            return self.handle_csv_upload(request)
+
+        messages.error(request, "Invalid Action")
+        return redirect('users:distributor_mapping')
+
+    def handle_manual_assignment(self, request):
+        investor_ids_str = request.POST.get('investor_ids', '')
+        distributor_id = request.POST.get('distributor_id')
+
+        if not investor_ids_str:
+            messages.error(request, "No investors selected.")
+            return redirect('users:distributor_mapping')
+
+        investor_ids = [int(id) for id in investor_ids_str.split(',') if id.isdigit()]
+
+        # Validate Distributor Access
+        distributor = None
+        if distributor_id:
+            try:
+                qs = DistributorProfile.objects.all()
+                if request.user.user_type == User.Types.RM:
+                    qs = qs.filter(rm__user=request.user)
+                distributor = qs.get(pk=distributor_id)
+            except DistributorProfile.DoesNotExist:
+                messages.error(request, "Invalid Distributor Selected.")
+                return redirect('users:distributor_mapping')
+
+        # Scope Validation for Investors
+        # RMs can only map investors they already have access to
+        investors = InvestorProfile.objects.filter(id__in=investor_ids)
+        if request.user.user_type == User.Types.RM:
+            # RM can see investors if (distributor.rm == self) OR (rm == self)
+            investors = investors.filter(
+                models.Q(distributor__rm__user=request.user) | models.Q(rm__user=request.user)
+            )
+
+        updated_count = 0
+        with transaction.atomic():
+            for investor in investors:
+                investor.distributor = distributor
+
+                # Update Hierarchy
+                if distributor:
+                    investor.rm = distributor.rm
+                    if distributor.rm:
+                        investor.branch = distributor.rm.branch
+                else:
+                    # If Unassigning (Direct)
+                    # If RM is performing this, set RM to self (Direct under RM)
+                    if request.user.user_type == User.Types.RM:
+                         investor.rm = request.user.rm_profile
+                         if investor.rm:
+                            investor.branch = investor.rm.branch
+                    # If Admin unassigns, we leave RM/Branch as is (orphaned from dist context but valid)
+                    # OR we could clear them? Usually Direct clients have an RM.
+                    pass
+
+                investor.save()
+                updated_count += 1
+
+        messages.success(request, f"Successfully mapped {updated_count} investors.")
+        return redirect('users:investor_list')
+
+    def handle_csv_upload(self, request):
+        csv_file = request.FILES.get('csv_file')
+        if not csv_file:
+            messages.error(request, "Please upload a CSV file.")
+            return redirect('users:distributor_mapping')
+
+        if not csv_file.name.endswith('.csv'):
+             messages.error(request, "Invalid file format. Please upload a CSV.")
+             return redirect('users:distributor_mapping')
+
+        try:
+            decoded_file = csv_file.read().decode('utf-8-sig').splitlines()
+            reader = csv.DictReader(decoded_file)
+
+            # Normalize headers
+            if reader.fieldnames:
+                reader.fieldnames = [name.lower().strip() for name in reader.fieldnames]
+
+            if 'investor_pan' not in reader.fieldnames or 'distributor_arn' not in reader.fieldnames:
+                 messages.error(request, "CSV must contain 'investor_pan' and 'distributor_arn' columns.")
+                 return redirect('users:distributor_mapping')
+
+            success_count = 0
+            errors = []
+
+            with transaction.atomic():
+                for row_idx, row in enumerate(reader, start=1):
+                    pan = row.get('investor_pan', '').strip()
+                    arn = row.get('distributor_arn', '').strip()
+
+                    if not pan: continue
+
+                    # 1. Find Investor
+                    try:
+                        investor = InvestorProfile.objects.get(pan__iexact=pan)
+                    except InvestorProfile.DoesNotExist:
+                        errors.append(f"Row {row_idx}: Investor PAN {pan} not found.")
+                        continue
+
+                    # Scope Check for Investor (RM)
+                    if request.user.user_type == User.Types.RM:
+                        # Check if RM has access to this investor
+                        has_access = False
+                        if investor.rm and investor.rm.user == request.user:
+                            has_access = True
+                        elif investor.distributor and investor.distributor.rm and investor.distributor.rm.user == request.user:
+                            has_access = True
+
+                        if not has_access:
+                           errors.append(f"Row {row_idx}: Permission denied for PAN {pan}.")
+                           continue
+
+                    # 2. Find Distributor
+                    distributor = None
+                    if arn:
+                        try:
+                            qs = DistributorProfile.objects.all()
+                            if request.user.user_type == User.Types.RM:
+                                qs = qs.filter(rm__user=request.user)
+                            distributor = qs.get(arn_number__iexact=arn)
+                        except DistributorProfile.DoesNotExist:
+                            errors.append(f"Row {row_idx}: Distributor ARN {arn} not found (or access denied).")
+                            continue
+
+                    # 3. Apply Mapping
+                    investor.distributor = distributor
+                    if distributor:
+                        investor.rm = distributor.rm
+                        if distributor.rm:
+                            investor.branch = distributor.rm.branch
+                    else:
+                        # Unassign Logic
+                        if request.user.user_type == User.Types.RM:
+                             investor.rm = request.user.rm_profile
+                             if investor.rm:
+                                investor.branch = investor.rm.branch
+
+                    investor.save()
+                    success_count += 1
+
+            if errors:
+                for err in errors[:5]: # Show first 5 errors
+                    messages.warning(request, err)
+                if len(errors) > 5:
+                    messages.warning(request, f"...and {len(errors)-5} more errors.")
+
+            if success_count > 0:
+                messages.success(request, f"Successfully processed {success_count} rows.")
+
+        except Exception as e:
+            messages.error(request, f"Error processing CSV: {str(e)}")
+
+        return redirect('users:distributor_mapping')
 
 class FATCAUploadView(LoginRequiredMixin, View):
     """

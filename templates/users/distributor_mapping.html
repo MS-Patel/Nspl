@@ -1,0 +1,93 @@
+{% extends 'layout/base.html' %}
+{% load static %}
+{% block content %}
+<div class="my-5 flex items-center justify-between px-4 sm:px-5">
+    <h2 class="text-xl font-medium text-slate-800 dark:text-navy-50 lg:text-2xl">
+        Distributor Mapping
+    </h2>
+    <div class="flex items-center space-x-2">
+        <a href="{% url 'users:investor_list' %}" class="btn bg-slate-150 font-medium text-slate-800 hover:bg-slate-200 focus:bg-slate-200 active:bg-slate-200/80 dark:bg-navy-500 dark:text-navy-50 dark:hover:bg-navy-450 dark:focus:bg-navy-450 dark:active:bg-navy-450/90">
+            Cancel
+        </a>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-2 lg:gap-6 px-4 sm:px-5">
+    <!-- Manual Assignment Card -->
+    <div class="card p-4 sm:p-5">
+        <div class="my-3 flex h-8 items-center justify-between">
+            <h2 class="font-medium tracking-wide text-slate-700 line-clamp-1 dark:text-navy-100 lg:text-base">
+                Assign Selected Investors
+            </h2>
+        </div>
+        <div class="max-w-xl">
+            <p class="mb-4">
+                {% if selected_count %}
+                    You have selected <span class="font-bold text-primary">{{ selected_count }}</span> investors.
+                {% else %}
+                    No investors selected. Please select investors from the list or use the search below.
+                {% endif %}
+            </p>
+            <form method="post" action="{% url 'users:distributor_mapping' %}">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="assign_selected">
+                <input type="hidden" name="investor_ids" value="{{ investor_ids }}">
+
+                <div class="mt-4 space-y-4">
+                    <label class="block">
+                        <span>Select Distributor</span>
+                        <select name="distributor_id" class="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent">
+                            <option value="">-- Unassign (Direct) --</option>
+                            {% for dist in distributors %}
+                                <option value="{{ dist.id }}">{{ dist.user.name|default:dist.user.username }} ({{ dist.arn_number }})</option>
+                            {% endfor %}
+                        </select>
+                    </label>
+                    <div class="flex justify-end space-x-2">
+                        <button type="submit" class="btn bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90" {% if not selected_count %}disabled{% endif %}>
+                            Apply Mapping
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- CSV Upload Card -->
+    <div class="card p-4 sm:p-5">
+        <div class="my-3 flex h-8 items-center justify-between">
+            <h2 class="font-medium tracking-wide text-slate-700 line-clamp-1 dark:text-navy-100 lg:text-base">
+                Bulk Upload via CSV
+            </h2>
+        </div>
+        <div class="max-w-xl">
+            <p class="mb-4 text-slate-500">
+                Upload a CSV file to map investors in bulk.
+                <br>
+                <small>Columns required: <code>investor_pan</code>, <code>distributor_arn</code></small>
+            </p>
+            <form method="post" action="{% url 'users:distributor_mapping' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="upload_csv">
+
+                <div class="filepond fp-bordered label-icon w-full">
+                    <input type="file" name="csv_file" accept=".csv" class="block w-full text-sm text-slate-500
+                        file:mr-4 file:py-2 file:px-4
+                        file:rounded-full file:border-0
+                        file:text-sm file:font-semibold
+                        file:bg-primary/10 file:text-primary
+                        hover:file:bg-primary/20
+                      "/>
+                </div>
+
+                <div class="mt-4 flex justify-between items-center">
+                    <a href="#" class="text-xs text-slate-400 hover:text-slate-600">Download Sample Template</a>
+                    <button type="submit" class="btn bg-info font-medium text-white hover:bg-info-focus focus:bg-info-focus active:bg-info-focus/90">
+                        Upload & Process
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
