@@ -14,6 +14,8 @@ class Command(BaseCommand):
             # 1. Fetch Latest NAVs
             self.stdout.write("Step 1: Fetching NAVs...")
             call_command('update_navs')
+            self.stdout.write("Step 1a: Fetching BSE NAVs...")
+            call_command('update_bse_navs')
 
             # 2. Update Holding Valuations (Requires Latest NAVs)
             self.stdout.write("Step 2: Updating Holding Valuations...")
