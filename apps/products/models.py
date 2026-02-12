@@ -33,7 +33,7 @@ class Scheme(models.Model):
     unique_no = models.BigIntegerField(unique=True, null=True, blank=True, help_text="BSE Unique No")
     rta_scheme_code = models.CharField(max_length=50, blank=True, null=True)
     amc_scheme_code = models.CharField(max_length=50, blank=True, null=True)
-    amfi_code = models.CharField(max_length=50, unique=True, null=True, blank=True, help_text="AMFI Scheme Code")
+    amfi_code = models.CharField(max_length=50, null=True, blank=True, help_text="AMFI Scheme Code")
 
     # Classification
     scheme_type = models.CharField(max_length=50, blank=True, null=True, help_text="e.g. Open Ended")

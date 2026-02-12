@@ -34,6 +34,8 @@ class Command(BaseCommand):
 
         # Prepare bulk update list
         schemes_to_update = []
+        # Track updated IDs to avoid adding same scheme multiple times in one run if CSV has dupes
+        updated_scheme_ids = set()
 
         # Load ALL schemes
         self.stdout.write("Loading all schemes from database...")
@@ -43,7 +45,6 @@ class Command(BaseCommand):
         isin_map = {s.isin: s for s in all_schemes if s.isin}
 
         # Map for name matching (normalized)
-        # We store (name -> scheme)
         name_map = {}
         for s in all_schemes:
             if s.name:
@@ -51,10 +52,6 @@ class Command(BaseCommand):
 
         # List of names for fuzzy matching
         scheme_names = list(name_map.keys())
-
-        # Map for uniqueness check: amfi_code -> scheme_id
-        # Note: We prioritize existing assignments in DB
-        amfi_code_map = {s.amfi_code: s.id for s in all_schemes if s.amfi_code}
 
         count = 0
         updated = 0
@@ -67,78 +64,73 @@ class Command(BaseCommand):
             if not amfi_code or amfi_code.lower() == 'nan':
                 continue
 
-            # 1. Try matching by ISIN
+            # Identify schemes for this AMFI Code
+            matched_schemes_for_row = []
+
+            # 1. Try matching by ISIN 1
             isin1 = row.get('ISIN Div Payout/ ISIN Growth')
-            isin2 = row.get('ISIN Div Reinvestment')
-
-            scheme = None
-
             if isin1 and isinstance(isin1, str):
                 isin1 = isin1.strip()
                 if isin1 in isin_map:
-                    scheme = isin_map[isin1]
+                    matched_schemes_for_row.append(isin_map[isin1])
 
-            if not scheme and isin2 and isinstance(isin2, str):
+            # 2. Try matching by ISIN 2
+            isin2 = row.get('ISIN Div Reinvestment')
+            if isin2 and isinstance(isin2, str):
                 isin2 = isin2.strip()
                 if isin2 in isin_map:
-                    scheme = isin_map[isin2]
+                    matched_schemes_for_row.append(isin_map[isin2])
 
-            if scheme:
-                matched_by_isin += 1
+            if matched_schemes_for_row:
+                matched_by_isin += len(matched_schemes_for_row)
             else:
-                # 2. Try Name Matching
-                # Candidate names from CSV
+                # 3. Fallback: Name Matching (only if no ISIN match found)
+                scheme = None
+
                 csv_names = []
                 if 'Scheme NAV Name' in df.columns and pd.notna(row['Scheme NAV Name']):
                     csv_names.append(str(row['Scheme NAV Name']).strip())
                 if 'Scheme Name' in df.columns and pd.notna(row['Scheme Name']):
                     csv_names.append(str(row['Scheme Name']).strip())
 
-                # 2a. Exact Match
+                # 3a. Exact Match
                 for name in csv_names:
-                    # Try finding exact name in DB
                     if name in name_map:
                         scheme = name_map[name]
                         matched_by_name_exact += 1
                         break
 
-                # 2b. Fuzzy Match
+                # 3b. Fuzzy Match
                 if not scheme and csv_names:
-                    # Use the first available name (NAV name usually better)
                     query_name = csv_names[0]
-
-                    # Extract best match
                     best_match = process.extractOne(query_name, scheme_names, scorer=fuzz.token_sort_ratio)
-
                     if best_match:
                         match_name, score = best_match
                         if score >= fuzzy_threshold:
                             scheme = name_map[match_name]
                             matched_by_name_fuzzy += 1
-                            # self.stdout.write(f"Fuzzy Match: '{query_name}' -> '{match_name}' (Score: {score})")
 
-            if scheme:
-                # Check uniqueness constraint
-                if amfi_code in amfi_code_map:
-                    existing_id = amfi_code_map[amfi_code]
-                    if existing_id != scheme.id:
-                        # AMFI code already assigned to another scheme.
-                        continue
+                if scheme:
+                    matched_schemes_for_row.append(scheme)
 
+            # Assign AMFI Code to all matched schemes
+            for scheme in matched_schemes_for_row:
                 if scheme.amfi_code != amfi_code:
                     scheme.amfi_code = amfi_code
-                    schemes_to_update.append(scheme)
 
-                    # Update map so we don't assign this code again in this loop
-                    amfi_code_map[amfi_code] = scheme.id
-                    updated += 1
+                    # Prevent duplicate updates in list
+                    if scheme.id not in updated_scheme_ids:
+                        schemes_to_update.append(scheme)
+                        updated_scheme_ids.add(scheme.id)
+                        updated += 1
 
             count += 1
-            if count % 100 == 0:
-                self.stdout.write(f"Processed {count} rows... (ISIN: {matched_by_isin}, Exact Name: {matched_by_name_exact}, Fuzzy: {matched_by_name_fuzzy})")
+            if count % 1000 == 0:
+                self.stdout.write(f"Processed {count} rows... (Pending Updates: {updated})")
 
         if schemes_to_update:
             try:
+                self.stdout.write(f"Committing updates for {len(schemes_to_update)} schemes...")
                 Scheme.objects.bulk_update(schemes_to_update, ['amfi_code'], batch_size=1000)
                 self.stdout.write(self.style.SUCCESS(f"Successfully updated {updated} schemes with AMFI Codes."))
             except Exception as e:
@@ -146,4 +138,4 @@ class Command(BaseCommand):
         else:
             self.stdout.write("No schemes matched or updated.")
 
-        self.stdout.write(f"Final Stats: ISIN Matches: {matched_by_isin}, Exact Name Matches: {matched_by_name_exact}, Fuzzy Name Matches: {matched_by_name_fuzzy}")
+        self.stdout.write(f"Final Stats: Matched by ISIN: {matched_by_isin}, Exact Name: {matched_by_name_exact}, Fuzzy Name: {matched_by_name_fuzzy}")
