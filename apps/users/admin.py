@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import BankAccount, InvestorProfile, Nominee, User, Branch, RMProfile, DistributorProfile, Document
+from .models import BankAccount, InvestorProfile, Nominee, User, Branch, RMProfile, DistributorProfile, Document, AuditLog
 
 # Register your models here.
 
@@ -57,3 +57,10 @@ class DocumentAdmin(admin.ModelAdmin):
     list_display = ('investor', 'document_type', 'uploaded_at', 'description')
     search_fields = ('investor__user__username', 'investor__pan', 'description')
     list_filter = ('document_type', 'uploaded_at')
+
+@admin.register(AuditLog)
+class AuditLogAdmin(admin.ModelAdmin):
+    list_display = ('user', 'action', 'ip_address', 'timestamp')
+    search_fields = ('user__username', 'action', 'details', 'ip_address')
+    list_filter = ('action', 'timestamp')
+    readonly_fields = ('user', 'action', 'ip_address', 'details', 'timestamp')
