@@ -1,4 +1,5 @@
 import os
+import time
 import random
 import string
 import json
@@ -52,6 +53,9 @@ class BSEStarMFClient:
     _soap_client = None
     _upload_client = None
     _query_client = None
+
+    MAX_RETRIES = 3
+    BACKOFF_FACTOR = 2  # Seconds
 
     def __init__(self):
         self.member_id = settings.BSE_MEMBER_ID
@@ -212,7 +216,28 @@ class BSEStarMFClient:
         token, _ = self._get_auth_details()
         return token
 
+    def _retry_call(self, func, *args, **kwargs):
+        """
+        Executes a function with exponential backoff retry logic.
+        """
+        retries = 0
+        while True:
+            try:
+                return func(*args, **kwargs)
+            except Exception as e:
+                if retries >= self.MAX_RETRIES:
+                    bse_logger.error(f"Max retries exceeded for {func.__name__}. Error: {str(e)}")
+                    raise e
+
+                wait_time = self.BACKOFF_FACTOR ** retries
+                bse_logger.warning(f"Error in {func.__name__}: {str(e)}. Retrying in {wait_time}s...")
+                time.sleep(wait_time)
+                retries += 1
+
     def place_order(self, order):
+        return self._retry_call(self._place_order_internal, order)
+
+    def _place_order_internal(self, order):
         # COMPLIANCE GUARD
         investor = order.investor
         if investor.nominee_auth_status == InvestorProfile.AUTH_PENDING and investor.nomination_opt == 'Y':
@@ -299,6 +324,9 @@ class BSEStarMFClient:
             return {'status': 'exception', 'remarks': str(e)}
 
     def register_sip(self, sip):
+        return self._retry_call(self._register_sip_internal, sip)
+
+    def _register_sip_internal(self, sip):
         investor = sip.investor
         if investor.nominee_auth_status == InvestorProfile.AUTH_PENDING and investor.nomination_opt == 'Y':
              return {
@@ -339,9 +367,13 @@ class BSEStarMFClient:
                 }
         except Exception as e:
             bse_logger.error(f"SIP ENTRY ERROR: {str(e)}")
-            return {'status': 'exception', 'remarks': str(e)}
+            # Re-raise exception to trigger retry
+            raise e
 
     def register_mandate(self, mandate):
+        return self._retry_call(self._register_mandate_internal, mandate)
+
+    def _register_mandate_internal(self, mandate):
         try:
             encrypted_password, _ = self._get_upload_auth_details()
             param_string = get_bse_mandate_param_string(mandate)
@@ -368,7 +400,7 @@ class BSEStarMFClient:
                 }
         except Exception as e:
             bse_logger.error(f"MANDATE REG ERROR: {str(e)}")
-            return {'status': 'exception', 'remarks': str(e)}
+            raise e
 
     def register_client(self, payload, regn_type="NEW"):
         request_body = {
