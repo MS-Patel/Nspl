@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 def import_investors_from_file(file_obj):
     """
     Parses a CSV file with Investor Details.
-    Expected Columns: PAN, Name, Email, Mobile
+    Expected Columns: PAN, Firstname, Middlename, Lastname, Email, Mobile
     """
     count = 0
     errors = []
@@ -25,7 +25,13 @@ def import_investors_from_file(file_obj):
         for row_idx, row in enumerate(reader, start=1):
             try:
                 pan = row.get('pan', '').strip().upper()
-                name = row.get('name', '').strip()
+                firstname = row.get('firstname', '').strip()
+                middlename = row.get('middlename', '').strip()
+                lastname = row.get('lastname', '').strip()
+
+                # Construct full name
+                full_name = f"{firstname} {middlename} {lastname}".replace('  ', ' ').strip()
+
                 email = row.get('email', '').strip()
                 mobile = row.get('mobile', '').strip()
 
@@ -40,7 +46,7 @@ def import_investors_from_file(file_obj):
                         user = User.objects.get(username=pan)
                     except User.DoesNotExist:
                         user = User.objects.create_user(username=pan, email=email, password=pan)
-                        user.name = name
+                        user.name = full_name
                         user.user_type = User.Types.INVESTOR
                         user.save()
 
@@ -49,9 +55,19 @@ def import_investors_from_file(file_obj):
 
                     # Update details
                     updated = False
-                    if name and user.name != name:
-                        user.name = name
+                    if full_name and user.name != full_name:
+                        user.name = full_name
                         user.save()
+
+                    if firstname and profile.firstname != firstname:
+                        profile.firstname = firstname
+                        updated = True
+                    if middlename and profile.middlename != middlename:
+                        profile.middlename = middlename
+                        updated = True
+                    if lastname and profile.lastname != lastname:
+                        profile.lastname = lastname
+                        updated = True
 
                     if email and profile.email != email:
                         profile.email = email

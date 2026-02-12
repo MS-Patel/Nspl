@@ -248,6 +248,9 @@ class InvestorProfile(models.Model):
     branch = models.ForeignKey(Branch, on_delete=models.SET_NULL, null=True, blank=True, related_name='investors')
 
     # Basic Info
+    firstname = models.CharField(max_length=100, blank=True, default='')
+    middlename = models.CharField(max_length=100, blank=True, default='')
+    lastname = models.CharField(max_length=100, blank=True, default='')
     pan = models.CharField(max_length=10, unique=True)
     dob = models.DateField(null=True, blank=True, verbose_name="Date of Birth")
     gender = models.CharField(max_length=1, choices=[('M', 'Male'), ('F', 'Female'), ('O', 'Other')], blank=True)

@@ -268,14 +268,17 @@ class InvestorCreateView(LoginRequiredMixin, CreateView):
         with transaction.atomic():
             # 1. Create User
             pan = form.cleaned_data['pan']
-            name = form.cleaned_data['name']
+            fname = form.cleaned_data.get('firstname', '').strip()
+            mname = form.cleaned_data.get('middlename', '').strip()
+            lname = form.cleaned_data.get('lastname', '').strip()
+            full_name = f"{fname} {mname} {lname}".replace('  ', ' ').strip()
             email = form.cleaned_data['email']
 
             user = User.objects.create_user(
                 username=pan,
                 email=email,
                 password=pan,
-                name=name,
+                name=full_name,
                 user_type=User.Types.INVESTOR
             )
 
@@ -389,13 +392,19 @@ class InvestorUpdateView(LoginRequiredMixin, UpdateView):
 
         with transaction.atomic():
             # 1. Update User (Name/Email)
-            name = form.cleaned_data.get('name')
+            fname = form.cleaned_data.get('firstname', '').strip()
+            mname = form.cleaned_data.get('middlename', '').strip()
+            lname = form.cleaned_data.get('lastname', '').strip()
             email = form.cleaned_data.get('email')
-            if name or email:
-                user = self.object.user
-                if name: user.name = name
-                if email: user.email = email
-                user.save()
+
+            # Construct full name and update User
+            user = self.object.user
+            full_name = f"{fname} {mname} {lname}".replace('  ', ' ').strip()
+            if full_name:
+                user.name = full_name
+            if email:
+                user.email = email
+            user.save()
 
             # 2. Save Investor Profile
             self.object = form.save(commit=False)

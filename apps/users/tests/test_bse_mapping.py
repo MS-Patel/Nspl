@@ -9,6 +9,8 @@ def test_map_investor_to_bse_param_string_183_fields():
     user = User.objects.create(username="testinv", first_name="John", last_name="Doe", email="john@example.com")
     investor = InvestorProfile.objects.create(
         user=user,
+        firstname="John",
+        lastname="Doe",
         pan="ABCDE1234F",
         dob=date(1990, 1, 1),
         mobile="9876543210",
@@ -43,6 +45,8 @@ def test_map_investor_with_nominees():
     user = User.objects.create(username="nomtest", first_name="Jane", last_name="Doe")
     investor = InvestorProfile.objects.create(
         user=user,
+        firstname="Jane",
+        lastname="Doe",
         pan="FGHIJ5678K",
         dob=date(1985, 5, 5),
         mobile="9999999999",
