@@ -58,7 +58,7 @@ class TestOptOutNominee:
         client.force_login(admin_user)
         with patch('apps.users.views.BSEStarMFClient') as MockClient:
             mock_instance = MockClient.return_value
-            mock_instance.register_client.return_value = {'status': 'success', 'remarks': 'Updated'}
+            mock_instance.bulk_update_nominee_flags.return_value = {'status': 'success', 'remarks': 'Updated', 'data': {}}
 
             response = client.post(url)
             assert response.status_code == 302
@@ -74,7 +74,7 @@ class TestOptOutNominee:
         client.force_login(rm_user)
         with patch('apps.users.views.BSEStarMFClient') as MockClient:
             mock_instance = MockClient.return_value
-            mock_instance.register_client.return_value = {'status': 'success', 'remarks': 'Updated'}
+            mock_instance.bulk_update_nominee_flags.return_value = {'status': 'success', 'remarks': 'Updated', 'data': {}}
 
             response = client.post(url)
             assert response.status_code == 302
@@ -108,16 +108,18 @@ class TestOptOutNominee:
 
         with patch('apps.users.views.BSEStarMFClient') as MockClient:
             mock_instance = MockClient.return_value
-            mock_instance.register_client.return_value = {'status': 'success', 'remarks': 'Updated'}
+            mock_instance.bulk_update_nominee_flags.return_value = {'status': 'success', 'remarks': 'Updated', 'data': {}}
 
             client.post(url)
 
-            # Verify register_client was called with regn_type='MOD'
-            args, kwargs = mock_instance.register_client.call_args
-            assert kwargs['regn_type'] == 'MOD'
+            # Verify bulk_update_nominee_flags was called
+            assert mock_instance.bulk_update_nominee_flags.called
+            args, kwargs = mock_instance.bulk_update_nominee_flags.call_args
 
-            # Verify param string in args has blank nominee
-            param_string = args[0]['Param']
-            parts = param_string.split('|')
-            assert parts[121] == 'N' # Opt Flag (Field 122 -> Index 121)
-            assert parts[123] == ''  # Nominee Name (Field 124 -> Index 123)
+            # Verify the argument is a list containing the investor
+            investor_list = args[0]
+            assert len(investor_list) == 1
+            assert investor_list[0].pk == investor_profile.pk
+
+            # Verify register_client was NOT called
+            assert not mock_instance.register_client.called

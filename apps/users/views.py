@@ -888,10 +888,9 @@ class OptOutNomineeView(LoginRequiredMixin, View):
              # We proceed to try.
 
         try:
-            # Generate param string with nomination_opt='N' (in memory)
-            param_string = map_investor_to_bse_param_string(investor)
             client = BSEStarMFClient()
-            response = client.register_client({'Param': param_string}, regn_type="MOD")
+            # Use Bulk Update API for targeted flag update (avoids full profile validation issues)
+            response = client.bulk_update_nominee_flags([investor])
 
             if response['status'] == 'success':
                  # Success! Now update DB.
