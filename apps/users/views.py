@@ -11,6 +11,7 @@ from django.urls import reverse
 from django.views import View
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from django.db.models import Count, Sum
 from .models import RMProfile, DistributorProfile, InvestorProfile, BankAccount, Nominee, Document
 from .forms import RMCreationForm, DistributorCreationForm, InvestorCreationForm, InvestorProfileForm, BankAccountFormSet, NomineeFormSet, DocumentForm, InvestorUploadForm, DistributorUploadForm
 from .utils.parsers import import_investors_from_file, import_distributors_from_file
@@ -19,6 +20,8 @@ from apps.integration.bse_client import BSEStarMFClient
 from apps.integration.utils import map_investor_to_bse_param_string
 from apps.reconciliation.utils.valuation import calculate_portfolio_valuation
 from apps.integration.sync_utils import sync_pending_mandates, sync_pending_orders, sync_sip_child_orders
+from apps.investments.models import Order, SIP
+from apps.reconciliation.models import Holding
 import logging
 import json
 import csv
@@ -72,11 +75,50 @@ class IsAdminOrRMMixin(UserPassesTestMixin):
 class AdminDashboardView(LoginRequiredMixin, IsAdminMixin, TemplateView):
     template_name = 'dashboard/admin.html'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        # 1. Counts
+        context['rm_count'] = RMProfile.objects.count()
+        context['distributor_count'] = DistributorProfile.objects.count()
+        context['investor_count'] = InvestorProfile.objects.count()
+
+        # 2. Total AUM
+        aum_agg = Holding.objects.aggregate(total_aum=Sum('current_value'))
+        context['total_aum'] = aum_agg['total_aum'] or 0
+
+        # 3. Recent Activity (e.g., Recent Orders)
+        recent_orders = Order.objects.select_related('investor__user', 'scheme').order_by('-created_at')[:10]
+        context['recent_orders'] = recent_orders
+
+        return context
+
 class RMDashboardView(LoginRequiredMixin, IsRMMixin, TemplateView):
     template_name = 'dashboard/rm.html'
 
 class DistributorDashboardView(LoginRequiredMixin, IsDistributorMixin, TemplateView):
     template_name = 'dashboard/distributor.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+
+        # 1. Investors
+        investors = InvestorProfile.objects.filter(distributor__user=user)
+        context['investor_count'] = investors.count()
+
+        # 2. AUM (Sum of Holdings for these investors)
+        aum_agg = Holding.objects.filter(investor__in=investors).aggregate(total_aum=Sum('current_value'))
+        context['total_aum'] = aum_agg['total_aum'] or 0
+
+        # 3. Active SIPs
+        context['active_sip_count'] = SIP.objects.filter(investor__in=investors, status='ACTIVE').count()
+
+        # 4. Recent Orders (Limit 5)
+        recent_orders = Order.objects.filter(investor__in=investors).select_related('investor__user', 'scheme').order_by('-created_at')[:5]
+        context['recent_orders'] = recent_orders
+
+        return context
 
 class InvestorDashboardView(LoginRequiredMixin, TemplateView):
     template_name = 'dashboard/investor.html'
