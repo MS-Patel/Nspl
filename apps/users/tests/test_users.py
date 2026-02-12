@@ -59,7 +59,8 @@ class TestUserCreation:
 
         # New Wizard Form Data requires formset management forms
         data = {
-            'name': 'Investor One',
+            'firstname': 'Investor',
+            'lastname': 'One',
             'email': 'inv1@example.com',
             'pan': 'ABCDE1234F',
             'dob': '1990-01-01',

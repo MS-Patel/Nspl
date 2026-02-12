@@ -341,17 +341,18 @@ def map_investor_to_bse_param_string(investor):
     # 1. Client Code (UCC)
     client_code = investor.ucc_code if investor.ucc_code else investor.pan
 
-    # Name splitting
-    user_name = getattr(investor.user, 'name', '')
-    full_name = user_name if user_name else (investor.user.first_name + " " + investor.user.last_name)
-    first_name, middle_name, last_name = split_name(full_name)
+    # Construct full name for later use (Cheque Name etc)
+    full_name = f"{investor.firstname} {investor.middlename} {investor.lastname}".replace('  ', ' ').strip()
+    if not full_name:
+         user_name = getattr(investor.user, 'name', '')
+         full_name = user_name if user_name else (investor.user.first_name + " " + investor.user.last_name)
 
     # 1-9: Basic Details
     f01_09 = [
         client_code,                        # 1: Client Code (UCC)
-        first_name,                         # 2: Primary Holder First Name
-        middle_name,                        # 3: Primary Holder Middle Name
-        last_name,                          # 4: Primary Holder Last Name
+        investor.firstname,                 # 2: Primary Holder First Name
+        investor.middlename,                # 3: Primary Holder Middle Name
+        investor.lastname,                  # 4: Primary Holder Last Name
         investor.tax_status,                # 5: Tax Status
         investor.gender,                    # 6: Gender
         date_fmt(investor.dob),             # 7: Primary Holder DOB/Incorporation

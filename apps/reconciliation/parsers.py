@@ -81,6 +81,24 @@ class BaseParser:
         try:
             return InvestorProfile.objects.get(pan=pan)
         except InvestorProfile.DoesNotExist:
+
+            # Split Name Logic
+            firstname = ""
+            middlename = ""
+            lastname = ""
+
+            if name:
+                parts = name.strip().split()
+                if len(parts) == 1:
+                    firstname = parts[0]
+                elif len(parts) == 2:
+                    firstname = parts[0]
+                    lastname = parts[1]
+                elif len(parts) > 2:
+                    firstname = parts[0]
+                    lastname = parts[-1]
+                    middlename = " ".join(parts[1:-1])
+
             # Check if User exists (rare case where User exists but no Profile)
             user = User.objects.filter(username=pan).first()
             if not user:
@@ -97,6 +115,9 @@ class BaseParser:
             profile = InvestorProfile.objects.create(
                 user=user,
                 pan=pan,
+                firstname=firstname,
+                middlename=middlename,
+                lastname=lastname,
                 kyc_status=False, # Assumption until verified
                 is_offline=is_offline
             )

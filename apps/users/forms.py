@@ -125,6 +125,9 @@ class InvestorCreationForm(UserCreationForm):
     """
     Simple form for basic investor creation. Kept for backward compatibility or simple adds.
     """
+    firstname = forms.CharField(max_length=100)
+    middlename = forms.CharField(max_length=100, required=False)
+    lastname = forms.CharField(max_length=100, required=False)
     pan = forms.CharField(max_length=10, validators=[pan_validator])
     dob = forms.DateField(required=False, widget=forms.DateInput(attrs={'type': 'date'}))
     gender = forms.ChoiceField(choices=[('M', 'Male'), ('F', 'Female'), ('O', 'Other')], required=False)
@@ -134,11 +137,20 @@ class InvestorCreationForm(UserCreationForm):
     def __init__(self, *args, **kwargs):
         self.distributor_user = kwargs.pop('distributor_user', None)
         super().__init__(*args, **kwargs)
+        if 'name' in self.fields:
+            del self.fields['name']
 
     def save(self, commit=True):
         with transaction.atomic():
             user = super().save(commit=False)
             user.user_type = User.Types.INVESTOR
+
+            # Construct full name
+            fname = self.cleaned_data.get('firstname', '').strip()
+            mname = self.cleaned_data.get('middlename', '').strip()
+            lname = self.cleaned_data.get('lastname', '').strip()
+            user.name = f"{fname} {mname} {lname}".replace('  ', ' ').strip()
+
             if commit:
                 user.save()
 
@@ -146,12 +158,12 @@ class InvestorCreationForm(UserCreationForm):
                 if self.distributor_user and self.distributor_user.user_type == User.Types.DISTRIBUTOR:
                     distributor_profile = self.distributor_user.distributor_profile
 
-                # Note: RM and Branch will be handled in Views or signals if not set here.
-                # In InvestorCreateView, we should handle setting RM/Branch based on context.
-
                 InvestorProfile.objects.create(
                     user=user,
                     distributor=distributor_profile,
+                    firstname=fname,
+                    middlename=mname,
+                    lastname=lname,
                     pan=self.cleaned_data['pan'],
                     dob=self.cleaned_data.get('dob'),
                     gender=self.cleaned_data.get('gender', ''),
@@ -166,7 +178,9 @@ class InvestorProfileForm(forms.ModelForm):
     Includes User fields (name, email) managed manually or via a mixin.
     """
     # User fields
-    name = forms.CharField(max_length=255, label="Full Name")
+    firstname = forms.CharField(max_length=100, label="First Name")
+    middlename = forms.CharField(max_length=100, required=False, label="Middle Name")
+    lastname = forms.CharField(max_length=100, required=False, label="Last Name")
     email = forms.EmailField(label="Email Address")
 
     # Validated fields
@@ -190,6 +204,7 @@ class InvestorProfileForm(forms.ModelForm):
     class Meta:
         model = InvestorProfile
         fields = [
+            'firstname', 'middlename', 'lastname',
             'pan', 'dob', 'gender', 'mobile',
             'tax_status', 'occupation', 'holding_nature',
             'address_1', 'address_2', 'address_3', 'city', 'state', 'pincode', 'country',
@@ -242,8 +257,9 @@ class InvestorProfileForm(forms.ModelForm):
 
         # Populate initial user data if instance exists
         if self.instance and self.instance.pk and self.instance.user:
-            self.fields['name'].initial = self.instance.user.name
             self.fields['email'].initial = self.instance.user.email
+
+        # Ensure firstname/middle/last are populated from instance (ModelForm does this automatically for model fields)
 
         # Permissions Logic for Hierarchy Fields
         if self.request_user:
@@ -369,7 +385,7 @@ NomineeFormSet = inlineformset_factory(
 class InvestorUploadForm(forms.Form):
     file = forms.FileField(
         label='Investor CSV File',
-        help_text='CSV file with columns: PAN, Name, Email, Mobile'
+        help_text='CSV file with columns: PAN, Firstname, Middlename, Lastname, Email, Mobile'
     )
 
 class DistributorUploadForm(forms.Form):
