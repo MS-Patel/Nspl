@@ -102,7 +102,7 @@
                 formData.append('name', newName);
                 formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
 
-                return fetch(`/products/amc/${pk}/update/`, {
+                return fetch(`/amc/${pk}/update/`, {
                     method: 'POST',
                     body: formData,
                     headers: {
