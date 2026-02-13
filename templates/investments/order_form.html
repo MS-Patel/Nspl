@@ -62,7 +62,7 @@
                         <!-- Scheme Filters (Custom UI, not bound to form model directly) -->
                         <div class="sm:col-span-2 border-t border-slate-200 dark:border-navy-500 pt-4 mt-2">
                             <h5 class="text-base font-medium text-slate-700 dark:text-navy-100 mb-3">Filter Schemes</h5>
-                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                                 <!-- AMC Filter -->
                                 <div>
                                     <label class="block text-xs font-medium text-slate-500 uppercase">AMC</label>
@@ -70,6 +70,17 @@
                                         <option value="">All AMCs</option>
                                         {% for amc in amcs %}
                                             <option value="{{ amc.id }}">{{ amc.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <!-- Scheme Plan Filter -->
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-500 uppercase">Scheme Plan</label>
+                                    <select id="filter_scheme_plan" class="mt-1.5 w-full" placeholder="Select Scheme Plan...">
+                                        <option value="">All Plans</option>
+                                        {% for sp in scheme_plans %}
+                                            <option value="{{ sp }}">{{ sp }}</option>
                                         {% endfor %}
                                     </select>
                                 </div>
@@ -307,6 +318,10 @@
         amcEl._tom = new TomConstructor(amcEl, config);
         const amcSelect = amcEl._tom;
 
+        const schemePlanEl = document.querySelector('#filter_scheme_plan');
+        schemePlanEl._tom = new TomConstructor(schemePlanEl, config);
+        const schemePlanSelect = schemePlanEl._tom;
+
         const catEl = document.querySelector('#filter_category');
         catEl._tom = new TomConstructor(catEl, config);
         const categorySelect = catEl._tom;
@@ -483,12 +498,14 @@
             const amcId = amcSelect.getValue();
             const catId = categorySelect.getValue();
             const typeVal = typeSelect.getValue();
+            const schemePlanVal = schemePlanSelect.getValue();
 
             const params = new URLSearchParams({
                 fetch_schemes: 'true',
                 amc_id: amcId,
                 category_id: catId,
-                scheme_type: typeVal
+                scheme_type: typeVal,
+                scheme_plan: schemePlanVal
             });
 
             schemeSelect.lock(); // Prevent interaction while loading
@@ -507,6 +524,7 @@
         }
 
         amcSelect.on('change', fetchSchemes);
+        schemePlanSelect.on('change', fetchSchemes);
         categorySelect.on('change', fetchSchemes);
         typeSelect.on('change', fetchSchemes);
 
