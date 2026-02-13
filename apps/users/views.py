@@ -13,7 +13,11 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.db.models import Count, Sum
 from .models import RMProfile, DistributorProfile, InvestorProfile, BankAccount, Nominee, Document
-from .forms import RMCreationForm, DistributorCreationForm, InvestorCreationForm, InvestorProfileForm, BankAccountFormSet, NomineeFormSet, DocumentForm, InvestorUploadForm, DistributorUploadForm
+from .forms import (
+    RMCreationForm, DistributorCreationForm, InvestorCreationForm, InvestorProfileForm,
+    BankAccountFormSet, NomineeFormSet, DocumentForm, InvestorUploadForm, DistributorUploadForm,
+    UserProfileForm, RMProfileUpdateForm, DistributorProfileUpdateForm
+)
 from .utils.parsers import import_investors_from_file, import_distributors_from_file
 from .services import validate_investor_for_bse
 from apps.integration.bse_client import BSEStarMFClient
@@ -1021,3 +1025,83 @@ class DownloadDistributorSampleView(LoginRequiredMixin, IsAdminMixin, View):
         )
         response['Content-Disposition'] = 'attachment; filename="distributor_import_sample.xlsx"'
         return response
+
+# --- Profile & Settings Views ---
+
+class ProfileView(LoginRequiredMixin, TemplateView):
+    template_name = 'users/profile.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+
+        # Initialize forms
+        if 'user_form' not in context:
+            context['user_form'] = UserProfileForm(instance=user)
+
+        # Profile specific form
+        if user.user_type == User.Types.RM and hasattr(user, 'rm_profile'):
+            if 'profile_form' not in context:
+                context['profile_form'] = RMProfileUpdateForm(instance=user.rm_profile)
+        elif user.user_type == User.Types.DISTRIBUTOR and hasattr(user, 'distributor_profile'):
+            if 'profile_form' not in context:
+                context['profile_form'] = DistributorProfileUpdateForm(instance=user.distributor_profile)
+
+        return context
+
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        user_form = UserProfileForm(request.POST, instance=user)
+        profile_form = None
+
+        valid_profile = True
+
+        if user.user_type == User.Types.RM and hasattr(user, 'rm_profile'):
+            profile_form = RMProfileUpdateForm(request.POST, instance=user.rm_profile)
+        elif user.user_type == User.Types.DISTRIBUTOR and hasattr(user, 'distributor_profile'):
+            profile_form = DistributorProfileUpdateForm(request.POST, instance=user.distributor_profile)
+
+        valid_user = user_form.is_valid()
+        if profile_form:
+            valid_profile = profile_form.is_valid()
+
+        if valid_user and valid_profile:
+            user_form.save()
+            if profile_form:
+                profile_form.save()
+            messages.success(request, "Profile updated successfully.")
+            return redirect('users:profile')
+        else:
+            messages.error(request, "Please correct the errors below.")
+            return self.render_to_response(self.get_context_data(user_form=user_form, profile_form=profile_form))
+
+from django.contrib.auth.views import (
+    PasswordChangeView,
+    PasswordResetView,
+    PasswordResetDoneView,
+    PasswordResetConfirmView,
+    PasswordResetCompleteView
+)
+
+class UserPasswordChangeView(LoginRequiredMixin, PasswordChangeView):
+    template_name = 'users/password_change.html'
+    success_url = reverse_lazy('users:profile')
+
+    def form_valid(self, form):
+        messages.success(self.request, "Password changed successfully.")
+        return super().form_valid(form)
+
+class UserPasswordResetView(PasswordResetView):
+    template_name = 'users/password_reset_form.html'
+    email_template_name = 'users/password_reset_email.html'
+    success_url = reverse_lazy('users:password_reset_done')
+
+class UserPasswordResetDoneView(PasswordResetDoneView):
+    template_name = 'users/password_reset_done.html'
+
+class UserPasswordResetConfirmView(PasswordResetConfirmView):
+    template_name = 'users/password_reset_confirm.html'
+    success_url = reverse_lazy('users:password_reset_complete')
+
+class UserPasswordResetCompleteView(PasswordResetCompleteView):
+    template_name = 'users/password_reset_complete.html'

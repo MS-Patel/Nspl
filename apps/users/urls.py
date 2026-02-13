@@ -35,4 +35,12 @@ urlpatterns = [
     path('users/investor/<int:pk>/toggle-kyc/', views.ToggleKYCView.as_view(), name='toggle_kyc'),
     path('users/investor/upload/', views.InvestorUploadView.as_view(), name='investor_upload'),
     path('users/investor/upload/sample/', views.DownloadInvestorSampleView.as_view(), name='investor_upload_sample'),
+
+    # Profile & Settings
+    path('profile/', views.ProfileView.as_view(), name='profile'),
+    path('password-change/', views.UserPasswordChangeView.as_view(), name='password_change'),
+    path('password-reset/', views.UserPasswordResetView.as_view(), name='password_reset'),
+    path('password-reset/done/', views.UserPasswordResetDoneView.as_view(), name='password_reset_done'),
+    path('reset/<uidb64>/<token>/', views.UserPasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+    path('reset/done/', views.UserPasswordResetCompleteView.as_view(), name='password_reset_complete'),
 ]

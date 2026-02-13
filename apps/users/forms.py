@@ -121,6 +121,32 @@ class DistributorCreationForm(UserCreationForm):
                 )
         return user
 
+class UserProfileForm(forms.ModelForm):
+    name = forms.CharField(max_length=255, required=True, label="Full Name")
+    email = forms.EmailField(required=True, label="Email Address")
+
+    class Meta:
+        model = User
+        fields = ['name', 'email']
+
+class RMProfileUpdateForm(forms.ModelForm):
+    employee_code = forms.CharField(max_length=50, disabled=True, required=False, help_text="Cannot be changed.")
+    branch = forms.ModelChoiceField(queryset=Branch.objects.all(), disabled=True, required=False, help_text="Cannot be changed.")
+
+    class Meta:
+        model = RMProfile
+        fields = ['employee_code', 'branch']
+
+class DistributorProfileUpdateForm(forms.ModelForm):
+    arn_number = forms.CharField(max_length=50, disabled=True, required=False, help_text="Cannot be changed.")
+    euin = forms.CharField(max_length=50, required=False)
+    pan = forms.CharField(max_length=10, required=False)
+    mobile = forms.CharField(max_length=15, required=False)
+
+    class Meta:
+        model = DistributorProfile
+        fields = ['arn_number', 'euin', 'pan', 'mobile']
+
 class InvestorCreationForm(UserCreationForm):
     """
     Simple form for basic investor creation. Kept for backward compatibility or simple adds.
