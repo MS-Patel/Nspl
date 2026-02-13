@@ -3,6 +3,7 @@ import pandas as pd
 from apps.products.models import Scheme
 import logging
 from thefuzz import process, fuzz
+from collections import defaultdict
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +43,10 @@ class Command(BaseCommand):
         all_schemes = list(Scheme.objects.all())
 
         # Build maps
-        isin_map = {s.isin: s for s in all_schemes if s.isin}
+        isin_map = defaultdict(list)
+        for s in all_schemes:
+            if s.isin:
+                isin_map[s.isin].append(s)
 
         # Map for name matching (normalized)
         name_map = {}
@@ -72,14 +76,14 @@ class Command(BaseCommand):
             if isin1 and isinstance(isin1, str):
                 isin1 = isin1.strip()
                 if isin1 in isin_map:
-                    matched_schemes_for_row.append(isin_map[isin1])
+                    matched_schemes_for_row.extend(isin_map[isin1])
 
             # 2. Try matching by ISIN 2
             isin2 = row.get('ISIN Div Reinvestment')
             if isin2 and isinstance(isin2, str):
                 isin2 = isin2.strip()
                 if isin2 in isin_map:
-                    matched_schemes_for_row.append(isin_map[isin2])
+                    matched_schemes_for_row.extend(isin_map[isin2])
 
             if matched_schemes_for_row:
                 matched_by_isin += len(matched_schemes_for_row)
