@@ -1,13 +1,17 @@
-from django.views.generic import TemplateView, DetailView, FormView
+from django.views.generic import TemplateView, DetailView, FormView, ListView
 from django.views import View
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib import messages
-from django.shortcuts import redirect
+from django.shortcuts import redirect, get_object_or_404
 from django.urls import reverse_lazy
 from django.contrib.auth import get_user_model
 from django.http import HttpResponse
-from .models import Scheme
+from django.views.decorators.http import require_POST
+from django.contrib.auth.decorators import login_required
+from .models import Scheme, AMC
 from .forms import SchemeUploadForm, NAVUploadForm
+import pandas as pd
+from django.utils import timezone
 from .utils.parsers import import_schemes_from_file, import_navs_from_file
 from apps.core.utils.excel_generator import create_excel_sample_file
 from apps.core.utils.sample_headers import (
@@ -138,4 +142,100 @@ class DownloadNAVSampleView(LoginRequiredMixin, UserPassesTestMixin, View):
             content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         )
         response['Content-Disposition'] = 'attachment; filename="nav_import_sample.xlsx"'
+        return response
+
+class AMCMasterView(LoginRequiredMixin, UserPassesTestMixin, ListView):
+    model = AMC
+    template_name = 'products/amc_list.html'
+    context_object_name = 'amcs'
+    ordering = ['name']
+
+    def test_func(self):
+        return self.request.user.user_type == User.Types.ADMIN or self.request.user.is_staff
+
+@login_required
+@require_POST
+def toggle_amc_status(request, pk):
+    if not (request.user.user_type == User.Types.ADMIN or request.user.is_staff):
+        messages.error(request, "You are not authorized to perform this action.")
+        return redirect('products:amc_list')
+
+    amc = get_object_or_404(AMC, pk=pk)
+    amc.is_active = not amc.is_active
+    amc.save()
+    status = "Active" if amc.is_active else "Inactive"
+    messages.success(request, f"AMC {amc.name} is now {status}.")
+    return redirect('products:amc_list')
+
+class DownloadSchemeMasterReportView(LoginRequiredMixin, UserPassesTestMixin, View):
+    def test_func(self):
+        return self.request.user.user_type == User.Types.ADMIN or self.request.user.is_staff
+
+    def get(self, request, *args, **kwargs):
+        schemes = Scheme.objects.all().select_related('amc', 'category')
+
+        # Convert queryset to list of dicts with all fields
+        data = []
+        for scheme in schemes:
+            item = {
+                'ID': scheme.id,
+                'AMC': scheme.amc.name if scheme.amc else '',
+                'AMC Code': scheme.amc.code if scheme.amc else '',
+                'Category': scheme.category.name if scheme.category else '',
+                'Category Code': scheme.category.code if scheme.category else '',
+                'Name': scheme.name,
+                'ISIN': scheme.isin,
+                'Scheme Code': scheme.scheme_code,
+                'Unique No': scheme.unique_no,
+                'RTA Scheme Code': scheme.rta_scheme_code,
+                'AMC Scheme Code': scheme.amc_scheme_code,
+                'AMFI Code': scheme.amfi_code,
+                'Scheme Type': scheme.scheme_type,
+                'Scheme Plan': scheme.scheme_plan,
+                'Purchase Allowed': scheme.purchase_allowed,
+                'Purchase Transaction Mode': scheme.purchase_transaction_mode,
+                'Min Purchase Amount': scheme.min_purchase_amount,
+                'Additional Purchase Amount': scheme.additional_purchase_amount,
+                'Max Purchase Amount': scheme.max_purchase_amount,
+                'Purchase Amount Multiplier': scheme.purchase_amount_multiplier,
+                'Purchase Cutoff Time': scheme.purchase_cutoff_time,
+                'Redemption Allowed': scheme.redemption_allowed,
+                'Redemption Transaction Mode': scheme.redemption_transaction_mode,
+                'Min Redemption Qty': scheme.min_redemption_qty,
+                'Redemption Qty Multiplier': scheme.redemption_qty_multiplier,
+                'Max Redemption Qty': scheme.max_redemption_qty,
+                'Min Redemption Amount': scheme.min_redemption_amount,
+                'Max Redemption Amount': scheme.max_redemption_amount,
+                'Redemption Amount Multiple': scheme.redemption_amount_multiple,
+                'Redemption Cutoff Time': scheme.redemption_cutoff_time,
+                'SIP Allowed': scheme.is_sip_allowed,
+                'STP Allowed': scheme.is_stp_allowed,
+                'SWP Allowed': scheme.is_swp_allowed,
+                'Switch Allowed': scheme.is_switch_allowed,
+                'Start Date': scheme.start_date,
+                'End Date': scheme.end_date,
+                'Reopening Date': scheme.reopening_date,
+                'Face Value': scheme.face_value,
+                'Settlement Type': scheme.settlement_type,
+                'RTA Agent Code': scheme.rta_agent_code,
+                'AMC Active Flag': scheme.amc_active_flag,
+                'Dividend Reinvestment Flag': scheme.dividend_reinvestment_flag,
+                'AMC Ind': scheme.amc_ind,
+                'Exit Load Flag': scheme.exit_load_flag,
+                'Exit Load': scheme.exit_load,
+                'Lock-in Period Flag': scheme.lock_in_period_flag,
+                'Lock-in Period': scheme.lock_in_period,
+                'Channel Partner Code': scheme.channel_partner_code,
+                'Created At': scheme.created_at.replace(tzinfo=None) if scheme.created_at else None,
+                'Updated At': scheme.updated_at.replace(tzinfo=None) if scheme.updated_at else None,
+            }
+            data.append(item)
+
+        df = pd.DataFrame(data)
+
+        response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        filename = f"Scheme_Master_Report_{timezone.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+
+        df.to_excel(response, index=False)
         return response

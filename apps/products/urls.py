@@ -9,4 +9,7 @@ urlpatterns = [
     path('schemes/upload/sample/', views.DownloadSchemeSampleView.as_view(), name='scheme_upload_sample'),
     path('navs/upload/', views.NAVUploadView.as_view(), name='nav_upload'),
     path('navs/upload/sample/', views.DownloadNAVSampleView.as_view(), name='nav_upload_sample'),
+    path('amc/', views.AMCMasterView.as_view(), name='amc_list'),
+    path('amc/<int:pk>/toggle/', views.toggle_amc_status, name='amc_toggle'),
+    path('schemes/export/master/', views.DownloadSchemeMasterReportView.as_view(), name='scheme_master_export'),
 ]

@@ -4,6 +4,7 @@ from django.utils.translation import gettext_lazy as _
 class AMC(models.Model):
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=100, unique=True, help_text="AMC Code from BSE/RTA")
+    is_active = models.BooleanField(default=True)
 
     class Meta:
         verbose_name = "AMC"
