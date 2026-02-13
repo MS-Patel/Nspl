@@ -395,6 +395,24 @@ class BankAccount(models.Model):
     bank_name = models.CharField(max_length=100, blank=True)
     branch_name = models.CharField(max_length=100, blank=True)
     is_default = models.BooleanField(default=False)
+    bse_index = models.IntegerField(null=True, blank=True, help_text="Fixed slot index (1-5) for BSE registration")
+
+    class Meta:
+        unique_together = ('investor', 'bse_index')
+
+    def save(self, *args, **kwargs):
+        # Auto-assign lowest available index (1-5) if not set
+        if not self.bse_index and self.investor_id:
+            used_indices = set(
+                self.investor.bank_accounts.exclude(id=self.id)
+                .values_list('bse_index', flat=True)
+            )
+            # Find first number in 1..5 not in used_indices
+            for i in range(1, 6):
+                if i not in used_indices:
+                    self.bse_index = i
+                    break
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.bank_name} - {self.account_number}"
