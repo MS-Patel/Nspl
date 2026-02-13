@@ -83,8 +83,16 @@
                         <div class="space-y-4 p-4 sm:p-5">
                             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                 <label class="block">
-                                    <span>Full Name</span>
-                                    {% render_field form.name id="name" class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" placeholder="Enter full name" %}
+                                    <span>First Name</span>
+                                    {% render_field form.firstname id="firstname" class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" placeholder="First Name" %}
+                                </label>
+                                <label class="block">
+                                    <span>Middle Name</span>
+                                    {% render_field form.middlename id="middlename" class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" placeholder="Middle Name" %}
+                                </label>
+                                <label class="block">
+                                    <span>Last Name</span>
+                                    {% render_field form.lastname id="lastname" class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" placeholder="Last Name" %}
                                 </label>
                                 <label class="block">
                                     <span>Email</span>
@@ -536,7 +544,7 @@
 
         // --- 2. Validation Configuration ---
         const stepFields = {
-            1: ['#name', '#email', '#pan', '#dob', '#mobile', '#gender'],
+            1: ['#firstname', '#lastname', '#email', '#pan', '#dob', '#mobile', '#gender'],
             2: ['#address_1', '#city', '#state', '#pincode', '#country', '#tax_status', '#occupation', '#kyc_type'],
             3: [], // Joint Holders (Optional)
             4: [], // Bank Details (Formsets)
@@ -549,7 +557,7 @@
             submitUrl: window.location.href, // Post to self
             fields: {
                 // -- Step 1 --
-                '#name': [{ rule: 'required', errorMessage: 'Full Name is required' }],
+                '#firstname': [{ rule: 'required', errorMessage: 'First Name is required' }],
                 '#email': [
                     { rule: 'required', errorMessage: 'Email is required' },
                     { rule: 'email', errorMessage: 'Invalid email format' }
@@ -650,8 +658,25 @@
                         
                         // Auto-fill Name if available
                         if(kycData.name) {
-                            const nameInput = document.getElementById('name');
-                            if(nameInput) nameInput.value = kycData.name;
+                            // Split full name into First/Middle/Last
+                            const parts = kycData.name.trim().split(/\s+/);
+                            const fnameInput = document.getElementById('firstname');
+                            const mnameInput = document.getElementById('middlename');
+                            const lnameInput = document.getElementById('lastname');
+
+                            // Reset fields
+                            if(fnameInput) fnameInput.value = '';
+                            if(mnameInput) mnameInput.value = '';
+                            if(lnameInput) lnameInput.value = '';
+
+                            if (parts.length > 0 && fnameInput) fnameInput.value = parts[0];
+
+                            if (parts.length > 2) {
+                                if (mnameInput) mnameInput.value = parts.slice(1, parts.length - 1).join(' ');
+                                if (lnameInput) lnameInput.value = parts[parts.length - 1];
+                            } else if (parts.length === 2) {
+                                if (lnameInput) lnameInput.value = parts[1];
+                            }
                         }
 
                     } else {
