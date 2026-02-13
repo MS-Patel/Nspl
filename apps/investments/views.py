@@ -547,7 +547,7 @@ def get_order_metadata(request):
     category_id = request.GET.get('category_id')
     scheme_type = request.GET.get('scheme_type')
 
-    schemes_qs = Scheme.objects.filter(purchase_allowed=True)
+    schemes_qs = Scheme.objects.filter(purchase_allowed=True, amc_active_flag=True)
     if amc_id:
         schemes_qs = schemes_qs.filter(amc_id=amc_id)
     if category_id:
@@ -558,7 +558,7 @@ def get_order_metadata(request):
     # Optimizing query: return only needed fields
     schemes_data = schemes_qs.values(
         'id', 'name', 'scheme_code', 'min_purchase_amount', 'max_purchase_amount',
-        'purchase_amount_multiplier', 'is_sip_allowed', 'amc_id'
+        'purchase_amount_multiplier', 'is_sip_allowed', 'is_switch_allowed', 'amc_id'
     )
 
     if request.GET.get('fetch_schemes') == 'true':

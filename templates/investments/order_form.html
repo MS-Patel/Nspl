@@ -369,6 +369,37 @@
         const amountFeedback = document.getElementById('amount-feedback');
 
         let currentSchemeDetails = null;
+        let cachedSchemes = []; // Store fetched schemes to filter locally
+
+        // --- Filter Schemes by Transaction Type ---
+        function filterSchemesByType() {
+            schemeSelect.clearOptions();
+
+            if (!cachedSchemes.length) {
+                schemeSelect.refreshOptions(false);
+                return;
+            }
+
+            const selectedType = document.querySelector('input[name="transaction_type"]:checked')?.value;
+            const currentSchemeId = schemeSelect.getValue();
+
+            let filteredSchemes = cachedSchemes;
+
+            if (selectedType === 'SIP') {
+                filteredSchemes = cachedSchemes.filter(s => s.is_sip_allowed);
+            } else if (selectedType === 'S') { // Switch
+                filteredSchemes = cachedSchemes.filter(s => s.is_switch_allowed);
+            }
+
+            schemeSelect.addOption(filteredSchemes);
+
+            // Restore selection if valid
+            const stillValid = filteredSchemes.some(s => s.id == currentSchemeId);
+            if (currentSchemeId && stillValid) {
+                 schemeSelect.setValue(currentSchemeId, true);
+            }
+            schemeSelect.refreshOptions(false);
+        }
 
         // --- Transaction Type Toggle Logic ---
         function handleTransactionTypeChange() {
@@ -378,6 +409,9 @@
                 selectedType = checkedRadio.value;
             }
             console.log("Transaction Type Changed:", selectedType);
+
+            // Filter Schemes based on type
+            filterSchemesByType();
 
             // Hide all special sections first
             sipSection.style.display = 'none';
@@ -395,6 +429,7 @@
                 // Validate SIP
                 if(currentSchemeDetails && !currentSchemeDetails.is_sip_allowed) {
                     alert('Selected scheme does not support SIP.');
+                    schemeSelect.clear(); // Clear invalid selection
                 }
             } else if (selectedType === 'S') { // Switch
                 switchSection.style.display = 'grid';
@@ -448,9 +483,7 @@
             const amcId = amcSelect.getValue();
             const catId = categorySelect.getValue();
             const typeVal = typeSelect.getValue();
-            const currentSchemeId = schemeSelect.getValue(); // Preserve selection
 
-            // Use fetch and addOption/refreshOptions
             const params = new URLSearchParams({
                 fetch_schemes: 'true',
                 amc_id: amcId,
@@ -463,28 +496,8 @@
             fetch(`{% url 'investments:api_order_metadata' %}?${params.toString()}`)
                 .then(response => response.json())
                 .then(data => {
-                    // We need to keep the currently selected option if it exists
-                    let currentOption = null;
-                    if (currentSchemeId) {
-                        currentOption = schemeSelect.options[currentSchemeId];
-                    }
-
-                    schemeSelect.clearOptions();
-
-                    if (data.schemes && data.schemes.length > 0) {
-                        schemeSelect.addOption(data.schemes);
-                    }
-
-                    // Restore selection if it was lost (and add it back if filters excluded it but we want to keep it visible)
-                    if (currentSchemeId && currentOption) {
-                        schemeSelect.addOption(currentOption);
-                        schemeSelect.setValue(currentSchemeId, true); // silent update
-                    } else if (currentSchemeId) {
-                         // If we didn't capture the option object (rare), try to set value anyway if it's in new data
-                         schemeSelect.setValue(currentSchemeId, true);
-                    }
-
-                    schemeSelect.refreshOptions(false); // Update the dropdown
+                    cachedSchemes = data.schemes || [];
+                    filterSchemesByType();
                     schemeSelect.unlock();
                 })
                 .catch(err => {
