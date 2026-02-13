@@ -24,6 +24,18 @@ class TestOrderCreateView:
         # Check initial data contains Purchase default
         assert form.initial.get('transaction_type') == Order.PURCHASE
 
+    def test_active_amc_filter(self):
+        active_amc = AMCFactory(is_active=True, name="Active AMC")
+        inactive_amc = AMCFactory(is_active=False, name="Inactive AMC")
+
+        response = self.client.get(self.url)
+
+        assert response.status_code == 200
+        amcs = response.context['amcs']
+
+        assert active_amc in amcs
+        assert inactive_amc not in amcs
+
 @pytest.mark.django_db
 class TestOrderMetadataAPI:
     def setup_method(self):
