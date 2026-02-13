@@ -1,5 +1,6 @@
 import csv
 import logging
+import pandas as pd
 from datetime import datetime
 from decimal import Decimal
 from django.db import transaction
@@ -8,22 +9,50 @@ from apps.products.models import AMC, Scheme, SchemeCategory, NAVHistory
 
 logger = logging.getLogger(__name__)
 
+def read_file_to_dicts(file_obj):
+    """
+    Reads a CSV or Excel file and returns a list of dictionaries.
+    Keys are normalized (lowercase, stripped).
+    """
+    data = []
+    filename = file_obj.name.lower()
+
+    try:
+        if filename.endswith(('.xls', '.xlsx')):
+            df = pd.read_excel(file_obj)
+            df = df.fillna('')
+            records = df.to_dict('records')
+            data = [{str(k).strip().lower(): v for k, v in row.items()} for row in records]
+        else:
+            # Detect delimiter? Original was pipe |
+            decoded_file = file_obj.read().decode('utf-8').splitlines()
+            # Try sniffing
+            try:
+                dialect = csv.Sniffer().sniff(decoded_file[0])
+                delimiter = dialect.delimiter
+            except:
+                delimiter = '|' # Default fallback
+
+            reader = csv.DictReader(decoded_file, delimiter=delimiter)
+            reader.fieldnames = [name.strip().lower() for name in reader.fieldnames]
+            data = list(reader)
+    except Exception as e:
+        logger.error(f"Error reading file {filename}: {e}")
+        raise ValueError(f"Error reading file: {str(e)}")
+
+    return data
+
 def import_schemes_from_file(file_obj):
     """
-    Parses a scheme master file (CSV/Pipe) and updates/creates schemes.
+    Parses a scheme master file (CSV/Pipe/Excel) and updates/creates schemes.
     """
     count = 0
     errors = []
 
     try:
-        # Determine format (assume pipe separated like original command)
-        decoded_file = file_obj.read().decode('utf-8').splitlines()
-        reader = csv.DictReader(decoded_file, delimiter='|')
+        rows = read_file_to_dicts(file_obj)
 
-        # Clean headers
-        reader.fieldnames = [name.strip() for name in reader.fieldnames]
-
-        for row_idx, row in enumerate(reader, start=1):
+        for row_idx, row in enumerate(rows, start=1):
             try:
                 process_scheme_row(row)
                 count += 1
@@ -36,10 +65,10 @@ def import_schemes_from_file(file_obj):
     return count, errors
 
 def process_scheme_row(row):
-    # Reuse logic from import_schemes command (adapted)
+    # Keys are lowercase now
 
     # 1. Get or Create AMC
-    amc_code = row.get('AMC Code')
+    amc_code = str(row.get('amc code', '')).strip()
     if not amc_code:
         return
 
@@ -47,7 +76,11 @@ def process_scheme_row(row):
     amc, _ = AMC.objects.get_or_create(code=amc_code, defaults={'name': amc_name})
 
     # 2. Get or Create Category
-    cat_code = row.get('Scheme Type')
+    cat_code = str(row.get('scheme type', '')).strip() # Using 'scheme type' as category code usually?
+    # Wait, 'scheme type' and 'category' are different columns in headers?
+    # SCHEME_HEADERS has 'Scheme Type' and 'Category'.
+    # In original parser: category, _ = SchemeCategory.objects.get_or_create(code=cat_code) where cat_code = row.get('Scheme Type')
+
     category = None
     if cat_code:
         category, _ = SchemeCategory.objects.get_or_create(
@@ -58,21 +91,28 @@ def process_scheme_row(row):
     # Helpers
     def parse_bool(val):
         if not val: return False
-        val = val.strip().upper()
-        return val == 'Y' or val == '1'
+        val = str(val).strip().lower()
+        return val in ['y', 'yes', '1', 'true']
 
-    def parse_dt(val): # Renamed to avoid shadowing
+    def parse_dt(val):
         if not val: return None
-        val = val.strip()
+        # Handle pandas timestamp
+        if isinstance(val, (datetime, pd.Timestamp)):
+            return val.date()
+
+        val = str(val).strip()
         if not val: return None
-        try:
-            return datetime.strptime(val, '%b %d %Y').date()
-        except ValueError:
-            return None
+
+        for fmt in ('%b %d %Y', '%Y-%m-%d', '%d-%m-%Y'):
+            try:
+                return datetime.strptime(val, fmt).date()
+            except ValueError:
+                continue
+        return None
 
     def parse_tm(val):
         if not val: return None
-        val = val.strip()
+        val = str(val).strip()
         if not val: return None
         try:
             return datetime.strptime(val, '%H:%M:%S').time()
@@ -93,12 +133,12 @@ def process_scheme_row(row):
         val = str(val).strip()
         if not val: return None
         try:
-            return int(val)
+            return int(float(val)) # Handle 1.0 from float
         except ValueError:
             return None
 
-    unique_no = parse_int(row.get('Unique No'))
-    scheme_code = row.get('Scheme Code')
+    unique_no = parse_int(row.get('unique no'))
+    scheme_code = str(row.get('scheme code', '')).strip()
 
     if not scheme_code:
         return
@@ -106,48 +146,52 @@ def process_scheme_row(row):
     scheme_data = {
         'amc': amc,
         'category': category,
-        'name': row.get('Scheme Name'),
-        'isin': row.get('ISIN') or '',
-        'rta_scheme_code': row.get('RTA Scheme Code'),
-        'amc_scheme_code': row.get('AMC Scheme Code'),
-        'scheme_type': row.get('Scheme Type'),
-        'scheme_plan': row.get('Scheme Plan'),
-        'purchase_allowed': parse_bool(row.get('Purchase Allowed')),
-        'purchase_transaction_mode': row.get('Purchase Transaction mode'),
-        'min_purchase_amount': parse_dec(row.get('Minimum Purchase Amount')),
-        'additional_purchase_amount': parse_dec(row.get('Additional Purchase Amount')),
-        'max_purchase_amount': parse_dec(row.get('Maximum Purchase Amount')),
-        'purchase_amount_multiplier': parse_dec(row.get('Purchase Amount Multiplier')),
-        'purchase_cutoff_time': parse_tm(row.get('Purchase Cutoff Time')),
-        'redemption_allowed': parse_bool(row.get('Redemption Allowed')),
-        'redemption_transaction_mode': row.get('Redemption Transaction Mode'),
-        'min_redemption_qty': parse_dec(row.get('Minimum Redemption Qty')),
-        'redemption_qty_multiplier': parse_dec(row.get('Redemption Qty Multiplier')),
-        'max_redemption_qty': parse_dec(row.get('Maximum Redemption Qty')),
-        'min_redemption_amount': parse_dec(row.get('Redemption Amount - Minimum')),
-        'max_redemption_amount': parse_dec(row.get('Redemption Amount – Maximum')),
-        'redemption_amount_multiple': parse_dec(row.get('Redemption Amount Multiple')),
-        'redemption_cutoff_time': parse_tm(row.get('Redemption Cut off Time')),
-        'is_sip_allowed': parse_bool(row.get('SIP FLAG')),
-        'is_stp_allowed': parse_bool(row.get('STP FLAG')),
-        'is_swp_allowed': parse_bool(row.get('SWP Flag')),
-        'is_switch_allowed': parse_bool(row.get('Switch FLAG')),
-        'start_date': parse_dt(row.get('Start Date')),
-        'end_date': parse_dt(row.get('End Date')),
-        'reopening_date': parse_dt(row.get('ReOpening Date')),
-        'face_value': parse_dec(row.get('Face Value') or '0'),
-        'settlement_type': row.get('SETTLEMENT TYPE'),
+        'name': row.get('scheme name'),
+        'isin': row.get('isin') or '',
+        'rta_scheme_code': row.get('rta scheme code'),
+        'amc_scheme_code': row.get('amc scheme code'),
+        'scheme_type': row.get('scheme type'),
+        'scheme_plan': row.get('scheme plan'),
+        'purchase_allowed': parse_bool(row.get('purchase allowed') or row.get('purchase allowed (y/n)')),
+        'purchase_transaction_mode': row.get('purchase transaction mode'),
+        'min_purchase_amount': parse_dec(row.get('minimum purchase amount') or row.get('min purchase amount')),
+        'additional_purchase_amount': parse_dec(row.get('additional purchase amount')),
+        'max_purchase_amount': parse_dec(row.get('maximum purchase amount') or row.get('max purchase amount')),
+        'purchase_amount_multiplier': parse_dec(row.get('purchase amount multiplier')),
+        'purchase_cutoff_time': parse_tm(row.get('purchase cutoff time')),
+        'redemption_allowed': parse_bool(row.get('redemption allowed') or row.get('redemption allowed (y/n)')),
+        'redemption_transaction_mode': row.get('redemption transaction mode'),
+        'min_redemption_qty': parse_dec(row.get('minimum redemption qty') or row.get('min redemption qty')),
+        'redemption_qty_multiplier': parse_dec(row.get('redemption qty multiplier')),
+        'max_redemption_qty': parse_dec(row.get('maximum redemption qty') or row.get('max redemption qty')),
+        'min_redemption_amount': parse_dec(row.get('redemption amount - minimum') or row.get('min redemption amount')),
+        'max_redemption_amount': parse_dec(row.get('redemption amount – maximum') or row.get('max redemption amount')),
+        'redemption_amount_multiple': parse_dec(row.get('redemption amount multiple')),
+        'redemption_cutoff_time': parse_tm(row.get('redemption cut off time') or row.get('redemption cutoff time')),
+        'is_sip_allowed': parse_bool(row.get('sip flag') or row.get('sip allowed (y/n)')),
+        'is_stp_allowed': parse_bool(row.get('stp flag') or row.get('stp allowed (y/n)')),
+        'is_swp_allowed': parse_bool(row.get('swp flag') or row.get('swp allowed (y/n)')),
+        'is_switch_allowed': parse_bool(row.get('switch flag') or row.get('switch allowed (y/n)')),
+        'start_date': parse_dt(row.get('start date')),
+        'end_date': parse_dt(row.get('end date')),
+        'reopening_date': parse_dt(row.get('reopening date')),
+        'face_value': parse_dec(row.get('face value') or '0'),
+        'settlement_type': row.get('settlement type'),
         'unique_no': unique_no,
-        'rta_agent_code': row.get('RTA Agent Code'),
-        'amc_active_flag': parse_bool(row.get('AMC Active Flag')),
-        'dividend_reinvestment_flag': parse_bool(row.get('Dividend Reinvestment Flag')),
-        'amc_ind': row.get('AMC_IND'),
-        'exit_load_flag': parse_bool(row.get('Exit Load Flag')),
-        'exit_load': row.get('Exit Load'),
-        'lock_in_period_flag': parse_bool(row.get('Lock-in Period Flag')),
-        'lock_in_period': row.get('Lock-in Period'),
-        'channel_partner_code': row.get('Channel Partner Code'),
+        'rta_agent_code': row.get('rta agent code'),
+        'amc_active_flag': parse_bool(row.get('amc active flag') or row.get('amc active flag (y/n)')),
+        'dividend_reinvestment_flag': parse_bool(row.get('dividend reinvestment flag') or row.get('dividend reinvestment flag (y/n)')),
+        'amc_ind': row.get('amc_ind'),
+        'exit_load_flag': parse_bool(row.get('exit load flag') or row.get('exit load flag (y/n)')),
+        'exit_load': row.get('exit load'),
+        'lock_in_period_flag': parse_bool(row.get('lock-in period flag') or row.get('lock-in period flag (y/n)')),
+        'lock_in_period': row.get('lock-in period'),
+        'channel_partner_code': row.get('channel partner code'),
     }
+
+    # AMFI Code mapping
+    if 'amfi code' in row:
+        scheme_data['amfi_code'] = row.get('amfi code')
 
     scheme = None
     if unique_no:
@@ -165,43 +209,42 @@ def process_scheme_row(row):
 
 def import_navs_from_file(file_obj):
     """
-    Parses a generic CSV for NAV history.
-    Expected Columns: Scheme Code, Date (YYYY-MM-DD or DD-MM-YYYY), NAV
+    Parses a generic CSV/Excel for NAV history.
+    Expected Columns: Scheme Code, Date, NAV
     """
     count = 0
     errors = []
 
     try:
-        decoded_file = file_obj.read().decode('utf-8').splitlines()
-        reader = csv.DictReader(decoded_file)
+        rows = read_file_to_dicts(file_obj)
 
-        # Identify columns flexibly
-        cols = reader.fieldnames
-        scheme_col = next((c for c in cols if 'scheme' in c.lower() and 'code' in c.lower()), None)
-        date_col = next((c for c in cols if 'date' in c.lower()), None)
-        nav_col = next((c for c in cols if 'nav' in c.lower() or 'value' in c.lower()), None)
+        # Identify columns
+        if not rows:
+            return 0, []
+
+        cols = rows[0].keys()
+        scheme_col = next((c for c in cols if 'scheme' in c and 'code' in c), None)
+        date_col = next((c for c in cols if 'date' in c), None)
+        nav_col = next((c for c in cols if 'nav' in c or 'value' in c), None)
 
         if not (scheme_col and date_col and nav_col):
-            return 0, [f"Missing required columns. Found: {cols}"]
+            return 0, [f"Missing required columns. Found: {list(cols)}"]
 
         new_navs = []
-
-        # Batch create buffer
         BATCH_SIZE = 1000
 
-        for row_idx, row in enumerate(reader, start=1):
+        for row_idx, row in enumerate(rows, start=1):
             try:
-                s_code = row[scheme_col].strip()
-                date_str = row[date_col].strip()
-                nav_val = row[nav_col].strip()
+                s_code = str(row[scheme_col]).strip()
+                date_val = row[date_col]
+                nav_val = row[nav_col]
 
-                if not (s_code and date_str and nav_val):
+                if not (s_code and date_val and nav_val):
                     continue
 
                 # Find Scheme
                 scheme = Scheme.objects.filter(scheme_code=s_code).first()
                 if not scheme:
-                    # Try RTA Code
                     scheme = Scheme.objects.filter(rta_scheme_code=s_code).first()
 
                 if not scheme:
@@ -210,20 +253,24 @@ def import_navs_from_file(file_obj):
 
                 # Parse Date
                 parsed_date = None
-                for fmt in ('%Y-%m-%d', '%d-%m-%Y', '%d/%m/%Y'):
-                    try:
-                        parsed_date = datetime.strptime(date_str, fmt).date()
-                        break
-                    except ValueError:
-                        continue
+                if isinstance(date_val, (datetime, pd.Timestamp)):
+                    parsed_date = date_val.date()
+                else:
+                    date_str = str(date_val).strip()
+                    for fmt in ('%Y-%m-%d', '%d-%m-%Y', '%d/%m/%Y'):
+                        try:
+                            parsed_date = datetime.strptime(date_str, fmt).date()
+                            break
+                        except ValueError:
+                            continue
 
                 if not parsed_date:
-                    errors.append(f"Row {row_idx}: Invalid date format {date_str}")
+                    errors.append(f"Row {row_idx}: Invalid date format {date_val}")
                     continue
 
                 # Parse NAV
                 try:
-                    nav_decimal = Decimal(nav_val)
+                    nav_decimal = Decimal(str(nav_val))
                 except:
                     errors.append(f"Row {row_idx}: Invalid NAV {nav_val}")
                     continue

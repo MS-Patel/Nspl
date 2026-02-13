@@ -6,7 +6,7 @@ from django.views.generic import TemplateView, ListView, CreateView, DetailView,
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.contrib import messages
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.urls import reverse
 from django.views import View
 from django.shortcuts import get_object_or_404
@@ -22,6 +22,11 @@ from apps.reconciliation.utils.valuation import calculate_portfolio_valuation
 from apps.integration.sync_utils import sync_pending_mandates, sync_pending_orders, sync_sip_child_orders
 from apps.investments.models import Order, SIP
 from apps.reconciliation.models import Holding
+from apps.core.utils.excel_generator import create_excel_sample_file
+from apps.core.utils.sample_headers import (
+    INVESTOR_HEADERS, INVESTOR_CHOICES,
+    DISTRIBUTOR_HEADERS, DISTRIBUTOR_CHOICES
+)
 import logging
 import json
 import csv
@@ -996,3 +1001,23 @@ class DistributorUploadView(LoginRequiredMixin, IsAdminMixin, FormView):
              messages.success(self.request, f"Successfully imported {count} distributors.")
 
         return super().form_valid(form)
+
+class DownloadInvestorSampleView(LoginRequiredMixin, IsAdminOrRMMixin, View):
+    def get(self, request, *args, **kwargs):
+        excel_file = create_excel_sample_file(INVESTOR_HEADERS, INVESTOR_CHOICES)
+        response = HttpResponse(
+            excel_file.read(),
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = 'attachment; filename="investor_import_sample.xlsx"'
+        return response
+
+class DownloadDistributorSampleView(LoginRequiredMixin, IsAdminMixin, View):
+    def get(self, request, *args, **kwargs):
+        excel_file = create_excel_sample_file(DISTRIBUTOR_HEADERS, DISTRIBUTOR_CHOICES)
+        response = HttpResponse(
+            excel_file.read(),
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = 'attachment; filename="distributor_import_sample.xlsx"'
+        return response

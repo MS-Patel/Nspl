@@ -1,12 +1,19 @@
 from django.views.generic import TemplateView, DetailView, FormView
+from django.views import View
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib import messages
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.contrib.auth import get_user_model
+from django.http import HttpResponse
 from .models import Scheme
 from .forms import SchemeUploadForm, NAVUploadForm
 from .utils.parsers import import_schemes_from_file, import_navs_from_file
+from apps.core.utils.excel_generator import create_excel_sample_file
+from apps.core.utils.sample_headers import (
+    SCHEME_HEADERS, SCHEME_CHOICES,
+    NAV_HEADERS, NAV_CHOICES
+)
 import json
 from django.core.serializers.json import DjangoJSONEncoder
 
@@ -106,3 +113,29 @@ class NAVUploadView(LoginRequiredMixin, UserPassesTestMixin, FormView):
              messages.success(self.request, f"Successfully imported {count} NAV records.")
 
         return super().form_valid(form)
+
+class DownloadSchemeSampleView(LoginRequiredMixin, UserPassesTestMixin, View):
+    def test_func(self):
+        return self.request.user.user_type == User.Types.ADMIN
+
+    def get(self, request, *args, **kwargs):
+        excel_file = create_excel_sample_file(SCHEME_HEADERS, SCHEME_CHOICES)
+        response = HttpResponse(
+            excel_file.read(),
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = 'attachment; filename="scheme_import_sample.xlsx"'
+        return response
+
+class DownloadNAVSampleView(LoginRequiredMixin, UserPassesTestMixin, View):
+    def test_func(self):
+        return self.request.user.user_type == User.Types.ADMIN
+
+    def get(self, request, *args, **kwargs):
+        excel_file = create_excel_sample_file(NAV_HEADERS, NAV_CHOICES)
+        response = HttpResponse(
+            excel_file.read(),
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = 'attachment; filename="nav_import_sample.xlsx"'
+        return response

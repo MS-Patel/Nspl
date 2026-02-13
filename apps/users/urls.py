@@ -20,6 +20,7 @@ urlpatterns = [
     path('users/distributor/', views.DistributorListView.as_view(), name='distributor_list'),
     path('users/distributor/create/', views.DistributorCreateView.as_view(), name='distributor_create'),
     path('users/distributor/upload/', views.DistributorUploadView.as_view(), name='distributor_upload'),
+    path('users/distributor/upload/sample/', views.DownloadDistributorSampleView.as_view(), name='distributor_upload_sample'),
 
     path('users/investor/', views.InvestorListView.as_view(), name='investor_list'),
     path('users/investor/mapping/', views.DistributorMappingView.as_view(), name='distributor_mapping'),
@@ -33,4 +34,5 @@ urlpatterns = [
     path('users/investor/<int:pk>/opt-out-nominee/', views.OptOutNomineeView.as_view(), name='opt_out_nominee'),
     path('users/investor/<int:pk>/toggle-kyc/', views.ToggleKYCView.as_view(), name='toggle_kyc'),
     path('users/investor/upload/', views.InvestorUploadView.as_view(), name='investor_upload'),
+    path('users/investor/upload/sample/', views.DownloadInvestorSampleView.as_view(), name='investor_upload_sample'),
 ]
