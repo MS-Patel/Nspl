@@ -6,7 +6,7 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import Q
 import datetime
 
-from apps.users.models import User, InvestorProfile, DistributorProfile, RMProfile
+from apps.users.models import User, InvestorProfile, DistributorProfile, RMProfile, BankAccount, Nominee
 from apps.investments.models import Order, SIP
 from apps.reconciliation.models import Transaction
 from apps.products.models import Scheme
@@ -38,12 +38,12 @@ class InvestorReportView(LoginRequiredMixin, TemplateView):
 
         data = []
         for inv in qs:
-            # Flatten Bank Details (Take first or default)
+            # Flatten Bank Details (Take first or default) - Kept for convenience
             bank = inv.bank_accounts.filter(is_default=True).first()
             if not bank:
                 bank = inv.bank_accounts.first()
 
-            # Flatten Nominee (Take first)
+            # Flatten Nominee (Take first) - Kept for convenience
             nominee = inv.nominees.first()
 
             row = {
@@ -59,6 +59,69 @@ class InvestorReportView(LoginRequiredMixin, TemplateView):
                 'ifsc': bank.ifsc_code if bank else '',
                 'nominee_name': nominee.name if nominee else '',
                 'nominee_relation': nominee.relationship if nominee else '',
+
+                # Added All Other Fields
+                'username': inv.user.username,
+                'firstname': inv.firstname,
+                'middlename': inv.middlename,
+                'lastname': inv.lastname,
+                'dob': inv.dob.strftime('%Y-%m-%d') if inv.dob else '',
+                'gender': inv.get_gender_display(),
+                'address_1': inv.address_1,
+                'address_2': inv.address_2,
+                'address_3': inv.address_3,
+                'city': inv.city,
+                'state': inv.state,
+                'pincode': inv.pincode,
+                'country': inv.country,
+                'foreign_address_1': inv.foreign_address_1,
+                'foreign_address_2': inv.foreign_address_2,
+                'foreign_address_3': inv.foreign_address_3,
+                'foreign_city': inv.foreign_city,
+                'foreign_state': inv.foreign_state,
+                'foreign_pincode': inv.foreign_pincode,
+                'foreign_country': inv.foreign_country,
+                'foreign_resi_phone': inv.foreign_resi_phone,
+                'foreign_res_fax': inv.foreign_res_fax,
+                'foreign_off_phone': inv.foreign_off_phone,
+                'foreign_off_fax': inv.foreign_off_fax,
+                'tax_status': inv.get_tax_status_display(),
+                'occupation': inv.get_occupation_display(),
+                'holding_nature': inv.get_holding_nature_display(),
+                'place_of_birth': inv.place_of_birth,
+                'country_of_birth': inv.country_of_birth,
+                'source_of_wealth': inv.get_source_of_wealth_display(),
+                'income_slab': inv.get_income_slab_display(),
+                'pep_status': inv.get_pep_status_display(),
+                'exemption_code': inv.get_exemption_code_display(),
+                'client_type': inv.get_client_type_display(),
+                'depository': inv.get_depository_display(),
+                'dp_id': inv.dp_id,
+                'client_id': inv.client_id,
+                'second_applicant_name': inv.second_applicant_name,
+                'second_applicant_pan': inv.second_applicant_pan,
+                'second_applicant_dob': inv.second_applicant_dob.strftime('%Y-%m-%d') if inv.second_applicant_dob else '',
+                'second_applicant_email': inv.second_applicant_email,
+                'second_applicant_mobile': inv.second_applicant_mobile,
+                'third_applicant_name': inv.third_applicant_name,
+                'third_applicant_pan': inv.third_applicant_pan,
+                'third_applicant_dob': inv.third_applicant_dob.strftime('%Y-%m-%d') if inv.third_applicant_dob else '',
+                'third_applicant_email': inv.third_applicant_email,
+                'third_applicant_mobile': inv.third_applicant_mobile,
+                'guardian_name': inv.guardian_name,
+                'guardian_pan': inv.guardian_pan,
+                'paperless_flag': inv.get_paperless_flag_display(),
+                'lei_no': inv.lei_no,
+                'lei_validity': inv.lei_validity.strftime('%Y-%m-%d') if inv.lei_validity else '',
+                'mapin_id': inv.mapin_id,
+                'nomination_opt': inv.get_nomination_opt_display(),
+                'nomination_auth_mode': inv.get_nomination_auth_mode_display(),
+                'ucc_code': inv.ucc_code,
+                'nominee_auth_status': inv.get_nominee_auth_status_display(),
+                'is_offline': inv.is_offline,
+                'date_joined': inv.user.date_joined.strftime('%Y-%m-%d %H:%M') if inv.user.date_joined else '',
+                'last_login': inv.user.last_login.strftime('%Y-%m-%d %H:%M') if inv.user.last_login else '',
+                'is_active': inv.user.is_active,
             }
             data.append(row)
 
@@ -125,9 +188,9 @@ class MasterReportView(LoginRequiredMixin, TemplateView):
         if report_type == 'distributor':
             title = "Distributor Master Report"
             if user.user_type == User.Types.ADMIN:
-                qs = DistributorProfile.objects.select_related('user', 'rm', 'rm__user').all()
+                qs = DistributorProfile.objects.select_related('user', 'rm', 'rm__user', 'parent', 'parent__user').all()
             elif user.user_type == User.Types.RM:
-                qs = DistributorProfile.objects.filter(rm__user=user).select_related('user', 'rm', 'rm__user')
+                qs = DistributorProfile.objects.filter(rm__user=user).select_related('user', 'rm', 'rm__user', 'parent', 'parent__user')
             else:
                  # Distributors/Investors shouldn't see full distributor list usually
                  qs = DistributorProfile.objects.none()
@@ -140,7 +203,14 @@ class MasterReportView(LoginRequiredMixin, TemplateView):
                     'mobile': dist.mobile,
                     'euin': dist.euin,
                     'rm': dist.rm.user.name if dist.rm else '',
-                    'status': 'Active' if dist.user.is_active else 'Inactive'
+                    'status': 'Active' if dist.user.is_active else 'Inactive',
+
+                    # New Fields
+                    'email': dist.user.email,
+                    'parent_name': dist.parent.user.name if dist.parent else '',
+                    'parent_arn': dist.parent.arn_number if dist.parent else '',
+                    'date_joined': dist.user.date_joined.strftime('%Y-%m-%d') if dist.user.date_joined else '',
+                    'last_login': dist.user.last_login.strftime('%Y-%m-%d %H:%M') if dist.user.last_login else '',
                 })
 
         elif report_type == 'rm':
@@ -153,7 +223,14 @@ class MasterReportView(LoginRequiredMixin, TemplateView):
                         'code': rm.employee_code,
                         'branch': rm.branch.name if rm.branch else '',
                         'email': rm.user.email,
-                        'status': 'Active' if rm.user.is_active else 'Inactive'
+                        'status': 'Active' if rm.user.is_active else 'Inactive',
+
+                        # New Fields
+                        'branch_code': rm.branch.code if rm.branch else '',
+                        'branch_city': rm.branch.city if rm.branch else '',
+                        'branch_state': rm.branch.state if rm.branch else '',
+                        'date_joined': rm.user.date_joined.strftime('%Y-%m-%d') if rm.user.date_joined else '',
+                        'last_login': rm.user.last_login.strftime('%Y-%m-%d %H:%M') if rm.user.last_login else '',
                     })
             else:
                  qs = [] # Only Admin sees RM list
@@ -171,7 +248,110 @@ class MasterReportView(LoginRequiredMixin, TemplateView):
                     'category': s.category.name if s.category else '',
                     'amc': s.amc.name,
                     'type': s.scheme_type,
-                    'min_purchase': round(float(s.min_purchase_amount), 2)
+                    'min_purchase': round(float(s.min_purchase_amount), 2),
+
+                    # New Fields (All Scheme Fields)
+                    'unique_no': s.unique_no,
+                    'amc_scheme_code': s.amc_scheme_code,
+                    'amfi_code': s.amfi_code,
+                    'scheme_plan': s.scheme_plan,
+                    'purchase_allowed': s.purchase_allowed,
+                    'purchase_transaction_mode': s.purchase_transaction_mode,
+                    'additional_purchase_amount': round(float(s.additional_purchase_amount), 3),
+                    'max_purchase_amount': round(float(s.max_purchase_amount), 2),
+                    'purchase_amount_multiplier': round(float(s.purchase_amount_multiplier), 2),
+                    'purchase_cutoff_time': s.purchase_cutoff_time.strftime('%H:%M') if s.purchase_cutoff_time else '',
+                    'redemption_allowed': s.redemption_allowed,
+                    'redemption_transaction_mode': s.redemption_transaction_mode,
+                    'min_redemption_qty': round(float(s.min_redemption_qty), 3),
+                    'redemption_qty_multiplier': round(float(s.redemption_qty_multiplier), 4),
+                    'max_redemption_qty': round(float(s.max_redemption_qty), 3),
+                    'min_redemption_amount': round(float(s.min_redemption_amount), 2),
+                    'max_redemption_amount': round(float(s.max_redemption_amount), 2),
+                    'redemption_amount_multiple': round(float(s.redemption_amount_multiple), 4),
+                    'redemption_cutoff_time': s.redemption_cutoff_time.strftime('%H:%M') if s.redemption_cutoff_time else '',
+                    'is_sip_allowed': s.is_sip_allowed,
+                    'is_stp_allowed': s.is_stp_allowed,
+                    'is_swp_allowed': s.is_swp_allowed,
+                    'is_switch_allowed': s.is_switch_allowed,
+                    'start_date': s.start_date.strftime('%Y-%m-%d') if s.start_date else '',
+                    'end_date': s.end_date.strftime('%Y-%m-%d') if s.end_date else '',
+                    'reopening_date': s.reopening_date.strftime('%Y-%m-%d') if s.reopening_date else '',
+                    'face_value': round(float(s.face_value), 2) if s.face_value else '',
+                    'settlement_type': s.settlement_type,
+                    'rta_agent_code': s.rta_agent_code,
+                    'amc_active_flag': s.amc_active_flag,
+                    'dividend_reinvestment_flag': s.dividend_reinvestment_flag,
+                    'amc_ind': s.amc_ind,
+                    'exit_load_flag': s.exit_load_flag,
+                    'exit_load': s.exit_load,
+                    'lock_in_period_flag': s.lock_in_period_flag,
+                    'lock_in_period': s.lock_in_period,
+                    'channel_partner_code': s.channel_partner_code,
+                })
+
+        elif report_type == 'bank':
+            title = "Investor Bank Details Master Report"
+            if user.user_type == User.Types.ADMIN:
+                qs = BankAccount.objects.select_related('investor', 'investor__user').all()
+            elif user.user_type == User.Types.RM:
+                qs = BankAccount.objects.filter(
+                    Q(investor__rm__user=user) | Q(investor__distributor__rm__user=user)
+                ).select_related('investor', 'investor__user')
+            elif user.user_type == User.Types.DISTRIBUTOR:
+                qs = BankAccount.objects.filter(investor__distributor__user=user).select_related('investor', 'investor__user')
+            elif user.user_type == User.Types.INVESTOR:
+                qs = BankAccount.objects.filter(investor__user=user).select_related('investor', 'investor__user')
+            else:
+                qs = BankAccount.objects.none()
+
+            for bank in qs:
+                data.append({
+                    'investor_name': bank.investor.user.name or bank.investor.user.username,
+                    'pan': bank.investor.pan,
+                    'bank_name': bank.bank_name,
+                    'account_number': bank.account_number,
+                    'ifsc_code': bank.ifsc_code,
+                    'account_type': bank.get_account_type_display(),
+                    'branch_name': bank.branch_name,
+                    'is_default': 'Yes' if bank.is_default else 'No'
+                })
+
+        elif report_type == 'nominee':
+            title = "Investor Nominee Details Master Report"
+            if user.user_type == User.Types.ADMIN:
+                qs = Nominee.objects.select_related('investor', 'investor__user').all()
+            elif user.user_type == User.Types.RM:
+                qs = Nominee.objects.filter(
+                    Q(investor__rm__user=user) | Q(investor__distributor__rm__user=user)
+                ).select_related('investor', 'investor__user')
+            elif user.user_type == User.Types.DISTRIBUTOR:
+                qs = Nominee.objects.filter(investor__distributor__user=user).select_related('investor', 'investor__user')
+            elif user.user_type == User.Types.INVESTOR:
+                qs = Nominee.objects.filter(investor__user=user).select_related('investor', 'investor__user')
+            else:
+                qs = Nominee.objects.none()
+
+            for nom in qs:
+                data.append({
+                    'investor_name': nom.investor.user.name or nom.investor.user.username,
+                    'pan': nom.investor.pan,
+                    'nominee_name': nom.name,
+                    'relationship': nom.relationship,
+                    'percentage': round(float(nom.percentage), 2),
+                    'date_of_birth': nom.date_of_birth.strftime('%Y-%m-%d') if nom.date_of_birth else '',
+                    'guardian_name': nom.guardian_name,
+                    'guardian_pan': nom.guardian_pan,
+                    'nominee_pan': nom.pan,
+                    'address_1': nom.address_1,
+                    'city': nom.city,
+                    'state': nom.state,
+                    'pincode': nom.pincode,
+                    'country': nom.country,
+                    'mobile': nom.mobile,
+                    'email': nom.email,
+                    'id_type': nom.get_id_type_display(),
+                    'id_number': nom.id_number,
                 })
 
         context['grid_data_json'] = json.dumps(data, cls=DjangoJSONEncoder)
