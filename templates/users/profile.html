@@ -1,0 +1,70 @@
+{% extends 'layout/base.html' %}
+{% load widget_tweaks %}
+
+{% block content %}
+<div class="flex items-center space-x-4 py-5 lg:py-6">
+    <h2 class="text-xl font-medium text-slate-800 dark:text-navy-50 lg:text-2xl">
+      My Profile
+    </h2>
+</div>
+
+<div class="card p-6 max-w-2xl mx-auto">
+    <form method="post">
+        {% csrf_token %}
+
+        <h3 class="text-lg font-medium text-slate-700 dark:text-navy-100 mb-4 border-b pb-2">User Details</h3>
+
+        {% if user_form.non_field_errors %}
+        <div class="alert flex rounded-lg bg-error/10 py-4 px-4 text-error dark:bg-error/15 sm:px-5 mb-4">
+            {{ user_form.non_field_errors }}
+        </div>
+        {% endif %}
+
+        {% for field in user_form %}
+        <div class="form-group mb-4">
+            <label class="block text-sm font-medium text-slate-700 dark:text-navy-100 mb-1">
+                {{ field.label }} {% if field.field.required %}<span class="text-error">*</span>{% endif %}
+            </label>
+            {{ field|add_class:"form-input w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" }}
+            {% if field.errors %}
+            <span class="text-tiny+ text-error">{{ field.errors.0 }}</span>
+            {% endif %}
+        </div>
+        {% endfor %}
+
+        {% if profile_form %}
+            <h3 class="text-lg font-medium text-slate-700 dark:text-navy-100 mt-8 mb-4 border-b pb-2">Profile Details</h3>
+
+            {% if profile_form.non_field_errors %}
+            <div class="alert flex rounded-lg bg-error/10 py-4 px-4 text-error dark:bg-error/15 sm:px-5 mb-4">
+                {{ profile_form.non_field_errors }}
+            </div>
+            {% endif %}
+
+            {% for field in profile_form %}
+            <div class="form-group mb-4">
+                <label class="block text-sm font-medium text-slate-700 dark:text-navy-100 mb-1">
+                    {{ field.label }} {% if field.field.required %}<span class="text-error">*</span>{% endif %}
+                </label>
+                {{ field|add_class:"form-input w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent disabled:opacity-50" }}
+                {% if field.errors %}
+                <span class="text-tiny+ text-error">{{ field.errors.0 }}</span>
+                {% endif %}
+                {% if field.help_text %}
+                <span class="text-tiny+ text-slate-400">{{ field.help_text }}</span>
+                {% endif %}
+            </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="flex justify-end mt-6 space-x-2">
+            <a href="{% url 'users:password_change' %}" class="btn border border-slate-300 font-medium text-slate-800 hover:bg-slate-150 focus:bg-slate-150 active:bg-slate-150/80 dark:border-navy-450 dark:text-navy-50 dark:hover:bg-navy-500 dark:focus:bg-navy-500 dark:active:bg-navy-500/90">
+                Change Password
+            </a>
+            <button type="submit" class="btn bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90">
+                Save Changes
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
