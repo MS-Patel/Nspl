@@ -167,6 +167,24 @@ def toggle_amc_status(request, pk):
     messages.success(request, f"AMC {amc.name} is now {status}.")
     return redirect('products:amc_list')
 
+@login_required
+@require_POST
+def update_amc_name(request, pk):
+    if not (request.user.user_type == User.Types.ADMIN or request.user.is_staff):
+        messages.error(request, "You are not authorized to perform this action.")
+        return redirect('products:amc_list')
+
+    amc = get_object_or_404(AMC, pk=pk)
+    new_name = request.POST.get('name')
+    if new_name:
+        amc.name = new_name
+        amc.save()
+        messages.success(request, f"AMC name updated to {amc.name}.")
+    else:
+        messages.error(request, "Name cannot be empty.")
+
+    return redirect('products:amc_list')
+
 class DownloadSchemeMasterReportView(LoginRequiredMixin, UserPassesTestMixin, View):
     def test_func(self):
         return self.request.user.user_type == User.Types.ADMIN or self.request.user.is_staff

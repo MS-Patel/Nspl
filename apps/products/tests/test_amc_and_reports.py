@@ -43,6 +43,23 @@ class TestAMCMaster:
         self.amc.refresh_from_db()
         assert self.amc.is_active is True
 
+    def test_update_amc_name(self):
+        url = reverse('products:amc_update', args=[self.amc.pk])
+        new_name = "Updated AMC Name"
+
+        # Test update
+        response = self.client.post(url, {'name': new_name})
+        assert response.status_code == 302
+
+        self.amc.refresh_from_db()
+        assert self.amc.name == new_name
+
+        # Test empty name
+        response = self.client.post(url, {'name': ''})
+        assert response.status_code == 302
+        self.amc.refresh_from_db()
+        assert self.amc.name == new_name # Should remain unchanged
+
     def test_scheme_master_export(self):
         category = SchemeCategory.objects.create(name='Equity', code='EQ')
         Scheme.objects.create(

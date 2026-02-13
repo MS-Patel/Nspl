@@ -36,8 +36,11 @@
           <th class="whitespace-nowrap bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">
             Code
           </th>
-          <th class="whitespace-nowrap rounded-tr-lg bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">
+          <th class="whitespace-nowrap bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">
             Status
+          </th>
+          <th class="whitespace-nowrap rounded-tr-lg bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100 lg:px-5">
+            Action
           </th>
         </tr>
       </thead>
@@ -61,14 +64,74 @@
                 </label>
             </form>
           </td>
+          <td class="whitespace-nowrap px-4 py-3 sm:px-5">
+             <button type="button"
+                onclick="editAMC('{{ amc.pk }}', '{{ amc.name|escapejs }}')"
+                class="btn size-8 p-0 text-slate-500 hover:bg-slate-300/20 focus:bg-slate-300/20 active:bg-slate-300/25 dark:text-navy-200 dark:hover:bg-navy-300/20 dark:focus:bg-navy-300/20 dark:active:bg-navy-300/25">
+                <i class="fa fa-edit"></i>
+            </button>
+          </td>
         </tr>
         {% empty %}
         <tr>
-            <td colspan="4" class="px-4 py-3 text-center">No AMCs found.</td>
+            <td colspan="5" class="px-4 py-3 text-center">No AMCs found.</td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
 </div>
+{% endblock %}
+
+{% block javascript %}
+<script>
+    function editAMC(pk, currentName) {
+        Swal.fire({
+            title: 'Edit AMC Name',
+            input: 'text',
+            inputValue: currentName,
+            showCancelButton: true,
+            confirmButtonText: 'Save',
+            showLoaderOnConfirm: true,
+            preConfirm: (newName) => {
+                if (!newName) {
+                    Swal.showValidationMessage('Name cannot be empty');
+                    return false;
+                }
+                const formData = new FormData();
+                formData.append('name', newName);
+                formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+                return fetch(`/products/amc/${pk}/update/`, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                         if (response.redirected) {
+                            window.location.href = response.url;
+                            return;
+                         }
+                        throw new Error(response.statusText)
+                    }
+                    if (response.redirected) {
+                        window.location.href = response.url;
+                        return;
+                    }
+                    // Reload page to show changes
+                    window.location.reload();
+                })
+                .catch(error => {
+                    Swal.showValidationMessage(
+                        `Request failed: ${error}`
+                    )
+                })
+            },
+            allowOutsideClick: () => !Swal.isLoading()
+        })
+    }
+</script>
 {% endblock %}

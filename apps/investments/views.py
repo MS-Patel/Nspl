@@ -440,7 +440,7 @@ def render_order_form(request, form):
     context = {
         'form': form,
         'title': 'New Purchase / SIP',
-        'amcs': AMC.objects.all(),
+        'amcs': AMC.objects.filter(is_active=True),
         'categories': SchemeCategory.objects.all(),
         'scheme_types': [st for st in scheme_types if st], # Filter out None/Empty
     }

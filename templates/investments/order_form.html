@@ -74,17 +74,6 @@
                                     </select>
                                 </div>
 
-                                <!-- Category Filter -->
-                                <div>
-                                    <label class="block text-xs font-medium text-slate-500 uppercase">Category</label>
-                                    <select id="filter_category" class="mt-1.5 w-full" placeholder="Select Category...">
-                                        <option value="">All Categories</option>
-                                        {% for cat in categories %}
-                                            <option value="{{ cat.id }}">{{ cat.name }}</option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-
                                 <!-- Type Filter -->
                                 <div>
                                     <label class="block text-xs font-medium text-slate-500 uppercase">Scheme Type</label>
@@ -92,6 +81,17 @@
                                         <option value="">All Types</option>
                                         {% for st in scheme_types %}
                                             <option value="{{ st }}">{{ st }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <!-- Category Filter -->
+                                <div>
+                                    <label class="block text-xs font-medium text-slate-500 uppercase">Category</label>
+                                    <select id="filter_category" class="mt-1.5 w-full" placeholder="Select Category...">
+                                        <option value="">All Categories</option>
+                                        {% for cat in categories %}
+                                            <option value="{{ cat.id }}">{{ cat.name }}</option>
                                         {% endfor %}
                                     </select>
                                 </div>

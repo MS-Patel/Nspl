@@ -11,5 +11,6 @@ urlpatterns = [
     path('navs/upload/sample/', views.DownloadNAVSampleView.as_view(), name='nav_upload_sample'),
     path('amc/', views.AMCMasterView.as_view(), name='amc_list'),
     path('amc/<int:pk>/toggle/', views.toggle_amc_status, name='amc_toggle'),
+    path('amc/<int:pk>/update/', views.update_amc_name, name='amc_update'),
     path('schemes/export/master/', views.DownloadSchemeMasterReportView.as_view(), name='scheme_master_export'),
 ]
