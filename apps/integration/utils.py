@@ -421,22 +421,33 @@ def map_investor_to_bse_param_string(investor):
     f36_41 = [dep, cdsl_dp, cdsl_cl, cmbp, nsdl_dp, nsdl_cl] # 36-41
 
     # 42-66: Bank Accounts (5 Banks x 5 Fields)
-    all_banks = list(investor.bank_accounts.all())
-    all_banks.sort(key=lambda b: not b.is_default) # Default first
+    # Use bse_index (1-5) to slot banks. If not set, fallback to list order but warn?
+    # Actually, model ensures bse_index is set on save.
+
+    # Initialize 5 slots with None
+    bank_slots = [None] * 5
+
+    # Fill slots based on bse_index
+    for b in investor.bank_accounts.all():
+        idx = b.bse_index
+        # Validate index range 1-5, adjust to 0-4 for list
+        if idx and 1 <= idx <= 5:
+            # Check for conflict? Last one wins or logic error. Assuming unique.
+            bank_slots[idx - 1] = b
 
     bank_fields = []
     for i in range(5):
-        if i < len(all_banks):
-            b = all_banks[i]
+        b = bank_slots[i]
+        if b:
             bank_fields.extend([
                 b.account_type,                     # Acc Type
                 b.account_number,                   # Acc No
                 "",                                 # MICR
                 b.ifsc_code.strip(),                # IFSC
-                "Y" if i == 0 else "N"              # Default Flag (Only 1st is Y)
+                "Y" if b.is_default else "N"        # Default Flag from model
             ])
         else:
-            # Spec: Default Bank Flag 2 SHOULD BE BLANK, IF ACC TYPE BLANK
+            # Spec: Default Bank Flag SHOULD BE BLANK IF ACC TYPE BLANK
             bank_fields.extend(["", "", "", "", ""]) # Empty bank block
 
     f42_66 = bank_fields
@@ -445,7 +456,9 @@ def map_investor_to_bse_param_string(investor):
     f67 = [full_name]
 
     # 68: Div Pay Mode
-    div_mode = "04" if (all_banks and all_banks[0].ifsc_code) else "01"
+    # Use first non-null bank in slots or check if any bank exists
+    has_bank = any(b is not None for b in bank_slots)
+    div_mode = "04" if has_bank else "01"
     f68 = [div_mode]
 
     # 69-75: Address Details

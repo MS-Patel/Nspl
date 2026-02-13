@@ -261,6 +261,9 @@ class Command(BaseCommand):
             acc_type = self.map_bank_type(acc_type_str)
             is_default = (row.get(f'Default Bank Flag {i}', 'N') == 'Y')
 
+            # UPDATE OR CREATE logic
+            # Explicitly passing bse_index = i because import file has fixed slots 1-5
+
             BankAccount.objects.update_or_create(
                 investor=profile,
                 account_number=acc_no,
@@ -269,7 +272,8 @@ class Command(BaseCommand):
                     'bank_name': bank_name,
                     'branch_name': branch_name,
                     'account_type': acc_type,
-                    'is_default': is_default
+                    'is_default': is_default,
+                    'bse_index': i  # Explicitly set index from CSV column 1-5
                 }
             )
 
