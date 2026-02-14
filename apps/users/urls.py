@@ -16,9 +16,11 @@ urlpatterns = [
     # User Management
     path('users/rm/', views.RMListView.as_view(), name='rm_list'),
     path('users/rm/create/', views.RMCreateView.as_view(), name='rm_create'),
+    path('users/rm/<int:pk>/update/', views.RMUpdateView.as_view(), name='rm_update'),
 
     path('users/distributor/', views.DistributorListView.as_view(), name='distributor_list'),
     path('users/distributor/create/', views.DistributorCreateView.as_view(), name='distributor_create'),
+    path('users/distributor/<int:pk>/update/', views.DistributorUpdateView.as_view(), name='distributor_update'),
     path('users/distributor/upload/', views.DistributorUploadView.as_view(), name='distributor_upload'),
     path('users/distributor/upload/sample/', views.DownloadDistributorSampleView.as_view(), name='distributor_upload_sample'),
 

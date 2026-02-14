@@ -2,7 +2,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.views import LoginView, LogoutView
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
-from django.views.generic import TemplateView, ListView, CreateView, DetailView, FormView
+from django.views.generic import TemplateView, ListView, CreateView, DetailView, FormView, UpdateView
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.contrib import messages
@@ -12,9 +12,11 @@ from django.views import View
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.db.models import Count, Sum
+from django.db import models
 from .models import RMProfile, DistributorProfile, InvestorProfile, BankAccount, Nominee, Document
 from .forms import (
-    RMCreationForm, DistributorCreationForm, InvestorCreationForm, InvestorProfileForm,
+    RMCreationForm, RMChangeForm, DistributorCreationForm, DistributorChangeForm,
+    InvestorCreationForm, InvestorProfileForm,
     BankAccountFormSet, NomineeFormSet, DocumentForm, InvestorUploadForm, DistributorUploadForm,
     UserProfileForm, RMProfileUpdateForm, DistributorProfileUpdateForm
 )
@@ -188,7 +190,7 @@ class RMListView(LoginRequiredMixin, IsAdminMixin, ListView):
                 'employee_code': rm.employee_code,
                 'branch': rm.branch.name if rm.branch else '-',
                 'status': 'Active' if rm.user.is_active else 'Inactive',
-                'action_url': '#' # Placeholder for edit/detail view
+                'action_url': reverse('users:rm_update', args=[rm.pk])
             })
         context['grid_data_json'] = json.dumps(data)
         return context
@@ -196,12 +198,24 @@ class RMListView(LoginRequiredMixin, IsAdminMixin, ListView):
 class RMCreateView(LoginRequiredMixin, IsAdminMixin, CreateView):
     model = User # Form handles User + Profile
     form_class = RMCreationForm
-    template_name = 'users/user_form.html'
+    template_name = 'users/rm_form.html'
     success_url = reverse_lazy('users:rm_list')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = "Create Relationship Manager"
+        return context
+
+class RMUpdateView(LoginRequiredMixin, IsAdminMixin, UpdateView):
+    model = RMProfile
+    form_class = RMChangeForm
+    template_name = 'users/rm_form.html'
+    success_url = reverse_lazy('users:rm_list')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = "Update Relationship Manager"
+        context['is_update'] = True
         return context
 
 # 2. Distributor Management (Admin & RM)
@@ -229,14 +243,14 @@ class DistributorListView(LoginRequiredMixin, IsAdminOrRMMixin, ListView):
                 'mobile': dist.mobile,
                 'rm_name': dist.rm.user.name if dist.rm and dist.rm.user.name else (dist.rm.user.username if dist.rm else ''),
                 'status': 'Active' if dist.user.is_active else 'Inactive',
-                'action_url': '#' # Placeholder
+                'action_url': reverse('users:distributor_update', args=[dist.pk])
             })
         context['grid_data_json'] = json.dumps(data)
         return context
 
 class DistributorCreateView(LoginRequiredMixin, IsAdminOrRMMixin, CreateView):
     form_class = DistributorCreationForm
-    template_name = 'users/user_form.html'
+    template_name = 'users/distributor_form.html'
     success_url = reverse_lazy('users:distributor_list')
 
     def get_form_kwargs(self):
@@ -247,6 +261,18 @@ class DistributorCreateView(LoginRequiredMixin, IsAdminOrRMMixin, CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = "Create Distributor"
+        return context
+
+class DistributorUpdateView(LoginRequiredMixin, IsAdminOrRMMixin, UpdateView):
+    model = DistributorProfile
+    form_class = DistributorChangeForm
+    template_name = 'users/distributor_form.html'
+    success_url = reverse_lazy('users:distributor_list')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = "Update Distributor"
+        context['is_update'] = True
         return context
 
 # 3. Investor Management (Admin, RM, Distributor)
@@ -285,9 +311,6 @@ class InvestorListView(LoginRequiredMixin, ListView):
             })
         context['grid_data_json'] = json.dumps(data)
         return context
-
-from django.views.generic import UpdateView
-from django.db import models
 
 class InvestorCreateView(LoginRequiredMixin, CreateView):
     model = InvestorProfile
@@ -389,6 +412,7 @@ class InvestorCreateView(LoginRequiredMixin, CreateView):
 
             # 3. Save Formsets
             if bank_accounts.is_valid() and nominees.is_valid():
+                bank_accounts.instance = self.object
                 bank_accounts.instance = self.object
                 bank_accounts.save()
                 nominees.instance = self.object

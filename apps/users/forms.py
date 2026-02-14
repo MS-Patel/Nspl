@@ -58,18 +58,102 @@ class RMCreationForm(UserCreationForm):
     employee_code = forms.CharField(max_length=50)
     branch = forms.ModelChoiceField(queryset=Branch.objects.all(), required=False)
 
+    # Address Details
+    address = forms.CharField(widget=forms.Textarea(attrs={'rows': 3}), required=False)
+    city = forms.CharField(max_length=50, required=False)
+    pincode = forms.CharField(max_length=6, validators=[pincode_validator], required=False)
+    state = forms.ChoiceField(choices=STATE_CHOICES, required=False)
+    country = forms.CharField(max_length=50, initial='India', required=False)
+
+    # Contact Details
+    alternate_mobile = forms.CharField(max_length=15, required=False, validators=[mobile_validator])
+    alternate_email = forms.EmailField(required=False)
+
+    # Personal / Business Details
+    dob = forms.DateField(required=False, widget=forms.DateInput(attrs={'type': 'date'}), label="Date of Birth")
+    gstin = forms.CharField(max_length=15, required=False, label="GSTIN")
+
+    # Bank Details
+    bank_name = forms.CharField(max_length=100, required=False)
+    account_number = forms.CharField(max_length=20, required=False)
+    ifsc_code = forms.CharField(max_length=11, validators=[ifsc_validator], required=False)
+    account_type = forms.ChoiceField(choices=RMProfile.ACCOUNT_TYPES, required=False)
+    branch_name = forms.CharField(max_length=100, required=False)
+
+    # Status
+    is_active = forms.BooleanField(initial=True, required=False, label="Active Status")
+
     def save(self, commit=True):
         with transaction.atomic():
             user = super().save(commit=False)
             user.user_type = User.Types.RM
+            user.is_active = self.cleaned_data['is_active']
             if commit:
                 user.save()
                 RMProfile.objects.create(
                     user=user,
                     employee_code=self.cleaned_data['employee_code'],
-                    branch=self.cleaned_data.get('branch')
+                    branch=self.cleaned_data.get('branch'),
+                    address=self.cleaned_data.get('address', ''),
+                    city=self.cleaned_data.get('city', ''),
+                    pincode=self.cleaned_data.get('pincode', ''),
+                    state=self.cleaned_data.get('state', ''),
+                    country=self.cleaned_data.get('country', ''),
+                    alternate_mobile=self.cleaned_data.get('alternate_mobile', ''),
+                    alternate_email=self.cleaned_data.get('alternate_email', ''),
+                    dob=self.cleaned_data.get('dob'),
+                    gstin=self.cleaned_data.get('gstin', ''),
+                    bank_name=self.cleaned_data.get('bank_name', ''),
+                    account_number=self.cleaned_data.get('account_number', ''),
+                    ifsc_code=self.cleaned_data.get('ifsc_code', ''),
+                    account_type=self.cleaned_data.get('account_type', 'SB'),
+                    branch_name=self.cleaned_data.get('branch_name', ''),
+                    is_active=self.cleaned_data['is_active']
                 )
         return user
+
+class RMChangeForm(forms.ModelForm):
+    # User fields
+    name = forms.CharField(max_length=255, required=True, label="Full Name")
+    email = forms.EmailField(required=True, label="Email Address")
+
+    # Profile fields (Redefined from ModelForm to control order/widgets)
+    employee_code = forms.CharField(max_length=50)
+    branch = forms.ModelChoiceField(queryset=Branch.objects.all(), required=False)
+
+    dob = forms.DateField(required=False, widget=forms.DateInput(attrs={'type': 'date'}), label="Date of Birth")
+    address = forms.CharField(widget=forms.Textarea(attrs={'rows': 3}), required=False)
+
+    is_active = forms.BooleanField(required=False, label="Active Status")
+
+    class Meta:
+        model = RMProfile
+        fields = [
+            'employee_code', 'branch', 'dob', 'gstin',
+            'address', 'city', 'state', 'pincode', 'country',
+            'alternate_mobile', 'alternate_email',
+            'bank_name', 'account_number', 'ifsc_code', 'account_type', 'branch_name',
+            'is_active'
+        ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.user:
+            self.fields['name'].initial = self.instance.user.name
+            self.fields['email'].initial = self.instance.user.email
+
+    def save(self, commit=True):
+        with transaction.atomic():
+            # Update User
+            user = self.instance.user
+            user.name = self.cleaned_data['name']
+            user.email = self.cleaned_data['email']
+            # Sync is_active
+            user.is_active = self.cleaned_data['is_active']
+            user.save()
+
+            # Update Profile
+            return super().save(commit=commit)
 
 class DistributorCreationForm(UserCreationForm):
     arn_number = forms.CharField(max_length=50)
@@ -91,6 +175,31 @@ class DistributorCreationForm(UserCreationForm):
         label="Relationship Manager"
     )
 
+    # Address Details
+    address = forms.CharField(widget=forms.Textarea(attrs={'rows': 3}), required=False)
+    city = forms.CharField(max_length=50, required=False)
+    pincode = forms.CharField(max_length=6, validators=[pincode_validator], required=False)
+    state = forms.ChoiceField(choices=STATE_CHOICES, required=False)
+    country = forms.CharField(max_length=50, initial='India', required=False)
+
+    # Contact Details
+    alternate_mobile = forms.CharField(max_length=15, required=False, validators=[mobile_validator])
+    alternate_email = forms.EmailField(required=False)
+
+    # Personal / Business Details
+    dob = forms.DateField(required=False, widget=forms.DateInput(attrs={'type': 'date'}), label="Date of Birth / Incorporation")
+    gstin = forms.CharField(max_length=15, required=False, label="GSTIN")
+
+    # Bank Details
+    bank_name = forms.CharField(max_length=100, required=False)
+    account_number = forms.CharField(max_length=20, required=False)
+    ifsc_code = forms.CharField(max_length=11, validators=[ifsc_validator], required=False)
+    account_type = forms.ChoiceField(choices=DistributorProfile.ACCOUNT_TYPES, required=False)
+    branch_name = forms.CharField(max_length=100, required=False)
+
+    # Status
+    is_active = forms.BooleanField(initial=True, required=False, label="Active Status")
+
     def __init__(self, *args, **kwargs):
         self.rm_user = kwargs.pop('rm_user', None)
         super().__init__(*args, **kwargs)
@@ -102,6 +211,7 @@ class DistributorCreationForm(UserCreationForm):
         with transaction.atomic():
             user = super().save(commit=False)
             user.user_type = User.Types.DISTRIBUTOR
+            user.is_active = self.cleaned_data['is_active']
             if commit:
                 user.save()
 
@@ -117,9 +227,69 @@ class DistributorCreationForm(UserCreationForm):
                     arn_number=self.cleaned_data['arn_number'],
                     euin=self.cleaned_data.get('euin', ''),
                     pan=self.cleaned_data.get('pan', ''),
-                    mobile=self.cleaned_data.get('mobile', '')
+                    mobile=self.cleaned_data.get('mobile', ''),
+                    address=self.cleaned_data.get('address', ''),
+                    city=self.cleaned_data.get('city', ''),
+                    pincode=self.cleaned_data.get('pincode', ''),
+                    state=self.cleaned_data.get('state', ''),
+                    country=self.cleaned_data.get('country', ''),
+                    alternate_mobile=self.cleaned_data.get('alternate_mobile', ''),
+                    alternate_email=self.cleaned_data.get('alternate_email', ''),
+                    dob=self.cleaned_data.get('dob'),
+                    gstin=self.cleaned_data.get('gstin', ''),
+                    bank_name=self.cleaned_data.get('bank_name', ''),
+                    account_number=self.cleaned_data.get('account_number', ''),
+                    ifsc_code=self.cleaned_data.get('ifsc_code', ''),
+                    account_type=self.cleaned_data.get('account_type', 'SB'),
+                    branch_name=self.cleaned_data.get('branch_name', ''),
+                    is_active=self.cleaned_data['is_active']
                 )
         return user
+
+class DistributorChangeForm(forms.ModelForm):
+    # User fields
+    name = forms.CharField(max_length=255, required=True, label="Full Name")
+    email = forms.EmailField(required=True, label="Email Address")
+
+    # Profile fields
+    arn_number = forms.CharField(max_length=50)
+    parent = forms.ModelChoiceField(queryset=DistributorProfile.objects.all(), required=False, label="Parent Distributor")
+    rm = forms.ModelChoiceField(queryset=RMProfile.objects.all(), required=False, label="Relationship Manager")
+
+    dob = forms.DateField(required=False, widget=forms.DateInput(attrs={'type': 'date'}), label="Date of Birth / Incorporation")
+    address = forms.CharField(widget=forms.Textarea(attrs={'rows': 3}), required=False)
+
+    is_active = forms.BooleanField(required=False, label="Active Status")
+
+    class Meta:
+        model = DistributorProfile
+        fields = [
+            'arn_number', 'euin', 'pan', 'mobile',
+            'parent', 'rm',
+            'dob', 'gstin',
+            'address', 'city', 'state', 'pincode', 'country',
+            'alternate_mobile', 'alternate_email',
+            'bank_name', 'account_number', 'ifsc_code', 'account_type', 'branch_name',
+            'is_active'
+        ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.user:
+            self.fields['name'].initial = self.instance.user.name
+            self.fields['email'].initial = self.instance.user.email
+
+    def save(self, commit=True):
+        with transaction.atomic():
+            # Update User
+            user = self.instance.user
+            user.name = self.cleaned_data['name']
+            user.email = self.cleaned_data['email']
+            user.is_active = self.cleaned_data['is_active']
+            user.save()
+
+            # Update Profile
+            return super().save(commit=commit)
 
 class UserProfileForm(forms.ModelForm):
     name = forms.CharField(max_length=255, required=True, label="Full Name")
@@ -130,6 +300,7 @@ class UserProfileForm(forms.ModelForm):
         fields = ['name', 'email']
 
 class RMProfileUpdateForm(forms.ModelForm):
+    # Keep this for RM self-update if needed, but restrict fields
     employee_code = forms.CharField(max_length=50, disabled=True, required=False, help_text="Cannot be changed.")
     branch = forms.ModelChoiceField(queryset=Branch.objects.all(), disabled=True, required=False, help_text="Cannot be changed.")
 
@@ -138,6 +309,7 @@ class RMProfileUpdateForm(forms.ModelForm):
         fields = ['employee_code', 'branch']
 
 class DistributorProfileUpdateForm(forms.ModelForm):
+    # Keep this for Distributor self-update
     arn_number = forms.CharField(max_length=50, disabled=True, required=False, help_text="Cannot be changed.")
     euin = forms.CharField(max_length=50, required=False)
     pan = forms.CharField(max_length=10, required=False)
