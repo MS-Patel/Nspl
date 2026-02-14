@@ -188,3 +188,18 @@ CVL_POS_CODE = os.environ.get('CVL_POS_CODE', "5100147231")
 CVL_PASSWORD = os.environ.get('CVL_PASSWORD', "E8B0D03E2A")
 # Optional override for the service URL endpoint
 CVL_SERVICE_URL = os.environ.get('CVL_SERVICE_URL', "https://pancheck.www.kracvl.com/CVLPANInquiry.svc?singleWsdl")
+
+# RTA Email Configuration
+RTA_EMAIL_HOST = os.environ.get('RTA_EMAIL_HOST', 'imap.gmail.com')
+RTA_EMAIL_PORT = int(os.environ.get('RTA_EMAIL_PORT', 993))
+RTA_EMAIL_USER = os.environ.get('RTA_EMAIL_USER', '')
+RTA_EMAIL_PASSWORD = os.environ.get('RTA_EMAIL_PASSWORD', '')
+
+# Passwords for encrypted RTA files (comma-separated list)
+# Note: RTA_FILE_PASSWORD env var should be comma separated if multiple
+RTA_FILE_PASSWORD = [p.strip() for p in os.environ.get('RTA_FILE_PASSWORD', '').split(',') if p.strip()]
+
+# Filters for identifying relevant emails
+# Note: Env vars should be comma separated
+RTA_EMAIL_SENDER_FILTERS = [s.strip().lower() for s in os.environ.get('RTA_EMAIL_SENDER_FILTERS', '').split(',') if s.strip()]
+RTA_EMAIL_SUBJECT_FILTERS = [s.strip().lower() for s in os.environ.get('RTA_EMAIL_SUBJECT_FILTERS', 'Transaction Report,WBR2').split(',') if s.strip()]
