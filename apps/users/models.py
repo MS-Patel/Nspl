@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from .constants import STATE_CHOICES
 
 class User(AbstractUser):
     class Types(models.TextChoices):
@@ -40,14 +41,53 @@ class Branch(models.Model):
         verbose_name_plural = "Branches"
 
 class RMProfile(models.Model):
+    ACCOUNT_TYPES = [
+        ('SB', 'Savings'),
+        ('CB', 'Current'),
+        ('NE', 'NRE'),
+        ('NO', 'NRO'),
+    ]
+
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='rm_profile')
     branch = models.ForeignKey(Branch, on_delete=models.SET_NULL, null=True, blank=True, related_name='rms')
     employee_code = models.CharField(max_length=50, unique=True)
+
+    # Address Details
+    address = models.TextField(blank=True)
+    city = models.CharField(max_length=50, blank=True)
+    pincode = models.CharField(max_length=6, blank=True)
+    state = models.CharField(max_length=50, choices=STATE_CHOICES, blank=True)
+    country = models.CharField(max_length=50, default='India', blank=True)
+
+    # Contact Details
+    alternate_mobile = models.CharField(max_length=15, blank=True)
+    alternate_email = models.EmailField(blank=True)
+
+    # Personal / Business Details
+    dob = models.DateField(null=True, blank=True, verbose_name="Date of Birth")
+    gstin = models.CharField(max_length=15, blank=True, verbose_name="GSTIN")
+
+    # Bank Details
+    bank_name = models.CharField(max_length=100, blank=True)
+    account_number = models.CharField(max_length=20, blank=True)
+    ifsc_code = models.CharField(max_length=11, blank=True)
+    account_type = models.CharField(max_length=2, choices=ACCOUNT_TYPES, default='SB')
+    branch_name = models.CharField(max_length=100, blank=True)
+
+    # Status
+    is_active = models.BooleanField(default=True, help_text="Designates whether this RM profile is active.")
 
     def __str__(self):
         return f"{self.user.username} (RM)"
 
 class DistributorProfile(models.Model):
+    ACCOUNT_TYPES = [
+        ('SB', 'Savings'),
+        ('CB', 'Current'),
+        ('NE', 'NRE'),
+        ('NO', 'NRO'),
+    ]
+
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='distributor_profile')
     rm = models.ForeignKey(RMProfile, on_delete=models.SET_NULL, null=True, blank=True, related_name='distributors')
     parent = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='sub_distributors')
@@ -56,6 +96,32 @@ class DistributorProfile(models.Model):
     euin = models.CharField(max_length=50, blank=True, help_text="Employee Unique Identification Number")
     pan = models.CharField(max_length=10, blank=True)
     mobile = models.CharField(max_length=15, blank=True)
+
+    # Address Details
+    address = models.TextField(blank=True)
+    city = models.CharField(max_length=50, blank=True)
+    pincode = models.CharField(max_length=6, blank=True)
+    state = models.CharField(max_length=50, choices=STATE_CHOICES, blank=True)
+    country = models.CharField(max_length=50, default='India', blank=True)
+
+    # Contact Details
+    alternate_mobile = models.CharField(max_length=15, blank=True)
+    alternate_email = models.EmailField(blank=True)
+
+    # Personal / Business Details
+    dob = models.DateField(null=True, blank=True, verbose_name="Date of Birth / Incorporation")
+    gstin = models.CharField(max_length=15, blank=True, verbose_name="GSTIN")
+
+    # Bank Details
+    bank_name = models.CharField(max_length=100, blank=True)
+    account_number = models.CharField(max_length=20, blank=True)
+    ifsc_code = models.CharField(max_length=11, blank=True)
+    account_type = models.CharField(max_length=2, choices=ACCOUNT_TYPES, default='SB')
+    branch_name = models.CharField(max_length=100, blank=True)
+
+    # Status
+    is_active = models.BooleanField(default=True, help_text="Designates whether this Distributor profile is active.")
+
 
     def __str__(self):
         return f"{self.user.username} (ARN-{self.arn_number})"

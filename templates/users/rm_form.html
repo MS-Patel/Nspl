@@ -1,0 +1,200 @@
+{% extends 'layout/base.html' %}
+{% load widget_tweaks %}
+
+{% block content %}
+<div class="flex flex-col gap-4 py-4 lg:gap-6 lg:py-6">
+    <div class="flex items-center justify-between">
+        <h2 class="text-xl font-medium text-slate-800 dark:text-navy-50 lg:text-2xl">
+            {{ title }}
+        </h2>
+        <div class="flex items-center space-x-2">
+            <a href="{% url 'users:rm_list' %}" class="btn bg-slate-150 font-medium text-slate-800 hover:bg-slate-200 focus:bg-slate-200 active:bg-slate-200/80 dark:bg-navy-500 dark:text-navy-50 dark:hover:bg-navy-450 dark:focus:bg-navy-450 dark:active:bg-navy-450/90">
+                Cancel
+            </a>
+            <button type="submit" form="rmForm" class="btn bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90">
+                Save
+            </button>
+        </div>
+    </div>
+
+    <form method="post" id="rmForm" class="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-6">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <div class="col-span-1 lg:col-span-2 alert flex rounded-lg bg-error/10 py-4 px-4 text-error dark:bg-error/15 sm:px-5">
+            {{ form.non_field_errors }}
+        </div>
+        {% endif %}
+
+        <!-- User Details Card -->
+        <div class="card p-4 lg:p-6">
+            <h3 class="text-base font-medium text-slate-700 dark:text-navy-100 mb-4 border-b border-slate-200 dark:border-navy-500 pb-2">
+                User Details
+            </h3>
+            <div class="grid grid-cols-1 gap-4">
+                {% if not is_update %}
+                <div>
+                    <label class="block mb-1 text-sm font-medium">Username *</label>
+                    {{ form.username|add_class:"form-input w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" }}
+                    <span class="text-tiny+ text-error">{{ form.username.errors.0 }}</span>
+                </div>
+                {% endif %}
+
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                     <div>
+                        <label class="block mb-1 text-sm font-medium">Full Name *</label>
+                        {{ form.name|add_class:"form-input w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" }}
+                        <span class="text-tiny+ text-error">{{ form.name.errors.0 }}</span>
+                    </div>
+                    <div>
+                        <label class="block mb-1 text-sm font-medium">Email Address *</label>
+                        {{ form.email|add_class:"form-input w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" }}
+                        <span class="text-tiny+ text-error">{{ form.email.errors.0 }}</span>
+                    </div>
+                </div>
+
+                {% if not is_update %}
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div>
+                        <label class="block mb-1 text-sm font-medium">Password *</label>
+                        {{ form.password|add_class:"form-input w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" }}
+                        <span class="text-tiny+ text-error">{{ form.password.errors.0 }}</span>
+                    </div>
+                    <div>
+                        <label class="block mb-1 text-sm font-medium">Confirm Password *</label>
+                        {{ form.confirm_password|add_class:"form-input w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" }}
+                        <span class="text-tiny+ text-error">{{ form.confirm_password.errors.0 }}</span>
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="flex items-center space-x-2 mt-2">
+                    <label class="inline-flex items-center space-x-2">
+                        {{ form.is_active|add_class:"form-checkbox is-basic h-5 w-5 rounded border-slate-400/70 checked:bg-primary checked:border-primary hover:border-primary focus:border-primary dark:border-navy-400 dark:checked:bg-accent dark:checked:border-accent dark:hover:border-accent dark:focus:border-accent" }}
+                        <span class="text-sm font-medium text-slate-700 dark:text-navy-100">Is Active</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Professional Details Card -->
+        <div class="card p-4 lg:p-6">
+            <h3 class="text-base font-medium text-slate-700 dark:text-navy-100 mb-4 border-b border-slate-200 dark:border-navy-500 pb-2">
+                Professional Details
+            </h3>
+            <div class="grid grid-cols-1 gap-4">
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div>
+                        <label class="block mb-1 text-sm font-medium">Employee Code *</label>
+                        {{ form.employee_code|add_class:"form-input w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" }}
+                        <span class="text-tiny+ text-error">{{ form.employee_code.errors.0 }}</span>
+                    </div>
+                    <div>
+                        <label class="block mb-1 text-sm font-medium">Branch</label>
+                        {{ form.branch|add_class:"form-select w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" }}
+                        <span class="text-tiny+ text-error">{{ form.branch.errors.0 }}</span>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                     <div>
+                        <label class="block mb-1 text-sm font-medium">GSTIN</label>
+                        {{ form.gstin|add_class:"form-input w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" }}
+                        <span class="text-tiny+ text-error">{{ form.gstin.errors.0 }}</span>
+                    </div>
+                    <div>
+                        <label class="block mb-1 text-sm font-medium">Date of Birth</label>
+                        {{ form.dob|add_class:"form-input w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" }}
+                         <span class="text-tiny+ text-error">{{ form.dob.errors.0 }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Address Details Card -->
+        <div class="card p-4 lg:p-6">
+            <h3 class="text-base font-medium text-slate-700 dark:text-navy-100 mb-4 border-b border-slate-200 dark:border-navy-500 pb-2">
+                Address Details
+            </h3>
+            <div class="grid grid-cols-1 gap-4">
+                <div>
+                    <label class="block mb-1 text-sm font-medium">Address</label>
+                    {{ form.address|add_class:"form-textarea w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" }}
+                    <span class="text-tiny+ text-error">{{ form.address.errors.0 }}</span>
+                </div>
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div>
+                        <label class="block mb-1 text-sm font-medium">City</label>
+                        {{ form.city|add_class:"form-input w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" }}
+                    </div>
+                    <div>
+                        <label class="block mb-1 text-sm font-medium">Pincode</label>
+                        {{ form.pincode|add_class:"form-input w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" }}
+                        <span class="text-tiny+ text-error">{{ form.pincode.errors.0 }}</span>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div>
+                        <label class="block mb-1 text-sm font-medium">State</label>
+                        {{ form.state|add_class:"form-select w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" }}
+                    </div>
+                    <div>
+                        <label class="block mb-1 text-sm font-medium">Country</label>
+                        {{ form.country|add_class:"form-input w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bank & Contact Details Card -->
+        <div class="card p-4 lg:p-6">
+            <h3 class="text-base font-medium text-slate-700 dark:text-navy-100 mb-4 border-b border-slate-200 dark:border-navy-500 pb-2">
+                Bank & Contact Details
+            </h3>
+            <div class="grid grid-cols-1 gap-4">
+                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div>
+                        <label class="block mb-1 text-sm font-medium">Alternate Mobile</label>
+                        {{ form.alternate_mobile|add_class:"form-input w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" }}
+                        <span class="text-tiny+ text-error">{{ form.alternate_mobile.errors.0 }}</span>
+                    </div>
+                    <div>
+                        <label class="block mb-1 text-sm font-medium">Alternate Email</label>
+                        {{ form.alternate_email|add_class:"form-input w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" }}
+                        <span class="text-tiny+ text-error">{{ form.alternate_email.errors.0 }}</span>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <h4 class="text-sm font-medium text-slate-700 dark:text-navy-100 mb-2">Primary Bank Account</h4>
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <div>
+                            <label class="block mb-1 text-sm font-medium">Bank Name</label>
+                            {{ form.bank_name|add_class:"form-input w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" }}
+                        </div>
+                         <div>
+                            <label class="block mb-1 text-sm font-medium">Account Number</label>
+                            {{ form.account_number|add_class:"form-input w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" }}
+                        </div>
+                    </div>
+                     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 mt-2">
+                        <div>
+                            <label class="block mb-1 text-sm font-medium">IFSC Code</label>
+                            {{ form.ifsc_code|add_class:"form-input w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" }}
+                            <span class="text-tiny+ text-error">{{ form.ifsc_code.errors.0 }}</span>
+                        </div>
+                         <div>
+                            <label class="block mb-1 text-sm font-medium">Account Type</label>
+                            {{ form.account_type|add_class:"form-select w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" }}
+                        </div>
+                    </div>
+                     <div class="mt-2">
+                        <label class="block mb-1 text-sm font-medium">Branch Name</label>
+                        {{ form.branch_name|add_class:"form-input w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </form>
+</div>
+{% endblock %}
