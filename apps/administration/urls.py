@@ -7,4 +7,5 @@ app_name = "administration"
 urlpatterns = [
 
     path('', views.index, name="index"),
+    path('configuration/', views.system_configuration, name="system_configuration"),
 ]
