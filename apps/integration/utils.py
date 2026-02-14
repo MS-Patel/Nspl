@@ -1,5 +1,6 @@
 from apps.users.models import InvestorProfile, BankAccount, Nominee
 from apps.users.constants import STATE_MAPPING
+from apps.administration.models import SystemConfiguration
 
 def map_state_to_code(state_name):
     """
@@ -630,7 +631,12 @@ def get_bse_order_params(order, member_id, user_id, password, pass_key):
     client_code = order.investor.ucc_code if order.investor.ucc_code else order.investor.pan
 
     # Use the EUIN stored on the Order (which already handles the fallback logic)
+    # If not present, fallback to SystemConfiguration default
     euin = order.euin if order.euin else ""
+    if not euin:
+        config = SystemConfiguration.get_solo()
+        euin = config.default_euin or ""
+
     euin_flag = "Y" if euin else "N"
     folio_no = order.folio.folio_number if order.folio else "12523421"
     dpc = "N"
@@ -696,7 +702,12 @@ def get_bse_xsip_order_params(sip, member_id, user_id, password, pass_key):
     client_code = sip.investor.ucc_code if sip.investor.ucc_code else sip.investor.pan
 
     # Use the EUIN stored on the SIP (which already handles the fallback logic)
+    # If not present, fallback to SystemConfiguration default
     euin = sip.euin if sip.euin else ""
+    if not euin:
+        config = SystemConfiguration.get_solo()
+        euin = config.default_euin or ""
+
     # Standard EUIN Flag Logic
     euin_val = "Y" if euin else "N"
 
@@ -817,7 +828,12 @@ def get_bse_switch_order_params(order, member_id, user_id, password, pass_key):
     client_code = order.investor.ucc_code if order.investor.ucc_code else order.investor.pan
 
     # Use the EUIN stored on the Order
+    # If not present, fallback to SystemConfiguration default
     euin = order.euin if order.euin else ""
+    if not euin:
+        config = SystemConfiguration.get_solo()
+        euin = config.default_euin or ""
+
     euin_flag = "Y" if euin else "N"
 
     folio_no = order.folio.folio_number if order.folio else ""

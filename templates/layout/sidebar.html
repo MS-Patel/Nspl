@@ -318,6 +318,28 @@
                 </a>
             </li>
 
+            <!-- Administration (Admin Only) -->
+            {% if user.is_staff or user.user_type == 'ADMIN' %}
+            <li class="ac nav-parent [&.is-active_svg]:rotate-90 [&.is-active_.ac-trigger]:font-semibold [&.is-active_.ac-trigger]:text-slate-800 dark:[&.is-active_.ac-trigger]:text-navy-50">
+                <button class="ac-trigger flex w-full items-center justify-between py-2 text-xs-plus tracking-wide text-slate-600 outline-hidden transition-[color,padding-left] duration-300 ease-in-out hover:text-slate-800 dark:text-navy-200 dark:hover:text-navy-50">
+                  <span>Administration</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-slate-400 transition-transform ease-in-out" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                  </svg>
+                </button>
+                <ul class="ac-panel">
+                  <li>
+                    <a href="{% url 'administration:system_configuration' %}" class="nav-link flex items-center justify-between p-2 text-xs-plus tracking-wide outline-hidden transition-[color,padding-left] duration-300 ease-in-out hover:pl-4" data-default-class="text-slate-600 hover:text-slate-800 dark:text-navy-200 dark:hover:text-navy-50" data-active-class="font-medium text-primary dark:text-accent-light">
+                      <div class="flex items-center space-x-2">
+                        <div class="size-1.5 rounded-full border border-current opacity-40"></div>
+                        <span>System Configuration</span>
+                      </div>
+                    </a>
+                  </li>
+                </ul>
+            </li>
+            {% endif %}
+
         </ul>
       </div>
     </div>

@@ -1,0 +1,170 @@
+{% extends 'layout/base.html' %}
+{% load static widget_tweaks %}
+
+{% block title %}System Configuration{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-between py-5 lg:py-6">
+  <div class="flex items-center space-x-1">
+    <h2 class="text-xl font-medium text-slate-700 line-clamp-1 dark:text-navy-50">
+      System Configuration
+    </h2>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 gap-4 sm:gap-5 lg:gap-6">
+  <div class="card p-4 sm:p-5">
+    <form method="post" enctype="multipart/form-data" class="space-y-4">
+      {% csrf_token %}
+
+      {% if form.non_field_errors %}
+      <div class="alert flex rounded-lg bg-error px-4 py-4 text-white sm:px-5">
+          {{ form.non_field_errors }}
+      </div>
+      {% endif %}
+
+      <!-- Company Details -->
+      <h3 class="text-base font-medium text-slate-700 dark:text-navy-100">Company Details</h3>
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <label class="block">
+          <span>Company Name</span>
+          {{ form.company_name }}
+          <span class="text-tiny text-error">{{ form.company_name.errors }}</span>
+        </label>
+
+        <label class="block">
+          <span>Phone</span>
+          {{ form.company_phone }}
+          <span class="text-tiny text-error">{{ form.company_phone.errors }}</span>
+        </label>
+
+        <label class="block">
+          <span>Email</span>
+          {{ form.company_email }}
+          <span class="text-tiny text-error">{{ form.company_email.errors }}</span>
+        </label>
+
+        <label class="block">
+          <span>Website</span>
+          {{ form.company_website }}
+          <span class="text-tiny text-error">{{ form.company_website.errors }}</span>
+        </label>
+
+        <label class="block sm:col-span-2">
+            <span>Address</span>
+            {{ form.company_address }}
+            <span class="text-tiny text-error">{{ form.company_address.errors }}</span>
+        </label>
+
+        <label class="block">
+          <span>City</span>
+          {{ form.company_city }}
+          <span class="text-tiny text-error">{{ form.company_city.errors }}</span>
+        </label>
+
+        <label class="block">
+          <span>State</span>
+          {{ form.company_state }}
+          <span class="text-tiny text-error">{{ form.company_state.errors }}</span>
+        </label>
+
+        <label class="block">
+          <span>Pincode</span>
+          {{ form.company_pincode }}
+          <span class="text-tiny text-error">{{ form.company_pincode.errors }}</span>
+        </label>
+
+        <label class="block">
+          <span>Country</span>
+          {{ form.company_country }}
+          <span class="text-tiny text-error">{{ form.company_country.errors }}</span>
+        </label>
+
+        <label class="block">
+            <span>GSTIN</span>
+            {{ form.gstin }}
+            <span class="text-tiny text-error">{{ form.gstin.errors }}</span>
+        </label>
+
+        <label class="block">
+            <span>ARN Code</span>
+            {{ form.arn_code }}
+            <span class="text-tiny text-error">{{ form.arn_code.errors }}</span>
+        </label>
+
+        <label class="block">
+            <span>Company Logo</span>
+            {{ form.company_logo }}
+            <span class="text-tiny text-error">{{ form.company_logo.errors }}</span>
+        </label>
+      </div>
+
+      <div class="my-4 h-px bg-slate-200 dark:bg-navy-500"></div>
+
+      <!-- Order Settings -->
+      <h3 class="text-base font-medium text-slate-700 dark:text-navy-100">Order Settings</h3>
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+         <label class="block">
+            <span>Default EUIN</span>
+            {{ form.default_euin }}
+            <span class="text-tiny text-error">{{ form.default_euin.errors }}</span>
+             <span class="text-tiny text-slate-400">Used if order has no EUIN.</span>
+        </label>
+      </div>
+
+      <div class="my-4 h-px bg-slate-200 dark:bg-navy-500"></div>
+
+      <!-- Email Settings -->
+      <h3 class="text-base font-medium text-slate-700 dark:text-navy-100">Email Configuration</h3>
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <label class="block">
+            <span>SMTP Host</span>
+            {{ form.email_host }}
+            <span class="text-tiny text-error">{{ form.email_host.errors }}</span>
+        </label>
+
+        <label class="block">
+            <span>SMTP Port</span>
+            {{ form.email_port }}
+            <span class="text-tiny text-error">{{ form.email_port.errors }}</span>
+        </label>
+
+        <label class="block">
+            <span>Username</span>
+            {{ form.email_host_user }}
+            <span class="text-tiny text-error">{{ form.email_host_user.errors }}</span>
+        </label>
+
+        <label class="block">
+            <span>Password</span>
+            {{ form.email_host_password }}
+            <span class="text-tiny text-error">{{ form.email_host_password.errors }}</span>
+        </label>
+
+        <label class="block">
+            <span>Default From Email</span>
+            {{ form.default_from_email }}
+            <span class="text-tiny text-error">{{ form.default_from_email.errors }}</span>
+        </label>
+
+        <div class="flex flex-col space-y-2">
+            <label class="inline-flex items-center space-x-2">
+                {{ form.email_use_tls }}
+                <span>Use TLS</span>
+            </label>
+             <label class="inline-flex items-center space-x-2">
+                {{ form.email_use_ssl }}
+                <span>Use SSL</span>
+            </label>
+        </div>
+      </div>
+
+      <div class="flex justify-end space-x-2 mt-4">
+        <button type="submit" class="btn bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90">
+          Save Configuration
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
