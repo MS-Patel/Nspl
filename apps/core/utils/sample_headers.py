@@ -1,6 +1,7 @@
 from django.utils.translation import gettext_lazy as _
-from apps.users.models import InvestorProfile, DistributorProfile
+from apps.users.models import InvestorProfile, DistributorProfile, RMProfile
 from apps.products.models import Scheme, NAVHistory
+from apps.users.constants import STATE_CHOICES
 
 # --- Investor Sample Headers ---
 INVESTOR_HEADERS = [
@@ -44,10 +45,35 @@ INVESTOR_CHOICES = {
 # --- Distributor Sample Headers ---
 DISTRIBUTOR_HEADERS = [
     'ARN', 'Name', 'Email', 'Mobile', 'PAN', 'EUIN',
-    'Parent ARN (Optional)', 'RM Employee Code (Optional)'
+    'Parent ARN (Optional)', 'RM Employee Code (Optional)',
+    'Address', 'City', 'State', 'Pincode', 'Country',
+    'Alternate Mobile', 'Alternate Email',
+    'Date of Birth', 'GSTIN',
+    'Bank Name', 'Account Number', 'IFSC Code', 'Account Type', 'Branch Name',
+    'Active Status (Y/N)'
 ]
 
-DISTRIBUTOR_CHOICES = {} # No complex choices for now
+DISTRIBUTOR_CHOICES = {
+    'Account Type': [c[1] for c in DistributorProfile.ACCOUNT_TYPES],
+    'State': [c[1] for c in STATE_CHOICES],
+    'Active Status (Y/N)': ['Yes', 'No'],
+}
+
+# --- RM Sample Headers ---
+RM_HEADERS = [
+    'Employee Code', 'Name', 'Email', 'Branch Code',
+    'Address', 'City', 'State', 'Pincode', 'Country',
+    'Alternate Mobile', 'Alternate Email',
+    'Date of Birth', 'GSTIN',
+    'Bank Name', 'Account Number', 'IFSC Code', 'Account Type', 'Branch Name',
+    'Active Status (Y/N)'
+]
+
+RM_CHOICES = {
+    'Account Type': [c[1] for c in RMProfile.ACCOUNT_TYPES],
+    'State': [c[1] for c in STATE_CHOICES],
+    'Active Status (Y/N)': ['Yes', 'No'],
+}
 
 # --- Scheme Sample Headers ---
 SCHEME_HEADERS = [

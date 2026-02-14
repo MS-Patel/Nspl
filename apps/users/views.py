@@ -18,9 +18,9 @@ from .forms import (
     RMCreationForm, RMChangeForm, DistributorCreationForm, DistributorChangeForm,
     InvestorCreationForm, InvestorProfileForm,
     BankAccountFormSet, NomineeFormSet, DocumentForm, InvestorUploadForm, DistributorUploadForm,
-    UserProfileForm, RMProfileUpdateForm, DistributorProfileUpdateForm
+    UserProfileForm, RMProfileUpdateForm, DistributorProfileUpdateForm, RMUploadForm
 )
-from .utils.parsers import import_investors_from_file, import_distributors_from_file
+from .utils.parsers import import_investors_from_file, import_distributors_from_file, import_rms_from_file
 from .services import validate_investor_for_bse
 from apps.integration.bse_client import BSEStarMFClient
 from apps.integration.utils import map_investor_to_bse_param_string
@@ -31,7 +31,8 @@ from apps.reconciliation.models import Holding
 from apps.core.utils.excel_generator import create_excel_sample_file
 from apps.core.utils.sample_headers import (
     INVESTOR_HEADERS, INVESTOR_CHOICES,
-    DISTRIBUTOR_HEADERS, DISTRIBUTOR_CHOICES
+    DISTRIBUTOR_HEADERS, DISTRIBUTOR_CHOICES,
+    RM_HEADERS, RM_CHOICES
 )
 import logging
 import json
@@ -1048,6 +1049,32 @@ class DownloadDistributorSampleView(LoginRequiredMixin, IsAdminMixin, View):
             content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         )
         response['Content-Disposition'] = 'attachment; filename="distributor_import_sample.xlsx"'
+        return response
+
+class RMUploadView(LoginRequiredMixin, IsAdminMixin, FormView):
+    template_name = 'users/upload_rm.html'
+    form_class = RMUploadForm
+    success_url = reverse_lazy('users:rm_list')
+
+    def form_valid(self, form):
+        file_obj = self.request.FILES['file']
+        count, errors = import_rms_from_file(file_obj)
+
+        if errors:
+             messages.warning(self.request, f"Processed {count} RMs with errors: {errors[:5]}...")
+        else:
+             messages.success(self.request, f"Successfully imported {count} RMs.")
+
+        return super().form_valid(form)
+
+class DownloadRMSampleView(LoginRequiredMixin, IsAdminMixin, View):
+    def get(self, request, *args, **kwargs):
+        excel_file = create_excel_sample_file(RM_HEADERS, RM_CHOICES)
+        response = HttpResponse(
+            excel_file.read(),
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = 'attachment; filename="rm_import_sample.xlsx"'
         return response
 
 # --- Profile & Settings Views ---

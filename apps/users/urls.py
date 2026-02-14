@@ -17,6 +17,8 @@ urlpatterns = [
     path('users/rm/', views.RMListView.as_view(), name='rm_list'),
     path('users/rm/create/', views.RMCreateView.as_view(), name='rm_create'),
     path('users/rm/<int:pk>/update/', views.RMUpdateView.as_view(), name='rm_update'),
+    path('users/rm/upload/', views.RMUploadView.as_view(), name='rm_upload'),
+    path('users/rm/upload/sample/', views.DownloadRMSampleView.as_view(), name='rm_upload_sample'),
 
     path('users/distributor/', views.DistributorListView.as_view(), name='distributor_list'),
     path('users/distributor/create/', views.DistributorCreateView.as_view(), name='distributor_create'),

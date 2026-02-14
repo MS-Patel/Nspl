@@ -583,11 +583,17 @@ NomineeFormSet = inlineformset_factory(
 class InvestorUploadForm(forms.Form):
     file = forms.FileField(
         label='Investor CSV File',
-        help_text='CSV file with columns: PAN, Firstname, Middlename, Lastname, Email, Mobile'
+        help_text='CSV file with columns: PAN, Firstname, Middlename, Lastname, Email, Mobile, etc.'
     )
 
 class DistributorUploadForm(forms.Form):
     file = forms.FileField(
         label='Distributor CSV File',
-        help_text='CSV file with columns: ARN, Name, Email, Mobile, PAN'
+        help_text='CSV file with columns: ARN, Name, Email, Mobile, PAN, Address, Bank Details, etc.'
+    )
+
+class RMUploadForm(forms.Form):
+    file = forms.FileField(
+        label='RM CSV File',
+        help_text='CSV/Excel file with columns: Employee Code, Name, Email, Branch Code, Address, Bank Details, etc.'
     )

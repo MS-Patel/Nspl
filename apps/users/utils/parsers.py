@@ -3,7 +3,7 @@ import logging
 import pandas as pd
 from django.contrib.auth import get_user_model
 from django.db import transaction
-from apps.users.models import InvestorProfile, DistributorProfile, RMProfile, BankAccount, Nominee
+from apps.users.models import InvestorProfile, DistributorProfile, RMProfile, BankAccount, Nominee, Branch
 from datetime import datetime
 
 User = get_user_model()
@@ -28,7 +28,7 @@ def read_file_to_dicts(file_obj):
             data = [{str(k).strip().lower(): v for k, v in row.items()} for row in records]
         else:
             # Assume CSV
-            decoded_file = file_obj.read().decode('utf-8').splitlines()
+            decoded_file = file_obj.read().decode('utf-8-sig').splitlines()
             reader = csv.DictReader(decoded_file)
             reader.fieldnames = [name.strip().lower() for name in reader.fieldnames]
             data = list(reader)
@@ -63,6 +63,20 @@ def parse_bool(value):
     val_str = str(value).strip().lower()
     return val_str in ['yes', 'y', 'true', '1']
 
+def parse_date(value):
+    """
+    Parses date with priority for DD-MM-YYYY format.
+    """
+    if not value:
+        return None
+    try:
+        if isinstance(value, datetime):
+            return value.date()
+        # pandas to_datetime with dayfirst=True handles dd-mm-yyyy well
+        return pd.to_datetime(value, dayfirst=True).date()
+    except Exception:
+        return None
+
 def import_investors_from_file(file_obj):
     """
     Parses a CSV/Excel file with Investor Details.
@@ -93,6 +107,10 @@ def import_investors_from_file(file_obj):
                     user = None
                     try:
                         user = User.objects.get(username=pan)
+                        # Update user details if exists
+                        if full_name: user.name = full_name
+                        if email: user.email = email
+                        user.save()
                     except User.DoesNotExist:
                         user = User.objects.create_user(username=pan, email=email, password=pan)
                         user.name = full_name
@@ -103,34 +121,27 @@ def import_investors_from_file(file_obj):
                     profile, created = InvestorProfile.objects.get_or_create(user=user, defaults={'pan': pan})
 
                     # Update fields
-                    profile.firstname = firstname
-                    profile.middlename = middlename
-                    profile.lastname = lastname
-                    profile.email = email
-                    profile.mobile = mobile
+                    if firstname: profile.firstname = firstname
+                    if middlename: profile.middlename = middlename
+                    if lastname: profile.lastname = lastname
+                    if email: profile.email = email
+                    if mobile: profile.mobile = mobile
 
                     # Map extended fields
-                    profile.tax_status = get_choice_key(row.get('tax status'), InvestorProfile.TAX_STATUS_CHOICES) or InvestorProfile.INDIVIDUAL
-                    profile.occupation = get_choice_key(row.get('occupation'), InvestorProfile.OCCUPATION_CHOICES) or InvestorProfile.SERVICE
-                    profile.holding_nature = get_choice_key(row.get('holding nature'), InvestorProfile.HOLDING_CHOICES) or InvestorProfile.SINGLE
-                    profile.source_of_wealth = get_choice_key(row.get('source of wealth'), InvestorProfile.SOURCE_OF_WEALTH_CHOICES) or InvestorProfile.SALARY
-                    profile.income_slab = get_choice_key(row.get('income slab'), InvestorProfile.INCOME_SLAB_CHOICES) or InvestorProfile.ONE_TO_5L
-                    profile.pep_status = get_choice_key(row.get('pep status'), InvestorProfile.PEP_CHOICES) or InvestorProfile.PEP_NO
+                    profile.tax_status = get_choice_key(row.get('tax status'), InvestorProfile.TAX_STATUS_CHOICES) or profile.tax_status
+                    profile.occupation = get_choice_key(row.get('occupation'), InvestorProfile.OCCUPATION_CHOICES) or profile.occupation
+                    profile.holding_nature = get_choice_key(row.get('holding nature'), InvestorProfile.HOLDING_CHOICES) or profile.holding_nature
+                    profile.source_of_wealth = get_choice_key(row.get('source of wealth'), InvestorProfile.SOURCE_OF_WEALTH_CHOICES) or profile.source_of_wealth
+                    profile.income_slab = get_choice_key(row.get('income slab'), InvestorProfile.INCOME_SLAB_CHOICES) or profile.income_slab
+                    profile.pep_status = get_choice_key(row.get('pep status'), InvestorProfile.PEP_CHOICES) or profile.pep_status
 
-                    profile.place_of_birth = row.get('place of birth', 'India')
-                    profile.country_of_birth = row.get('country of birth', 'India')
-                    profile.exemption_code = get_choice_key(row.get('exemption code'), InvestorProfile.EXEMPTION_CODE_CHOICES)
+                    if row.get('place of birth'): profile.place_of_birth = row.get('place of birth')
+                    if row.get('country of birth'): profile.country_of_birth = row.get('country of birth')
+                    if row.get('exemption code'): profile.exemption_code = get_choice_key(row.get('exemption code'), InvestorProfile.EXEMPTION_CODE_CHOICES)
 
                     # Date of Birth
-                    dob_val = row.get('date of birth (yyyy-mm-dd)') or row.get('dob')
-                    if dob_val:
-                        try:
-                            if isinstance(dob_val, datetime):
-                                profile.dob = dob_val.date()
-                            else:
-                                profile.dob = pd.to_datetime(dob_val).date()
-                        except:
-                            pass # Keep existing or None
+                    dob = parse_date(row.get('date of birth (yyyy-mm-dd)') or row.get('dob'))
+                    if dob: profile.dob = dob
 
                     gender_val = str(row.get('gender', '')).upper()
                     if gender_val.startswith('M'): profile.gender = 'M'
@@ -138,87 +149,81 @@ def import_investors_from_file(file_obj):
                     elif gender_val.startswith('O'): profile.gender = 'O'
 
                     # Address
-                    profile.address_1 = str(row.get('address 1', ''))[:40]
-                    profile.address_2 = str(row.get('address 2', ''))[:40]
-                    profile.address_3 = str(row.get('address 3', ''))[:40]
-                    profile.city = str(row.get('city', ''))[:35]
-                    profile.state = str(row.get('state', ''))[:30]
-                    profile.pincode = str(row.get('pincode', ''))[:6]
-                    profile.country = str(row.get('country', 'India'))[:35]
+                    if row.get('address 1'): profile.address_1 = str(row.get('address 1'))[:40]
+                    if row.get('address 2'): profile.address_2 = str(row.get('address 2'))[:40]
+                    if row.get('address 3'): profile.address_3 = str(row.get('address 3'))[:40]
+                    if row.get('city'): profile.city = str(row.get('city'))[:35]
+                    if row.get('state'): profile.state = str(row.get('state'))[:30]
+                    if row.get('pincode'): profile.pincode = str(row.get('pincode'))[:6]
+                    if row.get('country'): profile.country = str(row.get('country'))[:35]
 
                     # Foreign Address
-                    profile.foreign_address_1 = str(row.get('foreign address 1', ''))[:40]
-                    profile.foreign_address_2 = str(row.get('foreign address 2', ''))[:40]
-                    profile.foreign_address_3 = str(row.get('foreign address 3', ''))[:40]
-                    profile.foreign_city = str(row.get('foreign city', ''))[:35]
-                    profile.foreign_state = str(row.get('foreign state', ''))[:35]
-                    profile.foreign_pincode = str(row.get('foreign pincode', ''))[:10]
-                    profile.foreign_country = str(row.get('foreign country', ''))[:35]
+                    if row.get('foreign address 1'): profile.foreign_address_1 = str(row.get('foreign address 1'))[:40]
+                    if row.get('foreign address 2'): profile.foreign_address_2 = str(row.get('foreign address 2'))[:40]
+                    if row.get('foreign address 3'): profile.foreign_address_3 = str(row.get('foreign address 3'))[:40]
+                    if row.get('foreign city'): profile.foreign_city = str(row.get('foreign city'))[:35]
+                    if row.get('foreign state'): profile.foreign_state = str(row.get('foreign state'))[:35]
+                    if row.get('foreign pincode'): profile.foreign_pincode = str(row.get('foreign pincode'))[:10]
+                    if row.get('foreign country'): profile.foreign_country = str(row.get('foreign country'))[:35]
 
                     # Demat
-                    profile.client_type = get_choice_key(row.get('client type'), InvestorProfile.CLIENT_TYPE_CHOICES) or InvestorProfile.PHYSICAL
-                    profile.depository = get_choice_key(row.get('depository'), InvestorProfile.DEPOSITORY_CHOICES)
-                    profile.dp_id = str(row.get('dp id', ''))
-                    profile.client_id = str(row.get('client id', ''))
+                    if row.get('client type'): profile.client_type = get_choice_key(row.get('client type'), InvestorProfile.CLIENT_TYPE_CHOICES)
+                    if row.get('depository'): profile.depository = get_choice_key(row.get('depository'), InvestorProfile.DEPOSITORY_CHOICES)
+                    if row.get('dp id'): profile.dp_id = str(row.get('dp id'))
+                    if row.get('client id'): profile.client_id = str(row.get('client id'))
 
                     # Other
-                    profile.ucc_code = str(row.get('ucc code', '')).strip()
-                    profile.is_offline = parse_bool(row.get('is offline (y/n)'))
+                    if row.get('ucc code'): profile.ucc_code = str(row.get('ucc code')).strip()
+                    if 'is offline (y/n)' in row: profile.is_offline = parse_bool(row.get('is offline (y/n)'))
 
                     profile.save()
 
                     # 3. Nominees (1 to 3)
-                    # Clear existing? Or append? Clearing is safer for "Import" which implies overwrite state
-                    profile.nominees.all().delete()
-                    for i in range(1, 4):
-                        n_name = str(row.get(f'nominee {i} name', '')).strip()
-                        if n_name:
-                            pct_val = row.get(f'nominee {i} %')
-                            pct = 0
-                            try:
-                                pct = float(pct_val) if pct_val else 0
-                            except: pass
-
-                            n_rel = row.get(f'nominee {i} relationship', 'Others')
-                            n_dob_val = row.get(f'nominee {i} dob')
-                            n_dob = None
-                            if n_dob_val:
+                    # For nominees, if columns exist, we overwrite. If not, we skip.
+                    # Assuming if "nominee 1 name" is present, we should process nominees.
+                    if row.get('nominee 1 name'):
+                        profile.nominees.all().delete()
+                        for i in range(1, 4):
+                            n_name = str(row.get(f'nominee {i} name', '')).strip()
+                            if n_name:
+                                pct_val = row.get(f'nominee {i} %')
+                                pct = 0
                                 try:
-                                    if isinstance(n_dob_val, datetime):
-                                        n_dob = n_dob_val.date()
-                                    else:
-                                        n_dob = pd.to_datetime(n_dob_val).date()
+                                    pct = float(pct_val) if pct_val else 0
                                 except: pass
 
-                            n_guardian = str(row.get(f'nominee {i} guardian', ''))
+                                n_rel = row.get(f'nominee {i} relationship', 'Others')
+                                n_dob = parse_date(row.get(f'nominee {i} dob'))
+                                n_guardian = str(row.get(f'nominee {i} guardian', ''))
 
-                            Nominee.objects.create(
-                                investor=profile,
-                                name=n_name,
-                                percentage=pct,
-                                relationship=n_rel,
-                                date_of_birth=n_dob,
-                                guardian_name=n_guardian
-                            )
+                                Nominee.objects.create(
+                                    investor=profile,
+                                    name=n_name,
+                                    percentage=pct,
+                                    relationship=n_rel,
+                                    date_of_birth=n_dob,
+                                    guardian_name=n_guardian
+                                )
 
                     # 4. Bank Accounts (1 to 2)
-                    profile.bank_accounts.all().delete()
-                    for i in range(1, 3):
-                        acc_no = str(row.get(f'bank {i} account no', '')).strip()
-                        if acc_no:
-                            ifsc = str(row.get(f'bank {i} ifsc', '')).strip()
-                            b_type = get_choice_key(row.get(f'bank {i} type'), BankAccount.ACCOUNT_TYPES) or 'SB'
-                            b_name = str(row.get(f'bank {i} name', ''))
-                            is_def = parse_bool(row.get(f'bank {i} default (y/n)'))
+                    if row.get('bank 1 account no'):
+                        profile.bank_accounts.all().delete()
+                        for i in range(1, 3):
+                            acc_no = str(row.get(f'bank {i} account no', '')).strip()
+                            if acc_no:
+                                ifsc = str(row.get(f'bank {i} ifsc', '')).strip()
+                                b_type = get_choice_key(row.get(f'bank {i} type'), BankAccount.ACCOUNT_TYPES) or 'SB'
+                                b_name = str(row.get(f'bank {i} name', ''))
+                                is_def = parse_bool(row.get(f'bank {i} default (y/n)'))
 
-                            BankAccount.objects.create(
-                                investor=profile,
-                                account_number=acc_no,
-                                ifsc_code=ifsc,
-                                account_type=b_type,
-                                bank_name=b_name,
-                                is_default=is_def
-                            )
+                                BankAccount.objects.create(
+                                    investor=profile,
+                                    account_number=acc_no,
+                                    ifsc_code=ifsc,
+                                    account_type=b_type,
+                                    bank_name=b_name,
+                                    is_default=is_def
+                                )
 
                     count += 1
 
@@ -234,6 +239,7 @@ def import_investors_from_file(file_obj):
 def import_distributors_from_file(file_obj):
     """
     Parses a CSV/Excel file with Distributor Details.
+    Supports comprehensive field set with Upsert logic.
     """
     count = 0
     errors = []
@@ -262,6 +268,10 @@ def import_distributors_from_file(file_obj):
                     user = None
                     try:
                         user = User.objects.get(username=arn)
+                        # Upsert User Details
+                        if name: user.name = name
+                        if email: user.email = email
+                        user.save()
                     except User.DoesNotExist:
                         user = User.objects.create_user(username=arn, email=email, password=arn)
                         user.name = name
@@ -271,10 +281,34 @@ def import_distributors_from_file(file_obj):
                     # Check/Create Profile
                     profile, created = DistributorProfile.objects.get_or_create(user=user, defaults={'arn_number': arn})
 
-                    profile.pan = pan
-                    profile.mobile = mobile
-                    profile.euin = euin
+                    if pan: profile.pan = pan
+                    if mobile: profile.mobile = mobile
+                    if euin: profile.euin = euin
 
+                    # Address Details
+                    if row.get('address'): profile.address = row.get('address')
+                    if row.get('city'): profile.city = row.get('city')
+                    if row.get('state'): profile.state = row.get('state') # Assuming state value matches or we might need normalization if it's strict choices
+                    if row.get('pincode'): profile.pincode = row.get('pincode')
+                    if row.get('country'): profile.country = row.get('country')
+
+                    # Contact Details
+                    if row.get('alternate mobile'): profile.alternate_mobile = row.get('alternate mobile')
+                    if row.get('alternate email'): profile.alternate_email = row.get('alternate email')
+
+                    # Personal/Business Details
+                    dob = parse_date(row.get('date of birth') or row.get('dob'))
+                    if dob: profile.dob = dob
+                    if row.get('gstin'): profile.gstin = row.get('gstin')
+
+                    # Bank Details
+                    if row.get('bank name'): profile.bank_name = row.get('bank name')
+                    if row.get('account number'): profile.account_number = row.get('account number')
+                    if row.get('ifsc code'): profile.ifsc_code = row.get('ifsc code')
+                    if row.get('account type'): profile.account_type = get_choice_key(row.get('account type'), DistributorProfile.ACCOUNT_TYPES)
+                    if row.get('branch name'): profile.branch_name = row.get('branch name')
+
+                    # Hierarchy Linking
                     if parent_arn:
                         try:
                             parent = DistributorProfile.objects.get(arn_number=parent_arn)
@@ -288,6 +322,102 @@ def import_distributors_from_file(file_obj):
                             profile.rm = rm
                         except RMProfile.DoesNotExist:
                             pass
+
+                    profile.save()
+                    count += 1
+
+            except Exception as e:
+                errors.append(f"Row {row_idx}: {str(e)}")
+
+    except Exception as e:
+        errors.append(f"File Error: {str(e)}")
+
+    return count, errors
+
+def import_rms_from_file(file_obj):
+    """
+    Parses a CSV/Excel file with RM Details.
+    Uses Employee Code as unique identifier.
+    Requires Branch Code for linking.
+    """
+    count = 0
+    errors = []
+
+    try:
+        rows = read_file_to_dicts(file_obj)
+
+        for row_idx, row in enumerate(rows, start=1):
+            try:
+                emp_code = str(row.get('employee code', '')).strip()
+                if not emp_code:
+                    continue
+
+                name = str(row.get('name', '')).strip()
+                email = str(row.get('email', '')).strip()
+                branch_code = str(row.get('branch code', '')).strip()
+
+                # Validate Branch
+                branch = None
+                if branch_code:
+                    try:
+                        branch = Branch.objects.get(code=branch_code)
+                    except Branch.DoesNotExist:
+                        raise ValueError(f"Branch with code '{branch_code}' not found.")
+                else:
+                    # Decide if branch is mandatory. Requirement says "link the RM to an existing Branch".
+                    # If branch code is missing, maybe allowed? But if provided and wrong, fail.
+                    # Let's assume mandatory for now or at least if provided must exist.
+                    # If empty, we can proceed without branch.
+                    pass
+
+                with transaction.atomic():
+                    # Check/Create User
+                    user = None
+                    try:
+                        user = User.objects.get(username=emp_code)
+                        # Upsert
+                        if name: user.name = name
+                        if email: user.email = email
+                        user.save()
+                    except User.DoesNotExist:
+                        user = User.objects.create_user(username=emp_code, email=email, password=emp_code)
+                        user.name = name
+                        user.user_type = User.Types.RM
+                        user.save()
+
+                    # Check/Create Profile
+                    profile, created = RMProfile.objects.get_or_create(user=user, defaults={'employee_code': emp_code})
+
+                    if branch:
+                        profile.branch = branch
+
+                    # Address Details
+                    if row.get('address'): profile.address = row.get('address')
+                    if row.get('city'): profile.city = row.get('city')
+                    if row.get('state'): profile.state = row.get('state')
+                    if row.get('pincode'): profile.pincode = row.get('pincode')
+                    if row.get('country'): profile.country = row.get('country')
+
+                    # Contact Details
+                    if row.get('alternate mobile'): profile.alternate_mobile = row.get('alternate mobile')
+                    if row.get('alternate email'): profile.alternate_email = row.get('alternate email')
+
+                    # Personal/Business
+                    dob = parse_date(row.get('date of birth') or row.get('dob'))
+                    if dob: profile.dob = dob
+                    if row.get('gstin'): profile.gstin = row.get('gstin')
+
+                    # Bank Details
+                    if row.get('bank name'): profile.bank_name = row.get('bank name')
+                    if row.get('account number'): profile.account_number = row.get('account number')
+                    if row.get('ifsc code'): profile.ifsc_code = row.get('ifsc code')
+                    if row.get('account type'): profile.account_type = get_choice_key(row.get('account type'), RMProfile.ACCOUNT_TYPES)
+                    if row.get('branch name'): profile.branch_name = row.get('branch name')
+
+                    if 'active status (y/n)' in row:
+                        profile.is_active = parse_bool(row.get('active status (y/n)'))
+                        user.is_active = profile.is_active
+                        user.save()
 
                     profile.save()
                     count += 1

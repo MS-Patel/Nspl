@@ -204,11 +204,26 @@ class MasterReportView(LoginRequiredMixin, TemplateView):
                     'euin': dist.euin,
                     'rm': dist.rm.user.name if dist.rm else '',
                     'status': 'Active' if dist.user.is_active else 'Inactive',
-
-                    # New Fields
                     'email': dist.user.email,
                     'parent_name': dist.parent.user.name if dist.parent else '',
                     'parent_arn': dist.parent.arn_number if dist.parent else '',
+
+                    # Extended Fields
+                    'address': dist.address,
+                    'city': dist.city,
+                    'state': dist.get_state_display() if hasattr(dist, 'get_state_display') else dist.state,
+                    'pincode': dist.pincode,
+                    'country': dist.country,
+                    'alternate_mobile': dist.alternate_mobile,
+                    'alternate_email': dist.alternate_email,
+                    'dob': dist.dob.strftime('%Y-%m-%d') if dist.dob else '',
+                    'gstin': dist.gstin,
+                    'bank_name': dist.bank_name,
+                    'account_number': dist.account_number,
+                    'ifsc_code': dist.ifsc_code,
+                    'account_type': dist.get_account_type_display(),
+                    'branch_name': dist.branch_name,
+
                     'date_joined': dist.user.date_joined.strftime('%Y-%m-%d') if dist.user.date_joined else '',
                     'last_login': dist.user.last_login.strftime('%Y-%m-%d %H:%M') if dist.user.last_login else '',
                 })
@@ -224,11 +239,26 @@ class MasterReportView(LoginRequiredMixin, TemplateView):
                         'branch': rm.branch.name if rm.branch else '',
                         'email': rm.user.email,
                         'status': 'Active' if rm.user.is_active else 'Inactive',
-
-                        # New Fields
                         'branch_code': rm.branch.code if rm.branch else '',
                         'branch_city': rm.branch.city if rm.branch else '',
                         'branch_state': rm.branch.state if rm.branch else '',
+
+                        # Extended Fields
+                        'address': rm.address,
+                        'city': rm.city,
+                        'state': rm.get_state_display() if hasattr(rm, 'get_state_display') else rm.state,
+                        'pincode': rm.pincode,
+                        'country': rm.country,
+                        'alternate_mobile': rm.alternate_mobile,
+                        'alternate_email': rm.alternate_email,
+                        'dob': rm.dob.strftime('%Y-%m-%d') if rm.dob else '',
+                        'gstin': rm.gstin,
+                        'bank_name': rm.bank_name,
+                        'account_number': rm.account_number,
+                        'ifsc_code': rm.ifsc_code,
+                        'account_type': rm.get_account_type_display(),
+                        'branch_name': rm.branch_name,
+
                         'date_joined': rm.user.date_joined.strftime('%Y-%m-%d') if rm.user.date_joined else '',
                         'last_login': rm.user.last_login.strftime('%Y-%m-%d %H:%M') if rm.user.last_login else '',
                     })
