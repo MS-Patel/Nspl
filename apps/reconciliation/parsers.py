@@ -308,6 +308,8 @@ class CAMSParser(BaseParser):
                 self.rta_file.error_log = str(e)
                 self.rta_file.save()
             logger.error(f"CAMS Parsing failed: {e}")
+            if not self.rta_file:
+                raise e
 
 class CAMSXLSParser(BaseParser):
     """
@@ -362,6 +364,8 @@ class CAMSXLSParser(BaseParser):
                 self.rta_file.error_log = str(e)
                 self.rta_file.save()
             logger.error(f"CAMS XLS Parsing failed: {e}")
+            if not self.rta_file:
+                raise e
 
 
 class KarvyParser(BaseParser):
@@ -440,6 +444,8 @@ class KarvyParser(BaseParser):
                 self.rta_file.error_log = str(e)
                 self.rta_file.save()
             logger.error(f"Karvy Parsing failed: {e}")
+            if not self.rta_file:
+                raise e
 
 class KarvyXLSParser(BaseParser):
     """
@@ -499,6 +505,8 @@ class KarvyXLSParser(BaseParser):
                 self.rta_file.error_log = str(e)
                 self.rta_file.save()
             logger.error(f"Karvy XLS Parsing failed: {e}")
+            if not self.rta_file:
+                raise e
 
 
 class FranklinParser(BaseParser):
@@ -563,3 +571,5 @@ class FranklinParser(BaseParser):
                 self.rta_file.error_log = str(e)
                 self.rta_file.save()
             logger.error(f"Franklin Parsing failed: {e}")
+            if not self.rta_file:
+                raise e

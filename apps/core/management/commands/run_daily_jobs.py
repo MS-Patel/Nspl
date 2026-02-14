@@ -5,12 +5,16 @@ import logging
 logger = logging.getLogger(__name__)
 
 class Command(BaseCommand):
-    help = 'Runs all daily maintenance jobs: NAV Fetch, Holding Valuation, BSE Sync.'
+    help = 'Runs all daily maintenance jobs: RTA Import, NAV Fetch, Holding Valuation, BSE Sync.'
 
     def handle(self, *args, **options):
         self.stdout.write(self.style.SUCCESS("Starting Daily Jobs..."))
 
         try:
+            # 0. Fetch RTA Emails
+            self.stdout.write("Step 0: Fetching RTA Emails...")
+            call_command('fetch_rta_emails')
+
             # 1. Fetch Latest NAVs
             self.stdout.write("Step 1: Fetching NAVs...")
             call_command('update_navs')
