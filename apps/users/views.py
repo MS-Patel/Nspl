@@ -13,7 +13,10 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.db.models import Count, Sum
 from django.db import models
-from .models import RMProfile, DistributorProfile, InvestorProfile, BankAccount, Nominee, Document
+from django.utils.crypto import get_random_string
+from django.contrib.auth import login
+from .models import RMProfile, DistributorProfile, InvestorProfile, BankAccount, Nominee, Document, OneTimePassword
+from .utils.sms import send_sms_with_template
 from .forms import (
     RMCreationForm, RMChangeForm, DistributorCreationForm, DistributorChangeForm,
     InvestorCreationForm, InvestorProfileForm,
@@ -60,6 +63,96 @@ class CustomLoginView(LoginView):
 
 class CustomLogoutView(LogoutView):
     next_page = reverse_lazy('users:login')
+
+class SendOTPView(View):
+    def post(self, request, *args, **kwargs):
+        username = request.POST.get('username')
+        if not username:
+             return JsonResponse({'status': 'error', 'message': 'Username is required.'}, status=400)
+
+        try:
+            user = User.objects.get(username=username)
+        except User.DoesNotExist:
+             return JsonResponse({'status': 'error', 'message': 'User not found.'}, status=404)
+
+        if not user.is_active:
+             return JsonResponse({'status': 'error', 'message': 'User account is inactive.'}, status=403)
+
+        # Determine Mobile Number
+        mobile = None
+        if user.user_type == User.Types.RM and hasattr(user, 'rm_profile'):
+             mobile = user.rm_profile.mobile
+        elif user.user_type == User.Types.DISTRIBUTOR and hasattr(user, 'distributor_profile'):
+             mobile = user.distributor_profile.mobile
+        elif user.user_type == User.Types.INVESTOR and hasattr(user, 'investor_profile'):
+             mobile = user.investor_profile.mobile
+
+        if not mobile:
+             return JsonResponse({'status': 'error', 'message': 'No mobile number linked to this account.'}, status=400)
+
+        # Generate OTP
+        otp = get_random_string(length=6, allowed_chars='0123456789')
+
+        # Save OTP (Invalidate previous unused OTPs?)
+        OneTimePassword.objects.create(user=user, otp=otp)
+
+        # Send SMS
+        context = {'otp': otp}
+        # Assuming template name 'otp'
+        sms_result = send_sms_with_template(mobile, 'otp', context)
+
+        if isinstance(sms_result, dict) and sms_result.get('status') == 'error':
+             return JsonResponse(sms_result, status=500)
+
+        # Mask mobile number for response
+        masked_mobile = f"{mobile[:2]}******{mobile[-2:]}" if len(mobile) > 4 else mobile
+
+        return JsonResponse({'status': 'success', 'message': f'OTP sent to {masked_mobile}'})
+
+
+class VerifyOTPLoginView(View):
+    def post(self, request, *args, **kwargs):
+        username = request.POST.get('username')
+        otp = request.POST.get('otp')
+
+        if not username or not otp:
+             return JsonResponse({'status': 'error', 'message': 'Username and OTP are required.'}, status=400)
+
+        try:
+            user = User.objects.get(username=username)
+        except User.DoesNotExist:
+             return JsonResponse({'status': 'error', 'message': 'User not found.'}, status=404)
+
+        # Verify OTP
+        # Check for OTP created in last 10 minutes and not used
+        ten_minutes_ago = timezone.now() - timezone.timedelta(minutes=10)
+        valid_otp = OneTimePassword.objects.filter(
+            user=user,
+            otp=otp,
+            is_used=False,
+            created_at__gte=ten_minutes_ago
+        ).first()
+
+        if valid_otp:
+            valid_otp.is_used = True
+            valid_otp.save()
+
+            # Log the user in
+            user.backend = 'django.contrib.auth.backends.ModelBackend'
+            login(request, user)
+
+            # Redirect URL logic (copied from CustomLoginView)
+            success_url = reverse('users:admin_dashboard') # Default
+            if user.user_type == User.Types.RM:
+                success_url = reverse('users:rm_dashboard')
+            elif user.user_type == User.Types.DISTRIBUTOR:
+                success_url = reverse('users:distributor_dashboard')
+            elif user.user_type == User.Types.INVESTOR:
+                success_url = reverse('users:investor_dashboard')
+
+            return JsonResponse({'status': 'success', 'redirect_url': success_url})
+        else:
+            return JsonResponse({'status': 'error', 'message': 'Invalid or expired OTP.'}, status=400)
 
 # --- Mixins for Role-Based Access ---
 

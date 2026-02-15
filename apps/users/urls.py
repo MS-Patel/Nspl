@@ -7,6 +7,10 @@ urlpatterns = [
     path('login/', views.CustomLoginView.as_view(), name='login'),
     path('logout/', views.CustomLogoutView.as_view(), name='logout'),
 
+    # OTP Login
+    path('otp/send/', views.SendOTPView.as_view(), name='send_otp'),
+    path('otp/login/', views.VerifyOTPLoginView.as_view(), name='verify_otp_login'),
+
     # Dashboards
     path('dashboard/admin/', views.AdminDashboardView.as_view(), name='admin_dashboard'),
     path('dashboard/rm/', views.RMDashboardView.as_view(), name='rm_dashboard'),

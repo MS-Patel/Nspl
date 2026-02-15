@@ -203,3 +203,8 @@ RTA_FILE_PASSWORD = [p.strip() for p in os.environ.get('RTA_FILE_PASSWORD', '').
 # Note: Env vars should be comma separated
 RTA_EMAIL_SENDER_FILTERS = [s.strip().lower() for s in os.environ.get('RTA_EMAIL_SENDER_FILTERS', '').split(',') if s.strip()]
 RTA_EMAIL_SUBJECT_FILTERS = [s.strip().lower() for s in os.environ.get('RTA_EMAIL_SUBJECT_FILTERS', 'Transaction Report,WBR2').split(',') if s.strip()]
+
+# SMS Configuration
+SMS_API_KEY = os.environ.get('SMS_API_KEY', '64c7a50d19c21')
+SMS_SENDER_ID = os.environ.get('SMS_SENDER_ID', 'NSPLMF')
+SMS_BASE_URL = os.environ.get('SMS_BASE_URL', 'http://sms.mobileadz.in/api/push.json')

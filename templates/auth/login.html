@@ -94,6 +94,7 @@
             </div>
           </div>
           <div class="mt-16">
+            <div id="password-login-container">
             <form method="post" action="{% url 'users:login' %}">
                 {% csrf_token %}
                 {% if form.non_field_errors %}
@@ -180,10 +181,218 @@
                 >
                 Sign In
                 </button>
+                <div class="mt-4 text-center">
+                    <a href="#" id="toggle-otp-login" class="text-sm text-primary hover:underline">Login with OTP</a>
+                </div>
             </form>
+            </div>
+
+            <!-- OTP Login Container -->
+            <div id="otp-login-container" style="display: none;">
+                <div id="otp-step-1">
+                    <div class="mb-4 text-center text-error text-red-500 hidden" id="otp-error-1"></div>
+                    <label class="relative flex">
+                        <input
+                            class="form-input peer w-full rounded-lg bg-slate-150 px-3 py-2 pl-9 ring-primary/50 placeholder:text-slate-400 hover:bg-slate-200 focus:ring-3 dark:bg-navy-900/90 dark:ring-accent/50 dark:placeholder:text-navy-300 dark:hover:bg-navy-900 dark:focus:bg-navy-900"
+                            placeholder="Username (PAN)"
+                            type="text"
+                            id="otp-username"
+                        />
+                        <span class="pointer-events-none absolute flex h-full w-10 items-center justify-center text-slate-400 peer-focus:text-primary dark:text-navy-300 dark:peer-focus:text-accent">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="size-5 transition-colors duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                            </svg>
+                        </span>
+                    </label>
+                    <button id="send-otp-btn" class="btn mt-10 h-10 w-full bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90">
+                        Send OTP
+                    </button>
+                </div>
+
+                <div id="otp-step-2" style="display: none;">
+                    <div class="mb-4 text-center text-success text-green-500" id="otp-sent-msg"></div>
+                    <div class="mb-4 text-center text-error text-red-500 hidden" id="otp-error-2"></div>
+                    <label class="relative flex">
+                        <input
+                            class="form-input peer w-full rounded-lg bg-slate-150 px-3 py-2 pl-9 ring-primary/50 placeholder:text-slate-400 hover:bg-slate-200 focus:ring-3 dark:bg-navy-900/90 dark:ring-accent/50 dark:placeholder:text-navy-300 dark:hover:bg-navy-900 dark:focus:bg-navy-900"
+                            placeholder="Enter OTP"
+                            type="text"
+                            id="otp-input"
+                        />
+                        <span class="pointer-events-none absolute flex h-full w-10 items-center justify-center text-slate-400 peer-focus:text-primary dark:text-navy-300 dark:peer-focus:text-accent">
+                             <svg xmlns="http://www.w3.org/2000/svg" class="size-5 transition-colors duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                            </svg>
+                        </span>
+                    </label>
+                    <button id="verify-otp-btn" class="btn mt-10 h-10 w-full bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90">
+                        Login
+                    </button>
+                     <div class="mt-4 text-center">
+                        <button id="resend-otp-btn" class="text-xs text-slate-400 hover:text-primary">Resend OTP</button>
+                    </div>
+                </div>
+
+                <div class="mt-4 text-center">
+                    <a href="#" id="toggle-password-login" class="text-sm text-primary hover:underline">Back to Password Login</a>
+                </div>
+            </div>
+
           </div>
         </div>
       </main>
     </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const passwordContainer = document.getElementById('password-login-container');
+            const otpContainer = document.getElementById('otp-login-container');
+            const toggleOtpBtn = document.getElementById('toggle-otp-login');
+            const togglePasswordBtn = document.getElementById('toggle-password-login');
+
+            const otpStep1 = document.getElementById('otp-step-1');
+            const otpStep2 = document.getElementById('otp-step-2');
+
+            const sendOtpBtn = document.getElementById('send-otp-btn');
+            const verifyOtpBtn = document.getElementById('verify-otp-btn');
+            const resendOtpBtn = document.getElementById('resend-otp-btn');
+
+            const otpUsernameInput = document.getElementById('otp-username');
+            const otpInput = document.getElementById('otp-input');
+
+            const otpError1 = document.getElementById('otp-error-1');
+            const otpError2 = document.getElementById('otp-error-2');
+            const otpSentMsg = document.getElementById('otp-sent-msg');
+
+            // Toggle Views
+            toggleOtpBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                passwordContainer.style.display = 'none';
+                otpContainer.style.display = 'block';
+                otpStep1.style.display = 'block';
+                otpStep2.style.display = 'none';
+                otpError1.classList.add('hidden');
+            });
+
+            togglePasswordBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                otpContainer.style.display = 'none';
+                passwordContainer.style.display = 'block';
+            });
+
+            // Helper to get CSRF token
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+            const csrftoken = getCookie('csrftoken');
+
+            // Send OTP
+            function sendOtp() {
+                const username = otpUsernameInput.value.trim();
+                if (!username) {
+                    otpError1.textContent = 'Please enter your username (PAN).';
+                    otpError1.classList.remove('hidden');
+                    return;
+                }
+
+                otpError1.classList.add('hidden');
+                sendOtpBtn.disabled = true;
+                sendOtpBtn.textContent = 'Sending...';
+
+                fetch("{% url 'users:send_otp' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: `username=${encodeURIComponent(username)}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    sendOtpBtn.disabled = false;
+                    sendOtpBtn.textContent = 'Send OTP';
+
+                    if (data.status === 'success') {
+                        otpStep1.style.display = 'none';
+                        otpStep2.style.display = 'block';
+                        otpSentMsg.textContent = data.message;
+                        otpError2.classList.add('hidden');
+                    } else {
+                        otpError1.textContent = data.message || 'Error sending OTP.';
+                        otpError1.classList.remove('hidden');
+                    }
+                })
+                .catch(error => {
+                    sendOtpBtn.disabled = false;
+                    sendOtpBtn.textContent = 'Send OTP';
+                    otpError1.textContent = 'Network error. Please try again.';
+                    otpError1.classList.remove('hidden');
+                });
+            }
+
+            sendOtpBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                sendOtp();
+            });
+
+            resendOtpBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                sendOtp();
+            });
+
+            // Verify OTP
+            verifyOtpBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const username = otpUsernameInput.value.trim();
+                const otp = otpInput.value.trim();
+
+                if (!otp) {
+                    otpError2.textContent = 'Please enter the OTP.';
+                    otpError2.classList.remove('hidden');
+                    return;
+                }
+
+                otpError2.classList.add('hidden');
+                verifyOtpBtn.disabled = true;
+                verifyOtpBtn.textContent = 'Verifying...';
+
+                fetch("{% url 'users:verify_otp_login' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: `username=${encodeURIComponent(username)}&otp=${encodeURIComponent(otp)}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        window.location.href = data.redirect_url;
+                    } else {
+                        verifyOtpBtn.disabled = false;
+                        verifyOtpBtn.textContent = 'Login';
+                        otpError2.textContent = data.message || 'Invalid OTP.';
+                        otpError2.classList.remove('hidden');
+                    }
+                })
+                .catch(error => {
+                    verifyOtpBtn.disabled = false;
+                    verifyOtpBtn.textContent = 'Login';
+                    otpError2.textContent = 'Network error. Please try again.';
+                    otpError2.classList.remove('hidden');
+                });
+            });
+        });
+    </script>
   </body>
 </html>

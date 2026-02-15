@@ -60,6 +60,7 @@ class RMProfile(models.Model):
     country = models.CharField(max_length=50, default='India', blank=True)
 
     # Contact Details
+    mobile = models.CharField(max_length=15, blank=True, default='')
     alternate_mobile = models.CharField(max_length=15, blank=True)
     alternate_email = models.EmailField(blank=True)
 
@@ -574,3 +575,13 @@ class AuditLog(models.Model):
 
     def __str__(self):
         return f"{self.user} - {self.action} - {self.timestamp}"
+
+
+class OneTimePassword(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    otp = models.CharField(max_length=6)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_used = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.otp}"
