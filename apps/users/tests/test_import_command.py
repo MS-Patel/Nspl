@@ -63,7 +63,7 @@ def test_import_command(sample_clients_csv, sample_mandates_csv):
     call_command('import_old_bse_data', clients_file=sample_clients_csv, mandates_file=sample_mandates_csv)
 
     # Check User
-    user = User.objects.get(username="TEST001")
+    user = User.objects.get(username="ABCDE1234F")
     assert user.email == "john@example.com"
     assert user.check_password("ABCDE1234F")
 

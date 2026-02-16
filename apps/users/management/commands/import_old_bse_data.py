@@ -195,7 +195,7 @@ class Command(BaseCommand):
         mobile = row.get('Indian Mobile No.', '').strip()
 
         # 1. Create/Update User
-        user, created = User.objects.get_or_create(username=client_code)
+        user, created = User.objects.get_or_create(username=pan)
         if created:
             user.set_password(pan)
             user.email = email
