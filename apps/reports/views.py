@@ -7,7 +7,7 @@ from django.db.models import Q
 import datetime
 
 from apps.users.models import User, InvestorProfile, DistributorProfile, RMProfile, BankAccount, Nominee
-from apps.investments.models import Order, SIP
+from apps.investments.models import Order, SIP, Mandate
 from apps.reconciliation.models import Transaction
 from apps.products.models import Scheme
 # from apps.integration.bse_client import BSEStarMFClient # No longer needed for direct calls
@@ -122,6 +122,56 @@ class InvestorReportView(LoginRequiredMixin, TemplateView):
                 'date_joined': inv.user.date_joined.strftime('%Y-%m-%d %H:%M') if inv.user.date_joined else '',
                 'last_login': inv.user.last_login.strftime('%Y-%m-%d %H:%M') if inv.user.last_login else '',
                 'is_active': inv.user.is_active,
+            }
+            data.append(row)
+
+        context['grid_data_json'] = json.dumps(data, cls=DjangoJSONEncoder)
+        return context
+
+class MandateReportView(LoginRequiredMixin, TemplateView):
+    template_name = 'reports/mandate_report.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+
+        # Access Control & Queryset
+        if user.user_type == User.Types.ADMIN:
+            qs = Mandate.objects.select_related('investor', 'investor__user', 'bank_account').all()
+        elif user.user_type == User.Types.RM:
+            qs = Mandate.objects.filter(
+                Q(investor__rm__user=user) | Q(investor__distributor__rm__user=user)
+            ).select_related('investor', 'investor__user', 'bank_account').distinct()
+        elif user.user_type == User.Types.DISTRIBUTOR:
+            qs = Mandate.objects.filter(investor__distributor__user=user).select_related('investor', 'investor__user', 'bank_account')
+        elif user.user_type == User.Types.INVESTOR:
+            qs = Mandate.objects.filter(investor__user=user).select_related('investor', 'investor__user', 'bank_account')
+        else:
+            qs = Mandate.objects.none()
+
+        data = []
+        for mandate in qs:
+            row = {
+                'id': mandate.id,
+                # Mandate Fields
+                'mandate_id': mandate.mandate_id,
+                'mandate_type': mandate.get_mandate_type_display(),
+                'amount_limit': round(float(mandate.amount_limit), 2),
+                'start_date': mandate.start_date.strftime('%Y-%m-%d'),
+                'end_date': mandate.end_date.strftime('%Y-%m-%d') if mandate.end_date else '',
+                'status': mandate.get_status_display(),
+                'created_at': mandate.created_at.strftime('%Y-%m-%d %H:%M'),
+                'updated_at': mandate.updated_at.strftime('%Y-%m-%d %H:%M'),
+
+                # Investor Fields
+                'investor_name': mandate.investor.user.name or mandate.investor.user.username,
+                'pan': mandate.investor.pan,
+                'ucc_code': mandate.investor.ucc_code,
+
+                # Bank Details
+                'bank_name': mandate.bank_account.bank_name if mandate.bank_account else '',
+                'account_number': mandate.bank_account.account_number if mandate.bank_account else '',
+                'ifsc_code': mandate.bank_account.ifsc_code if mandate.bank_account else '',
             }
             data.append(row)
 
