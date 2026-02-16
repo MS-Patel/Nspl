@@ -84,6 +84,7 @@ class Transaction(models.Model):
     stamp_duty = models.DecimalField(max_digits=15, decimal_places=4, default=0)
 
     description = models.CharField(max_length=255, blank=True)
+    tr_flag = models.CharField(max_length=20, blank=True, null=True, help_text="Transaction Flag from RTA (e.g., P, R)")
 
     # Metadata
     source_file = models.ForeignKey(RTAFile, on_delete=models.CASCADE, related_name='transactions', null=True, blank=True)
