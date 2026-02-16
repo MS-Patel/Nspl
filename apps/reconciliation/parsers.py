@@ -172,7 +172,7 @@ class BaseParser:
 
         return scheme
 
-    def match_or_create_transaction(self, investor, scheme, folio_number, txn_number, date, amount, units, txn_type, rta_code):
+    def match_or_create_transaction(self, investor, scheme, folio_number, txn_number, date, amount, units, txn_type, rta_code, description="", tr_flag=""):
         """
         Matches incoming RTA transaction with existing (Provisional) BSE transaction,
         or creates a new one. Updates existing RTA transactions if changed.
@@ -189,6 +189,8 @@ class BaseParser:
             existing_txn.units = units
             existing_txn.txn_type_code = txn_type
             existing_txn.rta_code = rta_code
+            existing_txn.description = description
+            existing_txn.tr_flag = tr_flag
             existing_txn.source = Transaction.SOURCE_RTA
             existing_txn.is_provisional = False
             if self.rta_file:
@@ -232,6 +234,8 @@ class BaseParser:
             matched_txn.txn_number = txn_number # Update to authoritative RTA ID
             matched_txn.rta_code = rta_code
             matched_txn.txn_type_code = txn_type
+            matched_txn.description = description
+            matched_txn.tr_flag = tr_flag
             matched_txn.date = date
             matched_txn.units = units
             matched_txn.source = Transaction.SOURCE_RTA
@@ -253,6 +257,8 @@ class BaseParser:
                 date=date,
                 amount=amount,
                 units=units,
+                description=description,
+                tr_flag=tr_flag,
                 source=Transaction.SOURCE_RTA,
                 is_provisional=False,
                 source_file=self.rta_file if self.rta_file else None
@@ -403,8 +409,16 @@ class CAMSXLSParser(BaseParser):
                         units = self.clean_decimal(row.get('units'))
                         txn_type = str(row.get('trxntype', '')).strip()
 
+                        # New fields for Fuzzy Logic
+                        description = str(row.get('trxn_nature', '')).strip()
+                        tr_flag = str(row.get('trxn_type_flag', '')).strip()
+                        # If not found under full names, try short codes seen in some files
+                        if not tr_flag:
+                             tr_flag = str(row.get('trflag', '')).strip()
+
                         self.match_or_create_transaction(
-                            investor, scheme, folio_number, txn_number, txn_date, amount, units, txn_type, 'CAMS'
+                            investor, scheme, folio_number, txn_number, txn_date, amount, units, txn_type, 'CAMS',
+                            description=description, tr_flag=tr_flag
                         )
                 except Exception as e:
                     logger.error(f"Error processing CAMS XLS row: {e}")
@@ -568,8 +582,16 @@ class KarvyXLSParser(BaseParser):
                         units = self.clean_decimal(row.get('td_units'))
                         txn_type = str(row.get('td_trtype', '')).strip()
 
+                        # New fields for Fuzzy Logic
+                        description = str(row.get('trdesc', '')).strip()
+                        tr_flag = str(row.get('trflag', '')).strip()
+                        # If not found, try alternative names
+                        if not tr_flag:
+                             tr_flag = str(row.get('trxn_type_flag', '')).strip()
+
                         self.match_or_create_transaction(
-                            investor, scheme, folio_number, txn_number, txn_date, amount, units, txn_type, 'KARVY'
+                            investor, scheme, folio_number, txn_number, txn_date, amount, units, txn_type, 'KARVY',
+                            description=description, tr_flag=tr_flag
                         )
                 except Exception as e:
                     logger.error(f"Error processing Karvy XLS row: {e}")
