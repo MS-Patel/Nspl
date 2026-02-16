@@ -42,18 +42,23 @@ def upload_rta_file(request):
                 parser = FranklinParser(rta_file)
 
             if parser:
-                parser.parse()
+                import threading
+                from django.db import connections
+
+                def run_parser():
+                    try:
+                        parser.parse()
+                    finally:
+                        connections.close_all()
+
+                thread = threading.Thread(target=run_parser)
+                thread.start()
+                messages.success(request, "File uploaded. Processing started in background.")
             else:
                 rta_file.status = RTAFile.STATUS_FAILED
                 rta_file.error_log = "Unknown RTA Type"
                 rta_file.save()
-
-            if rta_file.status == RTAFile.STATUS_PROCESSED:
-                messages.success(request, "File processed successfully.")
-            elif rta_file.status == RTAFile.STATUS_FAILED:
-                 messages.error(request, f"Processing Failed: {rta_file.error_log}")
-            else:
-                messages.warning(request, "File uploaded but processing status is pending.")
+                messages.error(request, f"Processing Failed: {rta_file.error_log}")
 
             return redirect('reconciliation:rta_upload')
     else:

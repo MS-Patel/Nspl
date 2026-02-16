@@ -25,6 +25,8 @@ class BaseParser:
         if not self.file_path and self.rta_file:
             self.file_path = self.rta_file.file.path
 
+        self.impacted_holdings = set()
+
     def parse(self):
         raise NotImplementedError
 
@@ -227,11 +229,20 @@ class BaseParser:
                 source_file=self.rta_file if self.rta_file else None
             )
 
-        # Always Recalculate Holding
-        recalculate_holding(investor, scheme, folio_number)
+        # Defer recalculation
+        if investor and scheme and folio_number:
+            self.impacted_holdings.add((investor, scheme, folio_number))
 
         # Ensure Folio Exists
         self.get_or_create_folio(investor, scheme, folio_number)
+
+    def process_impacted_holdings(self):
+        logger.info(f"Recalculating {len(self.impacted_holdings)} impacted holdings...")
+        for investor, scheme, folio_number in self.impacted_holdings:
+            try:
+                recalculate_holding(investor, scheme, folio_number)
+            except Exception as e:
+                logger.error(f"Error recalculating holding for {folio_number}: {e}")
 
 
 class CAMSParser(BaseParser):
@@ -297,6 +308,8 @@ class CAMSParser(BaseParser):
                     except Exception as e:
                         logger.error(f"Error processing row {row}: {e}")
 
+            self.process_impacted_holdings()
+
             if self.rta_file:
                 self.rta_file.status = RTAFile.STATUS_PROCESSED
                 self.rta_file.processed_at = timezone.now()
@@ -353,6 +366,8 @@ class CAMSXLSParser(BaseParser):
                         )
                 except Exception as e:
                     logger.error(f"Error processing CAMS XLS row: {e}")
+
+            self.process_impacted_holdings()
 
             if self.rta_file:
                 self.rta_file.status = RTAFile.STATUS_PROCESSED
@@ -433,6 +448,8 @@ class KarvyParser(BaseParser):
                     except Exception as e:
                         logger.error(f"Error processing Karvy row: {e}")
 
+            self.process_impacted_holdings()
+
             if self.rta_file:
                 self.rta_file.status = RTAFile.STATUS_PROCESSED
                 self.rta_file.processed_at = timezone.now()
@@ -494,6 +511,8 @@ class KarvyXLSParser(BaseParser):
                         )
                 except Exception as e:
                     logger.error(f"Error processing Karvy XLS row: {e}")
+
+            self.process_impacted_holdings()
 
             if self.rta_file:
                 self.rta_file.status = RTAFile.STATUS_PROCESSED
@@ -559,6 +578,8 @@ class FranklinParser(BaseParser):
                             )
                     except Exception as e:
                         logger.error(f"Error processing Franklin row: {e}")
+
+            self.process_impacted_holdings()
 
             if self.rta_file:
                 self.rta_file.status = RTAFile.STATUS_PROCESSED
