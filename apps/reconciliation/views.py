@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django import forms
-from .models import RTAFile
+from .models import RTAFile, Transaction
 from .parsers import CAMSParser, KarvyParser, FranklinParser, CAMSXLSParser, KarvyXLSParser
 
 class RTAUploadForm(forms.ModelForm):
@@ -12,6 +12,7 @@ class RTAUploadForm(forms.ModelForm):
 
 @login_required
 def upload_rta_file(request):
+    # Transaction.objects.all().delete()
     # Only Admin or Operations (assuming Admin for now)
     if request.user.user_type != 'ADMIN':
         messages.error(request, "Access Denied")
