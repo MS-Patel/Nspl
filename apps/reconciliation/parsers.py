@@ -1,11 +1,13 @@
 import csv
 import logging
 import pandas as pd
+import io
 from decimal import Decimal
 from datetime import datetime, timedelta
 from django.utils import timezone
 from django.db import transaction
 from django.contrib.auth import get_user_model
+from django.core.files.base import ContentFile
 from .models import RTAFile, Transaction, Holding
 from apps.products.models import Scheme
 from apps.users.models import InvestorProfile
@@ -25,8 +27,31 @@ class BaseParser:
         if not self.file_path and self.rta_file:
             self.file_path = self.rta_file.file.path
 
+        self.failed_rows = []
+
     def parse(self):
         raise NotImplementedError
+
+    def save_error_file(self):
+        """
+        Generates an Excel file from failed rows and saves it to the RTAFile model.
+        """
+        if not self.failed_rows or not self.rta_file:
+            return
+
+        try:
+            df = pd.DataFrame(self.failed_rows)
+            output = io.BytesIO()
+            with pd.ExcelWriter(output, engine='openpyxl') as writer:
+                df.to_excel(writer, index=False, sheet_name='Errors')
+
+            output.seek(0)
+            file_name = f"errors_{self.rta_file.id}_{int(timezone.now().timestamp())}.xlsx"
+            self.rta_file.error_file.save(file_name, ContentFile(output.read()), save=False)
+            self.rta_file.save()
+            logger.info(f"Saved error file {file_name} for RTA File {self.rta_file.id}")
+        except Exception as e:
+            logger.error(f"Failed to generate error file for RTA File {self.rta_file.id}: {e}")
 
     def parse_date(self, date_str):
         """Attempts to parse date from common formats."""
@@ -112,16 +137,20 @@ class BaseParser:
 
             # Create Profile
             # Note: Detailed fields will be filled later via BSE Client Master sync
-            profile = InvestorProfile.objects.create(
-                user=user,
-                pan=pan,
-                firstname=firstname,
-                middlename=middlename,
-                lastname=lastname,
-                kyc_status=False, # Assumption until verified
-                is_offline=is_offline
-            )
-            logger.info(f"Created provisional investor for PAN {pan}")
+            try:
+                profile = InvestorProfile.objects.get(user=user)
+            except InvestorProfile.DoesNotExist:
+                profile = InvestorProfile.objects.create(
+                    user=user,
+                    pan=pan,
+                    firstname=firstname,
+                    middlename=middlename,
+                    lastname=lastname,
+                    kyc_status=False, # Assumption until verified
+                    is_offline=is_offline
+                )
+                logger.info(f"Created provisional investor for PAN {pan}")
+
             return profile
 
     def get_scheme(self, scheme_code, isin=None):
@@ -275,8 +304,11 @@ class CAMSParser(BaseParser):
 
                             scheme = self.get_scheme(scheme_code, isin)
                             if not scheme:
-                                # Log warning but skip for now as we can't book transaction without scheme
                                 logger.warning(f"Scheme not found: Code={scheme_code}, ISIN={isin}")
+                                self.failed_rows.append({
+                                    'row_data': str(row),
+                                    'error': f"Scheme not found: Code={scheme_code}, ISIN={isin}"
+                                })
                                 continue
 
                             folio_number = row[1].strip()
@@ -296,8 +328,15 @@ class CAMSParser(BaseParser):
                             )
                     except Exception as e:
                         logger.error(f"Error processing row {row}: {e}")
+                        self.failed_rows.append({
+                            'row_data': str(row),
+                            'error': str(e)
+                        })
 
             if self.rta_file:
+                if self.failed_rows:
+                     self.save_error_file()
+
                 self.rta_file.status = RTAFile.STATUS_PROCESSED
                 self.rta_file.processed_at = timezone.now()
                 self.rta_file.save()
@@ -335,6 +374,9 @@ class CAMSXLSParser(BaseParser):
                         scheme = self.get_scheme(scheme_code)
                         if not scheme:
                             logger.warning(f"Scheme not found for CAMS XLS: {scheme_code}")
+                            row_dict = row.to_dict()
+                            row_dict['error'] = f"Scheme not found: {scheme_code}"
+                            self.failed_rows.append(row_dict)
                             continue
 
                         folio_number = str(row.get('folio_no', '')).strip()
@@ -353,8 +395,14 @@ class CAMSXLSParser(BaseParser):
                         )
                 except Exception as e:
                     logger.error(f"Error processing CAMS XLS row: {e}")
+                    row_dict = row.to_dict()
+                    row_dict['error'] = str(e)
+                    self.failed_rows.append(row_dict)
 
             if self.rta_file:
+                if self.failed_rows:
+                     self.save_error_file()
+
                 self.rta_file.status = RTAFile.STATUS_PROCESSED
                 self.rta_file.processed_at = timezone.now()
                 self.rta_file.save()
@@ -415,6 +463,10 @@ class KarvyParser(BaseParser):
                             scheme = self.get_scheme(scheme_code, isin)
                             if not scheme:
                                 logger.warning(f"Scheme not found: Code={scheme_code}, ISIN={isin}")
+                                self.failed_rows.append({
+                                    'row_data': str(row),
+                                    'error': f"Scheme not found: Code={scheme_code}, ISIN={isin}"
+                                })
                                 continue
 
                             folio_number = row[3].strip()
@@ -432,8 +484,15 @@ class KarvyParser(BaseParser):
                             )
                     except Exception as e:
                         logger.error(f"Error processing Karvy row: {e}")
+                        self.failed_rows.append({
+                            'row_data': str(row),
+                            'error': str(e)
+                        })
 
             if self.rta_file:
+                if self.failed_rows:
+                     self.save_error_file()
+
                 self.rta_file.status = RTAFile.STATUS_PROCESSED
                 self.rta_file.processed_at = timezone.now()
                 self.rta_file.save()
@@ -473,6 +532,9 @@ class KarvyXLSParser(BaseParser):
                         scheme = self.get_scheme(scheme_code)
                         if not scheme:
                             logger.warning(f"Scheme not found for Karvy XLS: {scheme_code}")
+                            row_dict = row.to_dict()
+                            row_dict['error'] = f"Scheme not found: {scheme_code}"
+                            self.failed_rows.append(row_dict)
                             continue
 
                         folio_number = str(row.get('td_acno', '')).strip()
@@ -494,8 +556,14 @@ class KarvyXLSParser(BaseParser):
                         )
                 except Exception as e:
                     logger.error(f"Error processing Karvy XLS row: {e}")
+                    row_dict = row.to_dict()
+                    row_dict['error'] = str(e)
+                    self.failed_rows.append(row_dict)
 
             if self.rta_file:
+                if self.failed_rows:
+                     self.save_error_file()
+
                 self.rta_file.status = RTAFile.STATUS_PROCESSED
                 self.rta_file.processed_at = timezone.now()
                 self.rta_file.save()
@@ -559,8 +627,15 @@ class FranklinParser(BaseParser):
                             )
                     except Exception as e:
                         logger.error(f"Error processing Franklin row: {e}")
+                        self.failed_rows.append({
+                            'row_data': str(row),
+                            'error': str(e)
+                        })
 
             if self.rta_file:
+                if self.failed_rows:
+                     self.save_error_file()
+
                 self.rta_file.status = RTAFile.STATUS_PROCESSED
                 self.rta_file.processed_at = timezone.now()
                 self.rta_file.save()
