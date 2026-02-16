@@ -57,13 +57,21 @@
                         <p class="font-medium text-slate-700 dark:text-navy-100">{{ file.file_name }}</p>
                         <p class="text-xs text-slate-500">{{ file.get_rta_type_display }} • {{ file.uploaded_at|date:"d M Y H:i" }}</p>
                     </div>
-                    <div>
+                    <div class="flex items-center space-x-2">
                         {% if file.status == 'PROCESSED' %}
                             <span class="badge rounded-full bg-success/10 text-success">Processed</span>
                         {% elif file.status == 'FAILED' %}
                             <span class="badge rounded-full bg-error/10 text-error" title="{{ file.error_log }}">Failed</span>
                         {% else %}
                             <span class="badge rounded-full bg-warning/10 text-warning">Pending</span>
+                        {% endif %}
+
+                        {% if file.error_file %}
+                            <a href="{{ file.error_file.url }}" class="btn h-7 w-7 rounded-full bg-error/10 p-0 text-error hover:bg-error/20 focus:bg-error/20 active:bg-error/25" title="Download Error Report">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                </svg>
+                            </a>
                         {% endif %}
                     </div>
                 </div>
