@@ -6,7 +6,7 @@ from .models import BankAccount, InvestorProfile, Nominee, User, Branch, RMProfi
 
 @admin.register(User)
 class CustomUserAdmin(UserAdmin):
-    list_display = ('username', 'email', 'name', 'user_type', 'is_staff')
+    list_display = ('id','username', 'email', 'name', 'user_type', 'is_staff')
     search_fields = ('username', 'email', 'name')
     list_filter = ('user_type', 'is_staff', 'is_superuser', 'is_active')
     fieldsets = UserAdmin.fieldsets + (
@@ -35,7 +35,7 @@ class DistributorProfileAdmin(admin.ModelAdmin):
 
 @admin.register(InvestorProfile)
 class InvestorProfileAdmin(admin.ModelAdmin):
-    list_display = ('user', 'pan', 'distributor', 'rm', 'branch', 'kyc_status')
+    list_display = ('id','user', 'pan', 'distributor', 'rm', 'branch', 'kyc_status')
     search_fields = ('user__username', 'user__name', 'pan')
     list_filter = ('distributor', 'rm', 'branch', 'kyc_status')
     autocomplete_fields = ['distributor', 'rm', 'branch']
