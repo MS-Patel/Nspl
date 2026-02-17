@@ -2,6 +2,7 @@ import csv
 import logging
 import pandas as pd
 import io
+import collections
 from decimal import Decimal
 from datetime import datetime, timedelta
 from django.utils import timezone
@@ -28,6 +29,7 @@ class BaseParser:
             self.file_path = self.rta_file.file.path
 
         self.impacted_holdings = set()
+        self.txn_counts = collections.defaultdict(int)
 
         self.failed_rows = []
 
@@ -180,7 +182,13 @@ class BaseParser:
         if not txn_number:
             return
 
-        # 1. Check strict duplicate (already processed RTA txn) or Update
+        # Handle duplicate transaction numbers within the same file (Splits or Collisions)
+        self.txn_counts[txn_number] += 1
+        count = self.txn_counts[txn_number]
+        if count > 1:
+            txn_number = f"{txn_number}-{count}"
+
+        # 1. Check strict duplicate (already processed RTA txn in previous run) or Update
         existing_txn = Transaction.objects.filter(txn_number=txn_number).first()
         if existing_txn:
             # Update fields
