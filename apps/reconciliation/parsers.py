@@ -4,6 +4,8 @@ import pandas as pd
 import io
 import hashlib
 import collections
+import hashlib
+import collections
 from decimal import Decimal
 from datetime import datetime, timedelta
 from django.utils import timezone
@@ -183,7 +185,7 @@ class BaseParser:
 
         return scheme
 
-    def match_or_create_transaction(self, investor, scheme, folio_number, txn_number, date, amount, units, txn_type, rta_code, description="", tr_flag=""):
+    def match_or_create_transaction(self, investor, scheme, folio_number, txn_number, date, amount, units, txn_type, rta_code, description="", tr_flag="", original_txn_number=None):
         """
         Matches incoming RTA transaction with existing (Provisional) BSE transaction,
         or creates a new one. Updates existing RTA transactions if changed.
@@ -204,6 +206,8 @@ class BaseParser:
             existing_txn.tr_flag = tr_flag
             existing_txn.source = Transaction.SOURCE_RTA
             existing_txn.is_provisional = False
+            if original_txn_number:
+                existing_txn.original_txn_number = original_txn_number
             if self.rta_file:
                 existing_txn.source_file = self.rta_file
 
@@ -251,6 +255,8 @@ class BaseParser:
             matched_txn.units = units
             matched_txn.source = Transaction.SOURCE_RTA
             matched_txn.is_provisional = False
+            if original_txn_number:
+                matched_txn.original_txn_number = original_txn_number
             if self.rta_file:
                 matched_txn.source_file = self.rta_file
             matched_txn.save()
@@ -265,6 +271,7 @@ class BaseParser:
                 rta_code=rta_code,
                 txn_type_code=txn_type,
                 txn_number=txn_number,
+                original_txn_number=original_txn_number,
                 date=date,
                 amount=amount,
                 units=units,
@@ -352,7 +359,8 @@ class CAMSParser(BaseParser):
 
                             # Delegate to helper
                             self.match_or_create_transaction(
-                                investor, scheme, folio_number, txn_number, txn_date, amount, units, txn_type, 'CAMS'
+                                investor, scheme, folio_number, txn_number, txn_date, amount, units, txn_type, 'CAMS',
+                                original_txn_number=txn_number
                             )
                     except Exception as e:
                         logger.error(f"Error processing row {row}: {e}")
@@ -443,7 +451,7 @@ class CAMSXLSParser(BaseParser):
 
                         self.match_or_create_transaction(
                             investor, scheme, folio_number, unique_txn_number, txn_date, amount, units, txn_type, 'CAMS',
-                            description=description, tr_flag=tr_flag
+                            description=description, tr_flag=tr_flag, original_txn_number=original_txn_number
                         )
                 except Exception as e:
                     logger.error(f"Error processing CAMS XLS row: {e}")
@@ -534,7 +542,7 @@ class KarvyParser(BaseParser):
                             # Delegate to helper
                             self.match_or_create_transaction(
                                 investor, scheme, folio_number, txn_number, txn_date if txn_date else timezone.now().date(),
-                                amount, units, txn_type, 'KARVY'
+                                amount, units, txn_type, 'KARVY', original_txn_number=txn_number
                             )
                     except Exception as e:
                         logger.error(f"Error processing Karvy row: {e}")
@@ -631,7 +639,7 @@ class KarvyXLSParser(BaseParser):
 
                         self.match_or_create_transaction(
                             investor, scheme, folio_number, unique_txn_number, txn_date, amount, units, txn_type, 'KARVY',
-                            description=description, tr_flag=tr_flag
+                            description=description, tr_flag=tr_flag, original_txn_number=original_txn_number
                         )
                 except Exception as e:
                     logger.error(f"Error processing Karvy XLS row: {e}")
@@ -704,7 +712,7 @@ class FranklinParser(BaseParser):
 
                             self.match_or_create_transaction(
                                 investor, scheme, folio_number, txn_number, txn_date if txn_date else timezone.now().date(),
-                                amount, units, txn_type, 'FRANKLIN'
+                                amount, units, txn_type, 'FRANKLIN', original_txn_number=txn_number
                             )
                     except Exception as e:
                         logger.error(f"Error processing Franklin row: {e}")

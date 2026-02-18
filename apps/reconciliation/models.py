@@ -68,6 +68,7 @@ class Transaction(models.Model):
     rta_code = models.CharField(max_length=20, help_text="CAMS/Karvy")
     txn_type_code = models.CharField(max_length=20, help_text="Raw transaction type from RTA")
     txn_number = models.CharField(max_length=100, unique=True, help_text="Unique Reference No from RTA")
+    original_txn_number = models.CharField(max_length=100, null=True, blank=True, help_text="Original RTA Transaction No for display")
 
     # Matching / Provisional Fields
     source = models.CharField(max_length=10, choices=SOURCE_CHOICES, default=SOURCE_RTA)
