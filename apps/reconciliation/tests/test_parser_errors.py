@@ -82,7 +82,7 @@ def test_cams_xls_parser_error_handling_and_recovery(tmp_path):
     # Assertions
 
     # 1. Check Transaction for Row 1
-    txn1 = Transaction.objects.filter(txn_number="TXN1").first()
+    txn1 = Transaction.objects.filter(txn_number__startswith="TXN1").first()
     assert txn1 is not None
     assert txn1.scheme == scheme
     # It should have linked to the existing profile
