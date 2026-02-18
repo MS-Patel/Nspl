@@ -75,7 +75,13 @@
         const gridConfig = {
             columns: [
                 { id: 'investor_name', name: 'Investor' },
-                { id: 'folio_number', name: 'Folio' },
+                {
+                    id: 'folio_number',
+                    name: 'Folio',
+                    formatter: (cell, row) => {
+                        return Gridjs.html(`<a href="${row.cells[8].data}" class="text-primary hover:underline dark:text-accent-light">${cell}</a>`);
+                    }
+                },
                 { id: 'scheme_name', name: 'Scheme', width: '25%' },
                 { id: 'units', name: 'Units' },
                 {
@@ -109,7 +115,8 @@
                             </div>
                         `);
                     }
-                }
+                },
+                { id: 'folio_url', hidden: true }
             ],
             data: gridData,
             search: false,
