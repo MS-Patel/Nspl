@@ -182,7 +182,7 @@ def recalculate_holding(investor, scheme, folio_number):
                 # WAC Calculation
                 # If units are negative in file but identified as ADD (e.g. reversal of redemption reversal?), flip sign
                 # Usually ADD implies positive inflow.
-                units_added = abs(txn.units)
+                units_added = txn.units
 
                 total_cost = (total_units * weighted_avg_cost) + abs(txn.amount)
                 total_units += units_added
