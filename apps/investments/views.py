@@ -16,6 +16,7 @@ from .forms import OrderForm, MandateForm, RedemptionForm
 from apps.users.models import InvestorProfile, DistributorProfile
 from apps.products.models import Scheme, AMC, SchemeCategory
 from apps.reconciliation.models import Holding, Transaction
+from apps.investments.templatetags.investment_extras import readable_txn_type
 from apps.integration.bse_client import BSEStarMFClient
 from apps.integration.sync_utils import sync_pending_orders
 import logging
@@ -695,13 +696,24 @@ class FolioDetailView(LoginRequiredMixin, TemplateView):
                 investor=investor
             ).order_by('-date', '-created_at')
 
+            transactions_data = []
+            for txn in txns:
+                transactions_data.append({
+                    'date': txn.date.strftime('%Y-%m-%d'),
+                    'type': readable_txn_type(txn.txn_type_code),
+                    'amount': float(txn.amount),
+                    'units': float(txn.units),
+                    'nav': float(txn.nav) if txn.nav else None,
+                })
+
             fund_data.append({
                 'scheme': h.scheme,
                 'holding': h,
                 'current_value': cv,
                 'invested_value': iv,
                 'gain_loss': cv - iv,
-                'transactions': txns
+                'transactions': txns,
+                'transactions_json': json.dumps(transactions_data)
             })
 
         context['folio_number'] = folio_number
