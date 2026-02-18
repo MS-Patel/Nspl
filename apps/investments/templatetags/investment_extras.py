@@ -31,8 +31,10 @@ def readable_txn_type(value):
         # Switches
         'SI': 'Switch In',
         'SWIN': 'Switch In',
+        'STI': 'Switch In',
         'SO': 'Switch Out',
         'SWOUT': 'Switch Out',
+        'STO': 'Switch Out',
         'STP': 'STP Transfer',
         'TI': 'Transfer In',
         'TO': 'Transfer Out',
@@ -73,8 +75,8 @@ def txn_badge_class(txn):
     # Negative units usually mean Outflow, but sometimes RTA reports positive units for Redemptions
     # We prioritize Code
 
-    outflow_codes = ['R', 'RED', 'SWP', 'SO', 'SWOUT', 'TO', 'DP', 'DIP', 'PR', 'RJ']
-    inflow_codes = ['P', 'PUR', 'SIP', 'L', 'NFO', 'ADD', 'AP', 'SI', 'SWIN', 'TI', 'DR', 'DIR', 'B', 'BON', 'RR']
+    outflow_codes = ['R', 'RED', 'SWP', 'SO', 'SWOUT', 'STO', 'TO', 'DP', 'DIP', 'PR', 'RJ']
+    inflow_codes = ['P', 'PUR', 'SIP', 'L', 'NFO', 'ADD', 'AP', 'SI', 'SWIN', 'STI', 'TI', 'DR', 'DIR', 'B', 'BON', 'RR']
 
     if code in outflow_codes:
         return 'bg-error/10 text-error'

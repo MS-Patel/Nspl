@@ -72,68 +72,79 @@
 
         <!-- Transactions Table (Collapsible) -->
         <div x-show="expanded" x-collapse class="border-t border-slate-150 dark:border-navy-500">
-             <div class="bg-slate-50/50 px-4 py-3 dark:bg-navy-900/50">
-                 <h4 class="text-xs font-medium uppercase text-slate-500 dark:text-navy-300">Transactions History</h4>
-             </div>
-
-             <!-- Table Container with Show More Logic -->
-             <div class="is-scrollbar-hidden min-w-full overflow-x-auto" x-data="{ showAll: false }">
-                <table class="is-zebra w-full text-left">
-                    <thead>
-                        <tr>
-                            <th class="whitespace-nowrap px-4 py-3 font-semibold text-xs uppercase text-slate-500 dark:text-navy-300">Date</th>
-                            <th class="whitespace-nowrap px-4 py-3 font-semibold text-xs uppercase text-slate-500 dark:text-navy-300">Type</th>
-                            <th class="whitespace-nowrap px-4 py-3 font-semibold text-xs uppercase text-slate-500 dark:text-navy-300 text-right">Amount</th>
-                            <th class="whitespace-nowrap px-4 py-3 font-semibold text-xs uppercase text-slate-500 dark:text-navy-300 text-right">Units</th>
-                            <th class="whitespace-nowrap px-4 py-3 font-semibold text-xs uppercase text-slate-500 dark:text-navy-300 text-right">NAV</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for txn in item.transactions %}
-                        <tr class="transition-colors"
-                            {% if forloop.counter > 5 %}x-show="showAll" x-cloak{% endif %}>
-                            <td class="whitespace-nowrap px-4 py-3 text-sm text-slate-700 dark:text-navy-100">{{ txn.date|date:"d M Y" }}</td>
-                            <td class="whitespace-nowrap px-4 py-3 text-sm">
-                                <span class="badge rounded-full px-2 py-0.5 text-[10px] {{ txn|txn_badge_class }}">
-                                    {{ txn.txn_type_code|readable_txn_type|default:txn.txn_type_code }}
-                                </span>
-                            </td>
-                            <td class="whitespace-nowrap px-4 py-3 text-sm font-medium text-slate-700 dark:text-navy-100 text-right">₹ {{ txn.amount|floatformat:2|intcomma }}</td>
-                            <td class="whitespace-nowrap px-4 py-3 text-sm text-slate-700 dark:text-navy-100 text-right">{{ txn.units|floatformat:4 }}</td>
-                            <td class="whitespace-nowrap px-4 py-3 text-sm text-slate-700 dark:text-navy-100 text-right">
-                                {% if txn.nav %}
-                                    ₹ {{ txn.nav|floatformat:4 }}
-                                {% else %}
-                                    -
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="5" class="px-4 py-3 text-center text-sm text-slate-500">No transactions found.</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-
-                {% if item.transactions|length > 5 %}
-                <div class="flex justify-center p-3 border-t border-slate-150 dark:border-navy-500">
-                    <button @click="showAll = !showAll"
-                            class="btn h-8 rounded-full bg-primary/10 px-3 text-xs+ font-medium text-primary hover:bg-primary/20 focus:bg-primary/20 active:bg-primary/25 dark:bg-accent-light/10 dark:text-accent-light dark:hover:bg-accent-light/20 dark:focus:bg-accent-light/20 dark:active:bg-accent-light/25">
-                        <span x-show="!showAll">View All</span>
-                        <span x-show="showAll" x-cloak>Show Less</span>
-                        <svg x-show="!showAll" xmlns="http://www.w3.org/2000/svg" class="ml-1.5 h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                        </svg>
-                        <svg x-show="showAll" xmlns="http://www.w3.org/2000/svg" class="ml-1.5 h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
-                        </svg>
-                    </button>
-                </div>
-                {% endif %}
+             <div class="p-4">
+                 <div id="grid-{{ forloop.counter }}"></div>
              </div>
         </div>
     </div>
     {% endfor %}
 </div>
+{% endblock %}
+
+{% block javascript %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        {% for item in fund_data %}
+            if (window.Gridjs) {
+                new window.Gridjs.Grid({
+                    columns: [
+                        {
+                            name: 'Date',
+                            formatter: (cell) => {
+                                const date = new Date(cell);
+                                return date.toLocaleDateString('en-GB', {day: 'numeric', month: 'short', year: 'numeric'});
+                            }
+                        },
+                        { name: 'Type', sort: false },
+                        {
+                            name: 'Amount',
+                            formatter: (cell) => `₹ ${parseFloat(cell).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`,
+                            attributes: {'class': 'text-right'}
+                        },
+                        {
+                            name: 'Units',
+                            formatter: (cell) => parseFloat(cell).toFixed(4),
+                            attributes: {'class': 'text-right'}
+                        },
+                        {
+                            name: 'NAV',
+                            formatter: (cell) => cell ? `₹ ${parseFloat(cell).toFixed(4)}` : '-',
+                            attributes: {'class': 'text-right'}
+                        }
+                    ],
+                    data: {{ item.transactions_json|safe }},
+                    search: true,
+                    sort: true,
+                    pagination: {
+                        limit: 10
+                    },
+                    className: {
+                        container: 'font-sans text-sm',
+                        table: 'w-full text-left border-collapse',
+                        th: 'px-4 py-3 font-semibold text-xs uppercase text-slate-500 dark:text-navy-300 bg-slate-50 dark:bg-navy-900 border-b border-slate-150 dark:border-navy-500',
+                        td: 'px-4 py-3 text-sm text-slate-700 dark:text-navy-100 border-b border-slate-150 dark:border-navy-500',
+                        footer: 'bg-transparent border-t border-slate-150 dark:border-navy-500 p-3',
+                        pagination: 'flex justify-between items-center text-slate-500 dark:text-navy-300',
+                        paginationSummary: 'text-xs',
+                        paginationButton: 'btn h-8 w-8 rounded-full p-0 hover:bg-slate-300/20 focus:bg-slate-300/20 active:bg-slate-300/25 dark:hover:bg-navy-300/20 dark:focus:bg-navy-300/20 dark:active:bg-navy-300/25 transition-colors',
+                        paginationButtonCurrent: 'bg-primary/10 text-primary dark:bg-accent-light/10 dark:text-accent-light',
+                    },
+                    language: {
+                        'search': {
+                            'placeholder': 'Search transactions...'
+                        },
+                        'pagination': {
+                            'previous': '‹',
+                            'next': '›',
+                            'showing': 'Displaying',
+                            'results': () => 'Records'
+                        }
+                    }
+                }).render(document.getElementById('grid-{{ forloop.counter }}'));
+            } else {
+                console.error("Grid.js library not loaded via window.Gridjs");
+            }
+        {% endfor %}
+    });
+</script>
 {% endblock %}
