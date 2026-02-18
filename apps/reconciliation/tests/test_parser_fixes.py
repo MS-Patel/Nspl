@@ -61,7 +61,7 @@ class ReproductionTestCase(TestCase):
 
         # Assertions
         # 1. Check if Transaction exists
-        txn = Transaction.objects.filter(txn_number='TXN001').first()
+        txn = Transaction.objects.filter(txn_number__startswith='TXN001').first()
         self.assertIsNotNone(txn, "Transaction TXN001 should be created now.")
 
         # 2. Check Investor

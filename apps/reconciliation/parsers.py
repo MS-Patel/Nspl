@@ -2,6 +2,8 @@ import csv
 import logging
 import pandas as pd
 import io
+import hashlib
+import collections
 from decimal import Decimal
 from datetime import datetime, timedelta
 from django.utils import timezone
@@ -28,6 +30,7 @@ class BaseParser:
             self.file_path = self.rta_file.file.path
 
         self.impacted_holdings = set()
+        self.txn_counts = collections.defaultdict(int)
 
         self.failed_rows = []
 
@@ -89,6 +92,14 @@ class BaseParser:
             return Decimal(val_str.replace(',', ''))
         except:
             return Decimal(0)
+
+    def generate_fingerprint(self, values):
+        """
+        Generates a unique hash based on a list of row values.
+        Used to uniquely identify rows even if they share the same Transaction No.
+        """
+        raw_str = "|".join([str(v).strip().upper() if v is not None else "" for v in values])
+        return hashlib.md5(raw_str.encode('utf-8')).hexdigest()
 
     def get_or_create_folio(self, investor, scheme, folio_number):
         if investor and scheme and folio_number:
@@ -180,7 +191,7 @@ class BaseParser:
         if not txn_number:
             return
 
-        # 1. Check strict duplicate (already processed RTA txn) or Update
+        # 1. Check strict duplicate (already processed RTA txn in previous run) or Update
         existing_txn = Transaction.objects.filter(txn_number=txn_number).first()
         if existing_txn:
             # Update fields
@@ -399,7 +410,7 @@ class CAMSXLSParser(BaseParser):
                             continue
 
                         folio_number = str(row.get('folio_no', '')).strip()
-                        txn_number = str(row.get('trxnno', '')).strip()
+                        original_txn_number = str(row.get('trxnno', '')).strip()
 
                         date_val = row.get('traddate')
                         txn_date = self.parse_date(date_val)
@@ -408,6 +419,20 @@ class CAMSXLSParser(BaseParser):
                         amount = self.clean_decimal(row.get('amount'))
                         units = self.clean_decimal(row.get('units'))
                         txn_type = str(row.get('trxntype', '')).strip()
+                        txn_stat = str(row.get('trxnstat', '')).strip()
+                        nav_date = str(row.get('postdate', '')).strip()
+
+                        # Generate Row Fingerprint for Uniqueness
+                        # Fields: FMCODE(prodcode), TD_ACNO(folio), TD_TRNO(trxnno), TD_PRDT(traddate),
+                        # TD_UNITS, TD_AMT, TD_TRTYPE(trxntype), TRNSTAT, NAVDATE(postdate)
+                        # We use available CAMS equivalents
+                        fingerprint = self.generate_fingerprint([
+                            scheme_code, folio_number, original_txn_number, str(txn_date),
+                            units, amount, txn_type, txn_stat, nav_date
+                        ])
+
+                        # Use fingerprint as unique suffix
+                        unique_txn_number = f"{original_txn_number}-{fingerprint}"
 
                         # New fields for Fuzzy Logic
                         description = str(row.get('trxn_nature', '')).strip()
@@ -417,7 +442,7 @@ class CAMSXLSParser(BaseParser):
                              tr_flag = str(row.get('trflag', '')).strip()
 
                         self.match_or_create_transaction(
-                            investor, scheme, folio_number, txn_number, txn_date, amount, units, txn_type, 'CAMS',
+                            investor, scheme, folio_number, unique_txn_number, txn_date, amount, units, txn_type, 'CAMS',
                             description=description, tr_flag=tr_flag
                         )
                 except Exception as e:
@@ -569,7 +594,7 @@ class KarvyXLSParser(BaseParser):
                             continue
 
                         folio_number = str(row.get('td_acno', '')).strip()
-                        txn_number = str(row.get('td_trno', '')).strip()
+                        original_txn_number = str(row.get('td_trno', '')).strip()
 
                         # Try NAVDATE, fallback to TD_PRDT
                         # keys are lowercase now
@@ -582,6 +607,21 @@ class KarvyXLSParser(BaseParser):
                         units = self.clean_decimal(row.get('td_units'))
                         txn_type = str(row.get('td_trtype', '')).strip()
 
+                        # For Fingerprint
+                        fund_desc = str(row.get('td_fund', '')).strip() # TD_FUND
+                        prdt_date = str(row.get('td_prdt', '')).strip() # TD_PRDT
+                        trn_stat = str(row.get('trnstat', '')).strip() # TRNSTAT
+                        nav_date_raw = str(row.get('navdate', '')).strip() # NAVDATE
+
+                        # Generate Row Fingerprint
+                        # Fields: FMCODE, TD_ACNO, TD_FUND, TD_TRNO, TD_PRDT, TD_UNITS, TD_AMT, TD_TRTYPE, TRNSTAT, NAVDATE
+                        fingerprint = self.generate_fingerprint([
+                            scheme_code, folio_number, fund_desc, original_txn_number, prdt_date,
+                            units, amount, txn_type, trn_stat, nav_date_raw
+                        ])
+
+                        unique_txn_number = f"{original_txn_number}-{fingerprint}"
+
                         # New fields for Fuzzy Logic
                         description = str(row.get('trdesc', '')).strip()
                         tr_flag = str(row.get('trflag', '')).strip()
@@ -590,7 +630,7 @@ class KarvyXLSParser(BaseParser):
                              tr_flag = str(row.get('trxn_type_flag', '')).strip()
 
                         self.match_or_create_transaction(
-                            investor, scheme, folio_number, txn_number, txn_date, amount, units, txn_type, 'KARVY',
+                            investor, scheme, folio_number, unique_txn_number, txn_date, amount, units, txn_type, 'KARVY',
                             description=description, tr_flag=tr_flag
                         )
                 except Exception as e:
