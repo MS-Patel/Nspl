@@ -1,0 +1,114 @@
+{% extends 'layout/base.html' %}
+{% load humanize %}
+{% load static %}
+
+{% block content %}
+<!-- Header -->
+<div class="my-5 flex items-center justify-between px-4 sm:px-5">
+    <div class="flex items-center space-x-4">
+        <h2 class="text-xl font-medium text-slate-800 dark:text-navy-50">
+            Folio: {{ folio_number }}
+        </h2>
+        <div class="hidden h-full py-1 sm:flex">
+            <div class="h-full w-px bg-slate-300 dark:bg-navy-600"></div>
+        </div>
+        <span class="badge rounded-full bg-primary/10 text-primary dark:bg-accent-light/15 dark:text-accent-light">
+            {{ amc.name }}
+        </span>
+    </div>
+    <div class="flex items-center space-x-2">
+        <a href="{% url 'investments:holding_list' %}" class="btn h-8 w-8 rounded-full p-0 hover:bg-slate-300/20 focus:bg-slate-300/20 active:bg-slate-300/25 dark:hover:bg-navy-300/20 dark:focus:bg-navy-300/20 dark:active:bg-navy-300/25">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+        </a>
+    </div>
+</div>
+
+<!-- Summary Card -->
+<div class="grid grid-cols-1 gap-4 sm:grid-cols-3 px-4 sm:px-5 mb-6">
+    <div class="card p-4 flex flex-col items-center justify-center border border-slate-150 dark:border-navy-500">
+        <span class="text-xs font-medium uppercase text-slate-500 dark:text-navy-300">Total Value</span>
+        <span class="text-xl font-semibold text-slate-700 dark:text-navy-100">₹ {{ summary.total_current_value|floatformat:2|intcomma }}</span>
+    </div>
+    <div class="card p-4 flex flex-col items-center justify-center border border-slate-150 dark:border-navy-500">
+         <span class="text-xs font-medium uppercase text-slate-500 dark:text-navy-300">Invested</span>
+         <span class="text-xl font-semibold text-slate-700 dark:text-navy-100">₹ {{ summary.total_invested_value|floatformat:2|intcomma }}</span>
+    </div>
+    <div class="card p-4 flex flex-col items-center justify-center border border-slate-150 dark:border-navy-500">
+         <span class="text-xs font-medium uppercase text-slate-500 dark:text-navy-300">Gain/Loss</span>
+         <span class="text-xl font-semibold {% if summary.total_gain_loss >= 0 %}text-success{% else %}text-error{% endif %}">
+             ₹ {{ summary.total_gain_loss|floatformat:2|intcomma }}
+         </span>
+    </div>
+</div>
+
+<!-- Schemes List (Accordion) -->
+<div class="px-4 sm:px-5 space-y-4">
+    {% for item in fund_data %}
+    <div x-data="{expanded:false}" class="card border border-slate-150 dark:border-navy-500">
+        <!-- Header / Summary of Scheme -->
+        <div @click="expanded = !expanded" class="flex cursor-pointer items-center justify-between px-4 py-3 hover:bg-slate-50 dark:hover:bg-navy-900 transition-colors rounded-t-lg">
+            <div class="flex flex-col">
+                <span class="font-medium text-slate-700 dark:text-navy-100">{{ item.scheme.name }}</span>
+                <div class="mt-1 flex space-x-4 text-xs text-slate-500 dark:text-navy-300">
+                     <span>Units: {{ item.holding.units|floatformat:4 }}</span>
+                     <span>Value: ₹ {{ item.current_value|floatformat:2|intcomma }}</span>
+                </div>
+            </div>
+            <div class="flex items-center space-x-3">
+                 <div class="flex flex-col items-end">
+                     <span class="text-sm font-semibold {% if item.gain_loss >= 0 %}text-success{% else %}text-error{% endif %}">
+                         {{ item.gain_loss|floatformat:2|intcomma }}
+                     </span>
+                     <span class="text-[10px] text-slate-400">Gain/Loss</span>
+                 </div>
+                 <svg :class="expanded && 'rotate-180'" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform duration-200 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                 </svg>
+            </div>
+        </div>
+
+        <!-- Transactions Table (Collapsible) -->
+        <div x-show="expanded" x-collapse class="border-t border-slate-150 dark:border-navy-500">
+             <div class="bg-slate-50/50 px-4 py-3 dark:bg-navy-900/50">
+                 <h4 class="text-xs font-medium uppercase text-slate-500 dark:text-navy-300">Transactions History</h4>
+             </div>
+             <div class="is-scrollbar-hidden min-w-full overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr class="border-y border-transparent border-b-slate-200 dark:border-b-navy-500">
+                            <th class="whitespace-nowrap px-4 py-3 font-semibold text-xs uppercase text-slate-500 dark:text-navy-300">Date</th>
+                            <th class="whitespace-nowrap px-4 py-3 font-semibold text-xs uppercase text-slate-500 dark:text-navy-300">Type</th>
+                            <th class="whitespace-nowrap px-4 py-3 font-semibold text-xs uppercase text-slate-500 dark:text-navy-300 text-right">Amount</th>
+                            <th class="whitespace-nowrap px-4 py-3 font-semibold text-xs uppercase text-slate-500 dark:text-navy-300 text-right">Units</th>
+                            <th class="whitespace-nowrap px-4 py-3 font-semibold text-xs uppercase text-slate-500 dark:text-navy-300 text-right">NAV</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for txn in item.transactions %}
+                        <tr class="border-y border-transparent border-b-slate-100 dark:border-b-navy-600 hover:bg-slate-50 dark:hover:bg-navy-900 transition-colors">
+                            <td class="whitespace-nowrap px-4 py-3 text-sm text-slate-700 dark:text-navy-100">{{ txn.date|date:"d M Y" }}</td>
+                            <td class="whitespace-nowrap px-4 py-3 text-sm">
+                                <span class="badge rounded-full px-2 py-0.5 text-[10px]
+                                    {% if txn.units > 0 %}bg-success/10 text-success{% else %}bg-error/10 text-error{% endif %}">
+                                    {{ txn.txn_type_code|default:txn.tr_flag|default:'N/A' }}
+                                </span>
+                            </td>
+                            <td class="whitespace-nowrap px-4 py-3 text-sm font-medium text-slate-700 dark:text-navy-100 text-right">₹ {{ txn.amount|floatformat:2|intcomma }}</td>
+                            <td class="whitespace-nowrap px-4 py-3 text-sm text-slate-700 dark:text-navy-100 text-right">{{ txn.units|floatformat:4 }}</td>
+                            <td class="whitespace-nowrap px-4 py-3 text-sm text-slate-700 dark:text-navy-100 text-right">₹ {{ txn.nav|floatformat:4 }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="px-4 py-3 text-center text-sm text-slate-500">No transactions found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+             </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

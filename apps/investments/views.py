@@ -4,17 +4,18 @@ from django.contrib import messages
 from django.db.models import Q
 from django.http import JsonResponse, HttpResponseForbidden
 from django.urls import reverse
-from django.views.generic import CreateView, ListView
+from django.views.generic import CreateView, ListView, TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import get_user_model
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
+from django.http import Http404
 
 from .models import Order, Folio, Mandate, SIP
 from .forms import OrderForm, MandateForm, RedemptionForm
 from apps.users.models import InvestorProfile, DistributorProfile
 from apps.products.models import Scheme, AMC, SchemeCategory
-from apps.reconciliation.models import Holding
+from apps.reconciliation.models import Holding, Transaction
 from apps.integration.bse_client import BSEStarMFClient
 from apps.integration.sync_utils import sync_pending_orders
 import logging
@@ -632,10 +633,85 @@ class HoldingListView(LoginRequiredMixin, ListView):
                 'average_cost': round(float(holding.average_cost), 2),
                 'current_value': round(float(holding.current_value) if holding.current_value else 0.0, 2),
                 'current_nav': round(float(holding.current_nav) if holding.current_nav else 0.0, 2),
+                'folio_url': reverse('investments:folio_detail', kwargs={'folio_number': holding.folio_number}),
                 'action_url': {
                     'redeem': reverse('investments:redemption_create', args=[holding.id]),
                     'switch': reverse('investments:order_create') + f"?holding_id={holding.id}"
                 }
             })
         context['grid_data_json'] = json.dumps(data)
+        return context
+
+class FolioDetailView(LoginRequiredMixin, TemplateView):
+    template_name = 'investments/folio_detail.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        folio_number = self.kwargs.get('folio_number')
+        user = self.request.user
+        User = get_user_model()
+
+        # 1. Fetch Holdings (Scope Check)
+        qs = Holding.objects.filter(folio_number=folio_number).select_related('investor', 'scheme', 'investor__user', 'scheme__amc')
+
+        if user.user_type == User.Types.ADMIN:
+            pass # No filter
+        elif user.user_type == User.Types.RM:
+             qs = qs.filter(Q(investor__distributor__rm__user=user) | Q(investor__rm__user=user))
+        elif user.user_type == User.Types.DISTRIBUTOR:
+            qs = qs.filter(investor__distributor__user=user)
+        elif user.user_type == User.Types.INVESTOR:
+            qs = qs.filter(investor__user=user)
+        else:
+            qs = qs.none()
+
+        holdings = list(qs)
+        if not holdings:
+             raise Http404("Folio not found or access denied.")
+
+        # 2. Folio Summary
+        first_holding = holdings[0]
+        investor = first_holding.investor
+        amc = first_holding.scheme.amc
+
+        total_current_value = 0.0
+        total_invested_value = 0.0
+
+        fund_data = []
+
+        for h in holdings:
+            cv = float(h.current_value) if h.current_value else 0.0
+            u = float(h.units)
+            ac = float(h.average_cost)
+            iv = u * ac
+
+            total_current_value += cv
+            total_invested_value += iv
+
+            # 3. Transactions for this Scheme & Folio
+            txns = Transaction.objects.filter(
+                folio_number=folio_number,
+                scheme=h.scheme,
+                investor=investor
+            ).order_by('-date', '-created_at')
+
+            fund_data.append({
+                'scheme': h.scheme,
+                'holding': h,
+                'current_value': cv,
+                'invested_value': iv,
+                'gain_loss': cv - iv,
+                'transactions': txns
+            })
+
+        context['folio_number'] = folio_number
+        context['investor'] = investor
+        context['amc'] = amc
+        context['summary'] = {
+            'total_current_value': total_current_value,
+            'total_invested_value': total_invested_value,
+            'total_gain_loss': total_current_value - total_invested_value
+        }
+        context['fund_data'] = fund_data
+
         return context
