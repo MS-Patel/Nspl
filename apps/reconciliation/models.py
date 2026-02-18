@@ -66,7 +66,7 @@ class Transaction(models.Model):
 
     # RTA Fields
     rta_code = models.CharField(max_length=20, help_text="CAMS/Karvy")
-    txn_type_code = models.CharField(max_length=20, help_text="Raw transaction type from RTA")
+    txn_type_code = models.CharField(max_length=100, help_text="Raw transaction type from RTA")
     txn_number = models.CharField(max_length=100, unique=True, help_text="Unique Reference No from RTA")
     original_txn_number = models.CharField(max_length=100, null=True, blank=True, help_text="Original RTA Transaction No for display")
 
@@ -85,7 +85,7 @@ class Transaction(models.Model):
     stamp_duty = models.DecimalField(max_digits=15, decimal_places=4, default=0)
 
     description = models.CharField(max_length=255, blank=True)
-    tr_flag = models.CharField(max_length=20, blank=True, null=True, help_text="Transaction Flag from RTA (e.g., P, R)")
+    tr_flag = models.CharField(max_length=100, blank=True, null=True, help_text="Transaction Flag from RTA (e.g., P, R)")
 
     # Metadata
     source_file = models.ForeignKey(RTAFile, on_delete=models.CASCADE, related_name='transactions', null=True, blank=True)
