@@ -83,9 +83,31 @@ class Transaction(models.Model):
     # Tax/Load
     stt = models.DecimalField(max_digits=15, decimal_places=4, default=0)
     stamp_duty = models.DecimalField(max_digits=15, decimal_places=4, default=0)
+    load_amount = models.DecimalField(max_digits=15, decimal_places=4, default=0, help_text="Exit Load Amount")
+    tax_amount = models.DecimalField(max_digits=15, decimal_places=4, default=0, help_text="TDS/Tax Amount")
+
+    # Distributor / Broker Details
+    broker_code = models.CharField(max_length=50, blank=True, null=True, help_text="ARN Code")
+    sub_broker_code = models.CharField(max_length=50, blank=True, null=True)
+    euin = models.CharField(max_length=50, blank=True, null=True)
+
+    # Bank / Payment Details
+    bank_account_no = models.CharField(max_length=50, blank=True, null=True)
+    bank_name = models.CharField(max_length=100, blank=True, null=True)
+    payment_mode = models.CharField(max_length=50, blank=True, null=True)
+    instrument_no = models.CharField(max_length=50, blank=True, null=True)
+    instrument_date = models.DateField(null=True, blank=True)
+
+    # Status / Location
+    status_desc = models.CharField(max_length=100, blank=True, null=True, help_text="Raw Status from RTA")
+    remarks = models.TextField(blank=True, null=True)
+    location = models.CharField(max_length=100, blank=True, null=True)
 
     description = models.CharField(max_length=255, blank=True)
     tr_flag = models.CharField(max_length=100, blank=True, null=True, help_text="Transaction Flag from RTA (e.g., P, R)")
+
+    # Future Proofing
+    raw_data = models.JSONField(default=dict, blank=True, help_text="Full raw row data from source file")
 
     # Metadata
     source_file = models.ForeignKey(RTAFile, on_delete=models.CASCADE, related_name='transactions', null=True, blank=True)
