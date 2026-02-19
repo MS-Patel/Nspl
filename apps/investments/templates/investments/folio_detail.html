@@ -6,31 +6,14 @@
 {% block css %}
 <link href="https://unpkg.com/gridjs/dist/theme/mermaid.min.css" rel="stylesheet" />
 <style>
-    /* Custom Grid.js Styling for Dark Mode compatibility */
-    .gridjs-container {
-        color: inherit;
-    }
-    .gridjs-wrapper {
-        box-shadow: none;
-        border: none;
-        border-radius: 0;
-    }
-    .gridjs-table {
-        width: 100%;
-    }
-    .gridjs-th {
-        background-color: transparent;
-        border-top: none;
-    }
-    .gridjs-footer {
-        background-color: transparent;
-        border: none;
-        box-shadow: none;
-    }
-    .gridjs-pagination .gridjs-pages button {
-        border-radius: 0.5rem;
-    }
-    /* Dark mode adjustments if needed, though Tailwind classes usually handle text color */
+    .gridjs-container { color: inherit; }
+    .gridjs-wrapper { box-shadow: none; border: none; border-radius: 0; }
+    .gridjs-table { width: 100%; }
+    .gridjs-th { background-color: transparent; border-top: none; }
+    .gridjs-footer { background-color: transparent; border: none; box-shadow: none; }
+    .gridjs-pagination .gridjs-pages button { border-radius: 0.5rem; }
+
+    .sparkline-chart { min-height: 50px; }
 </style>
 {% endblock %}
 
@@ -57,52 +40,114 @@
     </div>
 </div>
 
-<!-- Summary Card -->
-<div class="grid grid-cols-1 gap-4 sm:grid-cols-3 px-4 sm:px-5 mb-6">
-    <div class="card p-4 flex flex-col items-center justify-center border border-slate-150 dark:border-navy-500">
-        <span class="text-xs font-medium uppercase text-slate-500 dark:text-navy-300">Total Value</span>
-        <span class="text-xl font-semibold text-slate-700 dark:text-navy-100">₹ {{ summary.total_current_value|floatformat:2|intcomma }}</span>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 px-4 sm:px-5 mb-8">
+    <!-- Summary Cards -->
+    <div class="lg:col-span-2 grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div class="card p-4 flex flex-col justify-center border border-slate-150 dark:border-navy-500">
+            <span class="text-xs font-medium uppercase text-slate-500 dark:text-navy-300">Total Value</span>
+            <span class="text-lg sm:text-xl font-semibold text-slate-700 dark:text-navy-100 mt-1">₹ {{ summary.total_current_value|floatformat:0|intcomma }}</span>
+        </div>
+        <div class="card p-4 flex flex-col justify-center border border-slate-150 dark:border-navy-500">
+             <span class="text-xs font-medium uppercase text-slate-500 dark:text-navy-300">Invested</span>
+             <span class="text-lg sm:text-xl font-semibold text-slate-700 dark:text-navy-100 mt-1">₹ {{ summary.total_invested_value|floatformat:0|intcomma }}</span>
+        </div>
+        <div class="card p-4 flex flex-col justify-center border border-slate-150 dark:border-navy-500">
+             <span class="text-xs font-medium uppercase text-slate-500 dark:text-navy-300">Total Gain</span>
+             <span class="text-lg sm:text-xl font-semibold mt-1 {% if summary.total_gain_loss >= 0 %}text-success{% else %}text-error{% endif %}">
+                 ₹ {{ summary.total_gain_loss|floatformat:0|intcomma }}
+             </span>
+        </div>
+        <div class="card p-4 flex flex-col justify-center border border-slate-150 dark:border-navy-500">
+             <span class="text-xs font-medium uppercase text-slate-500 dark:text-navy-300">XIRR</span>
+             <span class="text-lg sm:text-xl font-semibold mt-1 {% if summary.portfolio_xirr >= 0 %}text-success{% else %}text-error{% endif %}">
+                 {{ summary.portfolio_xirr|default:"-" }}%
+             </span>
+        </div>
     </div>
-    <div class="card p-4 flex flex-col items-center justify-center border border-slate-150 dark:border-navy-500">
-         <span class="text-xs font-medium uppercase text-slate-500 dark:text-navy-300">Invested</span>
-         <span class="text-xl font-semibold text-slate-700 dark:text-navy-100">₹ {{ summary.total_invested_value|floatformat:2|intcomma }}</span>
-    </div>
-    <div class="card p-4 flex flex-col items-center justify-center border border-slate-150 dark:border-navy-500">
-         <span class="text-xs font-medium uppercase text-slate-500 dark:text-navy-300">Gain/Loss</span>
-         <span class="text-xl font-semibold {% if summary.total_gain_loss >= 0 %}text-success{% else %}text-error{% endif %}">
-             ₹ {{ summary.total_gain_loss|floatformat:2|intcomma }}
-         </span>
+
+    <!-- Allocation Chart -->
+    <div class="card p-4 border border-slate-150 dark:border-navy-500 flex items-center justify-center relative">
+        <div id="allocation-chart" class="w-full flex justify-center"></div>
+        <!-- Overlay Text if needed -->
+        <div class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-10">
+            <span class="text-6xl font-bold">₹</span>
+        </div>
     </div>
 </div>
 
-<!-- Schemes List (Accordion) -->
-<div class="px-4 sm:px-5 space-y-4">
+<!-- Schemes List -->
+<div class="px-4 sm:px-5 space-y-6">
     {% for item in fund_data %}
-    <div x-data="{ expanded: false }" class="card border border-slate-150 dark:border-navy-500">
-        <!-- Header / Summary of Scheme -->
-        <div @click="expanded = !expanded" class="flex cursor-pointer items-center justify-between px-4 py-3 hover:bg-slate-50 dark:hover:bg-navy-900 transition-colors rounded-t-lg">
-            <div class="flex flex-col">
-                <span class="font-medium text-slate-700 dark:text-navy-100">{{ item.scheme.name }}</span>
-                <div class="mt-1 flex space-x-4 text-xs text-slate-500 dark:text-navy-300">
-                     <span>Units: {{ item.holding.units|floatformat:4 }}</span>
-                     <span>Value: ₹ {{ item.current_value|floatformat:2|intcomma }}</span>
+    <div x-data="{ expanded: false }" class="card border border-slate-150 dark:border-navy-500 shadow-sm hover:shadow-md transition-shadow">
+        <div class="p-4 sm:p-5">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div class="flex-1">
+                    <h3 class="text-base font-semibold text-slate-700 dark:text-navy-100">{{ item.scheme.name }}</h3>
+                    <div class="mt-2 flex flex-wrap gap-4 text-xs sm:text-sm">
+                        <div class="flex flex-col">
+                            <span class="text-slate-400 text-[10px] uppercase">Current Value</span>
+                            <span class="font-medium text-slate-700 dark:text-navy-100">₹ {{ item.current_value|floatformat:0|intcomma }}</span>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-slate-400 text-[10px] uppercase">Invested</span>
+                            <span class="font-medium text-slate-700 dark:text-navy-100">₹ {{ item.invested_value|floatformat:0|intcomma }}</span>
+                        </div>
+                         <div class="flex flex-col">
+                            <span class="text-slate-400 text-[10px] uppercase">Units</span>
+                            <span class="font-medium text-slate-700 dark:text-navy-100">{{ item.holding.units|floatformat:3 }}</span>
+                        </div>
+                        <div class="flex flex-col">
+                            <span class="text-slate-400 text-[10px] uppercase">NAV ({{ item.nav_date|date:"d M" }})</span>
+                             <span class="font-medium text-slate-700 dark:text-navy-100">{{ item.holding.current_nav|floatformat:2 }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Returns -->
+                <div class="flex space-x-6 text-right">
+                    <div class="flex flex-col items-end">
+                         <span class="text-slate-400 text-[10px] uppercase">Day's Change</span>
+                         <span class="font-medium {% if item.days_change >= 0 %}text-success{% else %}text-error{% endif %}">
+                             {{ item.days_change|floatformat:0|intcomma }} ({{ item.days_change_percent|floatformat:2 }}%)
+                         </span>
+                    </div>
+                    <div class="flex flex-col items-end">
+                         <span class="text-slate-400 text-[10px] uppercase">XIRR</span>
+                         <span class="font-medium {% if item.xirr >= 0 %}text-success{% else %}text-error{% endif %}">
+                             {{ item.xirr|default:"-" }}%
+                         </span>
+                    </div>
                 </div>
             </div>
-            <div class="flex items-center space-x-3">
-                 <div class="flex flex-col items-end">
-                     <span class="text-sm font-semibold {% if item.gain_loss >= 0 %}text-success{% else %}text-error{% endif %}">
-                         {{ item.gain_loss|floatformat:2|intcomma }}
-                     </span>
-                     <span class="text-[10px] text-slate-400">Gain/Loss</span>
+
+            <!-- Sparkline -->
+            <div class="mt-4 h-16 w-full" id="sparkline-{{ forloop.counter }}"></div>
+
+            <!-- Actions -->
+            <div class="mt-5 flex flex-wrap items-center justify-between gap-4 border-t border-slate-150 dark:border-navy-500 pt-4">
+                 <div class="flex space-x-2">
+                    <a href="{% url 'investments:order_create' %}?holding_id={{ item.holding.id }}&transaction_type=PURCHASE" class="btn h-8 rounded-full bg-primary/10 px-3 text-xs font-medium text-primary hover:bg-primary/20 focus:bg-primary/20 active:bg-primary/25 dark:bg-accent-light/10 dark:text-accent-light dark:hover:bg-accent-light/20">
+                        Invest More
+                    </a>
+                     <a href="{% url 'investments:redemption_create' item.holding.id %}" class="btn h-8 rounded-full bg-error/10 px-3 text-xs font-medium text-error hover:bg-error/20 focus:bg-error/20 active:bg-error/25">
+                        Redeem
+                    </a>
+                     <a href="{% url 'investments:order_create' %}?holding_id={{ item.holding.id }}&transaction_type=SWITCH" class="btn h-8 rounded-full bg-slate-150 px-3 text-xs font-medium text-slate-800 hover:bg-slate-200 focus:bg-slate-200 active:bg-slate-200/80 dark:bg-navy-500 dark:text-navy-50 dark:hover:bg-navy-450">
+                        Switch
+                    </a>
                  </div>
-                 <svg :class="expanded && 'rotate-180'" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform duration-200 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                 </svg>
+
+                 <button @click="expanded = !expanded" class="flex items-center space-x-1 text-xs font-medium text-slate-500 hover:text-slate-700 dark:text-navy-300 dark:hover:text-navy-100 transition-colors">
+                     <span>{{ item.total_txns_count }} Transactions</span>
+                     <svg :class="expanded && 'rotate-180'" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                     </svg>
+                 </button>
             </div>
         </div>
 
         <!-- Transactions Table (Collapsible) -->
-        <div x-show="expanded" x-collapse class="border-t border-slate-150 dark:border-navy-500">
+        <div x-show="expanded" x-collapse class="border-t border-slate-150 dark:border-navy-500 bg-slate-50/50 dark:bg-navy-900/50">
              <div class="p-4">
                  <div id="grid-{{ forloop.counter }}"></div>
              </div>
@@ -113,67 +158,125 @@
 {% endblock %}
 
 {% block javascript %}
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        {% for item in fund_data %}
-            if (window.Gridjs) {
-                new window.Gridjs.Grid({
-                    columns: [
-                        {
-                            name: 'Date',
-                            formatter: (cell) => {
-                                const date = new Date(cell);
-                                return date.toLocaleDateString('en-GB', {day: 'numeric', month: 'short', year: 'numeric'});
+        // --- Allocation Chart ---
+        const allocationLabels = JSON.parse('{{ allocation.labels|escapejs }}');
+        const allocationSeries = JSON.parse('{{ allocation.series|escapejs }}');
+
+        if (allocationSeries.length > 0) {
+            const allocationOptions = {
+                series: allocationSeries,
+                labels: allocationLabels,
+                chart: {
+                    type: 'donut',
+                    height: 180,
+                    fontFamily: 'inherit',
+                    toolbar: { show: false }
+                },
+                plotOptions: {
+                    pie: {
+                        donut: {
+                            size: '70%',
+                            labels: {
+                                show: false
                             }
-                        },
-                        { name: 'Type', sort: false },
-                        {
-                            name: 'Amount',
-                            formatter: (cell) => `₹ ${parseFloat(cell).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`,
-                            attributes: {'class': 'text-right'}
-                        },
-                        {
-                            name: 'Units',
-                            formatter: (cell) => parseFloat(cell).toFixed(4),
-                            attributes: {'class': 'text-right'}
-                        },
-                        {
-                            name: 'NAV',
-                            formatter: (cell) => cell ? `₹ ${parseFloat(cell).toFixed(4)}` : '-',
-                            attributes: {'class': 'text-right'}
-                        }
-                    ],
-                    data: {{ item.transactions_json|safe }},
-                    search: true,
-                    sort: true,
-                    pagination: {
-                        limit: 10
-                    },
-                    className: {
-                        container: 'font-sans text-sm',
-                        table: 'w-full text-left border-collapse',
-                        th: 'px-4 py-3 font-semibold text-xs uppercase text-slate-500 dark:text-navy-300 bg-slate-50 dark:bg-navy-900 border-b border-slate-150 dark:border-navy-500',
-                        td: 'px-4 py-3 text-sm text-slate-700 dark:text-navy-100 border-b border-slate-150 dark:border-navy-500',
-                        footer: 'bg-transparent border-t border-slate-150 dark:border-navy-500 p-3',
-                        pagination: 'flex justify-between items-center text-slate-500 dark:text-navy-300',
-                        paginationSummary: 'text-xs',
-                        paginationButton: 'btn h-8 w-8 rounded-full p-0 hover:bg-slate-300/20 focus:bg-slate-300/20 active:bg-slate-300/25 dark:hover:bg-navy-300/20 dark:focus:bg-navy-300/20 dark:active:bg-navy-300/25 transition-colors',
-                        paginationButtonCurrent: 'bg-primary/10 text-primary dark:bg-accent-light/10 dark:text-accent-light',
-                    },
-                    language: {
-                        'search': {
-                            'placeholder': 'Search transactions...'
-                        },
-                        'pagination': {
-                            'previous': '‹',
-                            'next': '›',
-                            'showing': 'Displaying',
-                            'results': () => 'Records'
                         }
                     }
-                }).render(document.getElementById('grid-{{ forloop.counter }}'));
-            } else {
-                console.error("Grid.js library not loaded via window.Gridjs");
+                },
+                dataLabels: { enabled: false },
+                legend: { show: false },
+                stroke: { show: true, width: 2, colors: ['transparent'] },
+                theme: { mode: 'light' }, // Can adapt to dark mode via class checks if needed
+                tooltip: {
+                    y: {
+                        formatter: function(val) {
+                            return "₹ " + val.toLocaleString('en-IN');
+                        }
+                    }
+                }
+            };
+            const chart = new ApexCharts(document.querySelector("#allocation-chart"), allocationOptions);
+            chart.render();
+        }
+
+        // --- Sparklines and Grids ---
+        {% for item in fund_data %}
+            {
+                // Sparkline
+                const sparkData = JSON.parse('{{ item.sparkline_data|escapejs }}');
+                if (sparkData.length > 0) {
+                    const sparkOptions = {
+                        series: [{ name: 'NAV', data: sparkData }],
+                        chart: {
+                            type: 'area',
+                            height: 60,
+                            sparkline: { enabled: true },
+                        },
+                        stroke: { curve: 'smooth', width: 2 },
+                        fill: { opacity: 0.2 },
+                        colors: ['#0EA5E9'], // Primary Color
+                        tooltip: {
+                            x: { format: 'dd MMM yyyy' },
+                            y: {
+                                formatter: function(val) {
+                                    return "₹ " + val.toFixed(4);
+                                }
+                            }
+                        }
+                    };
+                    new ApexCharts(document.querySelector("#sparkline-{{ forloop.counter }}"), sparkOptions).render();
+                }
+
+                // Transaction Grid
+                if (window.Gridjs) {
+                    new window.Gridjs.Grid({
+                        columns: [
+                            {
+                                name: 'Date',
+                                formatter: (cell) => {
+                                    const date = new Date(cell);
+                                    return date.toLocaleDateString('en-GB', {day: 'numeric', month: 'short', year: 'numeric'});
+                                }
+                            },
+                            { name: 'Type', sort: false },
+                            {
+                                name: 'Amount',
+                                formatter: (cell) => `₹ ${parseFloat(cell).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`,
+                                attributes: {'class': 'text-right'}
+                            },
+                            {
+                                name: 'Units',
+                                formatter: (cell) => parseFloat(cell).toFixed(3),
+                                attributes: {'class': 'text-right'}
+                            },
+                            {
+                                name: 'NAV',
+                                formatter: (cell) => cell ? `₹ ${parseFloat(cell).toFixed(4)}` : '-',
+                                attributes: {'class': 'text-right'}
+                            }
+                        ],
+                        data: JSON.parse('{{ item.transactions_json|escapejs }}'),
+                        search: true,
+                        sort: true,
+                        pagination: {
+                            limit: 5,
+                            summary: true
+                        },
+                        className: {
+                            container: 'font-sans text-xs',
+                            table: 'w-full text-left border-collapse',
+                            th: 'px-3 py-2 font-semibold text-[10px] uppercase text-slate-500 dark:text-navy-300 bg-transparent border-b border-slate-150 dark:border-navy-500',
+                            td: 'px-3 py-2 text-xs text-slate-700 dark:text-navy-100 border-b border-slate-150 dark:border-navy-500',
+                            footer: 'bg-transparent border-t border-slate-150 dark:border-navy-500 p-3',
+                            pagination: 'flex justify-between items-center text-slate-500 dark:text-navy-300',
+                            paginationSummary: 'text-xs',
+                            paginationButton: 'btn h-6 w-6 rounded-full p-0 hover:bg-slate-300/20 focus:bg-slate-300/20 active:bg-slate-300/25 dark:hover:bg-navy-300/20 dark:focus:bg-navy-300/20 dark:active:bg-navy-300/25 transition-colors text-xs',
+                            paginationButtonCurrent: 'bg-primary/10 text-primary dark:bg-accent-light/10 dark:text-accent-light',
+                        }
+                    }).render(document.getElementById('grid-{{ forloop.counter }}'));
+                }
             }
         {% endfor %}
     });
