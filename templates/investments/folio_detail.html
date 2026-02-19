@@ -185,7 +185,7 @@
                         }
                     }
                 },
-                dataLabels: { enabled: false },
+                dataLabels: { enabled: true },
                 legend: { show: true, position: 'bottom' },
                 stroke: { show: true, width: 2, colors: ['transparent'] },
                 theme: { mode: isDarkMode ? 'dark' : 'light' },
@@ -199,6 +199,15 @@
             };
             const chart = new ApexCharts(document.querySelector("#allocation-chart"), allocationOptions);
             chart.render();
+        } else {
+            document.querySelector("#allocation-chart").innerHTML = `
+                <div class="flex flex-col items-center justify-center h-full min-h-[250px] text-slate-400 dark:text-navy-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mb-2 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span class="text-sm font-medium">No Active Holdings</span>
+                </div>
+            `;
         }
 
         // --- Sparklines and Grids ---
@@ -234,24 +243,34 @@
                     new window.Gridjs.Grid({
                         columns: [
                             {
+                                id: 'date',
                                 name: 'Date',
                                 formatter: (cell) => {
                                     const date = new Date(cell);
                                     return date.toLocaleDateString('en-GB', {day: 'numeric', month: 'short', year: 'numeric'});
                                 }
                             },
-                            { name: 'Type', sort: false },
+                            { id: 'type', name: 'Type', sort: false },
                             {
-                                name: 'Amount',
+                                id: 'sip_amount',
+                                name: 'SIP Amount',
                                 formatter: (cell) => `₹ ${parseFloat(cell).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`,
                                 attributes: {'class': 'text-right'}
                             },
                             {
+                                id: 'amount',
+                                name: 'Invested Amount',
+                                formatter: (cell) => `₹ ${parseFloat(cell).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`,
+                                attributes: {'class': 'text-right'}
+                            },
+                            {
+                                id: 'units',
                                 name: 'Units',
                                 formatter: (cell) => parseFloat(cell).toFixed(3),
                                 attributes: {'class': 'text-right'}
                             },
                             {
+                                id: 'nav',
                                 name: 'NAV',
                                 formatter: (cell) => cell ? `₹ ${parseFloat(cell).toFixed(4)}` : '-',
                                 attributes: {'class': 'text-right'}
