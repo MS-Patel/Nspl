@@ -32,36 +32,42 @@
     </div>
 </div>
 
-<div class="px-4 sm:px-5 mb-8 space-y-6">
-    <!-- Summary Cards (Full Width Row) -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div class="card p-4 flex flex-col justify-center border border-slate-150 dark:border-navy-500">
-            <span class="text-xs font-medium uppercase text-slate-500 dark:text-navy-300">Total Value</span>
-            <span class="text-lg sm:text-xl font-semibold text-slate-700 dark:text-navy-100 mt-1">₹ {{ summary.total_current_value|floatformat:0|intcomma }}</span>
+<div class="px-4 sm:px-5 mb-8">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Left: Summary Cards (2 cols) -->
+        <div class="col-span-1 lg:col-span-2">
+            <div class="grid grid-cols-2 gap-4 h-full">
+                <div class="card p-4 flex flex-col justify-center border border-slate-150 dark:border-navy-500">
+                    <span class="text-xs font-medium uppercase text-slate-500 dark:text-navy-300">Total Value</span>
+                    <span class="text-lg sm:text-xl font-semibold text-slate-700 dark:text-navy-100 mt-1">₹ {{ summary.total_current_value|floatformat:0|intcomma }}</span>
+                </div>
+                <div class="card p-4 flex flex-col justify-center border border-slate-150 dark:border-navy-500">
+                     <span class="text-xs font-medium uppercase text-slate-500 dark:text-navy-300">Invested</span>
+                     <span class="text-lg sm:text-xl font-semibold text-slate-700 dark:text-navy-100 mt-1">₹ {{ summary.total_invested_value|floatformat:0|intcomma }}</span>
+                </div>
+                <div class="card p-4 flex flex-col justify-center border border-slate-150 dark:border-navy-500">
+                     <span class="text-xs font-medium uppercase text-slate-500 dark:text-navy-300">Total Gain</span>
+                     <span class="text-lg sm:text-xl font-semibold mt-1 {% if summary.total_gain_loss >= 0 %}text-success{% else %}text-error{% endif %}">
+                         ₹ {{ summary.total_gain_loss|floatformat:0|intcomma }}
+                     </span>
+                </div>
+                <div class="card p-4 flex flex-col justify-center border border-slate-150 dark:border-navy-500">
+                     <span class="text-xs font-medium uppercase text-slate-500 dark:text-navy-300">XIRR</span>
+                     <span class="text-lg sm:text-xl font-semibold mt-1 {% if summary.portfolio_xirr >= 0 %}text-success{% else %}text-error{% endif %}">
+                         {{ summary.portfolio_xirr|default:"-" }}%
+                     </span>
+                </div>
+            </div>
         </div>
-        <div class="card p-4 flex flex-col justify-center border border-slate-150 dark:border-navy-500">
-             <span class="text-xs font-medium uppercase text-slate-500 dark:text-navy-300">Invested</span>
-             <span class="text-lg sm:text-xl font-semibold text-slate-700 dark:text-navy-100 mt-1">₹ {{ summary.total_invested_value|floatformat:0|intcomma }}</span>
-        </div>
-        <div class="card p-4 flex flex-col justify-center border border-slate-150 dark:border-navy-500">
-             <span class="text-xs font-medium uppercase text-slate-500 dark:text-navy-300">Total Gain</span>
-             <span class="text-lg sm:text-xl font-semibold mt-1 {% if summary.total_gain_loss >= 0 %}text-success{% else %}text-error{% endif %}">
-                 ₹ {{ summary.total_gain_loss|floatformat:0|intcomma }}
-             </span>
-        </div>
-        <div class="card p-4 flex flex-col justify-center border border-slate-150 dark:border-navy-500">
-             <span class="text-xs font-medium uppercase text-slate-500 dark:text-navy-300">XIRR</span>
-             <span class="text-lg sm:text-xl font-semibold mt-1 {% if summary.portfolio_xirr >= 0 %}text-success{% else %}text-error{% endif %}">
-                 {{ summary.portfolio_xirr|default:"-" }}%
-             </span>
-        </div>
-    </div>
 
-    <!-- Allocation Chart (Full Width or Centered Row) -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div class="card p-4 border border-slate-150 dark:border-navy-500">
-            <h3 class="text-base font-medium text-slate-700 dark:text-navy-100 mb-4">Asset Allocation</h3>
-            <div id="allocation-chart" class="w-full flex justify-center"></div>
+        <!-- Right: Allocation Chart (1 col) -->
+        <div class="col-span-1">
+             <div class="card p-4 border border-slate-150 dark:border-navy-500 h-full flex flex-col">
+                 <h3 class="text-base font-medium text-slate-700 dark:text-navy-100 mb-4">Asset Allocation</h3>
+                 <div class="flex-grow flex items-center justify-center">
+                    <div id="allocation-chart" class="w-full"></div>
+                 </div>
+             </div>
         </div>
     </div>
 </div>
