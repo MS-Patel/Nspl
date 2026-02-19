@@ -22,36 +22,19 @@
 </div>
 
 <div class="px-4 sm:px-5 pb-6">
-    <form method="post" enctype="multipart/form-data" class="card">
+    <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
 
-        <div x-data="{ activeTab: 'basic' }">
-            <!-- Tabs Header -->
-            <div class="is-scrollbar-hidden overflow-x-auto rounded-t-lg bg-slate-200 text-slate-600 dark:bg-navy-800 dark:text-navy-200">
-                <div class="tabs-list flex px-4">
-                    <button type="button" @click.prevent="activeTab = 'basic'" :class="activeTab === 'basic' ? 'border-primary dark:border-accent text-primary dark:text-accent-light' : 'border-transparent hover:text-slate-800 focus:text-slate-800 dark:hover:text-navy-100 dark:focus:text-navy-100'"
-                        class="btn shrink-0 rounded-none border-b-2 px-3 py-2 font-medium">
-                        Basic Info
-                    </button>
-                    <button type="button" @click.prevent="activeTab = 'allocations'" :class="activeTab === 'allocations' ? 'border-primary dark:border-accent text-primary dark:text-accent-light' : 'border-transparent hover:text-slate-800 focus:text-slate-800 dark:hover:text-navy-100 dark:focus:text-navy-100'"
-                        class="btn shrink-0 rounded-none border-b-2 px-3 py-2 font-medium">
-                        Allocations
-                    </button>
-                    <button type="button" @click.prevent="activeTab = 'holdings'" :class="activeTab === 'holdings' ? 'border-primary dark:border-accent text-primary dark:text-accent-light' : 'border-transparent hover:text-slate-800 focus:text-slate-800 dark:hover:text-navy-100 dark:focus:text-navy-100'"
-                        class="btn shrink-0 rounded-none border-b-2 px-3 py-2 font-medium">
-                        Holdings
-                    </button>
-                    <button type="button" @click.prevent="activeTab = 'managers'" :class="activeTab === 'managers' ? 'border-primary dark:border-accent text-primary dark:text-accent-light' : 'border-transparent hover:text-slate-800 focus:text-slate-800 dark:hover:text-navy-100 dark:focus:text-navy-100'"
-                        class="btn shrink-0 rounded-none border-b-2 px-3 py-2 font-medium">
-                        Fund Managers
-                    </button>
+        <div class="space-y-4">
+            <!-- Basic Info Card -->
+            <div x-data="{ expanded: true }" class="card border border-slate-150 dark:border-navy-500">
+                <div @click="expanded = !expanded" class="flex cursor-pointer items-center justify-between bg-slate-150 px-4 py-3 dark:bg-navy-600 sm:px-5 rounded-t-lg">
+                    <h3 class="font-medium text-slate-700 dark:text-navy-100">Basic Info</h3>
+                    <svg :class="expanded ? 'rotate-180' : ''" xmlns="http://www.w3.org/2000/svg" class="size-4 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
                 </div>
-            </div>
-
-            <!-- Tab Content -->
-            <div class="p-4 sm:p-5">
-                <!-- Basic Info Tab -->
-                <div x-show="activeTab === 'basic'" class="space-y-4">
+                <div x-show="expanded" class="px-4 py-4 sm:px-5">
                     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         {% for field in form %}
                         <div class="form-group">
@@ -76,13 +59,21 @@
                         {% endfor %}
                     </div>
                 </div>
+            </div>
 
-                <!-- Allocations Tab -->
-                <div x-show="activeTab === 'allocations'" class="space-y-6">
+            <!-- Allocations Card -->
+            <div x-data="{ expanded: true }" class="card border border-slate-150 dark:border-navy-500">
+                <div @click="expanded = !expanded" class="flex cursor-pointer items-center justify-between bg-slate-150 px-4 py-3 dark:bg-navy-600 sm:px-5 rounded-t-lg">
+                    <h3 class="font-medium text-slate-700 dark:text-navy-100">Allocations</h3>
+                    <svg :class="expanded ? 'rotate-180' : ''" xmlns="http://www.w3.org/2000/svg" class="size-4 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </div>
+                <div x-show="expanded" class="px-4 py-4 sm:px-5 space-y-6">
                     <!-- Asset Allocation -->
                     <div>
                         <div class="flex items-center justify-between mb-3 border-b pb-2 dark:border-navy-600">
-                             <h3 class="font-medium text-slate-800 dark:text-navy-50">Asset Allocation</h3>
+                             <h4 class="font-medium text-slate-800 dark:text-navy-50">Asset Allocation</h4>
                              <button type="button" onclick="addFormRow('asset-formset', 'asset_allocations')" class="btn h-7 rounded bg-primary/10 px-3 text-xs+ font-medium text-primary hover:bg-primary/20 focus:bg-primary/20 active:bg-primary/25 dark:bg-accent-light/10 dark:text-accent-light dark:hover:bg-accent-light/20">
                                  + Add Row
                              </button>
@@ -138,7 +129,7 @@
                     <!-- Sector Allocation -->
                     <div>
                         <div class="flex items-center justify-between mb-3 border-b pb-2 dark:border-navy-600">
-                             <h3 class="font-medium text-slate-800 dark:text-navy-50">Sector Allocation</h3>
+                             <h4 class="font-medium text-slate-800 dark:text-navy-50">Sector Allocation</h4>
                              <button type="button" onclick="addFormRow('sector-formset', 'sector_allocations')" class="btn h-7 rounded bg-primary/10 px-3 text-xs+ font-medium text-primary hover:bg-primary/20 focus:bg-primary/20 active:bg-primary/25 dark:bg-accent-light/10 dark:text-accent-light dark:hover:bg-accent-light/20">
                                  + Add Row
                              </button>
@@ -190,11 +181,19 @@
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- Holdings Tab -->
-                <div x-show="activeTab === 'holdings'" class="space-y-4">
+            <!-- Holdings Card -->
+            <div x-data="{ expanded: true }" class="card border border-slate-150 dark:border-navy-500">
+                <div @click="expanded = !expanded" class="flex cursor-pointer items-center justify-between bg-slate-150 px-4 py-3 dark:bg-navy-600 sm:px-5 rounded-t-lg">
+                    <h3 class="font-medium text-slate-700 dark:text-navy-100">Top Holdings</h3>
+                    <svg :class="expanded ? 'rotate-180' : ''" xmlns="http://www.w3.org/2000/svg" class="size-4 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </div>
+                <div x-show="expanded" class="px-4 py-4 sm:px-5 space-y-4">
                      <div class="flex items-center justify-between mb-3 border-b pb-2 dark:border-navy-600">
-                         <h3 class="font-medium text-slate-800 dark:text-navy-50">Top Holdings</h3>
+                         <h4 class="font-medium text-slate-800 dark:text-navy-50">Holdings List</h4>
                          <button type="button" onclick="addFormRow('holding-formset', 'scheme_holdings')" class="btn h-7 rounded bg-primary/10 px-3 text-xs+ font-medium text-primary hover:bg-primary/20 focus:bg-primary/20 active:bg-primary/25 dark:bg-accent-light/10 dark:text-accent-light dark:hover:bg-accent-light/20">
                              + Add Row
                          </button>
@@ -245,11 +244,19 @@
                          </div>
                      </div>
                 </div>
+            </div>
 
-                <!-- Managers Tab -->
-                <div x-show="activeTab === 'managers'" class="space-y-4">
+            <!-- Managers Card -->
+            <div x-data="{ expanded: true }" class="card border border-slate-150 dark:border-navy-500">
+                <div @click="expanded = !expanded" class="flex cursor-pointer items-center justify-between bg-slate-150 px-4 py-3 dark:bg-navy-600 sm:px-5 rounded-t-lg">
+                    <h3 class="font-medium text-slate-700 dark:text-navy-100">Fund Managers</h3>
+                    <svg :class="expanded ? 'rotate-180' : ''" xmlns="http://www.w3.org/2000/svg" class="size-4 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </div>
+                <div x-show="expanded" class="px-4 py-4 sm:px-5 space-y-4">
                     <div class="flex items-center justify-between mb-3 border-b pb-2 dark:border-navy-600">
-                        <h3 class="font-medium text-slate-800 dark:text-navy-50">Fund Managers</h3>
+                        <h4 class="font-medium text-slate-800 dark:text-navy-50">Managers List</h4>
                         <button type="button" onclick="addFormRow('manager-formset', 'managers')" class="btn h-7 rounded bg-primary/10 px-3 text-xs+ font-medium text-primary hover:bg-primary/20 focus:bg-primary/20 active:bg-primary/25 dark:bg-accent-light/10 dark:text-accent-light dark:hover:bg-accent-light/20">
                              + Add Row
                          </button>
@@ -312,20 +319,19 @@
                          </div>
                     </div>
                 </div>
-
             </div>
+        </div>
 
-            <!-- Actions -->
-            <div class="flex justify-end space-x-2 bg-slate-50 p-4 dark:bg-navy-900 rounded-b-lg">
-                 <a href="{% url 'products:scheme_detail' scheme.id %}"
-                    class="btn min-w-[7rem] border border-slate-300 font-medium text-slate-700 hover:bg-slate-150 focus:bg-slate-150 active:bg-slate-150/80 dark:border-navy-450 dark:text-navy-100 dark:hover:bg-navy-500 dark:focus:bg-navy-500 dark:active:bg-navy-500/90">
-                    Cancel
-                 </a>
-                 <button type="submit"
-                    class="btn min-w-[7rem] bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90">
-                    Save Changes
-                 </button>
-            </div>
+        <!-- Actions -->
+        <div class="flex justify-end space-x-2 mt-4 p-4 rounded-lg bg-slate-100 dark:bg-navy-800 border border-slate-150 dark:border-navy-500 sticky bottom-4 shadow-lg z-10">
+             <a href="{% url 'products:scheme_detail' scheme.id %}"
+                class="btn min-w-[7rem] border border-slate-300 font-medium text-slate-700 hover:bg-slate-150 focus:bg-slate-150 active:bg-slate-150/80 dark:border-navy-450 dark:text-navy-100 dark:hover:bg-navy-500 dark:focus:bg-navy-500 dark:active:bg-navy-500/90">
+                Cancel
+             </a>
+             <button type="submit"
+                class="btn min-w-[7rem] bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90">
+                Save Changes
+             </button>
         </div>
     </form>
 </div>
