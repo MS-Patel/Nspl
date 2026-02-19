@@ -257,6 +257,14 @@ def order_create(request):
     user = request.user
     initial_data = {}
 
+    # Transaction Type Mapping (URL Param -> Model Choice)
+    txn_type_map = {
+        'PURCHASE': Order.PURCHASE,
+        'SWITCH': Order.SWITCH,
+        'SIP': Order.SIP,
+        'REDEMPTION': Order.REDEMPTION
+    }
+
     # Pre-fill data if available in GET params (e.g., from Scheme Explorer or Holding)
     if 'holding_id' in request.GET:
         holding_id = request.GET.get('holding_id')
@@ -266,7 +274,13 @@ def order_create(request):
             if has_access_to_investor(user, holding.investor.id):
                 initial_data['investor'] = holding.investor
                 initial_data['scheme'] = holding.scheme
-                initial_data['transaction_type'] = Order.SWITCH
+
+                # Determine Transaction Type
+                txn_param = request.GET.get('transaction_type')
+                if txn_param:
+                    initial_data['transaction_type'] = txn_type_map.get(txn_param, txn_param)
+                else:
+                    initial_data['transaction_type'] = Order.SWITCH
 
                 # Attempt to link Folio
                 folio = Folio.objects.filter(investor=holding.investor, folio_number=holding.folio_number).first()
@@ -275,11 +289,33 @@ def order_create(request):
         except Holding.DoesNotExist:
             pass
 
-    if 'scheme' in request.GET and 'scheme' not in initial_data:
-        scheme_id = request.GET.get('scheme')
+    # Allow scheme or scheme_id param
+    scheme_param = request.GET.get('scheme') or request.GET.get('scheme_id')
+    if scheme_param and 'scheme' not in initial_data:
         try:
-            scheme = Scheme.objects.get(id=scheme_id)
+            scheme = Scheme.objects.get(id=scheme_param)
             initial_data['scheme'] = scheme
+
+            # Determine Transaction Type if passed
+            txn_param = request.GET.get('transaction_type')
+            if txn_param:
+                initial_data['transaction_type'] = txn_type_map.get(txn_param, txn_param)
+
+            # Attempt to find existing folio for this investor and AMC
+            # Determine investor context
+            investor = None
+            if user.user_type == 'INVESTOR':
+                investor = user.investor_profile
+            elif initial_data.get('investor'):
+                investor = initial_data.get('investor')
+
+            if investor:
+                 # Check for folio with same AMC
+                 # We pick the latest updated one if multiple exist
+                 existing_folio = Folio.objects.filter(investor=investor, amc=scheme.amc).order_by('-updated_at').first()
+                 if existing_folio:
+                     initial_data['folio_selection'] = existing_folio
+
         except Scheme.DoesNotExist:
             pass
 
@@ -640,7 +676,7 @@ class HoldingListView(LoginRequiredMixin, ListView):
                 'folio_url': reverse('investments:folio_detail', kwargs={'folio_number': holding.folio_number}),
                 'action_url': {
                     'redeem': reverse('investments:redemption_create', args=[holding.id]),
-                    'switch': reverse('investments:order_create') + f"?holding_id={holding.id}"
+                    'switch': reverse('investments:order_create') + f"?holding_id={holding.id}&transaction_type=SWITCH"
                 }
             })
         context['grid_data_json'] = json.dumps(data)
