@@ -14,6 +14,8 @@ from .models import Goal, GoalMapping
 from .forms import GoalForm, GoalMappingFormSet
 from apps.users.models import User, InvestorProfile
 from apps.reconciliation.models import Holding
+from apps.analytics.services.tasks import process_cas_upload
+import threading
 
 import logging
 logger = logging.getLogger(__name__)
@@ -278,27 +280,14 @@ class CASUploadView(LoginRequiredMixin, CreateView):
         self.object.investor = investor_profile
         self.object.save()
 
-        # Trigger Parsing
-        try:
-            parser = CASParser(self.object.file.path, password=password)
-            holdings_data = parser.parse()
+        # Trigger Parsing in Background
+        thread = threading.Thread(
+            target=process_cas_upload,
+            args=(self.object.id, password)
+        )
+        thread.start()
 
-            for data in holdings_data:
-                ExternalHolding.objects.create(
-                    cas_upload=self.object,
-                    investor=investor_profile,
-                    **data
-                )
-
-            self.object.status = CASUpload.STATUS_PROCESSED
-            self.object.save()
-            messages.success(self.request, "CAS uploaded and parsed successfully.")
-
-        except Exception as e:
-            self.object.status = CASUpload.STATUS_FAILED
-            self.object.error_log = str(e)
-            self.object.save()
-            messages.error(self.request, f"Failed to parse CAS: {str(e)}")
+        messages.success(self.request, "CAS uploaded successfully. Processing started in background.")
 
         return redirect(self.success_url)
 
