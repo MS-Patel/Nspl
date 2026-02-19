@@ -539,7 +539,8 @@ class CAMSXLSParser(BaseParser):
                         # We use .to_dict() which creates a dict of python objects.
                         # Dates might need string conversion if JSON serializer complains,
                         # but Django's JSONField usually handles standard types or we can default=str
-                        raw_row_data = row.astype(str).to_dict()
+                        # Handle NaN values to prevent JSON serialization errors (Postgres rejects NaN)
+                        raw_row_data = {k: str(v) if pd.notna(v) else None for k, v in row.items()}
 
                         self.match_or_create_transaction(
                             investor, scheme, folio_number, unique_txn_number, txn_date, amount, units, txn_type, 'CAMS',
@@ -779,7 +780,8 @@ class KarvyXLSParser(BaseParser):
                         remarks = str(row.get('remarks', '')).strip() or None
                         location = str(row.get('td_branch', '')).strip() or None
 
-                        raw_row_data = row.astype(str).to_dict()
+                        # Handle NaN values to prevent JSON serialization errors (Postgres rejects NaN)
+                        raw_row_data = {k: str(v) if pd.notna(v) else None for k, v in row.items()}
 
                         self.match_or_create_transaction(
                             investor, scheme, folio_number, unique_txn_number, txn_date, amount, units, txn_type, 'KARVY',
