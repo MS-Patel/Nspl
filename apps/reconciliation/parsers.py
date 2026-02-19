@@ -4,8 +4,6 @@ import pandas as pd
 import io
 import hashlib
 import collections
-import hashlib
-import collections
 from decimal import Decimal
 from datetime import datetime, timedelta
 from django.utils import timezone
@@ -185,7 +183,7 @@ class BaseParser:
 
         return scheme
 
-    def match_or_create_transaction(self, investor, scheme, folio_number, txn_number, date, amount, units, txn_type, rta_code, description="", tr_flag="", original_txn_number=None):
+    def match_or_create_transaction(self, investor, scheme, folio_number, txn_number, date, amount, units, txn_type, rta_code, description="", tr_flag="", original_txn_number=None, nav=None):
         """
         Matches incoming RTA transaction with existing (Provisional) BSE transaction,
         or creates a new one. Updates existing RTA transactions if changed.
@@ -206,6 +204,8 @@ class BaseParser:
             existing_txn.tr_flag = tr_flag
             existing_txn.source = Transaction.SOURCE_RTA
             existing_txn.is_provisional = False
+            if nav is not None:
+                existing_txn.nav = nav
             if original_txn_number:
                 existing_txn.original_txn_number = original_txn_number
             if self.rta_file:
@@ -255,6 +255,8 @@ class BaseParser:
             matched_txn.units = units
             matched_txn.source = Transaction.SOURCE_RTA
             matched_txn.is_provisional = False
+            if nav is not None:
+                matched_txn.nav = nav
             if original_txn_number:
                 matched_txn.original_txn_number = original_txn_number
             if self.rta_file:
@@ -277,6 +279,7 @@ class BaseParser:
                 units=units,
                 description=description,
                 tr_flag=tr_flag,
+                nav=nav,
                 source=Transaction.SOURCE_RTA,
                 is_provisional=False,
                 source_file=self.rta_file if self.rta_file else None
@@ -357,10 +360,17 @@ class CAMSParser(BaseParser):
                             units = self.clean_decimal(row[12])
                             txn_type = row[8].strip().upper()
 
+                            # Calculate NAV if missing
+                            nav = None
+                            # WBR9 typically has NAV/Price in col 14 (between amount and date) or elsewhere
+                            # But here we stick to calc if safer
+                            if units != 0:
+                                nav = abs(amount) / abs(units)
+
                             # Delegate to helper
                             self.match_or_create_transaction(
                                 investor, scheme, folio_number, txn_number, txn_date, amount, units, txn_type, 'CAMS',
-                                original_txn_number=txn_number
+                                original_txn_number=txn_number, nav=nav
                             )
                     except Exception as e:
                         logger.error(f"Error processing row {row}: {e}")
@@ -430,6 +440,17 @@ class CAMSXLSParser(BaseParser):
                         txn_stat = str(row.get('trxnstat', '')).strip()
                         nav_date = str(row.get('postdate', '')).strip()
 
+                        # Determine NAV
+                        nav = None
+                        # Try explicit columns
+                        raw_price = row.get('purprice') or row.get('price') or row.get('nav')
+                        if not pd.isna(raw_price):
+                            nav = self.clean_decimal(raw_price)
+
+                        # Fallback to calculation
+                        if (nav is None or nav == 0) and units != 0:
+                            nav = abs(amount) / abs(units)
+
                         # Generate Row Fingerprint for Uniqueness
                         # Fields: FMCODE(prodcode), TD_ACNO(folio), TD_TRNO(trxnno), TD_PRDT(traddate),
                         # TD_UNITS, TD_AMT, TD_TRTYPE(trxntype), TRNSTAT, NAVDATE(postdate)
@@ -451,7 +472,7 @@ class CAMSXLSParser(BaseParser):
 
                         self.match_or_create_transaction(
                             investor, scheme, folio_number, unique_txn_number, txn_date, amount, units, txn_type, 'CAMS',
-                            description=description, tr_flag=tr_flag, original_txn_number=original_txn_number
+                            description=description, tr_flag=tr_flag, original_txn_number=original_txn_number, nav=nav
                         )
                 except Exception as e:
                     logger.error(f"Error processing CAMS XLS row: {e}")
@@ -539,10 +560,16 @@ class KarvyParser(BaseParser):
                             units = self.clean_decimal(row[7])
                             txn_type = row[5].strip().upper()
 
+                            # Calculate NAV if missing
+                            nav = None
+                            # Sometimes col 10 or 11 has price
+                            if units != 0:
+                                nav = abs(amount) / abs(units)
+
                             # Delegate to helper
                             self.match_or_create_transaction(
                                 investor, scheme, folio_number, txn_number, txn_date if txn_date else timezone.now().date(),
-                                amount, units, txn_type, 'KARVY', original_txn_number=txn_number
+                                amount, units, txn_type, 'KARVY', original_txn_number=txn_number, nav=nav
                             )
                     except Exception as e:
                         logger.error(f"Error processing Karvy row: {e}")
@@ -615,6 +642,17 @@ class KarvyXLSParser(BaseParser):
                         units = self.clean_decimal(row.get('td_units'))
                         txn_type = str(row.get('td_trtype', '')).strip()
 
+                        # Determine NAV
+                        nav = None
+                        # Try explicit columns: td_pop (Price of Purchase) or td_nav?
+                        raw_price = row.get('td_pop') or row.get('td_nav') or row.get('nav')
+                        if not pd.isna(raw_price):
+                            nav = self.clean_decimal(raw_price)
+
+                        # Fallback to calculation
+                        if (nav is None or nav == 0) and units != 0:
+                            nav = abs(amount) / abs(units)
+
                         # For Fingerprint
                         fund_desc = str(row.get('td_fund', '')).strip() # TD_FUND
                         prdt_date = str(row.get('td_prdt', '')).strip() # TD_PRDT
@@ -639,7 +677,7 @@ class KarvyXLSParser(BaseParser):
 
                         self.match_or_create_transaction(
                             investor, scheme, folio_number, unique_txn_number, txn_date, amount, units, txn_type, 'KARVY',
-                            description=description, tr_flag=tr_flag, original_txn_number=original_txn_number
+                            description=description, tr_flag=tr_flag, original_txn_number=original_txn_number, nav=nav
                         )
                 except Exception as e:
                     logger.error(f"Error processing Karvy XLS row: {e}")
@@ -710,9 +748,14 @@ class FranklinParser(BaseParser):
                             units = self.clean_decimal(row[7])
                             txn_type = row[5].strip().upper()
 
+                            # Calculate NAV if missing
+                            nav = None
+                            if units != 0:
+                                nav = abs(amount) / abs(units)
+
                             self.match_or_create_transaction(
                                 investor, scheme, folio_number, txn_number, txn_date if txn_date else timezone.now().date(),
-                                amount, units, txn_type, 'FRANKLIN', original_txn_number=txn_number
+                                amount, units, txn_type, 'FRANKLIN', original_txn_number=txn_number, nav=nav
                             )
                     except Exception as e:
                         logger.error(f"Error processing Franklin row: {e}")
