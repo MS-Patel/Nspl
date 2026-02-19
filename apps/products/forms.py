@@ -23,12 +23,15 @@ class SchemeForm(forms.ModelForm):
         fields = [
             'name', 'scheme_code', 'isin', 'amfi_code',
             'category', 'scheme_type', 'scheme_plan',
+            'start_date', 'end_date', 'reopening_date',
             'aum', 'expense_ratio', 'benchmark_index', 'riskometer', 'about_fund',
             'min_purchase_amount', 'purchase_allowed', 'redemption_allowed'
         ]
         widgets = {
             'about_fund': forms.Textarea(attrs={'rows': 4}),
             'start_date': forms.DateInput(attrs={'type': 'date'}),
+            'end_date': forms.DateInput(attrs={'type': 'date'}),
+            'reopening_date': forms.DateInput(attrs={'type': 'date'}),
         }
 
 # Inline Formsets for dynamic row adding
