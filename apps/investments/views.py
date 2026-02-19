@@ -14,9 +14,12 @@ from django.http import Http404
 from .models import Order, Folio, Mandate, SIP
 from .forms import OrderForm, MandateForm, RedemptionForm
 from apps.users.models import InvestorProfile, DistributorProfile
-from apps.products.models import Scheme, AMC, SchemeCategory
+from apps.products.models import Scheme, AMC, SchemeCategory, NAVHistory
 from apps.reconciliation.models import Holding, Transaction
 from apps.investments.templatetags.investment_extras import readable_txn_type
+from .utils import calculate_xirr, get_cash_flows
+from django.utils import timezone
+from datetime import datetime, timedelta
 from apps.integration.bse_client import BSEStarMFClient
 from apps.integration.sync_utils import sync_pending_orders
 import logging
@@ -678,7 +681,17 @@ class FolioDetailView(LoginRequiredMixin, TemplateView):
         total_current_value = 0.0
         total_invested_value = 0.0
 
+        # Portfolio XIRR Preparation
+        all_cash_flows = []
+
+        # Allocation Data
+        allocation_labels = []
+        allocation_series = []
+
         fund_data = []
+
+        today = timezone.now().date()
+        one_year_ago = today - timedelta(days=365)
 
         for h in holdings:
             cv = float(h.current_value) if h.current_value else 0.0
@@ -689,7 +702,54 @@ class FolioDetailView(LoginRequiredMixin, TemplateView):
             total_current_value += cv
             total_invested_value += iv
 
-            # 3. Transactions for this Scheme & Folio
+            # Prepare Allocation Data
+            if cv > 0:
+                allocation_labels.append(h.scheme.name)
+                allocation_series.append(round(cv, 2))
+
+            # 3. Calculate XIRR
+            scheme_flows = get_cash_flows(h)
+            all_cash_flows.extend(scheme_flows)
+
+            xirr_val = calculate_xirr(scheme_flows)
+            xirr_percent = round(xirr_val * 100, 2) if xirr_val is not None else None
+
+            # 4. Fetch NAV History & Calculate Day's Change
+            # Fetch last 2 NAVs for change, and last 365 days for Sparkline
+            navs = NAVHistory.objects.filter(
+                scheme=h.scheme,
+                nav_date__gte=one_year_ago
+            ).order_by('-nav_date')
+
+            # Convert to list for slicing/processing to avoid multiple queries
+            nav_list = list(navs) # This fetches all (up to 365)
+
+            days_change = 0.0
+            days_change_percent = 0.0
+            nav_date = None
+
+            if len(nav_list) >= 1:
+                latest = nav_list[0]
+                nav_date = latest.nav_date
+
+                if len(nav_list) >= 2:
+                    prev = nav_list[1]
+                    change = float(latest.net_asset_value - prev.net_asset_value)
+                    days_change = change * u
+                    if prev.net_asset_value > 0:
+                        days_change_percent = (change / float(prev.net_asset_value)) * 100
+                else:
+                    # Only 1 NAV available (New Scheme?)
+                    pass
+
+            # Sparkline Data (Chronological)
+            sparkline_data = []
+            for n in reversed(nav_list): # Reverse to get oldest first
+                # ApexCharts expects timestamp in ms
+                ts = int(datetime.combine(n.nav_date, datetime.min.time()).timestamp() * 1000)
+                sparkline_data.append([ts, float(n.net_asset_value)])
+
+            # 5. Transactions for this Scheme & Folio
             txns = Transaction.objects.filter(
                 folio_number=folio_number,
                 scheme=h.scheme,
@@ -712,9 +772,19 @@ class FolioDetailView(LoginRequiredMixin, TemplateView):
                 'current_value': cv,
                 'invested_value': iv,
                 'gain_loss': cv - iv,
+                'xirr': xirr_percent,
+                'days_change': days_change,
+                'days_change_percent': days_change_percent,
+                'nav_date': nav_date,
+                'sparkline_data': json.dumps(sparkline_data),
                 'transactions': txns,
-                'transactions_json': json.dumps(transactions_data)
+                'transactions_json': json.dumps(transactions_data),
+                'total_txns_count': txns.count()
             })
+
+        # Calculate Portfolio XIRR
+        portfolio_xirr_val = calculate_xirr(all_cash_flows)
+        portfolio_xirr_percent = round(portfolio_xirr_val * 100, 2) if portfolio_xirr_val is not None else None
 
         context['folio_number'] = folio_number
         context['investor'] = investor
@@ -722,7 +792,12 @@ class FolioDetailView(LoginRequiredMixin, TemplateView):
         context['summary'] = {
             'total_current_value': total_current_value,
             'total_invested_value': total_invested_value,
-            'total_gain_loss': total_current_value - total_invested_value
+            'total_gain_loss': total_current_value - total_invested_value,
+            'portfolio_xirr': portfolio_xirr_percent,
+        }
+        context['allocation'] = {
+            'labels': json.dumps(allocation_labels),
+            'series': json.dumps(allocation_series)
         }
         context['fund_data'] = fund_data
 
