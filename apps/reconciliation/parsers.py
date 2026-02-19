@@ -183,13 +183,41 @@ class BaseParser:
 
         return scheme
 
-    def match_or_create_transaction(self, investor, scheme, folio_number, txn_number, date, amount, units, txn_type, rta_code, description="", tr_flag="", original_txn_number=None, nav=None):
+    def match_or_create_transaction(self, investor, scheme, folio_number, txn_number, date, amount, units, txn_type, rta_code,
+                                    description="", tr_flag="", original_txn_number=None, nav=None,
+                                    raw_data=None,
+                                    broker_code=None, sub_broker_code=None, euin=None,
+                                    bank_account_no=None, bank_name=None, payment_mode=None, instrument_no=None, instrument_date=None,
+                                    load_amount=None, tax_amount=None, stt=None, stamp_duty=None,
+                                    status_desc=None, remarks=None, location=None):
         """
         Matches incoming RTA transaction with existing (Provisional) BSE transaction,
         or creates a new one. Updates existing RTA transactions if changed.
         """
         if not txn_number:
             return
+
+        # Prepare extra fields dict for update/create
+        extra_fields = {
+            'raw_data': raw_data or {},
+            'broker_code': broker_code,
+            'sub_broker_code': sub_broker_code,
+            'euin': euin,
+            'bank_account_no': bank_account_no,
+            'bank_name': bank_name,
+            'payment_mode': payment_mode,
+            'instrument_no': instrument_no,
+            'instrument_date': instrument_date,
+            'load_amount': load_amount or Decimal(0),
+            'tax_amount': tax_amount or Decimal(0),
+            'status_desc': status_desc,
+            'remarks': remarks,
+            'location': location,
+        }
+        if stt is not None:
+            extra_fields['stt'] = stt
+        if stamp_duty is not None:
+            extra_fields['stamp_duty'] = stamp_duty
 
         # 1. Check strict duplicate (already processed RTA txn in previous run) or Update
         existing_txn = Transaction.objects.filter(txn_number=txn_number).first()
@@ -210,6 +238,10 @@ class BaseParser:
                 existing_txn.original_txn_number = original_txn_number
             if self.rta_file:
                 existing_txn.source_file = self.rta_file
+
+            # Update extra fields
+            for key, value in extra_fields.items():
+                setattr(existing_txn, key, value)
 
             # Optionally update relation if missing
             if not existing_txn.investor and investor:
@@ -261,6 +293,11 @@ class BaseParser:
                 matched_txn.original_txn_number = original_txn_number
             if self.rta_file:
                 matched_txn.source_file = self.rta_file
+
+            # Update extra fields
+            for key, value in extra_fields.items():
+                setattr(matched_txn, key, value)
+
             matched_txn.save()
             logger.info(f"Matched and confirmed provisional transaction {matched_txn.id} with RTA ID {txn_number}")
 
@@ -282,7 +319,8 @@ class BaseParser:
                 nav=nav,
                 source=Transaction.SOURCE_RTA,
                 is_provisional=False,
-                source_file=self.rta_file if self.rta_file else None
+                source_file=self.rta_file if self.rta_file else None,
+                **extra_fields
             )
 
         # Defer recalculation
@@ -367,10 +405,20 @@ class CAMSParser(BaseParser):
                             if units != 0:
                                 nav = abs(amount) / abs(units)
 
+                            # Extract extra fields (WBR9 Standard Best Effort)
+                            broker_code = row[5].strip() if len(row) > 5 else None
+                            sub_broker_code = row[6].strip() if len(row) > 6 else None
+                            euin = row[28].strip() if len(row) > 28 else None
+                            # tax/load typically not in standard fixed indices easily without header
+
                             # Delegate to helper
                             self.match_or_create_transaction(
                                 investor, scheme, folio_number, txn_number, txn_date, amount, units, txn_type, 'CAMS',
-                                original_txn_number=txn_number, nav=nav
+                                original_txn_number=txn_number, nav=nav,
+                                raw_data={'row': row},
+                                broker_code=broker_code,
+                                sub_broker_code=sub_broker_code,
+                                euin=euin
                             )
                     except Exception as e:
                         logger.error(f"Error processing row {row}: {e}")
@@ -470,9 +518,37 @@ class CAMSXLSParser(BaseParser):
                         if not tr_flag:
                              tr_flag = str(row.get('trflag', '')).strip()
 
+                        # Extract structured extra fields
+                        broker_code = str(row.get('brokcode', '')).strip() or None
+                        sub_broker_code = str(row.get('subbrok', '')).strip() or None
+                        euin = str(row.get('euin', '')).strip() or None
+
+                        bank_account_no = str(row.get('bank_acno', '')).strip() or None
+                        bank_name = str(row.get('bank_name', '')).strip() or None
+
+                        stt = self.clean_decimal(row.get('stt'))
+                        stamp_duty = self.clean_decimal(row.get('stamp_duty'))
+                        load_amount = self.clean_decimal(row.get('load'))
+                        tax_amount = self.clean_decimal(row.get('tax'))
+
+                        status_desc = str(row.get('trxnstat', '')).strip() or None
+                        remarks = str(row.get('remarks', '')).strip() or str(row.get('usercode', '')).strip() or None
+                        location = str(row.get('location', '')).strip() or None
+
+                        # Convert row to dict for JSON storage, handling non-serializable types if any (pandas usually fine)
+                        # We use .to_dict() which creates a dict of python objects.
+                        # Dates might need string conversion if JSON serializer complains,
+                        # but Django's JSONField usually handles standard types or we can default=str
+                        raw_row_data = row.astype(str).to_dict()
+
                         self.match_or_create_transaction(
                             investor, scheme, folio_number, unique_txn_number, txn_date, amount, units, txn_type, 'CAMS',
-                            description=description, tr_flag=tr_flag, original_txn_number=original_txn_number, nav=nav
+                            description=description, tr_flag=tr_flag, original_txn_number=original_txn_number, nav=nav,
+                            raw_data=raw_row_data,
+                            broker_code=broker_code, sub_broker_code=sub_broker_code, euin=euin,
+                            bank_account_no=bank_account_no, bank_name=bank_name,
+                            stt=stt, stamp_duty=stamp_duty, load_amount=load_amount, tax_amount=tax_amount,
+                            status_desc=status_desc, remarks=remarks, location=location
                         )
                 except Exception as e:
                     logger.error(f"Error processing CAMS XLS row: {e}")
@@ -566,10 +642,19 @@ class KarvyParser(BaseParser):
                             if units != 0:
                                 nav = abs(amount) / abs(units)
 
+                            # Extract extra fields (Karvy MFD Standard Best Effort)
+                            broker_code = row[12].strip() if len(row) > 12 else None
+                            sub_broker_code = row[13].strip() if len(row) > 13 else None
+                            euin = row[17].strip() if len(row) > 17 else None
+
                             # Delegate to helper
                             self.match_or_create_transaction(
                                 investor, scheme, folio_number, txn_number, txn_date if txn_date else timezone.now().date(),
-                                amount, units, txn_type, 'KARVY', original_txn_number=txn_number, nav=nav
+                                amount, units, txn_type, 'KARVY', original_txn_number=txn_number, nav=nav,
+                                raw_data={'row': row},
+                                broker_code=broker_code,
+                                sub_broker_code=sub_broker_code,
+                                euin=euin
                             )
                     except Exception as e:
                         logger.error(f"Error processing Karvy row: {e}")
@@ -675,9 +760,36 @@ class KarvyXLSParser(BaseParser):
                         if not tr_flag:
                              tr_flag = str(row.get('trxn_type_flag', '')).strip()
 
+                        # Extract structured extra fields
+                        broker_code = str(row.get('agent_code', '')).strip() or str(row.get('arn_code', '')).strip() or None
+                        sub_broker_code = str(row.get('sub_agent_code', '')).strip() or None
+                        euin = str(row.get('euin', '')).strip() or None
+
+                        stt = self.clean_decimal(row.get('stt'))
+                        stamp_duty = self.clean_decimal(row.get('stamp_duty'))
+
+                        # Try finding other cols
+                        ihno = str(row.get('ihno', '')).strip() or None
+                        ih_dt_val = row.get('ih_dt')
+                        ih_dt = self.parse_date(ih_dt_val) if ih_dt_val else None
+
+                        bank_name = str(row.get('bank_name', '')).strip() or None
+                        load_amount = self.clean_decimal(row.get('load'))
+                        tax_amount = self.clean_decimal(row.get('tax'))
+                        remarks = str(row.get('remarks', '')).strip() or None
+                        location = str(row.get('td_branch', '')).strip() or None
+
+                        raw_row_data = row.astype(str).to_dict()
+
                         self.match_or_create_transaction(
                             investor, scheme, folio_number, unique_txn_number, txn_date, amount, units, txn_type, 'KARVY',
-                            description=description, tr_flag=tr_flag, original_txn_number=original_txn_number, nav=nav
+                            description=description, tr_flag=tr_flag, original_txn_number=original_txn_number, nav=nav,
+                            raw_data=raw_row_data,
+                            broker_code=broker_code, sub_broker_code=sub_broker_code, euin=euin,
+                            stt=stt, stamp_duty=stamp_duty,
+                            instrument_no=ihno, instrument_date=ih_dt, bank_name=bank_name,
+                            load_amount=load_amount, tax_amount=tax_amount,
+                            remarks=remarks, location=location
                         )
                 except Exception as e:
                     logger.error(f"Error processing Karvy XLS row: {e}")
@@ -753,9 +865,16 @@ class FranklinParser(BaseParser):
                             if units != 0:
                                 nav = abs(amount) / abs(units)
 
+                            # Franklin Best Effort Extraction
+                            broker_code = row[12].strip() if len(row) > 12 else None
+                            euin = row[25].strip() if len(row) > 25 else None
+
                             self.match_or_create_transaction(
                                 investor, scheme, folio_number, txn_number, txn_date if txn_date else timezone.now().date(),
-                                amount, units, txn_type, 'FRANKLIN', original_txn_number=txn_number, nav=nav
+                                amount, units, txn_type, 'FRANKLIN', original_txn_number=txn_number, nav=nav,
+                                raw_data={'row': row},
+                                broker_code=broker_code,
+                                euin=euin
                             )
                     except Exception as e:
                         logger.error(f"Error processing Franklin row: {e}")
