@@ -9,7 +9,7 @@ class RTAFileAdmin(admin.ModelAdmin):
 
 @admin.register(Transaction)
 class TransactionAdmin(admin.ModelAdmin):
-    list_display = ('id', 'investor', 'scheme', 'folio_number', 'txn_type_code', 'amount', 'date', 'txn_number')
+    list_display = ('id', 'investor', 'scheme', 'folio_number', 'txn_type_code', 'nav','units','amount', 'date', 'txn_number')
     search_fields = ('investor__user__username', 'folio_number', 'txn_number', 'scheme__name')
     list_filter = ('source_file__rta_type', 'date', 'txn_type_code')
 
