@@ -24,6 +24,13 @@ class SchemeCategory(models.Model):
     def __str__(self):
         return self.name
 
+class FundManager(models.Model):
+    name = models.CharField(max_length=255)
+    description = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return self.name
+
 class Scheme(models.Model):
     # Identifiers
     amc = models.ForeignKey(AMC, on_delete=models.CASCADE, related_name='schemes')
@@ -71,6 +78,22 @@ class Scheme(models.Model):
     end_date = models.DateField(null=True, blank=True)
     reopening_date = models.DateField(null=True, blank=True)
 
+    # Stats & Info
+    aum = models.DecimalField(max_digits=20, decimal_places=2, null=True, blank=True, help_text="Assets Under Management in Cr")
+    expense_ratio = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True, help_text="Expense Ratio %")
+    benchmark_index = models.CharField(max_length=255, null=True, blank=True)
+
+    RISKOMETER_CHOICES = [
+        ('Low', 'Low'),
+        ('Low to Moderate', 'Low to Moderate'),
+        ('Moderate', 'Moderate'),
+        ('Moderately High', 'Moderately High'),
+        ('High', 'High'),
+        ('Very High', 'Very High'),
+    ]
+    riskometer = models.CharField(max_length=50, choices=RISKOMETER_CHOICES, null=True, blank=True)
+    about_fund = models.TextField(null=True, blank=True)
+
     # Other
     face_value = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     settlement_type = models.CharField(max_length=20, blank=True, null=True)
@@ -107,3 +130,39 @@ class NAVHistory(models.Model):
 
     def __str__(self):
         return f"{self.scheme.scheme_code} - {self.nav_date} - {self.net_asset_value}"
+
+class SchemeManager(models.Model):
+    scheme = models.ForeignKey(Scheme, on_delete=models.CASCADE, related_name='managers')
+    manager = models.ForeignKey(FundManager, on_delete=models.CASCADE, related_name='schemes')
+    start_date = models.DateField(null=True, blank=True)
+    is_primary = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.manager.name} - {self.scheme.name}"
+
+class SchemeHolding(models.Model):
+    scheme = models.ForeignKey(Scheme, on_delete=models.CASCADE, related_name='scheme_holdings')
+    company_name = models.CharField(max_length=255)
+    percentage = models.DecimalField(max_digits=5, decimal_places=2, help_text="Holding percentage (e.g. 5.50)")
+
+    class Meta:
+        ordering = ['-percentage']
+
+    def __str__(self):
+        return f"{self.company_name} ({self.percentage}%)"
+
+class SchemeSectorAllocation(models.Model):
+    scheme = models.ForeignKey(Scheme, on_delete=models.CASCADE, related_name='sector_allocations')
+    sector_name = models.CharField(max_length=100)
+    percentage = models.DecimalField(max_digits=5, decimal_places=2)
+
+    def __str__(self):
+        return f"{self.sector_name} ({self.percentage}%)"
+
+class SchemeAssetAllocation(models.Model):
+    scheme = models.ForeignKey(Scheme, on_delete=models.CASCADE, related_name='asset_allocations')
+    asset_type = models.CharField(max_length=100, help_text="Equity, Debt, Cash, etc.")
+    percentage = models.DecimalField(max_digits=5, decimal_places=2)
+
+    def __str__(self):
+        return f"{self.asset_type} ({self.percentage}%)"
