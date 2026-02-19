@@ -761,6 +761,7 @@ class FolioDetailView(LoginRequiredMixin, TemplateView):
                 transactions_data.append({
                     'date': txn.date.strftime('%Y-%m-%d'),
                     'type': readable_txn_type(txn.txn_type_code),
+                    'sip_amount': float(txn.amount) + float(txn.stamp_duty or 0),
                     'amount': float(txn.amount),
                     'units': float(txn.units),
                     'nav': float(txn.nav) if txn.nav else None,
