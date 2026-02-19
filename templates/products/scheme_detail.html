@@ -1,153 +1,377 @@
 {% extends 'layout/base.html' %}
-{% load static %}
+{% load static humanize %}
 
 {% block content %}
-<div class="my-5 flex items-center justify-between px-4 sm:px-5">
-  <div class="flex items-center space-x-4">
+<!-- Header -->
+<div class="my-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between px-4 sm:px-5">
+  <div>
       <h2 class="text-xl font-medium text-slate-800 dark:text-navy-50 lg:text-2xl">
         {{ scheme.name }}
       </h2>
-      <div class="hidden h-full py-1 sm:flex">
-        <div class="h-full w-px bg-slate-300 dark:bg-navy-600"></div>
+      <div class="flex items-center space-x-2 mt-1">
+          <span class="badge rounded-full bg-primary/10 text-primary dark:bg-accent-light/10 dark:text-accent-light px-2 py-0.5 text-xs">
+              {{ scheme.category.name|default:"Uncategorized" }}
+          </span>
+          {% if scheme.riskometer %}
+          <span class="badge rounded-full border border-slate-300 text-slate-600 dark:border-navy-450 dark:text-navy-100 px-2 py-0.5 text-xs">
+              {{ scheme.riskometer }} Risk
+          </span>
+          {% endif %}
       </div>
-      <ul class="hidden flex-wrap items-center space-x-2 sm:flex">
-        <li class="flex items-center space-x-2">
-          <a class="text-primary transition-colors hover:text-primary-focus dark:text-accent-light dark:hover:text-accent"
-            href="{% url 'products:scheme_list' %}">Schemes</a>
-          <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-          </svg>
-        </li>
-        <li>Detail</li>
-      </ul>
+  </div>
+  <div class="flex items-center space-x-4">
+      <div class="text-right">
+        <p class="text-xs text-slate-400">Current NAV</p>
+        <p class="text-xl font-semibold text-slate-700 dark:text-navy-100">₹ {{ latest_nav|floatformat:2 }}</p>
+        <p class="text-tiny text-slate-400">{{ latest_nav_date }}</p>
+      </div>
+      {% if user.user_type == 'ADMIN' or user.is_staff %}
+      <a href="{% url 'products:scheme_edit' scheme.id %}"
+         class="btn border border-slate-300 font-medium text-slate-700 hover:bg-slate-150 focus:bg-slate-150 active:bg-slate-150/80 dark:border-navy-450 dark:text-navy-100 dark:hover:bg-navy-500 dark:focus:bg-navy-500 dark:active:bg-navy-500/90">
+         Edit Scheme
+      </a>
+      {% endif %}
+      <a href="{% url 'investments:order_create' %}?scheme_id={{ scheme.id }}"
+         class="btn bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90">
+         Invest Now
+      </a>
   </div>
 </div>
 
-<div class="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-3 lg:gap-6 px-4 sm:px-5 pb-6">
-  <!-- Scheme Info Card -->
-  <div class="card p-4 lg:p-6 lg:col-span-1 space-y-4 h-fit">
-      <h3 class="text-base font-medium text-slate-700 dark:text-navy-100">Fund Details</h3>
+<!-- Key Stats Grid -->
+<div class="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-4 lg:gap-6 px-4 sm:px-5 pb-6">
+    <!-- Returns Card -->
+    <div class="card p-4 lg:col-span-2">
+        <h3 class="text-base font-medium text-slate-700 dark:text-navy-100 mb-3">Annualised Returns</h3>
+        <div class="grid grid-cols-3 gap-4 text-center">
+            <div class="rounded-lg bg-slate-50 p-3 dark:bg-navy-700">
+                <p class="text-xs text-slate-400">1 Year</p>
+                <p class="text-lg font-semibold {% if returns_1y > 0 %}text-success{% elif returns_1y < 0 %}text-error{% endif %}">
+                    {{ returns_1y|default:"-" }}%
+                </p>
+            </div>
+            <div class="rounded-lg bg-slate-50 p-3 dark:bg-navy-700">
+                <p class="text-xs text-slate-400">3 Year</p>
+                <p class="text-lg font-semibold {% if returns_3y > 0 %}text-success{% elif returns_3y < 0 %}text-error{% endif %}">
+                    {{ returns_3y|default:"-" }}%
+                </p>
+            </div>
+            <div class="rounded-lg bg-slate-50 p-3 dark:bg-navy-700">
+                <p class="text-xs text-slate-400">5 Year</p>
+                <p class="text-lg font-semibold {% if returns_5y > 0 %}text-success{% elif returns_5y < 0 %}text-error{% endif %}">
+                    {{ returns_5y|default:"-" }}%
+                </p>
+            </div>
+        </div>
+    </div>
 
-      <div class="space-y-3">
-          <div class="flex justify-between border-b border-slate-150 py-2 dark:border-navy-500">
-             <span class="font-medium text-slate-600 dark:text-navy-100">Category</span>
-             <span class="text-slate-500 dark:text-navy-300 text-right">{{ scheme.category.name|default:"-" }}</span>
-          </div>
-          <div class="flex justify-between border-b border-slate-150 py-2 dark:border-navy-500">
-             <span class="font-medium text-slate-600 dark:text-navy-100">Type</span>
-             <span class="text-slate-500 dark:text-navy-300 text-right">{{ scheme.scheme_type|default:"-" }}</span>
-          </div>
-           <div class="flex justify-between border-b border-slate-150 py-2 dark:border-navy-500">
-             <span class="font-medium text-slate-600 dark:text-navy-100">AMC</span>
-             <span class="text-slate-500 dark:text-navy-300 text-right">{{ scheme.amc.name }}</span>
-          </div>
-          <div class="flex justify-between border-b border-slate-150 py-2 dark:border-navy-500">
-             <span class="font-medium text-slate-600 dark:text-navy-100">ISIN</span>
-             <span class="text-slate-500 dark:text-navy-300 text-right">{{ scheme.isin }}</span>
-          </div>
-          <div class="flex justify-between border-b border-slate-150 py-2 dark:border-navy-500">
-             <span class="font-medium text-slate-600 dark:text-navy-100">Min Purchase</span>
-             <span class="text-slate-500 dark:text-navy-300 text-right">₹ {{ scheme.min_purchase_amount|floatformat:2 }}</span>
-          </div>
-          <div class="flex justify-between border-b border-slate-150 py-2 dark:border-navy-500">
-             <span class="font-medium text-slate-600 dark:text-navy-100">Current NAV</span>
-             <div class="text-right">
-                <p class="text-slate-700 font-semibold dark:text-navy-100">₹ {{ latest_nav|floatformat:2 }}</p>
-                <p class="text-xs text-slate-400">{{ latest_nav_date }}</p>
+    <!-- Fund Info Card -->
+    <div class="card p-4 lg:col-span-2">
+         <h3 class="text-base font-medium text-slate-700 dark:text-navy-100 mb-3">Fund Information</h3>
+         <div class="grid grid-cols-2 gap-y-3 gap-x-4">
+             <div>
+                 <p class="text-xs text-slate-400">AUM</p>
+                 <p class="text-sm font-medium text-slate-700 dark:text-navy-100">
+                     {% if scheme.aum %}₹ {{ scheme.aum|intcomma }} Cr{% else %}-{% endif %}
+                 </p>
              </div>
-          </div>
-      </div>
-
-      <div class="pt-4">
-         <a href="{% url 'investments:order_create' %}?scheme_id={{ scheme.id }}"
-            class="btn w-full bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90">
-            Invest Now
-         </a>
-      </div>
-  </div>
-
-  <!-- Chart Card -->
-  <div class="card p-4 lg:p-6 lg:col-span-2">
-      <h3 class="text-base font-medium text-slate-700 dark:text-navy-100 mb-4">NAV History</h3>
-      <div id="nav-chart"></div>
-  </div>
+             <div>
+                 <p class="text-xs text-slate-400">Expense Ratio</p>
+                 <p class="text-sm font-medium text-slate-700 dark:text-navy-100">
+                     {{ scheme.expense_ratio|default:"-" }}%
+                 </p>
+             </div>
+             <div>
+                 <p class="text-xs text-slate-400">Benchmark</p>
+                 <p class="text-sm font-medium text-slate-700 dark:text-navy-100 truncate" title="{{ scheme.benchmark_index }}">
+                     {{ scheme.benchmark_index|default:"-" }}
+                 </p>
+             </div>
+             <div>
+                 <p class="text-xs text-slate-400">Min Investment</p>
+                 <p class="text-sm font-medium text-slate-700 dark:text-navy-100">
+                     ₹ {{ scheme.min_purchase_amount|intcomma }}
+                 </p>
+             </div>
+         </div>
+         {% if scheme.riskometer %}
+         <div class="mt-4 pt-4 border-t border-slate-100 dark:border-navy-600 flex items-center justify-between">
+              <span class="text-xs text-slate-400">Riskometer</span>
+              <div class="flex items-center space-x-2">
+                  <div class="h-2 w-16 rounded-full bg-slate-200 dark:bg-navy-600 overflow-hidden relative">
+                       {% if scheme.riskometer == 'Low' %}
+                            <div class="absolute inset-y-0 left-0 w-1/5 bg-success"></div>
+                       {% elif scheme.riskometer == 'Low to Moderate' %}
+                            <div class="absolute inset-y-0 left-0 w-2/5 bg-success"></div>
+                       {% elif scheme.riskometer == 'Moderate' %}
+                            <div class="absolute inset-y-0 left-0 w-3/5 bg-warning"></div>
+                       {% elif scheme.riskometer == 'Moderately High' %}
+                             <div class="absolute inset-y-0 left-0 w-4/5 bg-warning"></div>
+                       {% elif scheme.riskometer == 'High' or scheme.riskometer == 'Very High' %}
+                             <div class="absolute inset-y-0 left-0 w-full bg-error"></div>
+                       {% endif %}
+                  </div>
+                  <span class="text-xs font-medium text-slate-700 dark:text-navy-100">{{ scheme.riskometer }}</span>
+              </div>
+         </div>
+         {% endif %}
+    </div>
 </div>
+
+<!-- Charts Section -->
+<div class="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-2 lg:gap-6 px-4 sm:px-5 pb-6">
+    <div class="card p-4">
+        <h3 class="text-base font-medium text-slate-700 dark:text-navy-100 mb-4">NAV History</h3>
+        <div id="nav-chart"></div>
+    </div>
+    <div class="card p-4">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-base font-medium text-slate-700 dark:text-navy-100">Portfolio Allocation</h3>
+            <div class="inline-flex rounded-lg bg-slate-100 p-1 dark:bg-navy-800">
+                 <button onclick="toggleAllocation('asset')" id="btn-asset" class="rounded-md bg-white px-3 py-1 text-xs font-medium text-slate-800 shadow dark:bg-navy-500 dark:text-navy-50">Asset</button>
+                 <button onclick="toggleAllocation('sector')" id="btn-sector" class="rounded-md px-3 py-1 text-xs font-medium text-slate-600 hover:text-slate-800 dark:text-navy-200 dark:hover:text-navy-50">Sector</button>
+            </div>
+        </div>
+        <div id="asset-chart" class="block"></div>
+        <div id="sector-chart" class="hidden"></div>
+    </div>
+</div>
+
+<!-- Holdings & Managers -->
+<div class="grid grid-cols-1 gap-4 sm:gap-5 lg:grid-cols-3 lg:gap-6 px-4 sm:px-5 pb-6">
+    <!-- Top Holdings -->
+    <div class="card p-4 lg:col-span-2">
+        <h3 class="text-base font-medium text-slate-700 dark:text-navy-100 mb-4">Top Holdings</h3>
+        <div class="is-scrollbar-hidden min-w-full overflow-x-auto">
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="border-b border-slate-200 dark:border-navy-500">
+                        <th class="px-3 py-2 text-xs font-semibold uppercase text-slate-400 dark:text-navy-300">Company</th>
+                        <th class="px-3 py-2 text-xs font-semibold uppercase text-slate-400 dark:text-navy-300 text-right">Assets %</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for holding in top_holdings %}
+                    <tr class="border-b border-slate-100 dark:border-navy-600 hover:bg-slate-50 dark:hover:bg-navy-700">
+                        <td class="px-3 py-3 text-sm font-medium text-slate-700 dark:text-navy-100">{{ holding.company_name }}</td>
+                        <td class="px-3 py-3 text-sm text-slate-600 dark:text-navy-200 text-right">{{ holding.percentage }}%</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="2" class="px-3 py-4 text-center text-sm text-slate-400">No holding data available</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Fund Managers -->
+    <div class="card p-4">
+        <h3 class="text-base font-medium text-slate-700 dark:text-navy-100 mb-4">Fund Managers</h3>
+        <div class="space-y-4">
+            {% for sm in managers %}
+            <div class="flex items-start space-x-3">
+                <div class="avatar size-10 flex-shrink-0">
+                     <div class="is-initial rounded-full bg-slate-200 text-slate-600 dark:bg-navy-500 dark:text-navy-100 text-sm uppercase">
+                         {{ sm.manager.name|slice:":2" }}
+                     </div>
+                </div>
+                <div>
+                    <p class="text-sm font-medium text-slate-700 dark:text-navy-100">{{ sm.manager.name }}</p>
+                    <p class="text-xs text-slate-400">Since {{ sm.start_date|date:"M Y"|default:"-" }}</p>
+                    {% if sm.manager.description %}
+                    <p class="text-xs text-slate-500 mt-1 line-clamp-2" title="{{ sm.manager.description }}">
+                        {{ sm.manager.description }}
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+            {% empty %}
+            <p class="text-sm text-slate-400">No manager info available</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Peer Comparison -->
+<div class="px-4 sm:px-5 pb-6">
+    <div class="card p-4">
+        <h3 class="text-base font-medium text-slate-700 dark:text-navy-100 mb-4">Peer Comparison</h3>
+        <div class="is-scrollbar-hidden min-w-full overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="border-b border-slate-200 dark:border-navy-500 bg-slate-50 dark:bg-navy-800">
+                        <th class="px-4 py-3 text-xs font-semibold uppercase text-slate-400 dark:text-navy-300">Scheme</th>
+                        <th class="px-4 py-3 text-xs font-semibold uppercase text-slate-400 dark:text-navy-300 text-right">1Y Return</th>
+                        <th class="px-4 py-3 text-xs font-semibold uppercase text-slate-400 dark:text-navy-300 text-right">3Y Return</th>
+                        <th class="px-4 py-3 text-xs font-semibold uppercase text-slate-400 dark:text-navy-300 text-right">5Y Return</th>
+                        <th class="px-4 py-3 text-xs font-semibold uppercase text-slate-400 dark:text-navy-300 text-right">Exp. Ratio</th>
+                        <th class="px-4 py-3 text-xs font-semibold uppercase text-slate-400 dark:text-navy-300 text-right">AUM (Cr)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for peer in peer_comparison %}
+                    <tr class="border-b border-slate-100 dark:border-navy-600 hover:bg-slate-50 dark:hover:bg-navy-700 {% if peer.is_current %}bg-primary/5 dark:bg-accent/5{% endif %}">
+                        <td class="px-4 py-3 text-sm font-medium text-slate-700 dark:text-navy-100">
+                            {% if peer.is_current %}
+                                {{ peer.name }} <span class="text-xs text-primary dark:text-accent-light ml-1">(Current)</span>
+                            {% else %}
+                                <a href="{% url 'products:scheme_detail' peer.id %}" class="hover:underline hover:text-primary dark:hover:text-accent-light">
+                                    {{ peer.name }}
+                                </a>
+                            {% endif %}
+                        </td>
+                        <td class="px-4 py-3 text-sm text-right {% if peer.returns_1y > 0 %}text-success{% elif peer.returns_1y < 0 %}text-error{% endif %}">
+                            {{ peer.returns_1y|default:"-" }}%
+                        </td>
+                        <td class="px-4 py-3 text-sm text-right {% if peer.returns_3y > 0 %}text-success{% elif peer.returns_3y < 0 %}text-error{% endif %}">
+                            {{ peer.returns_3y|default:"-" }}%
+                        </td>
+                        <td class="px-4 py-3 text-sm text-right {% if peer.returns_5y > 0 %}text-success{% elif peer.returns_5y < 0 %}text-error{% endif %}">
+                            {{ peer.returns_5y|default:"-" }}%
+                        </td>
+                         <td class="px-4 py-3 text-sm text-slate-600 dark:text-navy-200 text-right">
+                            {{ peer.expense_ratio|default:"-" }}%
+                        </td>
+                         <td class="px-4 py-3 text-sm text-slate-600 dark:text-navy-200 text-right">
+                            {{ peer.aum|intcomma|default:"-" }}
+                        </td>
+                    </tr>
+                    {% empty %}
+                     <tr>
+                        <td colspan="6" class="px-4 py-4 text-center text-sm text-slate-400">No peer comparison available</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- About Section -->
+{% if scheme.about_fund %}
+<div class="px-4 sm:px-5 pb-6">
+    <div class="card p-6">
+        <h3 class="text-base font-medium text-slate-700 dark:text-navy-100 mb-3">About the Fund</h3>
+        <div class="prose dark:prose-invert max-w-none text-slate-600 dark:text-navy-200">
+            {{ scheme.about_fund|linebreaks }}
+        </div>
+    </div>
+</div>
+{% endif %}
+
 {% endblock %}
 
 {% block javascript %}
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const chartData = {{ nav_history_json|safe }};
+    const navHistory = {{ nav_history_json|safe }};
+    const assetAlloc = JSON.parse('{{ asset_allocation_json|escapejs }}');
+    const sectorAlloc = JSON.parse('{{ sector_allocation_json|escapejs }}');
 
-        const options = {
+    // NAV Chart
+    const navOptions = {
           series: [{
             name: 'NAV',
-            data: chartData
+            data: navHistory
           }],
           chart: {
             type: 'area',
             height: 350,
-            zoom: {
-              enabled: true
-            },
-            toolbar: {
-                show: false
-            }
+            background: 'transparent',
+            toolbar: { show: false }
           },
-          dataLabels: {
-            enabled: false
-          },
-          stroke: {
-            curve: 'smooth',
-            width: 2
-          },
-          title: {
-            text: 'Net Asset Value Movement',
-            align: 'left',
-            style: {
-                fontSize: '14px',
-                color: '#64748b'
-            }
-          },
-          xaxis: {
-            type: 'datetime',
-          },
+          dataLabels: { enabled: false },
+          stroke: { curve: 'smooth', width: 2 },
+          xaxis: { type: 'datetime' },
           yaxis: {
-            labels: {
-                formatter: function (val) {
-                    return val.toFixed(2);
-                }
-            }
+            labels: { formatter: (val) => val.toFixed(2) }
           },
           tooltip: {
-            x: {
-              format: 'dd MMM yyyy'
-            },
-            y: {
-                formatter: function (val) {
-                    return "₹ " + val.toFixed(2)
-                }
-            }
+            theme: document.documentElement.classList.contains('dark') ? 'dark' : 'light',
+            x: { format: 'dd MMM yyyy' },
+            y: { formatter: (val) => "₹ " + val.toFixed(2) }
           },
-          colors: ['#4f46e5'], // Primary color
+          colors: ['#4f46e5'],
           fill: {
             type: 'gradient',
             gradient: {
               shadeIntensity: 1,
               opacityFrom: 0.5,
-              opacityTo: 0.9,
+              opacityTo: 0.1,
               stops: [0, 100]
             }
           },
           grid: {
-             borderColor: '#e2e8f0',
+             borderColor: document.documentElement.classList.contains('dark') ? '#1e293b' : '#e2e8f0',
              strokeDashArray: 4,
+          },
+          theme: {
+             mode: document.documentElement.classList.contains('dark') ? 'dark' : 'light'
           }
-        };
+    };
+    new ApexCharts(document.querySelector("#nav-chart"), navOptions).render();
 
-        const chart = new ApexCharts(document.querySelector("#nav-chart"), options);
-        chart.render();
-    });
+    // Allocation Charts (Donut/Pie)
+    function createAllocChart(elementId, data, type='donut') {
+        if (!data || data.length === 0) {
+            document.querySelector(elementId).innerHTML = '<p class="text-center text-slate-400 py-10">No allocation data available</p>';
+            return;
+        }
+
+        const labels = data.map(d => d.asset_type || d.sector_name);
+        const series = data.map(d => parseFloat(d.percentage));
+
+        const options = {
+            series: series,
+            labels: labels,
+            chart: {
+                type: type,
+                height: 320,
+                background: 'transparent',
+            },
+            legend: {
+                position: 'bottom',
+                 labels: {
+                    colors: document.documentElement.classList.contains('dark') ? '#cbd5e1' : '#475569',
+                }
+            },
+            dataLabels: { enabled: true },
+            theme: {
+                 mode: document.documentElement.classList.contains('dark') ? 'dark' : 'light'
+            },
+             stroke: {
+                show: false
+            }
+        };
+        new ApexCharts(document.querySelector(elementId), options).render();
+    }
+
+    createAllocChart("#asset-chart", assetAlloc, 'donut');
+    createAllocChart("#sector-chart", sectorAlloc, 'pie');
+
+    // Toggle Logic
+    window.toggleAllocation = function(type) {
+        const assetChart = document.getElementById('asset-chart');
+        const sectorChart = document.getElementById('sector-chart');
+        const btnAsset = document.getElementById('btn-asset');
+        const btnSector = document.getElementById('btn-sector');
+
+        const activeClass = "bg-white text-slate-800 shadow dark:bg-navy-500 dark:text-navy-50";
+        const inactiveClass = "text-slate-600 hover:text-slate-800 dark:text-navy-200 dark:hover:text-navy-50";
+
+        // Reset classes
+        btnAsset.className = "rounded-md px-3 py-1 text-xs font-medium " + (type === 'asset' ? activeClass : inactiveClass);
+        btnSector.className = "rounded-md px-3 py-1 text-xs font-medium " + (type === 'sector' ? activeClass : inactiveClass);
+
+        if (type === 'asset') {
+            assetChart.classList.remove('hidden');
+            sectorChart.classList.add('hidden');
+        } else {
+            assetChart.classList.add('hidden');
+            sectorChart.classList.remove('hidden');
+        }
+    }
 </script>
 {% endblock %}

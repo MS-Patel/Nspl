@@ -1,4 +1,4 @@
-from django.views.generic import TemplateView, DetailView, FormView, ListView
+from django.views.generic import TemplateView, DetailView, FormView, ListView, UpdateView
 from django.views import View
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib import messages
@@ -9,7 +9,12 @@ from django.http import HttpResponse
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
 from .models import Scheme, AMC
-from .forms import SchemeUploadForm, NAVUploadForm
+from .forms import (
+    SchemeUploadForm, NAVUploadForm, SchemeForm,
+    SchemeHoldingFormSet, SchemeSectorFormSet,
+    SchemeAssetFormSet, SchemeManagerFormSet
+)
+from apps.users.models import User # Explicit import of custom User model
 import pandas as pd
 from django.utils import timezone
 from .utils.parsers import import_schemes_from_file, import_navs_from_file
@@ -18,6 +23,7 @@ from apps.core.utils.sample_headers import (
     SCHEME_HEADERS, SCHEME_CHOICES,
     NAV_HEADERS, NAV_CHOICES
 )
+from .utils.calculations import get_scheme_returns, get_peer_comparison
 import json
 from django.core.serializers.json import DjangoJSONEncoder
 
@@ -78,7 +84,78 @@ class SchemeDetailView(LoginRequiredMixin, DetailView):
         context['latest_nav'] = latest_nav.net_asset_value if latest_nav else "N/A"
         context['latest_nav_date'] = latest_nav.nav_date if latest_nav else ""
 
+        # New: Fetch Allocations
+        context['asset_allocation'] = list(scheme.asset_allocations.values('asset_type', 'percentage'))
+        context['sector_allocation'] = list(scheme.sector_allocations.values('sector_name', 'percentage'))
+
+        # New: Fetch Managers
+        context['managers'] = scheme.managers.select_related('manager').all()
+
+        # New: Fetch Holdings
+        context['top_holdings'] = scheme.scheme_holdings.order_by('-percentage')[:10]
+
+        # New: Returns
+        returns = get_scheme_returns(scheme)
+        context['returns_1y'] = returns['1Y']
+        context['returns_3y'] = returns['3Y']
+        context['returns_5y'] = returns['5Y']
+
+        # New: Peer Comparison
+        context['peer_comparison'] = get_peer_comparison(scheme)
+
+        # JSON for Allocation Charts
+        context['asset_allocation_json'] = json.dumps(context['asset_allocation'], cls=DjangoJSONEncoder)
+        context['sector_allocation_json'] = json.dumps(context['sector_allocation'], cls=DjangoJSONEncoder)
+
         return context
+
+class SchemeUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = Scheme
+    form_class = SchemeForm
+    template_name = 'products/scheme_form.html'
+
+    def test_func(self):
+        return self.request.user.user_type == User.Types.ADMIN
+
+    def get_success_url(self):
+        return reverse_lazy('products:scheme_detail', kwargs={'pk': self.object.pk})
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.POST:
+            context['holding_formset'] = SchemeHoldingFormSet(self.request.POST, instance=self.object)
+            context['sector_formset'] = SchemeSectorFormSet(self.request.POST, instance=self.object)
+            context['asset_formset'] = SchemeAssetFormSet(self.request.POST, instance=self.object)
+            context['manager_formset'] = SchemeManagerFormSet(self.request.POST, instance=self.object)
+        else:
+            context['holding_formset'] = SchemeHoldingFormSet(instance=self.object)
+            context['sector_formset'] = SchemeSectorFormSet(instance=self.object)
+            context['asset_formset'] = SchemeAssetFormSet(instance=self.object)
+            context['manager_formset'] = SchemeManagerFormSet(instance=self.object)
+        return context
+
+    def form_valid(self, form):
+        context = self.get_context_data()
+        holding_formset = context['holding_formset']
+        sector_formset = context['sector_formset']
+        asset_formset = context['asset_formset']
+        manager_formset = context['manager_formset']
+
+        if (holding_formset.is_valid() and sector_formset.is_valid() and
+            asset_formset.is_valid() and manager_formset.is_valid()):
+            self.object = form.save()
+            holding_formset.instance = self.object
+            holding_formset.save()
+            sector_formset.instance = self.object
+            sector_formset.save()
+            asset_formset.instance = self.object
+            asset_formset.save()
+            manager_formset.instance = self.object
+            manager_formset.save()
+            messages.success(self.request, "Scheme updated successfully.")
+            return super().form_valid(form)
+        else:
+            return self.render_to_response(self.get_context_data(form=form))
 
 class SchemeUploadView(LoginRequiredMixin, UserPassesTestMixin, FormView):
     template_name = 'products/upload_scheme.html'

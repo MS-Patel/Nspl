@@ -199,6 +199,8 @@ const GridJSExportUtils = (() => {
     const gridContainer = document.querySelector("#scheme_list");
     const investUrl = "{% url 'investments:order_create' %}";
     const detailBaseUrl = "{% url 'products:scheme_list' %}";
+    const editBaseUrl = "{% url 'products:scheme_list' %}"; // e.g. schemes/3/edit/
+    const isAdmin = {% if user.user_type == 'ADMIN' or user.is_staff %}true{% else %}false{% endif %};
 
     const gridConfig = {
       columns: [
@@ -226,12 +228,21 @@ const GridJSExportUtils = (() => {
             name: "Action",
             formatter: (cell, row) => {
                 const schemeId = row.cells[0].data; // id is 1st column
-                return Gridjs.html(`
+                let html = `
                     <a href="${investUrl}?scheme_id=${schemeId}"
                        class="btn h-8 rounded-full bg-primary/10 px-3 text-xs+ font-medium text-primary hover:bg-primary/20 focus:bg-primary/20 active:bg-primary/25 dark:bg-accent-light/10 dark:text-accent-light dark:hover:bg-accent-light/20 dark:focus:bg-accent-light/20 dark:active:bg-accent-light/25">
                        Invest
                     </a>
-                `);
+                `;
+                if (isAdmin) {
+                    html += `
+                    <a href="${editBaseUrl}${schemeId}/edit/"
+                       class="ml-2 btn h-8 rounded-full border border-slate-300 px-3 text-xs+ font-medium text-slate-700 hover:bg-slate-150 focus:bg-slate-150 active:bg-slate-150/80 dark:border-navy-450 dark:text-navy-100 dark:hover:bg-navy-500 dark:focus:bg-navy-500 dark:active:bg-navy-500/90">
+                       Edit
+                    </a>
+                    `;
+                }
+                return Gridjs.html(html);
             }
         }
       ],

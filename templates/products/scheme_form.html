@@ -1,0 +1,388 @@
+{% extends 'layout/base.html' %}
+{% load static widget_tweaks %}
+
+{% block content %}
+<div class="flex items-center space-x-4 py-5 lg:py-6 px-4 sm:px-5">
+  <h2 class="text-xl font-medium text-slate-800 dark:text-navy-50 lg:text-2xl">
+    Edit Scheme: {{ scheme.name }}
+  </h2>
+  <div class="hidden h-full py-1 sm:flex">
+    <div class="h-full w-px bg-slate-300 dark:bg-navy-600"></div>
+  </div>
+  <ul class="hidden flex-wrap items-center space-x-2 sm:flex">
+    <li class="flex items-center space-x-2">
+      <a class="text-primary transition-colors hover:text-primary-focus dark:text-accent-light dark:hover:text-accent"
+        href="{% url 'products:scheme_list' %}">Schemes</a>
+      <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+      </svg>
+    </li>
+    <li>Edit</li>
+  </ul>
+</div>
+
+<div class="px-4 sm:px-5 pb-6">
+    <form method="post" enctype="multipart/form-data" class="card">
+        {% csrf_token %}
+
+        <div x-data="{ activeTab: 'basic' }">
+            <!-- Tabs Header -->
+            <div class="is-scrollbar-hidden overflow-x-auto rounded-t-lg bg-slate-200 text-slate-600 dark:bg-navy-800 dark:text-navy-200">
+                <div class="tabs-list flex px-4">
+                    <button type="button" @click.prevent="activeTab = 'basic'" :class="activeTab === 'basic' ? 'border-primary dark:border-accent text-primary dark:text-accent-light' : 'border-transparent hover:text-slate-800 focus:text-slate-800 dark:hover:text-navy-100 dark:focus:text-navy-100'"
+                        class="btn shrink-0 rounded-none border-b-2 px-3 py-2 font-medium">
+                        Basic Info
+                    </button>
+                    <button type="button" @click.prevent="activeTab = 'allocations'" :class="activeTab === 'allocations' ? 'border-primary dark:border-accent text-primary dark:text-accent-light' : 'border-transparent hover:text-slate-800 focus:text-slate-800 dark:hover:text-navy-100 dark:focus:text-navy-100'"
+                        class="btn shrink-0 rounded-none border-b-2 px-3 py-2 font-medium">
+                        Allocations
+                    </button>
+                    <button type="button" @click.prevent="activeTab = 'holdings'" :class="activeTab === 'holdings' ? 'border-primary dark:border-accent text-primary dark:text-accent-light' : 'border-transparent hover:text-slate-800 focus:text-slate-800 dark:hover:text-navy-100 dark:focus:text-navy-100'"
+                        class="btn shrink-0 rounded-none border-b-2 px-3 py-2 font-medium">
+                        Holdings
+                    </button>
+                    <button type="button" @click.prevent="activeTab = 'managers'" :class="activeTab === 'managers' ? 'border-primary dark:border-accent text-primary dark:text-accent-light' : 'border-transparent hover:text-slate-800 focus:text-slate-800 dark:hover:text-navy-100 dark:focus:text-navy-100'"
+                        class="btn shrink-0 rounded-none border-b-2 px-3 py-2 font-medium">
+                        Fund Managers
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tab Content -->
+            <div class="p-4 sm:p-5">
+                <!-- Basic Info Tab -->
+                <div x-show="activeTab === 'basic'" class="space-y-4">
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        {% for field in form %}
+                        <div class="form-group">
+                            <label class="block text-sm font-medium text-slate-700 dark:text-navy-100 mb-1">
+                                {{ field.label }}
+                            </label>
+                            {% if field.field.widget.input_type == 'checkbox' %}
+                                <div class="flex items-center">
+                                    {{ field|add_class:"form-checkbox is-basic size-5 rounded border-slate-400/70 checked:bg-primary checked:border-primary hover:border-primary focus:border-primary dark:border-navy-400 dark:checked:bg-accent dark:checked:border-accent dark:hover:border-accent dark:focus:border-accent" }}
+                                    <span class="ml-2 text-sm">{{ field.help_text }}</span>
+                                </div>
+                            {% else %}
+                                {{ field|add_class:"form-input w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" }}
+                                {% if field.help_text and field.field.widget.input_type != 'checkbox' %}
+                                    <span class="text-xs text-slate-400 line-clamp-1">{{ field.help_text }}</span>
+                                {% endif %}
+                            {% endif %}
+                            {% if field.errors %}
+                                <span class="text-xs text-error">{{ field.errors.0 }}</span>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Allocations Tab -->
+                <div x-show="activeTab === 'allocations'" class="space-y-6">
+                    <!-- Asset Allocation -->
+                    <div>
+                        <div class="flex items-center justify-between mb-3 border-b pb-2 dark:border-navy-600">
+                             <h3 class="font-medium text-slate-800 dark:text-navy-50">Asset Allocation</h3>
+                             <button type="button" onclick="addFormRow('asset-formset', 'asset_allocations')" class="btn h-7 rounded bg-primary/10 px-3 text-xs+ font-medium text-primary hover:bg-primary/20 focus:bg-primary/20 active:bg-primary/25 dark:bg-accent-light/10 dark:text-accent-light dark:hover:bg-accent-light/20">
+                                 + Add Row
+                             </button>
+                        </div>
+                        {{ asset_formset.management_form }}
+                        <div id="asset-formset-container" class="space-y-2">
+                             {% for form in asset_formset %}
+                             <div class="flex items-start space-x-2 row-group asset-form-row">
+                                 {{ form.id }}
+                                 <div class="flex-1">
+                                     {{ form.asset_type|add_class:"form-input w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 dark:border-navy-450"|attr:"placeholder:Asset Type (e.g. Equity)" }}
+                                 </div>
+                                 <div class="w-32">
+                                     {{ form.percentage|add_class:"form-input w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 dark:border-navy-450"|attr:"placeholder:%" }}
+                                 </div>
+                                 <div class="flex items-center pt-2">
+                                     {% if form.instance.pk %}
+                                         <label class="inline-flex items-center space-x-1 cursor-pointer text-error">
+                                             {{ form.DELETE|add_class:"form-checkbox is-basic size-4 rounded border-error text-error" }}
+                                             <span class="text-xs">Delete</span>
+                                         </label>
+                                     {% else %}
+                                         <button type="button" class="text-error hover:text-error/80" onclick="removeFormRow(this)">
+                                             <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                             </svg>
+                                         </button>
+                                     {% endif %}
+                                 </div>
+                             </div>
+                             {% endfor %}
+                        </div>
+                        <!-- Empty form template for JS -->
+                        <div id="asset-form-template" class="hidden">
+                             <div class="flex items-start space-x-2 row-group asset-form-row">
+                                 <div class="flex-1">
+                                     {{ asset_formset.empty_form.asset_type|add_class:"form-input w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 dark:border-navy-450"|attr:"placeholder:Asset Type (e.g. Equity)" }}
+                                 </div>
+                                 <div class="w-32">
+                                     {{ asset_formset.empty_form.percentage|add_class:"form-input w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 dark:border-navy-450"|attr:"placeholder:%" }}
+                                 </div>
+                                 <div class="flex items-center pt-2">
+                                     <button type="button" class="text-error hover:text-error/80" onclick="removeFormRow(this)">
+                                         <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                         </svg>
+                                     </button>
+                                 </div>
+                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Sector Allocation -->
+                    <div>
+                        <div class="flex items-center justify-between mb-3 border-b pb-2 dark:border-navy-600">
+                             <h3 class="font-medium text-slate-800 dark:text-navy-50">Sector Allocation</h3>
+                             <button type="button" onclick="addFormRow('sector-formset', 'sector_allocations')" class="btn h-7 rounded bg-primary/10 px-3 text-xs+ font-medium text-primary hover:bg-primary/20 focus:bg-primary/20 active:bg-primary/25 dark:bg-accent-light/10 dark:text-accent-light dark:hover:bg-accent-light/20">
+                                 + Add Row
+                             </button>
+                        </div>
+                        {{ sector_formset.management_form }}
+                        <div id="sector-formset-container" class="space-y-2">
+                             {% for form in sector_formset %}
+                             <div class="flex items-start space-x-2 row-group sector-form-row">
+                                 {{ form.id }}
+                                 <div class="flex-1">
+                                     {{ form.sector_name|add_class:"form-input w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 dark:border-navy-450"|attr:"placeholder:Sector Name (e.g. Financials)" }}
+                                 </div>
+                                 <div class="w-32">
+                                     {{ form.percentage|add_class:"form-input w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 dark:border-navy-450"|attr:"placeholder:%" }}
+                                 </div>
+                                 <div class="flex items-center pt-2">
+                                      {% if form.instance.pk %}
+                                         <label class="inline-flex items-center space-x-1 cursor-pointer text-error">
+                                             {{ form.DELETE|add_class:"form-checkbox is-basic size-4 rounded border-error text-error" }}
+                                             <span class="text-xs">Delete</span>
+                                         </label>
+                                     {% else %}
+                                         <button type="button" class="text-error hover:text-error/80" onclick="removeFormRow(this)">
+                                             <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                             </svg>
+                                         </button>
+                                     {% endif %}
+                                 </div>
+                             </div>
+                             {% endfor %}
+                        </div>
+                        <div id="sector-form-template" class="hidden">
+                             <div class="flex items-start space-x-2 row-group sector-form-row">
+                                 <div class="flex-1">
+                                     {{ sector_formset.empty_form.sector_name|add_class:"form-input w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 dark:border-navy-450"|attr:"placeholder:Sector Name (e.g. Financials)" }}
+                                 </div>
+                                 <div class="w-32">
+                                     {{ sector_formset.empty_form.percentage|add_class:"form-input w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 dark:border-navy-450"|attr:"placeholder:%" }}
+                                 </div>
+                                 <div class="flex items-center pt-2">
+                                     <button type="button" class="text-error hover:text-error/80" onclick="removeFormRow(this)">
+                                         <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                         </svg>
+                                     </button>
+                                 </div>
+                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Holdings Tab -->
+                <div x-show="activeTab === 'holdings'" class="space-y-4">
+                     <div class="flex items-center justify-between mb-3 border-b pb-2 dark:border-navy-600">
+                         <h3 class="font-medium text-slate-800 dark:text-navy-50">Top Holdings</h3>
+                         <button type="button" onclick="addFormRow('holding-formset', 'scheme_holdings')" class="btn h-7 rounded bg-primary/10 px-3 text-xs+ font-medium text-primary hover:bg-primary/20 focus:bg-primary/20 active:bg-primary/25 dark:bg-accent-light/10 dark:text-accent-light dark:hover:bg-accent-light/20">
+                             + Add Row
+                         </button>
+                     </div>
+                     {{ holding_formset.management_form }}
+                     <div id="holding-formset-container" class="space-y-2">
+                         {% for form in holding_formset %}
+                         <div class="flex items-start space-x-2 row-group holding-form-row">
+                             {{ form.id }}
+                             <div class="flex-1">
+                                 {{ form.company_name|add_class:"form-input w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 dark:border-navy-450"|attr:"placeholder:Company Name" }}
+                             </div>
+                             <div class="w-32">
+                                 {{ form.percentage|add_class:"form-input w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 dark:border-navy-450"|attr:"placeholder:%" }}
+                             </div>
+                             <div class="flex items-center pt-2">
+                                  {% if form.instance.pk %}
+                                         <label class="inline-flex items-center space-x-1 cursor-pointer text-error">
+                                             {{ form.DELETE|add_class:"form-checkbox is-basic size-4 rounded border-error text-error" }}
+                                             <span class="text-xs">Delete</span>
+                                         </label>
+                                  {% else %}
+                                         <button type="button" class="text-error hover:text-error/80" onclick="removeFormRow(this)">
+                                             <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                             </svg>
+                                         </button>
+                                  {% endif %}
+                             </div>
+                         </div>
+                         {% endfor %}
+                     </div>
+                     <div id="holding-form-template" class="hidden">
+                         <div class="flex items-start space-x-2 row-group holding-form-row">
+                             <div class="flex-1">
+                                 {{ holding_formset.empty_form.company_name|add_class:"form-input w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 dark:border-navy-450"|attr:"placeholder:Company Name" }}
+                             </div>
+                             <div class="w-32">
+                                 {{ holding_formset.empty_form.percentage|add_class:"form-input w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 dark:border-navy-450"|attr:"placeholder:%" }}
+                             </div>
+                             <div class="flex items-center pt-2">
+                                 <button type="button" class="text-error hover:text-error/80" onclick="removeFormRow(this)">
+                                     <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                     </svg>
+                                 </button>
+                             </div>
+                         </div>
+                     </div>
+                </div>
+
+                <!-- Managers Tab -->
+                <div x-show="activeTab === 'managers'" class="space-y-4">
+                    <div class="flex items-center justify-between mb-3 border-b pb-2 dark:border-navy-600">
+                        <h3 class="font-medium text-slate-800 dark:text-navy-50">Fund Managers</h3>
+                        <button type="button" onclick="addFormRow('manager-formset', 'managers')" class="btn h-7 rounded bg-primary/10 px-3 text-xs+ font-medium text-primary hover:bg-primary/20 focus:bg-primary/20 active:bg-primary/25 dark:bg-accent-light/10 dark:text-accent-light dark:hover:bg-accent-light/20">
+                             + Add Row
+                         </button>
+                    </div>
+                    {{ manager_formset.management_form }}
+                    <div id="manager-formset-container" class="space-y-2">
+                         {% for form in manager_formset %}
+                         <div class="flex items-start space-x-2 row-group manager-form-row">
+                             {{ form.id }}
+                             <div class="flex-1">
+                                 {{ form.manager|add_class:"form-select w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 dark:border-navy-450" }}
+                             </div>
+                             <div class="w-40">
+                                 {{ form.start_date|add_class:"form-input w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 dark:border-navy-450"|attr:"type:date" }}
+                             </div>
+                             <div class="flex items-center pt-2">
+                                 <label class="inline-flex items-center space-x-2">
+                                     {{ form.is_primary|add_class:"form-checkbox is-basic size-4 rounded border-slate-400/70 checked:bg-primary checked:border-primary dark:border-navy-400 dark:checked:bg-accent dark:checked:border-accent" }}
+                                     <span class="text-xs">Primary</span>
+                                 </label>
+                             </div>
+                             <div class="flex items-center pt-2 ml-2">
+                                  {% if form.instance.pk %}
+                                         <label class="inline-flex items-center space-x-1 cursor-pointer text-error">
+                                             {{ form.DELETE|add_class:"form-checkbox is-basic size-4 rounded border-error text-error" }}
+                                             <span class="text-xs">Delete</span>
+                                         </label>
+                                  {% else %}
+                                         <button type="button" class="text-error hover:text-error/80" onclick="removeFormRow(this)">
+                                             <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                             </svg>
+                                         </button>
+                                  {% endif %}
+                             </div>
+                         </div>
+                         {% endfor %}
+                    </div>
+                    <div id="manager-form-template" class="hidden">
+                         <div class="flex items-start space-x-2 row-group manager-form-row">
+                             <div class="flex-1">
+                                 {{ manager_formset.empty_form.manager|add_class:"form-select w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 dark:border-navy-450" }}
+                             </div>
+                             <div class="w-40">
+                                 {{ manager_formset.empty_form.start_date|add_class:"form-input w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 dark:border-navy-450"|attr:"type:date" }}
+                             </div>
+                             <div class="flex items-center pt-2">
+                                 <label class="inline-flex items-center space-x-2">
+                                     {{ manager_formset.empty_form.is_primary|add_class:"form-checkbox is-basic size-4 rounded border-slate-400/70 checked:bg-primary checked:border-primary dark:border-navy-400 dark:checked:bg-accent dark:checked:border-accent" }}
+                                     <span class="text-xs">Primary</span>
+                                 </label>
+                             </div>
+                             <div class="flex items-center pt-2 ml-2">
+                                 <button type="button" class="text-error hover:text-error/80" onclick="removeFormRow(this)">
+                                     <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                     </svg>
+                                 </button>
+                             </div>
+                         </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Actions -->
+            <div class="flex justify-end space-x-2 bg-slate-50 p-4 dark:bg-navy-900 rounded-b-lg">
+                 <a href="{% url 'products:scheme_detail' scheme.id %}"
+                    class="btn min-w-[7rem] border border-slate-300 font-medium text-slate-700 hover:bg-slate-150 focus:bg-slate-150 active:bg-slate-150/80 dark:border-navy-450 dark:text-navy-100 dark:hover:bg-navy-500 dark:focus:bg-navy-500 dark:active:bg-navy-500/90">
+                    Cancel
+                 </a>
+                 <button type="submit"
+                    class="btn min-w-[7rem] bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90">
+                    Save Changes
+                 </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+    function addFormRow(prefix, djangoPrefix) {
+        // prefix: template prefix (e.g. 'holding-formset')
+        // djangoPrefix: model prefix used by Django (e.g. 'scheme_holdings')
+
+        const totalFormsInput = document.getElementById(`id_${djangoPrefix}-TOTAL_FORMS`);
+        if (!totalFormsInput) {
+            console.error("Total forms input not found for prefix:", djangoPrefix);
+            return;
+        }
+
+        const currentCount = parseInt(totalFormsInput.value);
+        const templateId = prefix.replace('-formset', '-form-template');
+        const templateDiv = document.getElementById(templateId);
+        const container = document.getElementById(prefix + '-container');
+
+        if (templateDiv && container) {
+            // Replace __prefix__ with the new index
+            const newRowHtml = templateDiv.innerHTML.replace(/__prefix__/g, currentCount);
+
+            // Create a temporary container to hold the new HTML
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = newRowHtml;
+
+            // The template might have a wrapper div, so we append the first child
+            // Note: templateDiv.innerHTML includes the wrapper if it was inside the hidden div.
+            // Our hidden div structure is <div id="template"><div class="row">...</div></div>
+            // So tempDiv.firstElementChild is the row we want.
+
+            // However, tempDiv.firstElementChild might be the empty text node if there's whitespace.
+            // Let's iterate or find the element.
+            let newRow = tempDiv.firstElementChild;
+            while(newRow && newRow.nodeType !== 1) { // 1 is ELEMENT_NODE
+                newRow = newRow.nextSibling;
+            }
+
+            if(newRow) {
+                 container.appendChild(newRow);
+                 totalFormsInput.value = currentCount + 1;
+            }
+        }
+    }
+
+    function removeFormRow(btn) {
+        // For new dynamic rows, we can just remove the element.
+        // For existing rows (with ID), we should hide and set DELETE checkbox (handled by django if rendered).
+        // Since this button is only rendered for NEW rows in the template logic above (else block),
+        // we can safely remove the DOM element.
+        const row = btn.closest('.row-group');
+        if (row) {
+            row.remove();
+            // Note: We don't decrement TOTAL_FORMS because Django ignores gaps in indices.
+        }
+    }
+</script>
+{% endblock %}
