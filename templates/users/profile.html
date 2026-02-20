@@ -1,70 +1,324 @@
 {% extends 'layout/base.html' %}
+{% load static %}
 {% load widget_tweaks %}
 
 {% block content %}
-<div class="flex items-center space-x-4 py-5 lg:py-6">
-    <h2 class="text-xl font-medium text-slate-800 dark:text-navy-50 lg:text-2xl">
-      My Profile
-    </h2>
-</div>
 
-<div class="card p-6 max-w-2xl mx-auto">
-    <form method="post">
-        {% csrf_token %}
+    <div class="flex items-center justify-between py-5 lg:py-6">
+        <h2 class="text-xl font-medium text-slate-800 dark:text-navy-50 lg:text-2xl">
+            My Profile
+        </h2>
+        <a href="{% url 'users:profile_edit' %}" class="btn bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90">
+            Edit Profile
+        </a>
+    </div>
 
-        <h3 class="text-lg font-medium text-slate-700 dark:text-navy-100 mb-4 border-b pb-2">User Details</h3>
+    <div class="grid grid-cols-12 gap-4 sm:gap-5 lg:gap-6">
+        <!-- Profile Card (Left Column) -->
+        <div class="col-span-12 lg:col-span-4">
+            <div class="card p-4 sm:p-5">
+                <div class="flex items-center space-x-4">
+                    <div class="avatar size-20">
+                        <img class="rounded-full" src="{% static 'images/avatar.png' %}" alt="avatar">
+                    </div>
+                    <div>
+                        <h3 class="text-base font-medium text-slate-700 dark:text-navy-100">{{ user.name|default:user.username }}</h3>
+                        <p class="text-xs+ text-slate-400 dark:text-navy-300">{{ user.email }}</p>
+                        <div class="mt-2">
+                             <span class="tag rounded-full bg-slate-150 text-slate-500 dark:bg-navy-500 dark:text-navy-100">
+                                {{ user.get_user_type_display }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
 
-        {% if user_form.non_field_errors %}
-        <div class="alert flex rounded-lg bg-error/10 py-4 px-4 text-error dark:bg-error/15 sm:px-5 mb-4">
-            {{ user_form.non_field_errors }}
-        </div>
-        {% endif %}
+                <div class="my-4 h-px bg-slate-200 dark:bg-navy-500"></div>
 
-        {% for field in user_form %}
-        <div class="form-group mb-4">
-            <label class="block text-sm font-medium text-slate-700 dark:text-navy-100 mb-1">
-                {{ field.label }} {% if field.field.required %}<span class="text-error">*</span>{% endif %}
-            </label>
-            {{ field|add_class:"form-input w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" }}
-            {% if field.errors %}
-            <span class="text-tiny+ text-error">{{ field.errors.0 }}</span>
-            {% endif %}
-        </div>
-        {% endfor %}
+                <!-- Common User Details -->
+                <div class="flex flex-col space-y-3">
+                     <div class="flex justify-between">
+                        <span>Username</span>
+                        <span class="font-medium text-slate-700 dark:text-navy-100">{{ user.username }}</span>
+                    </div>
+                     <div class="flex justify-between">
+                        <span>Joined</span>
+                        <span class="font-medium text-slate-700 dark:text-navy-100">{{ user.date_joined|date:"M d, Y" }}</span>
+                    </div>
+                </div>
 
-        {% if profile_form %}
-            <h3 class="text-lg font-medium text-slate-700 dark:text-navy-100 mt-8 mb-4 border-b pb-2">Profile Details</h3>
-
-            {% if profile_form.non_field_errors %}
-            <div class="alert flex rounded-lg bg-error/10 py-4 px-4 text-error dark:bg-error/15 sm:px-5 mb-4">
-                {{ profile_form.non_field_errors }}
-            </div>
-            {% endif %}
-
-            {% for field in profile_form %}
-            <div class="form-group mb-4">
-                <label class="block text-sm font-medium text-slate-700 dark:text-navy-100 mb-1">
-                    {{ field.label }} {% if field.field.required %}<span class="text-error">*</span>{% endif %}
-                </label>
-                {{ field|add_class:"form-input w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent disabled:opacity-50" }}
-                {% if field.errors %}
-                <span class="text-tiny+ text-error">{{ field.errors.0 }}</span>
+                <!-- Role Specific Sidebar Details -->
+                {% if user.user_type == 'INVESTOR' and investor %}
+                    <div class="my-4 h-px bg-slate-200 dark:bg-navy-500"></div>
+                    <div class="flex flex-col space-y-3">
+                        <div class="flex justify-between">
+                            <span>PAN</span>
+                            <span class="font-medium text-slate-700 dark:text-navy-100">{{ investor.pan }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Mobile</span>
+                            <span class="font-medium text-slate-700 dark:text-navy-100">{{ investor.mobile }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>DOB</span>
+                            <span class="font-medium text-slate-700 dark:text-navy-100">{{ investor.dob }}</span>
+                        </div>
+                         <div class="flex justify-between">
+                            <span>KYC Status</span>
+                             {% if investor.kyc_status %}
+                                <span class="text-success font-medium">Verified</span>
+                            {% else %}
+                                <span class="text-warning font-medium">Pending</span>
+                            {% endif %}
+                        </div>
+                         <div class="flex justify-between">
+                            <span>UCC</span>
+                            <span class="font-medium text-slate-700 dark:text-navy-100">{{ investor.ucc_code|default:"-" }}</span>
+                        </div>
+                        {% if investor.nominee_auth_status != 'N' %}
+                        <div class="flex justify-between">
+                             <span>Nominee Auth</span>
+                             {% if investor.nominee_auth_status == 'A' %}
+                                <span class="text-success font-medium">Authenticated</span>
+                             {% elif investor.nominee_auth_status == 'P' %}
+                                <span class="text-warning font-medium">Pending</span>
+                             {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+                {% elif user.user_type == 'RM' and rm %}
+                     <div class="my-4 h-px bg-slate-200 dark:bg-navy-500"></div>
+                     <div class="flex flex-col space-y-3">
+                        <div class="flex justify-between">
+                            <span>Employee Code</span>
+                            <span class="font-medium text-slate-700 dark:text-navy-100">{{ rm.employee_code }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Branch</span>
+                            <span class="font-medium text-slate-700 dark:text-navy-100">{{ rm.branch.name|default:"-" }}</span>
+                        </div>
+                         <div class="flex justify-between">
+                            <span>Mobile</span>
+                            <span class="font-medium text-slate-700 dark:text-navy-100">{{ rm.mobile }}</span>
+                        </div>
+                     </div>
+                {% elif user.user_type == 'DISTRIBUTOR' and distributor %}
+                     <div class="my-4 h-px bg-slate-200 dark:bg-navy-500"></div>
+                     <div class="flex flex-col space-y-3">
+                        <div class="flex justify-between">
+                            <span>ARN</span>
+                            <span class="font-medium text-slate-700 dark:text-navy-100">{{ distributor.arn_number }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>EUIN</span>
+                            <span class="font-medium text-slate-700 dark:text-navy-100">{{ distributor.euin|default:"-" }}</span>
+                        </div>
+                         <div class="flex justify-between">
+                            <span>Mobile</span>
+                            <span class="font-medium text-slate-700 dark:text-navy-100">{{ distributor.mobile }}</span>
+                        </div>
+                     </div>
                 {% endif %}
-                {% if field.help_text %}
-                <span class="text-tiny+ text-slate-400">{{ field.help_text }}</span>
-                {% endif %}
-            </div>
-            {% endfor %}
-        {% endif %}
 
-        <div class="flex justify-end mt-6 space-x-2">
-            <a href="{% url 'users:password_change' %}" class="btn border border-slate-300 font-medium text-slate-800 hover:bg-slate-150 focus:bg-slate-150 active:bg-slate-150/80 dark:border-navy-450 dark:text-navy-50 dark:hover:bg-navy-500 dark:focus:bg-navy-500 dark:active:bg-navy-500/90">
-                Change Password
-            </a>
-            <button type="submit" class="btn bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90">
-                Save Changes
-            </button>
+            </div>
         </div>
-    </form>
-</div>
+
+        <!-- Main Content (Right Column) -->
+        <div class="col-span-12 lg:col-span-8">
+            <div class="card">
+                <div class="border-b border-slate-200 dark:border-navy-500">
+                    <div class="flex">
+                        <button class="btn h-14 w-full rounded-none border-b-2 border-primary text-primary dark:border-accent dark:text-accent-light focus:bg-slate-100 dark:focus:bg-navy-600">
+                            Detailed Information
+                        </button>
+                    </div>
+                </div>
+                <div class="p-4 sm:p-5">
+                    {% if user.user_type == 'INVESTOR' and investor %}
+                        <!-- Investor Details -->
+                        <h4 class="text-lg font-medium text-slate-700 dark:text-navy-100 mb-4">Address</h4>
+                        <p>{{ investor.address_1 }}</p>
+                        <p>{{ investor.address_2 }}</p>
+                        <p>{{ investor.city }}, {{ investor.state }} - {{ investor.pincode }}</p>
+                        <p>{{ investor.country }}</p>
+
+                        {% if investor.foreign_address_1 %}
+                        <div class="my-4 h-px bg-slate-200 dark:bg-navy-500"></div>
+                        <h4 class="text-lg font-medium text-slate-700 dark:text-navy-100 mb-4">Foreign Address</h4>
+                        <p>{{ investor.foreign_address_1 }}</p>
+                        <p>{{ investor.foreign_address_2 }}</p>
+                        <p>{{ investor.foreign_city }}, {{ investor.foreign_state }} - {{ investor.foreign_pincode }}</p>
+                        <p>{{ investor.foreign_country }}</p>
+                        {% endif %}
+
+                        <div class="my-4 h-px bg-slate-200 dark:bg-navy-500"></div>
+                        <h4 class="text-lg font-medium text-slate-700 dark:text-navy-100 mb-4">FATCA Details</h4>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <span class="text-slate-400 text-xs">Place of Birth</span>
+                                <p>{{ investor.place_of_birth }}</p>
+                            </div>
+                            <div>
+                                <span class="text-slate-400 text-xs">Source of Wealth</span>
+                                <p>{{ investor.get_source_of_wealth_display }}</p>
+                            </div>
+                             <div>
+                                <span class="text-slate-400 text-xs">Income Slab</span>
+                                <p>{{ investor.get_income_slab_display }}</p>
+                            </div>
+                             <div>
+                                <span class="text-slate-400 text-xs">PEP Status</span>
+                                <p>{{ investor.get_pep_status_display }}</p>
+                            </div>
+                        </div>
+
+                        <div class="my-4 h-px bg-slate-200 dark:bg-navy-500"></div>
+
+                        <h4 class="text-lg font-medium text-slate-700 dark:text-navy-100 mb-4">Bank Accounts</h4>
+                        <div class="is-scrollbar-hidden min-w-full overflow-x-auto">
+                            <table class="is-hoverable w-full text-left">
+                                <thead>
+                                    <tr>
+                                        <th class="whitespace-nowrap rounded-tl-lg bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100">Bank</th>
+                                        <th class="whitespace-nowrap bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100">Account No</th>
+                                        <th class="whitespace-nowrap bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100">IFSC</th>
+                                        <th class="whitespace-nowrap rounded-tr-lg bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100">Type</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for bank in bank_accounts %}
+                                    <tr class="border-y border-transparent border-b-slate-200 dark:border-b-navy-500">
+                                        <td class="whitespace-nowrap px-4 py-3">{{ bank.bank_name }}</td>
+                                        <td class="whitespace-nowrap px-4 py-3">{{ bank.account_number }}</td>
+                                        <td class="whitespace-nowrap px-4 py-3">{{ bank.ifsc_code }}</td>
+                                        <td class="whitespace-nowrap px-4 py-3">{{ bank.get_account_type_display }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="my-4 h-px bg-slate-200 dark:bg-navy-500"></div>
+
+                        <h4 class="text-lg font-medium text-slate-700 dark:text-navy-100 mb-4">Nominees</h4>
+                        <div class="is-scrollbar-hidden min-w-full overflow-x-auto">
+                            <table class="is-hoverable w-full text-left">
+                                <thead>
+                                    <tr>
+                                        <th class="whitespace-nowrap rounded-tl-lg bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100">Name</th>
+                                        <th class="whitespace-nowrap bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100">Rel / %</th>
+                                        <th class="whitespace-nowrap rounded-tr-lg bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100">Contact</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for nominee in nominees %}
+                                    <tr class="border-y border-transparent border-b-slate-200 dark:border-b-navy-500">
+                                        <td class="whitespace-nowrap px-4 py-3">
+                                            {{ nominee.name }}
+                                            {% if nominee.pan %}
+                                            <div class="text-xs text-slate-400">PAN: {{ nominee.pan }}</div>
+                                            {% endif %}
+                                        </td>
+                                        <td class="whitespace-nowrap px-4 py-3">
+                                            {{ nominee.relationship }} ({{ nominee.percentage }}%)
+                                        </td>
+                                        <td class="whitespace-nowrap px-4 py-3 text-xs">
+                                            {% if nominee.email %}{{ nominee.email }}<br>{% endif %}
+                                            {% if nominee.mobile %}{{ nominee.mobile }}{% endif %}
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="3" class="px-4 py-3 text-center text-slate-400">No nominees added.</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="my-4 h-px bg-slate-200 dark:bg-navy-500"></div>
+
+                        <h4 class="text-lg font-medium text-slate-700 dark:text-navy-100 mb-4">Documents</h4>
+                        <div class="is-scrollbar-hidden min-w-full overflow-x-auto">
+                            <table class="is-hoverable w-full text-left">
+                                <thead>
+                                    <tr>
+                                        <th class="whitespace-nowrap rounded-tl-lg bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100">Type</th>
+                                        <th class="whitespace-nowrap bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100">Description</th>
+                                        <th class="whitespace-nowrap bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100">Date</th>
+                                        <th class="whitespace-nowrap rounded-tr-lg bg-slate-200 px-4 py-3 font-semibold uppercase text-slate-800 dark:bg-navy-800 dark:text-navy-100">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for doc in documents %}
+                                    <tr class="border-y border-transparent border-b-slate-200 dark:border-b-navy-500">
+                                        <td class="whitespace-nowrap px-4 py-3">{{ doc.get_document_type_display }}</td>
+                                        <td class="whitespace-nowrap px-4 py-3">{{ doc.description }}</td>
+                                        <td class="whitespace-nowrap px-4 py-3">{{ doc.uploaded_at|date:"M d, Y" }}</td>
+                                        <td class="whitespace-nowrap px-4 py-3">
+                                            <a href="{{ doc.file.url }}" target="_blank" class="text-primary hover:underline">View</a>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="4" class="px-4 py-3 text-center text-slate-400">No documents uploaded.</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                    {% elif user.user_type == 'RM' and rm %}
+                        <!-- RM Details -->
+                        <h4 class="text-lg font-medium text-slate-700 dark:text-navy-100 mb-4">Contact & Address</h4>
+                        <p>{{ rm.address }}</p>
+                        <p>{{ rm.city }}, {{ rm.state }} - {{ rm.pincode }}</p>
+                        <p>{{ rm.country }}</p>
+                        <div class="mt-4">
+                            <span class="font-medium">Alternate Mobile:</span> {{ rm.alternate_mobile|default:"-" }}<br>
+                            <span class="font-medium">Alternate Email:</span> {{ rm.alternate_email|default:"-" }}
+                        </div>
+
+                        <div class="my-4 h-px bg-slate-200 dark:bg-navy-500"></div>
+                        <h4 class="text-lg font-medium text-slate-700 dark:text-navy-100 mb-4">Professional Details</h4>
+                        <p><span class="font-medium">GSTIN:</span> {{ rm.gstin|default:"-" }}</p>
+                        <p><span class="font-medium">Branch:</span> {{ rm.branch.name }} ({{ rm.branch.code }})</p>
+
+                        <div class="my-4 h-px bg-slate-200 dark:bg-navy-500"></div>
+                        <h4 class="text-lg font-medium text-slate-700 dark:text-navy-100 mb-4">Bank Details</h4>
+                        <p><span class="font-medium">Bank:</span> {{ rm.bank_name }}</p>
+                        <p><span class="font-medium">Account:</span> {{ rm.account_number }}</p>
+                        <p><span class="font-medium">IFSC:</span> {{ rm.ifsc_code }}</p>
+
+                    {% elif user.user_type == 'DISTRIBUTOR' and distributor %}
+                        <!-- Distributor Details -->
+                        <h4 class="text-lg font-medium text-slate-700 dark:text-navy-100 mb-4">Contact & Address</h4>
+                        <p>{{ distributor.address }}</p>
+                        <p>{{ distributor.city }}, {{ distributor.state }} - {{ distributor.pincode }}</p>
+                        <p>{{ distributor.country }}</p>
+                        <div class="mt-4">
+                            <span class="font-medium">Alternate Mobile:</span> {{ distributor.alternate_mobile|default:"-" }}<br>
+                            <span class="font-medium">Alternate Email:</span> {{ distributor.alternate_email|default:"-" }}
+                        </div>
+
+                        <div class="my-4 h-px bg-slate-200 dark:bg-navy-500"></div>
+                        <h4 class="text-lg font-medium text-slate-700 dark:text-navy-100 mb-4">Professional Details</h4>
+                        <p><span class="font-medium">GSTIN:</span> {{ distributor.gstin|default:"-" }}</p>
+                        <p><span class="font-medium">Linked RM:</span> {{ distributor.rm.user.name|default:distributor.rm.user.username }}</p>
+
+                         <div class="my-4 h-px bg-slate-200 dark:bg-navy-500"></div>
+                        <h4 class="text-lg font-medium text-slate-700 dark:text-navy-100 mb-4">Bank Details</h4>
+                        <p><span class="font-medium">Bank:</span> {{ distributor.bank_name }}</p>
+                        <p><span class="font-medium">Account:</span> {{ distributor.account_number }}</p>
+                        <p><span class="font-medium">IFSC:</span> {{ distributor.ifsc_code }}</p>
+
+                    {% else %}
+                        <div class="text-center py-10">
+                            <p class="text-slate-500">No additional profile details available for this user type.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
 {% endblock %}
