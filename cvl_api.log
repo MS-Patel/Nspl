@@ -233,3 +233,137 @@
 </s:Envelope>
 
 2026-02-07 13:31:36,040 - PAN CHECK: BNIPC6749Q | RESULT: <Element APP_RES_ROOT at 0x1eaf3475b40>
+2026-02-19 19:39:12,129 - CVL REQUEST XML:
+<soap-env:Envelope xmlns:soap-env="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap-env:Header xmlns:wsa="http://www.w3.org/2005/08/addressing">
+    <wsa:Action>https://pancheck.www.kracvl.com/ICVLPanInquiry/GetPassword</wsa:Action>
+    <wsa:MessageID>urn:uuid:68abd82a-6f99-48f8-aa87-ac91445cff79</wsa:MessageID>
+    <wsa:To>https://pancheck.www.kracvl.com/CVLPanInquiry.svc</wsa:To>
+  </soap-env:Header>
+  <soap-env:Body>
+    <ns0:GetPassword xmlns:ns0="https://pancheck.www.kracvl.com">
+      <ns0:webApi>
+        <ns0:userName>WEBADMIN</ns0:userName>
+        <ns0:posCode>5100147231</ns0:posCode>
+        <ns0:password>********</ns0:password>
+        <ns0:passKey>********</ns0:passKey>
+      </ns0:webApi>
+    </ns0:GetPassword>
+  </soap-env:Body>
+</soap-env:Envelope>
+
+2026-02-19 19:39:12,178 - CVL RESPONSE XML:
+<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">
+  <s:Body xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <GetPasswordResponse xmlns="https://pancheck.www.kracvl.com">
+      <GetPasswordResult>********</GetPasswordResult>
+    </GetPasswordResponse>
+  </s:Body>
+</s:Envelope>
+
+2026-02-19 19:39:12,179 - CVL REQUEST XML:
+<soap-env:Envelope xmlns:soap-env="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap-env:Header xmlns:wsa="http://www.w3.org/2005/08/addressing">
+    <wsa:Action>https://pancheck.www.kracvl.com/ICVLPanInquiry/GetPanStatus</wsa:Action>
+    <wsa:MessageID>urn:uuid:6a280456-a343-4bd0-b848-83c925e9b8f4</wsa:MessageID>
+    <wsa:To>https://pancheck.www.kracvl.com/CVLPanInquiry.svc</wsa:To>
+  </soap-env:Header>
+  <soap-env:Body>
+    <ns0:GetPanStatus xmlns:ns0="https://pancheck.www.kracvl.com">
+      <ns0:webApi>
+        <ns0:pan>EDAPP7667E</ns0:pan>
+        <ns0:userName>WEBADMIN</ns0:userName>
+        <ns0:posCode>5100147231</ns0:posCode>
+        <ns0:password>********</ns0:password>
+        <ns0:passKey>********</ns0:passKey>
+      </ns0:webApi>
+    </ns0:GetPanStatus>
+  </soap-env:Body>
+</soap-env:Envelope>
+
+2026-02-19 19:39:12,259 - CVL RESPONSE XML:
+<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">
+  <s:Body xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <GetPanStatusResponse xmlns="https://pancheck.www.kracvl.com">
+      <GetPanStatusResult>
+        <APP_RES_ROOT xmlns="">
+          <APP_PAN_INQ>
+            <ERROR>
+              <ERROR_CODE>WEBERR-029</ERROR_CODE>
+              <ERROR_MSG>INVALID IP ADDRESS</ERROR_MSG>
+            </ERROR>
+          </APP_PAN_INQ>
+        </APP_RES_ROOT>
+      </GetPanStatusResult>
+    </GetPanStatusResponse>
+  </s:Body>
+</s:Envelope>
+
+2026-02-19 19:39:12,264 - PAN CHECK: EDAPP7667E | RESULT: <Element APP_RES_ROOT at 0x1144ccb00>
+2026-02-19 19:39:51,117 - CVL REQUEST XML:
+<soap-env:Envelope xmlns:soap-env="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap-env:Header xmlns:wsa="http://www.w3.org/2005/08/addressing">
+    <wsa:Action>https://pancheck.www.kracvl.com/ICVLPanInquiry/GetPassword</wsa:Action>
+    <wsa:MessageID>urn:uuid:13799d89-5b53-4571-a9e7-f73e8086f053</wsa:MessageID>
+    <wsa:To>https://pancheck.www.kracvl.com/CVLPanInquiry.svc</wsa:To>
+  </soap-env:Header>
+  <soap-env:Body>
+    <ns0:GetPassword xmlns:ns0="https://pancheck.www.kracvl.com">
+      <ns0:webApi>
+        <ns0:userName>WEBADMIN</ns0:userName>
+        <ns0:posCode>5100147231</ns0:posCode>
+        <ns0:password>********</ns0:password>
+        <ns0:passKey>********</ns0:passKey>
+      </ns0:webApi>
+    </ns0:GetPassword>
+  </soap-env:Body>
+</soap-env:Envelope>
+
+2026-02-19 19:39:51,177 - CVL RESPONSE XML:
+<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">
+  <s:Body xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <GetPasswordResponse xmlns="https://pancheck.www.kracvl.com">
+      <GetPasswordResult>********</GetPasswordResult>
+    </GetPasswordResponse>
+  </s:Body>
+</s:Envelope>
+
+2026-02-19 19:39:51,179 - CVL REQUEST XML:
+<soap-env:Envelope xmlns:soap-env="http://schemas.xmlsoap.org/soap/envelope/">
+  <soap-env:Header xmlns:wsa="http://www.w3.org/2005/08/addressing">
+    <wsa:Action>https://pancheck.www.kracvl.com/ICVLPanInquiry/GetPanStatus</wsa:Action>
+    <wsa:MessageID>urn:uuid:e8c60d04-700a-462e-afc8-a749c74ee5e0</wsa:MessageID>
+    <wsa:To>https://pancheck.www.kracvl.com/CVLPanInquiry.svc</wsa:To>
+  </soap-env:Header>
+  <soap-env:Body>
+    <ns0:GetPanStatus xmlns:ns0="https://pancheck.www.kracvl.com">
+      <ns0:webApi>
+        <ns0:pan>EEFPP8021C</ns0:pan>
+        <ns0:userName>WEBADMIN</ns0:userName>
+        <ns0:posCode>5100147231</ns0:posCode>
+        <ns0:password>********</ns0:password>
+        <ns0:passKey>********</ns0:passKey>
+      </ns0:webApi>
+    </ns0:GetPanStatus>
+  </soap-env:Body>
+</soap-env:Envelope>
+
+2026-02-19 19:39:51,411 - CVL RESPONSE XML:
+<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/">
+  <s:Body xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <GetPanStatusResponse xmlns="https://pancheck.www.kracvl.com">
+      <GetPanStatusResult>
+        <APP_RES_ROOT xmlns="">
+          <APP_PAN_INQ>
+            <ERROR>
+              <ERROR_CODE>WEBERR-029</ERROR_CODE>
+              <ERROR_MSG>INVALID IP ADDRESS</ERROR_MSG>
+            </ERROR>
+          </APP_PAN_INQ>
+        </APP_RES_ROOT>
+      </GetPanStatusResult>
+    </GetPanStatusResponse>
+  </s:Body>
+</s:Envelope>
+
+2026-02-19 19:39:51,412 - PAN CHECK: EEFPP8021C | RESULT: <Element APP_RES_ROOT at 0x118e85900>
