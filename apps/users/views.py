@@ -372,10 +372,36 @@ class DistributorUpdateView(LoginRequiredMixin, IsAdminOrRMMixin, UpdateView):
 # 3. Investor Management (Admin, RM, Distributor)
 # Logic: Distributor sees own; RM sees investors of their distributors; Admin sees all.
 
-class InvestorListView(LoginRequiredMixin, ListView):
+class InvestorAccessMixin(UserPassesTestMixin):
+    """
+    Mixin to restrict access to Investor objects based on hierarchy.
+    """
+    def test_func(self):
+        obj = self.get_object()
+        user = self.request.user
+
+        if user.user_type == User.Types.ADMIN:
+            return True
+        elif user.user_type == User.Types.INVESTOR:
+            return obj.user == user
+        elif user.user_type == User.Types.DISTRIBUTOR:
+            return obj.distributor and obj.distributor.user == user
+        elif user.user_type == User.Types.RM:
+            # Direct RM or RM of Distributor
+            is_direct_rm = obj.rm and obj.rm.user == user
+            is_distributor_rm = obj.distributor and obj.distributor.rm and obj.distributor.rm.user == user
+            return is_direct_rm or is_distributor_rm
+
+        return False
+
+class InvestorListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     model = InvestorProfile
     template_name = 'users/investor_list.html'
     context_object_name = 'investors'
+
+    def test_func(self):
+        # Investors cannot view the list of investors
+        return self.request.user.user_type in [User.Types.ADMIN, User.Types.RM, User.Types.DISTRIBUTOR]
 
     def get_queryset(self):
         qs = super().get_queryset().select_related('user', 'distributor', 'distributor__user')
@@ -406,11 +432,15 @@ class InvestorListView(LoginRequiredMixin, ListView):
         context['grid_data_json'] = json.dumps(data)
         return context
 
-class InvestorCreateView(LoginRequiredMixin, CreateView):
+class InvestorCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     model = InvestorProfile
     form_class = InvestorProfileForm
     template_name = 'users/investor_onboarding.html'
     success_url = reverse_lazy('users:investor_list')
+
+    def test_func(self):
+        # Investors cannot create other investors
+        return self.request.user.user_type in [User.Types.ADMIN, User.Types.RM, User.Types.DISTRIBUTOR]
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -532,7 +562,7 @@ class InvestorCreateView(LoginRequiredMixin, CreateView):
             return JsonResponse({'status': 'error', 'errors': errors}, status=400)
         return super().form_invalid(form)
 
-class InvestorUpdateView(LoginRequiredMixin, UpdateView):
+class InvestorUpdateView(LoginRequiredMixin, InvestorAccessMixin, UpdateView):
     model = InvestorProfile
     form_class = InvestorProfileForm
     template_name = 'users/investor_onboarding.html'
@@ -633,7 +663,7 @@ class InvestorUpdateView(LoginRequiredMixin, UpdateView):
             return JsonResponse({'status': 'error', 'errors': errors}, status=400)
         return super().form_invalid(form)
 
-class InvestorDetailView(LoginRequiredMixin, DetailView):
+class InvestorDetailView(LoginRequiredMixin, InvestorAccessMixin, DetailView):
     model = InvestorProfile
     template_name = 'users/investor_detail.html'
     context_object_name = 'investor'
@@ -1174,6 +1204,35 @@ class DownloadRMSampleView(LoginRequiredMixin, IsAdminMixin, View):
 
 class ProfileView(LoginRequiredMixin, TemplateView):
     template_name = 'users/profile.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+
+        if user.user_type == User.Types.INVESTOR:
+            try:
+                investor = user.investor_profile
+                context['investor'] = investor
+                context['bank_accounts'] = investor.bank_accounts.all()
+                context['nominees'] = investor.nominees.all()
+                context['documents'] = investor.documents.all()
+            except InvestorProfile.DoesNotExist:
+                pass
+        elif user.user_type == User.Types.RM:
+            try:
+                context['rm'] = user.rm_profile
+            except RMProfile.DoesNotExist:
+                pass
+        elif user.user_type == User.Types.DISTRIBUTOR:
+            try:
+                context['distributor'] = user.distributor_profile
+            except DistributorProfile.DoesNotExist:
+                pass
+
+        return context
+
+class ProfileEditView(LoginRequiredMixin, TemplateView):
+    template_name = 'users/profile_edit.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
