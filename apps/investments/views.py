@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.db.models import Q
 from django.http import JsonResponse, HttpResponseForbidden
 from django.urls import reverse
+from django.views import View
 from django.views.generic import CreateView, ListView, TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import get_user_model
@@ -217,6 +218,44 @@ class MandateCreateView(CreateView):
     def get_success_url(self):
         investor = self.object.investor
         return reverse('users:investor_detail', kwargs={'pk': investor.pk})
+
+class MandateRetryView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        mandate = get_object_or_404(Mandate, pk=pk)
+
+        # Access Check
+        if not has_access_to_investor(request.user, mandate.investor.id):
+             return HttpResponseForbidden("You do not have access to this mandate.")
+
+        # State Check
+        if mandate.is_bse_submitted or mandate.status != Mandate.PENDING:
+             messages.warning(request, "This mandate cannot be retried.")
+             return redirect('users:investor_detail', pk=mandate.investor.pk)
+
+        # Retry Submission
+        try:
+            client = BSEStarMFClient()
+            result = client.register_mandate(mandate)
+
+            if result['status'] == 'success':
+                mandate.mandate_id = result['mandate_id']
+                mandate.status = Mandate.PENDING
+                mandate.save()
+                messages.success(request, "Mandate submitted successfully. Please authorize it.")
+            elif result['status'] == 'exception':
+                 # Still failed (network/system), but we keep it pending for another retry
+                 messages.error(request, f"System Error (Retry failed): {result['remarks']}")
+            else:
+                # BSE Rejected it
+                mandate.status = Mandate.REJECTED
+                mandate.save()
+                messages.error(request, f"BSE Rejected Mandate: {result['remarks']}")
+
+        except Exception as e:
+            logger.exception("Mandate Retry Failed")
+            messages.error(request, f"System Error: {str(e)}")
+
+        return redirect('users:investor_detail', pk=mandate.investor.pk)
 
 @login_required
 def mandate_authorize(request, pk):
