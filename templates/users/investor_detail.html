@@ -293,9 +293,18 @@
                                             {% else %}
                                                 <span class="tag rounded-full bg-warning/10 text-warning">Pending</span>
                                                 <!-- Authorization Action -->
-                                                <a href="{% url 'investments:mandate_auth' mandate.pk %}" target="_blank" class="btn h-6 px-2 bg-primary/10 text-xs text-primary hover:bg-primary/20 focus:bg-primary/20 active:bg-primary/25 ml-2" title="Authorize via Netbanking/Debit Card">
-                                                    Authorize
-                                                </a>
+                                                {% if not mandate.is_bse_submitted %}
+                                                    <form action="{% url 'investments:mandate_retry' mandate.pk %}" method="post" class="ml-2">
+                                                        {% csrf_token %}
+                                                        <button type="submit" class="btn h-6 px-2 bg-primary/10 text-xs text-primary hover:bg-primary/20 focus:bg-primary/20 active:bg-primary/25" title="Retry Submission">
+                                                            Retry
+                                                        </button>
+                                                    </form>
+                                                {% else %}
+                                                    <a href="{% url 'investments:mandate_auth' mandate.pk %}" target="_blank" class="btn h-6 px-2 bg-primary/10 text-xs text-primary hover:bg-primary/20 focus:bg-primary/20 active:bg-primary/25 ml-2" title="Authorize via Netbanking/Debit Card">
+                                                        Authorize
+                                                    </a>
+                                                {% endif %}
                                             {% endif %}
                                         </div>
                                     </td>

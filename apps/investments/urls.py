@@ -10,6 +10,7 @@ urlpatterns = [
     path('folio/<path:folio_number>/', views.FolioDetailView.as_view(), name='folio_detail'),
     path('redemption/create/<int:holding_id>/', views.RedemptionCreateView.as_view(), name='redemption_create'),
     path('mandate/create/', views.MandateCreateView.as_view(), name='mandate_create'),
+    path('mandate/<int:pk>/retry/', views.MandateRetryView.as_view(), name='mandate_retry'),
     path('mandate/<int:pk>/auth/', views.mandate_authorize, name='mandate_auth'),
     path('api/folios/', views.get_investor_folios, name='api_folios'),
     path('api/metadata/', views.get_order_metadata, name='api_order_metadata'),

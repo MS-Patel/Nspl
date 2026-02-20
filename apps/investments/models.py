@@ -61,6 +61,14 @@ class Mandate(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    @property
+    def is_bse_submitted(self):
+        """
+        Returns True if the mandate has been successfully submitted to BSE (i.e., has a real Mandate ID).
+        Returns False if the submission failed (i.e., has a TEMP ID).
+        """
+        return not self.mandate_id.startswith('TEMP-')
+
     def __str__(self):
         return f"{self.mandate_id} - {self.investor.user.username}"
 
