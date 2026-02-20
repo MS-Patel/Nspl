@@ -7,6 +7,8 @@ from django.contrib.auth import get_user_model
 from apps.users.models import InvestorProfile
 from .cvl_client import CVLClient
 import json
+import requests
+import re
 
 # Create your views here.
 User = get_user_model()
@@ -47,3 +49,39 @@ class CheckPANStatusView(View):
              return JsonResponse({'status': 'error', 'remarks': 'Invalid JSON.'}, status=400)
         except Exception as e:
             return JsonResponse({'status': 'error', 'remarks': str(e)}, status=500)
+
+class GetBankDetailsView(View):
+    def get(self, request, *args, **kwargs):
+        ifsc = request.GET.get('ifsc')
+        if not ifsc:
+            return JsonResponse({'status': 'error', 'message': 'IFSC code is required.'}, status=400)
+
+        ifsc = ifsc.strip().upper()
+
+        # Validate IFSC Format
+        if not re.match(r'^[A-Z]{4}0[A-Z0-9]{6}$', ifsc):
+             return JsonResponse({'status': 'error', 'message': 'Invalid IFSC Code format.'}, status=400)
+
+        try:
+            # Using Razorpay Public IFSC API with timeout
+            response = requests.get(f"https://ifsc.razorpay.com/{ifsc}", timeout=10)
+
+            if response.status_code == 200:
+                data = response.json()
+                return JsonResponse({
+                    'status': 'success',
+                    'data': {
+                        'BANK': data.get('BANK'),
+                        'BRANCH': data.get('BRANCH'),
+                        'CITY': data.get('CITY'),
+                        'STATE': data.get('STATE'),
+                        'IFSC': data.get('IFSC')
+                    }
+                })
+            elif response.status_code == 404:
+                 return JsonResponse({'status': 'error', 'message': 'Invalid IFSC Code.'}, status=404)
+            else:
+                 return JsonResponse({'status': 'error', 'message': 'Error fetching bank details.'}, status=500)
+
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)

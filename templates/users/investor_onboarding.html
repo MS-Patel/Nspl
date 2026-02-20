@@ -356,11 +356,16 @@
                         <div class="space-y-4 p-4 sm:p-5">
                             {{ bank_accounts.management_form }}
                             {% for bank_form in bank_accounts %}
-                                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 border p-3 rounded-lg">
+                                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 border p-3 rounded-lg bank-group">
                                     {{ bank_form.id }}
                                     <label class="block">
                                         <span>IFSC Code</span>
-                                        {% render_field bank_form.ifsc_code class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" %}
+                                        <div class="relative flex w-full">
+                                            {% render_field bank_form.ifsc_code class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 input-ifsc" %}
+                                            <button type="button" class="btn btn-check-ifsc ml-2 mt-1.5 h-10 shrink-0 bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90">
+                                                Check
+                                            </button>
+                                        </div>
                                     </label>
                                     <label class="block">
                                         <span>Account Number</span>
@@ -372,7 +377,11 @@
                                     </label>
                                     <label class="block">
                                         <span>Bank Name</span>
-                                        {% render_field bank_form.bank_name class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" %}
+                                        {% render_field bank_form.bank_name class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 input-bank-name" %}
+                                    </label>
+                                    <label class="block">
+                                        <span>Branch Name</span>
+                                        {% render_field bank_form.branch_name class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 input-branch-name" %}
                                     </label>
                                     <label class="block sm:col-span-2">
                                         <div class="inline-flex items-center space-x-2">
@@ -754,4 +763,5 @@
 
     });
 </script>
+{% include 'includes/ifsc_lookup.html' %}
 {% endblock %}

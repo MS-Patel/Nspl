@@ -6,4 +6,5 @@ app_name = 'integration'
 urlpatterns = [
     path('tools/pan-check/', views.BSEPanCheckToolView.as_view(), name='pan_check_tool'),
     path('api/pan-check/', views.CheckPANStatusView.as_view(), name='api_pan_check'),
+    path('api/bank-details/', views.GetBankDetailsView.as_view(), name='api_bank_details'),
 ]
