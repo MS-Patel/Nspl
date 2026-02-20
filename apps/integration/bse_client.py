@@ -434,9 +434,9 @@ class BSEStarMFClient:
 
     def _register_mandate_internal(self, mandate):
         try:
-            encrypted_password, _ = self._get_upload_auth_details()
+            encrypted_password, _ = self._get_query_auth_details()
             param_string = get_bse_mandate_param_string(mandate)
-            _, service = self._get_upload_soap_client(self)
+            _, service = self._get_query_soap_client(self)
             bse_logger.info(f"MANDATE REG Request: Flag=06, Param={param_string}")
             response = service.MFAPI(
                 Flag='06',
@@ -677,8 +677,8 @@ class BSEStarMFClient:
 
     def get_payment_status(self, client_code, order_no):
         try:
-            encrypted_password, _ = self._get_upload_auth_details()
-            _, service = self._get_upload_soap_client(self)
+            encrypted_password, _ = self._get_query_auth_details()
+            _, service = self._get_query_soap_client(self)
             param_string = f"{client_code}|{order_no}|BSEMF"
             bse_logger.info(f"PAYMENT STATUS Request: Flag=11, Param={param_string}")
             response = service.MFAPI(
