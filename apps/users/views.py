@@ -1209,6 +1209,35 @@ class ProfileView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         user = self.request.user
 
+        if user.user_type == User.Types.INVESTOR:
+            try:
+                investor = user.investor_profile
+                context['investor'] = investor
+                context['bank_accounts'] = investor.bank_accounts.all()
+                context['nominees'] = investor.nominees.all()
+                context['documents'] = investor.documents.all()
+            except InvestorProfile.DoesNotExist:
+                pass
+        elif user.user_type == User.Types.RM:
+            try:
+                context['rm'] = user.rm_profile
+            except RMProfile.DoesNotExist:
+                pass
+        elif user.user_type == User.Types.DISTRIBUTOR:
+            try:
+                context['distributor'] = user.distributor_profile
+            except DistributorProfile.DoesNotExist:
+                pass
+
+        return context
+
+class ProfileEditView(LoginRequiredMixin, TemplateView):
+    template_name = 'users/profile_edit.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+
         # Initialize forms
         if 'user_form' not in context:
             context['user_form'] = UserProfileForm(instance=user)
