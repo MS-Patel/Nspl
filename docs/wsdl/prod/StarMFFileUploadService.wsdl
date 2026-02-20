@@ -440,19 +440,17 @@
     <wsdl:service name="StarMFFileUploadService">
         <wsdl:port name="WSHttpBinding_IStarMFFileUploadService" binding="tns:WSHttpBinding_IStarMFFileUploadService">
             <soap12:address
-                location="http://bsestarmfdemo.bseindia.com/StarMFFileUploadService/StarMFFileUploadService.svc/Basic" />
+                location="http://www.bsestarmf.in/StarMFFileUploadService/StarMFFileUploadService.svc/Basic" />
             <wsa10:EndpointReference>
-                <wsa10:Address>
-                    http://bsestarmfdemo.bseindia.com/StarMFFileUploadService/StarMFFileUploadService.svc/Basic
+                <wsa10:Address>http://www.bsestarmf.in/StarMFFileUploadService/StarMFFileUploadService.svc/Basic
                 </wsa10:Address>
             </wsa10:EndpointReference>
         </wsdl:port>
         <wsdl:port name="WSHttpBinding_IStarMFFileUploadService1" binding="tns:WSHttpBinding_IStarMFFileUploadService1">
             <soap12:address
-                location="https://bsestarmfdemo.bseindia.com/StarMFFileUploadService/StarMFFileUploadService.svc/Secure" />
+                location="https://www.bsestarmf.in/StarMFFileUploadService/StarMFFileUploadService.svc/Secure" />
             <wsa10:EndpointReference>
-                <wsa10:Address>
-                    https://bsestarmfdemo.bseindia.com/StarMFFileUploadService/StarMFFileUploadService.svc/Secure
+                <wsa10:Address>https://www.bsestarmf.in/StarMFFileUploadService/StarMFFileUploadService.svc/Secure
                 </wsa10:Address>
             </wsa10:EndpointReference>
         </wsdl:port>
