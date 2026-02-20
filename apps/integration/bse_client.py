@@ -82,16 +82,36 @@ class BSEStarMFClient:
         Returns cached Zeep Client for Order Service.
         """
         if cls._soap_client is None:
+            bse_logger.info(f"Initializing Order Client with WSDL: {instance.order_wsdl}")
             transport = Transport(timeout=10)
             zeep_settings = Settings(strict=False, xml_huge_tree=True)
-            cls._soap_client = Client(
-                wsdl=instance.order_wsdl,
-                transport=transport,
-                settings=zeep_settings,
-                service_name='MFOrder',
-                port_name='WSHttpBinding_MFOrderEntry1',
-                plugins=[BSELoggingPlugin()]
-            )
+            try:
+                client = Client(
+                    wsdl=instance.order_wsdl,
+                    transport=transport,
+                    settings=zeep_settings,
+                    service_name='MFOrder',
+                    port_name='WSHttpBinding_MFOrderEntry1',
+                    plugins=[BSELoggingPlugin()]
+                )
+
+                # Try accessing the default service; if it fails, attempt explicit binding.
+                service = None
+                try:
+                    service = client.service
+                except ValueError as ve:
+                    bse_logger.warning(f"Default Order service access failed ({ve}). Attempting explicit bind.")
+                    service = client.bind('MFOrder', 'WSHttpBinding_MFOrderEntry1')
+                    bse_logger.info("Explicit bind (Order) successful.")
+
+                cls._soap_client = (client, service)
+
+            except Exception as e:
+                bse_logger.error(f"Error initializing Order Client: {e}")
+                if 'client' in locals() and hasattr(client, 'wsdl') and hasattr(client.wsdl, 'services'):
+                    bse_logger.error(f"Available Services in WSDL: {list(client.wsdl.services.keys())}")
+                raise
+
         return cls._soap_client
 
     @classmethod
@@ -100,17 +120,37 @@ class BSEStarMFClient:
         Returns cached Zeep Client for Upload Service.
         """
         if cls._upload_client is None:
+            bse_logger.info(f"Initializing Upload Client with WSDL: {instance.upload_wsdl}")
             transport = Transport(timeout=10)
             zeep_settings = Settings(strict=False, xml_huge_tree=True)
-            client = Client(
-                wsdl=instance.upload_wsdl,
-                transport=transport,
-                settings=zeep_settings,
-                service_name='MFUploadService',
-                port_name='WSHttpBinding_IMFUploadService1',
-                plugins=[BSELoggingPlugin()]
-            )
-            cls._upload_client = (client, client.service)
+            try:
+                client = Client(
+                    wsdl=instance.upload_wsdl,
+                    transport=transport,
+                    settings=zeep_settings,
+                    service_name='MFUploadService',
+                    port_name='WSHttpBinding_IMFUploadService1',
+                    plugins=[BSELoggingPlugin()]
+                )
+
+                # Try accessing the default service; if it fails, attempt explicit binding.
+                service = None
+                try:
+                    service = client.service
+                except ValueError as ve:
+                    bse_logger.warning(f"Default service access failed ({ve}). Attempting explicit bind.")
+                    # Fallback: explicitly bind the service if zeep failed to do so implicitly
+                    service = client.bind('MFUploadService', 'WSHttpBinding_IMFUploadService1')
+                    bse_logger.info("Explicit bind successful.")
+
+                cls._upload_client = (client, service)
+
+            except Exception as e:
+                bse_logger.error(f"Error initializing Upload Client: {e}")
+                if 'client' in locals() and hasattr(client, 'wsdl') and hasattr(client.wsdl, 'services'):
+                    bse_logger.error(f"Available Services in WSDL: {list(client.wsdl.services.keys())}")
+                raise
+
         return cls._upload_client
 
     @classmethod
@@ -119,25 +159,44 @@ class BSEStarMFClient:
         Returns cached Zeep Client for Query Service.
         """
         if cls._query_client is None:
+            bse_logger.info(f"Initializing Query Client with WSDL: {instance.query_wsdl}")
             transport = Transport(timeout=10)
             zeep_settings = Settings(strict=False, xml_huge_tree=True)
-            client = Client(
-                wsdl=instance.query_wsdl,
-                transport=transport,
-                settings=zeep_settings,
-                service_name='StarMFWebService',
-                port_name='WSHttpBinding_IStarMFWebService1',
-                plugins=[BSELoggingPlugin()]
-            )
-            cls._query_client = (client, client.service)
+            try:
+                client = Client(
+                    wsdl=instance.query_wsdl,
+                    transport=transport,
+                    settings=zeep_settings,
+                    service_name='StarMFWebService',
+                    port_name='WSHttpBinding_IStarMFWebService1',
+                    plugins=[BSELoggingPlugin()]
+                )
+
+                # Try accessing the default service; if it fails, attempt explicit binding.
+                service = None
+                try:
+                    service = client.service
+                except ValueError as ve:
+                    bse_logger.warning(f"Default Query service access failed ({ve}). Attempting explicit bind.")
+                    service = client.bind('StarMFWebService', 'WSHttpBinding_IStarMFWebService1')
+                    bse_logger.info("Explicit bind (Query) successful.")
+
+                cls._query_client = (client, service)
+
+            except Exception as e:
+                bse_logger.error(f"Error initializing Query Client: {e}")
+                if 'client' in locals() and hasattr(client, 'wsdl') and hasattr(client.wsdl, 'services'):
+                    bse_logger.error(f"Available Services in WSDL: {list(client.wsdl.services.keys())}")
+                raise
+
         return cls._query_client
 
     def _get_auth_details(self):
         pass_key = self._generate_pass_key()
-        client = self._get_soap_client(self)
+        _, service = self._get_soap_client(self)
 
         try:
-            response = client.service.getPassword(
+            response = service.getPassword(
                 UserId=self.user_id,
                 Password=self.password,
                 PassKey=pass_key
@@ -255,9 +314,9 @@ class BSEStarMFClient:
                 encrypted_password,
                 pass_key
             )
-            client = self._get_soap_client(self)
+            _, service = self._get_soap_client(self)
             bse_logger.info(f"ORDER Request: {params}")
-            response = client.service.orderEntryParam(**params)
+            response = service.orderEntryParam(**params)
             bse_logger.info(f"ORDER ENTRY: {order.unique_ref_no} | RESPONSE: {response}")
 
             parts = str(response).split('|')
@@ -298,9 +357,9 @@ class BSEStarMFClient:
                 encrypted_password,
                 pass_key
             )
-            client = self._get_soap_client(self)
+            _, service = self._get_soap_client(self)
             bse_logger.info(f"SWITCH ORDER Request: {params}")
-            response = client.service.switchOrderEntryParam(**params)
+            response = service.switchOrderEntryParam(**params)
             bse_logger.info(f"SWITCH ORDER ENTRY: {order.unique_ref_no} | RESPONSE: {response}")
 
             parts = str(response).split('|')
@@ -344,8 +403,8 @@ class BSEStarMFClient:
                 pass_key
             )
             bse_logger.info(f"SIP ENTRY: {sip.id} | Params: {params}")
-            client = self._get_soap_client(self)
-            response = client.service.xsipOrderEntryParam(**params)
+            _, service = self._get_soap_client(self)
+            response = service.xsipOrderEntryParam(**params)
             bse_logger.info(f"SIP ENTRY: {sip.id} | RESPONSE: {response}")
 
             parts = str(response).split('|')
@@ -430,10 +489,14 @@ class BSEStarMFClient:
 
     def fatca_upload(self, investor):
         try:
-            encrypted_password, _ = self._get_upload_auth_details()
+            # Use Query Auth Details (StarMFWebService) instead of Upload Service
+            encrypted_password, _ = self._get_query_auth_details()
             param_string = map_investor_to_fatca_string(investor)
-            _, service = self._get_upload_soap_client(self)
-            bse_logger.info(f"FATCA UPLOAD Request: Flag=01, Param={param_string}")
+
+            # Use Query Client (StarMFWebService)
+            _, service = self._get_query_soap_client(self)
+
+            bse_logger.info(f"FATCA UPLOAD Request (StarMF): Flag=01, Param={param_string}")
             response = service.MFAPI(
                 Flag='01',
                 UserId=self.user_id,
