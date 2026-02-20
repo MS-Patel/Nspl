@@ -199,12 +199,12 @@
                     </div>
                 </div>
 
-                <div class="mt-4">
+                <div class="mt-4 bank-group">
                     <h4 class="text-sm font-medium text-slate-700 dark:text-navy-100 mb-2">Primary Bank Account</h4>
                     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <div>
                             <label class="block mb-1 text-sm font-medium">Bank Name</label>
-                            {{ form.bank_name|add_class:"form-input w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" }}
+                            {{ form.bank_name|add_class:"form-input w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent input-bank-name" }}
                         </div>
                          <div>
                             <label class="block mb-1 text-sm font-medium">Account Number</label>
@@ -214,7 +214,12 @@
                      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 mt-2">
                         <div>
                             <label class="block mb-1 text-sm font-medium">IFSC Code</label>
-                            {{ form.ifsc_code|add_class:"form-input w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" }}
+                            <div class="relative flex w-full">
+                                {{ form.ifsc_code|add_class:"form-input w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent input-ifsc" }}
+                                <button type="button" class="btn btn-check-ifsc ml-2 h-10 shrink-0 bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90">
+                                    Check
+                                </button>
+                            </div>
                             <span class="text-tiny+ text-error">{{ form.ifsc_code.errors.0 }}</span>
                         </div>
                          <div>
@@ -224,7 +229,7 @@
                     </div>
                      <div class="mt-2">
                         <label class="block mb-1 text-sm font-medium">Branch Name</label>
-                        {{ form.branch_name|add_class:"form-input w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" }}
+                        {{ form.branch_name|add_class:"form-input w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent input-branch-name" }}
                     </div>
                 </div>
             </div>
@@ -232,4 +237,5 @@
 
     </form>
 </div>
+{% include 'includes/ifsc_lookup.html' %}
 {% endblock %}

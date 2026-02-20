@@ -1,0 +1,95 @@
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Event delegation for "Check IFSC" buttons
+        document.body.addEventListener('click', async function(e) {
+            // Check if the clicked element is the button or inside it
+            const btn = e.target.closest('.btn-check-ifsc');
+            if (!btn) return;
+
+            e.preventDefault();
+
+            // Find container (row or form section)
+            // We look for a container with class 'bank-group'
+            const container = btn.closest('.bank-group');
+            if (!container) {
+                console.error("IFSC Check: No .bank-group container found.");
+                return;
+            }
+
+            // Find inputs within this container
+            const ifscInput = container.querySelector('.input-ifsc');
+            const bankInput = container.querySelector('.input-bank-name');
+            const branchInput = container.querySelector('.input-branch-name');
+            const cityInput = container.querySelector('.input-city');
+            const stateInput = container.querySelector('.input-state');
+
+            if (!ifscInput) {
+                console.error("IFSC Check: No .input-ifsc found in group.");
+                return;
+            }
+
+            const ifscCode = ifscInput.value.trim();
+            if (!ifscCode) {
+                if(window.Swal) Swal.fire('Warning', 'Please enter IFSC Code.', 'warning');
+                else alert("Please enter IFSC Code.");
+                return;
+            }
+
+            // UI Loading State
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Checking...';
+
+            try {
+                const response = await fetch(`/integration/api/bank-details/?ifsc=${ifscCode}`);
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    // Populate fields if they exist
+                    if (bankInput) bankInput.value = data.data.BANK || '';
+                    if (branchInput) branchInput.value = data.data.BRANCH || '';
+                    if (cityInput) cityInput.value = data.data.CITY || '';
+                    if (stateInput) {
+                        // For state, it might be a select or text. Razorpay returns State Name (e.g. "MAHARASHTRA")
+                        // Our State Choices usually use Codes or specific casing.
+                        // If it's a select, we try to match value or text.
+                        // Assuming text input for now or standard names.
+                        stateInput.value = data.data.STATE || '';
+
+                        // If it's a select element, we might need more logic to match options
+                        if (stateInput.tagName === 'SELECT') {
+                            // Try to find matching option
+                            const options = Array.from(stateInput.options);
+                            const match = options.find(opt => opt.text.toUpperCase() === data.data.STATE.toUpperCase());
+                            if (match) {
+                                stateInput.value = match.value;
+                            }
+                        }
+                    }
+
+                    // Provide feedback
+                     if(window.Swal) {
+                        const Toast = Swal.mixin({
+                            toast: true,
+                            position: 'top-end',
+                            showConfirmButton: false,
+                            timer: 3000
+                        });
+                        Toast.fire({ icon: 'success', title: 'Bank Details Found' });
+                     }
+
+                } else {
+                    if(window.Swal) Swal.fire('Error', data.message || "Invalid IFSC Code", 'error');
+                    else alert(data.message || "Invalid IFSC Code");
+                }
+            } catch (err) {
+                console.error(err);
+                if(window.Swal) Swal.fire('Error', 'Network error while fetching bank details.', 'error');
+                else alert("Network error.");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        });
+    });
+</script>
