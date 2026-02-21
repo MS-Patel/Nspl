@@ -3,12 +3,14 @@ from django.views.generic import TemplateView, ListView, DetailView, CreateView,
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth import get_user_model
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.db import transaction
 from .models import Payout, BrokerageImport, BrokerageTransaction, DistributorCategory
 from .forms import BrokerageUploadForm
 from .utils import process_brokerage_import, reprocess_brokerage_import
 import ast
+import pandas as pd
+import io
 
 User = get_user_model()
 
@@ -217,3 +219,43 @@ class ReprocessImportView(LoginRequiredMixin, UserPassesTestMixin, View):
             messages.error(request, f"Error reprocessing import: {str(e)}")
 
         return redirect('payouts:import_detail', pk=pk)
+
+
+class ExportPayoutReportView(LoginRequiredMixin, UserPassesTestMixin, View):
+    def test_func(self):
+        return self.request.user.user_type == User.Types.ADMIN
+
+    def get(self, request, pk, *args, **kwargs):
+        brokerage_import = get_object_or_404(BrokerageImport, pk=pk)
+        payouts = brokerage_import.payouts.select_related('distributor', 'distributor__user').all()
+
+        data = []
+        for p in payouts:
+            data.append({
+                'Distributor Name': p.distributor.user.get_full_name() or p.distributor.user.username,
+                'ARN Number': p.distributor.arn_number,
+                'PAN': p.distributor.pan,
+                'Total AUM': p.total_aum,
+                'Category': p.category,
+                'Gross Brokerage': p.gross_brokerage,
+                'Share %': p.share_percentage,
+                'Payable Amount': p.payable_amount,
+                'Status': p.status
+            })
+
+        df = pd.DataFrame(data)
+
+        output = io.BytesIO()
+        with pd.ExcelWriter(output, engine='openpyxl') as writer:
+            df.to_excel(writer, index=False, sheet_name='Payouts')
+
+        output.seek(0)
+
+        response = HttpResponse(
+            output.read(),
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        filename = f"payout_report_{brokerage_import.id}.xlsx"
+        response['Content-Disposition'] = f'attachment; filename={filename}'
+
+        return response
