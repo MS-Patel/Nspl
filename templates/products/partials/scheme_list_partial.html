@@ -1,0 +1,126 @@
+{% load humanize %}
+
+{% if schemes %}
+<div class="grid grid-cols-1 gap-4">
+    {% for scheme in schemes %}
+    <!-- Removed buttons, made whole card content clickable via specific areas or wrapping -->
+    <!-- Making the main interactive elements links. -->
+    <div class="card p-4 hover:shadow-lg transition-all duration-300 flex flex-col lg:flex-row lg:items-center justify-between gap-4 group">
+        <!-- Left: Scheme Info -->
+        <div class="flex-1 min-w-0">
+            <a href="{% url 'products:scheme_detail' scheme.id %}" class="text-base font-semibold text-slate-700 hover:text-primary dark:text-navy-100 dark:hover:text-accent-light line-clamp-2 mb-1" title="{{ scheme.name }}">
+                {{ scheme.name }}
+            </a>
+            <div class="flex flex-wrap gap-2 items-center">
+                {% if scheme.category %}
+                <span class="badge rounded-full bg-slate-150 px-2 py-0.5 text-xs text-slate-800 dark:bg-navy-500 dark:text-navy-100">
+                    {{ scheme.category.name }}
+                </span>
+                {% endif %}
+
+                {% if scheme.riskometer %}
+                     <!-- Risk Badge Logic -->
+                     {% if scheme.riskometer == 'Low' %}
+                     <span class="badge rounded-full bg-success/10 px-2 py-0.5 text-xs text-success">{{ scheme.riskometer }}</span>
+                     {% elif scheme.riskometer == 'High' or scheme.riskometer == 'Very High' %}
+                     <span class="badge rounded-full bg-error/10 px-2 py-0.5 text-xs text-error">{{ scheme.riskometer }}</span>
+                     {% else %}
+                     <span class="badge rounded-full bg-warning/10 px-2 py-0.5 text-xs text-warning">{{ scheme.riskometer }}</span>
+                     {% endif %}
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Right: Stats (Now clickable to detail) -->
+        <a href="{% url 'products:scheme_detail' scheme.id %}" class="block flex-1">
+            <div class="grid grid-cols-2 sm:grid-cols-4 lg:flex lg:justify-end lg:space-x-8 gap-4 lg:gap-0 border-t lg:border-none border-slate-150 dark:border-navy-500 py-3 lg:py-0">
+                <div class="text-center lg:text-left">
+                    <p class="text-[10px] uppercase text-slate-400 dark:text-navy-300 font-medium">1Y Return</p>
+                    <p class="text-sm font-semibold {% if scheme.calculated_returns.1Y and scheme.calculated_returns.1Y > 0 %}text-success{% elif scheme.calculated_returns.1Y and scheme.calculated_returns.1Y < 0 %}text-error{% else %}text-slate-700 dark:text-navy-100{% endif %}">
+                        {% if scheme.calculated_returns.1Y %}{{ scheme.calculated_returns.1Y }}%{% else %}--{% endif %}
+                    </p>
+                </div>
+                <div class="text-center lg:text-left">
+                    <p class="text-[10px] uppercase text-slate-400 dark:text-navy-300 font-medium">3Y Return</p>
+                    <p class="text-sm font-semibold {% if scheme.calculated_returns.3Y and scheme.calculated_returns.3Y > 0 %}text-success{% elif scheme.calculated_returns.3Y and scheme.calculated_returns.3Y < 0 %}text-error{% else %}text-slate-700 dark:text-navy-100{% endif %}">
+                        {% if scheme.calculated_returns.3Y %}{{ scheme.calculated_returns.3Y }}%{% else %}--{% endif %}
+                    </p>
+                </div>
+                <div class="text-center lg:text-left">
+                    <p class="text-[10px] uppercase text-slate-400 dark:text-navy-300 font-medium">NAV</p>
+                     <p class="text-sm font-semibold text-slate-700 dark:text-navy-100">
+                        {% if scheme.latest_nav_val %}₹{{ scheme.latest_nav_val|floatformat:2 }}{% else %}N/A{% endif %}
+                    </p>
+                </div>
+                <div class="text-center lg:text-left">
+                    <p class="text-[10px] uppercase text-slate-400 dark:text-navy-300 font-medium">Min Inv.</p>
+                    <p class="text-sm font-semibold text-slate-700 dark:text-navy-100">
+                        ₹{{ scheme.min_purchase_amount|intcomma|default:"0" }}
+                    </p>
+                </div>
+            </div>
+        </a>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% if is_paginated %}
+<div class="flex flex-col justify-between space-y-4 px-4 py-4 sm:flex-row sm:items-center sm:space-y-0 sm:px-5 mt-4">
+    <div class="text-xs+">
+        Showing {{ page_obj.start_index }} - {{ page_obj.end_index }} of {{ page_obj.paginator.count }} entries
+    </div>
+    <ol class="pagination space-x-1.5">
+        {% if page_obj.has_previous %}
+        <li>
+            <a href="?page={{ page_obj.previous_page_number }}&{{ query_params }}" class="flex size-8 items-center justify-center rounded-full bg-slate-150 text-slate-500 transition-colors hover:bg-slate-300 focus:bg-slate-300 active:bg-slate-300/80 dark:bg-navy-500 dark:text-navy-200 dark:hover:bg-navy-450 dark:focus:bg-navy-450 dark:active:bg-navy-450/90 ajax-pagination-link">
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+            </a>
+        </li>
+        {% endif %}
+
+        {% for i in page_obj.paginator.page_range %}
+            {% if page_obj.number == i %}
+            <li>
+                <a href="#" class="flex size-8 items-center justify-center rounded-full bg-primary text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90">
+                    {{ i }}
+                </a>
+            </li>
+            {% elif i > page_obj.number|add:'-3' and i < page_obj.number|add:'3' %}
+            <li>
+                <a href="?page={{ i }}&{{ query_params }}" class="flex size-8 items-center justify-center rounded-full bg-slate-150 text-slate-500 transition-colors hover:bg-slate-300 focus:bg-slate-300 active:bg-slate-300/80 dark:bg-navy-500 dark:text-navy-200 dark:hover:bg-navy-450 dark:focus:bg-navy-450 dark:active:bg-navy-450/90 ajax-pagination-link">
+                    {{ i }}
+                </a>
+            </li>
+            {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+        <li>
+            <a href="?page={{ page_obj.next_page_number }}&{{ query_params }}" class="flex size-8 items-center justify-center rounded-full bg-slate-150 text-slate-500 transition-colors hover:bg-slate-300 focus:bg-slate-300 active:bg-slate-300/80 dark:bg-navy-500 dark:text-navy-200 dark:hover:bg-navy-450 dark:focus:bg-navy-450 dark:active:bg-navy-450/90 ajax-pagination-link">
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+            </a>
+        </li>
+        {% endif %}
+    </ol>
+</div>
+{% endif %}
+
+{% else %}
+<div class="card p-8 text-center flex flex-col items-center justify-center h-64">
+     <div class="size-16 rounded-full bg-slate-150 dark:bg-navy-500 flex items-center justify-center mb-4">
+        <svg xmlns="http://www.w3.org/2000/svg" class="size-8 text-slate-400 dark:text-navy-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+     </div>
+     <h3 class="text-lg font-medium text-slate-700 dark:text-navy-100">No Schemes Found</h3>
+     <p class="text-slate-500 dark:text-navy-300 mt-2">Try adjusting your filters or search query.</p>
+     <a href="{% url 'products:scheme_explore' %}" class="btn mt-4 bg-primary text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90 ajax-pagination-link">
+        Clear Filters
+     </a>
+</div>
+{% endif %}

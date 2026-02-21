@@ -4,7 +4,7 @@
 {% block title %}Scheme Explorer - {% endblock %}
 
 {% block content %}
-<form method="GET" action="{% url 'products:scheme_explore' %}" class="min-h-[calc(100vh-4rem)]">
+<form id="filter-form" method="GET" action="{% url 'products:scheme_explore' %}" class="min-h-[calc(100vh-4rem)]">
     <div class="flex items-center justify-between py-5 lg:py-6 px-4 sm:px-5">
         <div class="flex items-center space-x-1">
             <h2 class="text-xl font-medium text-slate-700 line-clamp-1 dark:text-navy-50 lg:text-2xl">
@@ -14,7 +14,7 @@
         <!-- Sort Dropdown -->
         <div class="flex items-center space-x-2">
             <label class="text-sm font-medium text-slate-700 dark:text-navy-100 hidden sm:block">Sort By:</label>
-            <select name="sort" class="form-select h-8 rounded-lg border border-slate-300 bg-transparent px-3 py-0 text-xs+ hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" onchange="this.form.submit()">
+            <select name="sort" class="form-select h-8 rounded-lg border border-slate-300 bg-transparent px-3 py-0 text-xs+ hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent">
                 <option value="name" {% if current_sort == 'name' %}selected{% endif %}>Name</option>
                 <option value="popularity" {% if current_sort == 'popularity' %}selected{% endif %}>Popularity (AUM)</option>
                 <option value="rating_high" {% if current_sort == 'rating_high' %}selected{% endif %}>Risk: High to Low</option>
@@ -47,8 +47,7 @@
                     <label class="flex items-center space-x-2">
                         <input type="checkbox" name="category" value="{{ cat.id }}"
                                class="form-checkbox is-basic size-4 rounded border-slate-400/70 checked:bg-primary checked:border-primary hover:border-primary focus:border-primary dark:border-navy-400 dark:checked:bg-accent dark:checked:border-accent dark:hover:border-accent dark:focus:border-accent"
-                               {% if cat.id in selected_categories %}checked{% endif %}
-                               onchange="this.form.submit()">
+                               {% if cat.id in selected_categories %}checked{% endif %}>
                         <span class="text-xs text-slate-600 dark:text-navy-100">{{ cat.name }}</span>
                     </label>
                     {% endfor %}
@@ -67,8 +66,7 @@
                     <label class="flex items-center space-x-2 search-item">
                         <input type="checkbox" name="amc" value="{{ amc.id }}"
                                class="form-checkbox is-basic size-4 rounded border-slate-400/70 checked:bg-primary checked:border-primary hover:border-primary focus:border-primary dark:border-navy-400 dark:checked:bg-accent dark:checked:border-accent dark:hover:border-accent dark:focus:border-accent"
-                               {% if amc.id in selected_amcs %}checked{% endif %}
-                               onchange="this.form.submit()">
+                               {% if amc.id in selected_amcs %}checked{% endif %}>
                         <span class="text-xs text-slate-600 dark:text-navy-100 item-text">{{ amc.name }}</span>
                     </label>
                     {% endfor %}
@@ -83,8 +81,7 @@
                     <label class="flex items-center space-x-2">
                         <input type="checkbox" name="scheme_type" value="{{ st }}"
                                class="form-checkbox is-basic size-4 rounded border-slate-400/70 checked:bg-primary checked:border-primary hover:border-primary focus:border-primary dark:border-navy-400 dark:checked:bg-accent dark:checked:border-accent dark:hover:border-accent dark:focus:border-accent"
-                               {% if st in selected_scheme_types %}checked{% endif %}
-                               onchange="this.form.submit()">
+                               {% if st in selected_scheme_types %}checked{% endif %}>
                         <span class="text-xs text-slate-600 dark:text-navy-100">{{ st }}</span>
                     </label>
                     {% endfor %}
@@ -99,8 +96,7 @@
                     <label class="flex items-center space-x-2">
                         <input type="checkbox" name="risk" value="{{ risk }}"
                                class="form-checkbox is-basic size-4 rounded border-slate-400/70 checked:bg-primary checked:border-primary hover:border-primary focus:border-primary dark:border-navy-400 dark:checked:bg-accent dark:checked:border-accent dark:hover:border-accent dark:focus:border-accent"
-                               {% if risk in selected_risks %}checked{% endif %}
-                               onchange="this.form.submit()">
+                               {% if risk in selected_risks %}checked{% endif %}>
                         <span class="text-xs text-slate-600 dark:text-navy-100">{{ risk }}</span>
                     </label>
                     {% endfor %}
@@ -115,131 +111,11 @@
         </div>
 
         <!-- Main Content -->
-        <div class="lg:col-span-3">
-            {% if schemes %}
-            <div class="grid grid-cols-1 gap-4">
-                {% for scheme in schemes %}
-                <!-- Removed buttons, made whole card content clickable via specific areas or wrapping -->
-                <!-- Making the main interactive elements links. -->
-                <div class="card p-4 hover:shadow-lg transition-all duration-300 flex flex-col lg:flex-row lg:items-center justify-between gap-4 group">
-                    <!-- Left: Scheme Info -->
-                    <div class="flex-1 min-w-0">
-                        <a href="{% url 'products:scheme_detail' scheme.id %}" class="text-base font-semibold text-slate-700 hover:text-primary dark:text-navy-100 dark:hover:text-accent-light line-clamp-2 mb-1" title="{{ scheme.name }}">
-                            {{ scheme.name }}
-                        </a>
-                        <div class="flex flex-wrap gap-2 items-center">
-                            {% if scheme.category %}
-                            <span class="badge rounded-full bg-slate-150 px-2 py-0.5 text-xs text-slate-800 dark:bg-navy-500 dark:text-navy-100">
-                                {{ scheme.category.name }}
-                            </span>
-                            {% endif %}
-
-                            {% if scheme.riskometer %}
-                                 <!-- Risk Badge Logic -->
-                                 {% if scheme.riskometer == 'Low' %}
-                                 <span class="badge rounded-full bg-success/10 px-2 py-0.5 text-xs text-success">{{ scheme.riskometer }}</span>
-                                 {% elif scheme.riskometer == 'High' or scheme.riskometer == 'Very High' %}
-                                 <span class="badge rounded-full bg-error/10 px-2 py-0.5 text-xs text-error">{{ scheme.riskometer }}</span>
-                                 {% else %}
-                                 <span class="badge rounded-full bg-warning/10 px-2 py-0.5 text-xs text-warning">{{ scheme.riskometer }}</span>
-                                 {% endif %}
-                            {% endif %}
-                        </div>
-                    </div>
-
-                    <!-- Right: Stats (Now clickable to detail) -->
-                    <a href="{% url 'products:scheme_detail' scheme.id %}" class="block flex-1">
-                        <div class="grid grid-cols-2 sm:grid-cols-4 lg:flex lg:justify-end lg:space-x-8 gap-4 lg:gap-0 border-t lg:border-none border-slate-150 dark:border-navy-500 py-3 lg:py-0">
-                            <div class="text-center lg:text-left">
-                                <p class="text-[10px] uppercase text-slate-400 dark:text-navy-300 font-medium">1Y Return</p>
-                                <p class="text-sm font-semibold {% if scheme.calculated_returns.1Y and scheme.calculated_returns.1Y > 0 %}text-success{% elif scheme.calculated_returns.1Y and scheme.calculated_returns.1Y < 0 %}text-error{% else %}text-slate-700 dark:text-navy-100{% endif %}">
-                                    {% if scheme.calculated_returns.1Y %}{{ scheme.calculated_returns.1Y }}%{% else %}--{% endif %}
-                                </p>
-                            </div>
-                            <div class="text-center lg:text-left">
-                                <p class="text-[10px] uppercase text-slate-400 dark:text-navy-300 font-medium">3Y Return</p>
-                                <p class="text-sm font-semibold {% if scheme.calculated_returns.3Y and scheme.calculated_returns.3Y > 0 %}text-success{% elif scheme.calculated_returns.3Y and scheme.calculated_returns.3Y < 0 %}text-error{% else %}text-slate-700 dark:text-navy-100{% endif %}">
-                                    {% if scheme.calculated_returns.3Y %}{{ scheme.calculated_returns.3Y }}%{% else %}--{% endif %}
-                                </p>
-                            </div>
-                            <div class="text-center lg:text-left">
-                                <p class="text-[10px] uppercase text-slate-400 dark:text-navy-300 font-medium">NAV</p>
-                                 <p class="text-sm font-semibold text-slate-700 dark:text-navy-100">
-                                    {% if scheme.latest_nav_val %}₹{{ scheme.latest_nav_val|floatformat:2 }}{% else %}N/A{% endif %}
-                                </p>
-                            </div>
-                            <div class="text-center lg:text-left">
-                                <p class="text-[10px] uppercase text-slate-400 dark:text-navy-300 font-medium">Min Inv.</p>
-                                <p class="text-sm font-semibold text-slate-700 dark:text-navy-100">
-                                    ₹{{ scheme.min_purchase_amount|intcomma|default:"0" }}
-                                </p>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-                {% endfor %}
+        <div id="scheme-list-container" class="lg:col-span-3 relative">
+            <div id="loading-overlay" class="absolute inset-0 z-10 hidden bg-white/50 dark:bg-navy-900/50 flex justify-center items-center">
+                <div class="spinner is-elastic h-7 w-7 animate-spin rounded-full border-[3px] border-primary border-r-transparent dark:border-accent dark:border-r-transparent"></div>
             </div>
-
-            <!-- Pagination -->
-            {% if is_paginated %}
-            <div class="flex flex-col justify-between space-y-4 px-4 py-4 sm:flex-row sm:items-center sm:space-y-0 sm:px-5 mt-4">
-                <div class="text-xs+">
-                    Showing {{ page_obj.start_index }} - {{ page_obj.end_index }} of {{ page_obj.paginator.count }} entries
-                </div>
-                <ol class="pagination space-x-1.5">
-                    {% if page_obj.has_previous %}
-                    <li>
-                        <a href="?page={{ page_obj.previous_page_number }}&{{ query_params }}" class="flex size-8 items-center justify-center rounded-full bg-slate-150 text-slate-500 transition-colors hover:bg-slate-300 focus:bg-slate-300 active:bg-slate-300/80 dark:bg-navy-500 dark:text-navy-200 dark:hover:bg-navy-450 dark:focus:bg-navy-450 dark:active:bg-navy-450/90">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-                            </svg>
-                        </a>
-                    </li>
-                    {% endif %}
-
-                    {% for i in page_obj.paginator.page_range %}
-                        {% if page_obj.number == i %}
-                        <li>
-                            <a href="#" class="flex size-8 items-center justify-center rounded-full bg-primary text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90">
-                                {{ i }}
-                            </a>
-                        </li>
-                        {% elif i > page_obj.number|add:'-3' and i < page_obj.number|add:'3' %}
-                        <li>
-                            <a href="?page={{ i }}&{{ query_params }}" class="flex size-8 items-center justify-center rounded-full bg-slate-150 text-slate-500 transition-colors hover:bg-slate-300 focus:bg-slate-300 active:bg-slate-300/80 dark:bg-navy-500 dark:text-navy-200 dark:hover:bg-navy-450 dark:focus:bg-navy-450 dark:active:bg-navy-450/90">
-                                {{ i }}
-                            </a>
-                        </li>
-                        {% endif %}
-                    {% endfor %}
-
-                    {% if page_obj.has_next %}
-                    <li>
-                        <a href="?page={{ page_obj.next_page_number }}&{{ query_params }}" class="flex size-8 items-center justify-center rounded-full bg-slate-150 text-slate-500 transition-colors hover:bg-slate-300 focus:bg-slate-300 active:bg-slate-300/80 dark:bg-navy-500 dark:text-navy-200 dark:hover:bg-navy-450 dark:focus:bg-navy-450 dark:active:bg-navy-450/90">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-                            </svg>
-                        </a>
-                    </li>
-                    {% endif %}
-                </ol>
-            </div>
-            {% endif %}
-
-            {% else %}
-            <div class="card p-8 text-center flex flex-col items-center justify-center h-64">
-                 <div class="size-16 rounded-full bg-slate-150 dark:bg-navy-500 flex items-center justify-center mb-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="size-8 text-slate-400 dark:text-navy-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                 </div>
-                 <h3 class="text-lg font-medium text-slate-700 dark:text-navy-100">No Schemes Found</h3>
-                 <p class="text-slate-500 dark:text-navy-300 mt-2">Try adjusting your filters or search query.</p>
-                 <a href="{% url 'products:scheme_explore' %}" class="btn mt-4 bg-primary text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90">
-                    Clear Filters
-                 </a>
-            </div>
-            {% endif %}
+            {% include "products/partials/scheme_list_partial.html" %}
         </div>
     </div>
 </form>
@@ -260,5 +136,108 @@
             }
         }
     }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('filter-form');
+        const container = document.getElementById('scheme-list-container');
+        const loadingOverlay = document.getElementById('loading-overlay');
+        const inputs = form.querySelectorAll('input, select');
+        let debounceTimer;
+
+        function fetchSchemes(url) {
+            loadingOverlay.classList.remove('hidden');
+
+            // If no URL provided, construct it from form data
+            if (!url) {
+                const formData = new FormData(form);
+                const params = new URLSearchParams(formData);
+                url = `${form.action}?${params.toString()}`;
+            }
+
+            fetch(url, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.text())
+            .then(html => {
+                // Parse HTML to extract only the partial content if strictly needed,
+                // but since the view will return only partial, we can just dump it.
+                // However, the view returns rendered partial string.
+                // We need to keep the loader structure if we replace innerHTML of container.
+                // Actually the partial is just the list and pagination.
+                // So we should replace the content AFTER the loader.
+
+                // Let's create a temporary container to hold the response
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = html;
+
+                // Remove old content but keep loader
+                const children = Array.from(container.children);
+                children.forEach(child => {
+                    if (child.id !== 'loading-overlay') {
+                        child.remove();
+                    }
+                });
+
+                // Append new content
+                while (tempDiv.firstChild) {
+                    container.appendChild(tempDiv.firstChild);
+                }
+
+                // Update URL
+                history.pushState(null, '', url);
+
+                loadingOverlay.classList.add('hidden');
+
+                // Re-attach pagination listeners since content is new
+                attachPaginationListeners();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                loadingOverlay.classList.add('hidden');
+            });
+        }
+
+        function handleInput() {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                fetchSchemes();
+            }, 500); // 500ms debounce
+        }
+
+        inputs.forEach(input => {
+            input.addEventListener('change', handleInput);
+            if (input.type === 'text') {
+                input.addEventListener('input', handleInput);
+            }
+        });
+
+        // Prevent default form submission
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            fetchSchemes();
+        });
+
+        function attachPaginationListeners() {
+            const paginationLinks = container.querySelectorAll('.ajax-pagination-link');
+            paginationLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    fetchSchemes(this.href);
+                });
+            });
+        }
+
+        // Initial attach
+        attachPaginationListeners();
+
+        // Handle back/forward browser buttons
+        window.addEventListener('popstate', function() {
+            // Simply reload or re-fetch. Re-fetching is better UX.
+            // location.href has the restored URL
+            fetchSchemes(location.href);
+        });
+    });
 </script>
 {% endblock %}

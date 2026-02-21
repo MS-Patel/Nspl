@@ -130,6 +130,11 @@ class SchemeExplorerView(LoginRequiredMixin, ListView):
 
         return queryset
 
+    def get_template_names(self):
+        if self.request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return ['products/partials/scheme_list_partial.html']
+        return super().get_template_names()
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
