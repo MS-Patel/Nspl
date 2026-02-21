@@ -1,6 +1,7 @@
 from decimal import Decimal
 from django.db.models import Sum
 from apps.reconciliation.models import Transaction, Holding
+from apps.products.models import NAVHistory
 from django.utils import timezone
 from thefuzz import fuzz
 
@@ -255,8 +256,15 @@ def recalculate_holding(investor, scheme, folio_number):
     holding.free_units = free_units
 
     # Recalculate Current Value if NAV is present
+    # Fetch latest NAV
+    latest_nav_obj = NAVHistory.objects.filter(scheme=scheme).order_by('-nav_date').first()
+    if latest_nav_obj:
+        holding.current_nav = latest_nav_obj.net_asset_value
+
     if holding.current_nav:
         holding.current_value = total_units * holding.current_nav
+    else:
+        holding.current_value = Decimal(0)
 
     holding.last_updated = timezone.now()
     holding.save()
