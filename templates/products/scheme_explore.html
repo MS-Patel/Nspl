@@ -32,125 +32,135 @@
             <!-- Category -->
             <div class="mb-4">
                 <label class="block text-sm font-medium text-slate-700 dark:text-navy-100 mb-1">Category</label>
-                <select name="category" class="form-select w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent">
-                    <option value="">All Categories</option>
+                <div class="max-h-48 overflow-y-auto space-y-2 border border-slate-200 rounded-lg p-2 dark:border-navy-500">
                     {% for cat in categories %}
-                    <option value="{{ cat.id }}" {% if request.GET.category|add:"0" == cat.id %}selected{% endif %}>{{ cat.name }}</option>
+                    <label class="flex items-center space-x-2">
+                        <input type="checkbox" name="category" value="{{ cat.id }}"
+                               class="form-checkbox is-basic size-4 rounded border-slate-400/70 checked:bg-primary checked:border-primary hover:border-primary focus:border-primary dark:border-navy-400 dark:checked:bg-accent dark:checked:border-accent dark:hover:border-accent dark:focus:border-accent"
+                               {% if cat.id in selected_categories %}checked{% endif %}
+                               onchange="this.form.submit()">
+                        <span class="text-xs text-slate-600 dark:text-navy-100">{{ cat.name }}</span>
+                    </label>
                     {% endfor %}
-                </select>
+                </div>
             </div>
 
             <!-- AMC -->
             <div class="mb-4">
                 <label class="block text-sm font-medium text-slate-700 dark:text-navy-100 mb-1">AMC</label>
-                <select name="amc" class="form-select w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent">
-                    <option value="">All AMCs</option>
+                <div class="max-h-48 overflow-y-auto space-y-2 border border-slate-200 rounded-lg p-2 dark:border-navy-500">
                     {% for amc in amcs %}
-                    <option value="{{ amc.id }}" {% if request.GET.amc|add:"0" == amc.id %}selected{% endif %}>{{ amc.name }}</option>
+                    <label class="flex items-center space-x-2">
+                        <input type="checkbox" name="amc" value="{{ amc.id }}"
+                               class="form-checkbox is-basic size-4 rounded border-slate-400/70 checked:bg-primary checked:border-primary hover:border-primary focus:border-primary dark:border-navy-400 dark:checked:bg-accent dark:checked:border-accent dark:hover:border-accent dark:focus:border-accent"
+                               {% if amc.id in selected_amcs %}checked{% endif %}
+                               onchange="this.form.submit()">
+                        <span class="text-xs text-slate-600 dark:text-navy-100">{{ amc.name }}</span>
+                    </label>
                     {% endfor %}
-                </select>
+                </div>
             </div>
 
              <!-- Scheme Type -->
              <div class="mb-4">
                 <label class="block text-sm font-medium text-slate-700 dark:text-navy-100 mb-1">Scheme Type</label>
-                <select name="scheme_type" class="form-select w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent">
-                    <option value="">All Types</option>
+                <div class="max-h-48 overflow-y-auto space-y-2 border border-slate-200 rounded-lg p-2 dark:border-navy-500">
                     {% for st in scheme_types %}
-                    <option value="{{ st }}" {% if request.GET.scheme_type == st %}selected{% endif %}>{{ st }}</option>
+                    <label class="flex items-center space-x-2">
+                        <input type="checkbox" name="scheme_type" value="{{ st }}"
+                               class="form-checkbox is-basic size-4 rounded border-slate-400/70 checked:bg-primary checked:border-primary hover:border-primary focus:border-primary dark:border-navy-400 dark:checked:bg-accent dark:checked:border-accent dark:hover:border-accent dark:focus:border-accent"
+                               {% if st in selected_scheme_types %}checked{% endif %}
+                               onchange="this.form.submit()">
+                        <span class="text-xs text-slate-600 dark:text-navy-100">{{ st }}</span>
+                    </label>
                     {% endfor %}
-                </select>
+                </div>
             </div>
 
             <!-- Riskometer -->
             <div class="mb-6">
                 <label class="block text-sm font-medium text-slate-700 dark:text-navy-100 mb-2">Risk Level</label>
-                <div class="space-y-2">
+                <div class="space-y-2 border border-slate-200 rounded-lg p-2 dark:border-navy-500">
                     {% for risk in risks %}
-                    <label class="inline-flex items-center space-x-2">
-                        <input type="radio" name="risk" value="{{ risk }}" class="form-radio is-basic size-4 rounded-full border-slate-400/70 checked:border-primary checked:bg-primary hover:border-primary focus:border-primary dark:border-navy-400 dark:checked:border-accent dark:checked:bg-accent dark:hover:border-accent dark:focus:border-accent" {% if request.GET.risk == risk %}checked{% endif %}>
-                        <span class="text-sm text-slate-600 dark:text-navy-100">{{ risk }}</span>
+                    <label class="flex items-center space-x-2">
+                        <input type="checkbox" name="risk" value="{{ risk }}"
+                               class="form-checkbox is-basic size-4 rounded border-slate-400/70 checked:bg-primary checked:border-primary hover:border-primary focus:border-primary dark:border-navy-400 dark:checked:bg-accent dark:checked:border-accent dark:hover:border-accent dark:focus:border-accent"
+                               {% if risk in selected_risks %}checked{% endif %}
+                               onchange="this.form.submit()">
+                        <span class="text-xs text-slate-600 dark:text-navy-100">{{ risk }}</span>
                     </label>
-                    <br>
                     {% endfor %}
                 </div>
             </div>
-
-            <button type="submit" class="btn w-full bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90">
-                Apply Filters
-            </button>
         </form>
     </div>
 
     <!-- Main Content -->
     <div class="lg:col-span-3">
         {% if schemes %}
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <div class="grid grid-cols-1 gap-4">
             {% for scheme in schemes %}
-            <div class="card p-4 hover:shadow-lg transition-shadow duration-300 flex flex-col justify-between h-full">
-                <div>
-                    <!-- Header -->
-                    <div class="flex justify-between items-start mb-3">
-                        <div class="flex-1">
-                             <a href="{% url 'products:scheme_detail' scheme.id %}" class="text-base font-semibold text-slate-700 hover:text-primary dark:text-navy-100 dark:hover:text-accent-light line-clamp-2" title="{{ scheme.name }}">
-                                {{ scheme.name }}
-                            </a>
-                            <div class="mt-1 flex flex-wrap gap-1">
-                                {% if scheme.category %}
-                                <span class="badge rounded-full bg-slate-150 px-2 py-0.5 text-xs text-slate-800 dark:bg-navy-500 dark:text-navy-100">
-                                    {{ scheme.category.name }}
-                                </span>
-                                {% endif %}
-                                {% if scheme.riskometer %}
-                                    {% if scheme.riskometer == 'Low' %}
-                                    <span class="badge rounded-full bg-success/10 px-2 py-0.5 text-xs text-success">{{ scheme.riskometer }}</span>
-                                    {% elif scheme.riskometer == 'High' or scheme.riskometer == 'Very High' %}
-                                    <span class="badge rounded-full bg-error/10 px-2 py-0.5 text-xs text-error">{{ scheme.riskometer }}</span>
-                                    {% else %}
-                                    <span class="badge rounded-full bg-warning/10 px-2 py-0.5 text-xs text-warning">{{ scheme.riskometer }}</span>
-                                    {% endif %}
-                                {% endif %}
-                            </div>
-                        </div>
-                    </div>
+            <div class="card p-4 hover:shadow-lg transition-shadow duration-300 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                <!-- Left: Scheme Info (Grow to fill available space) -->
+                <div class="flex-1 min-w-0">
+                    <a href="{% url 'products:scheme_detail' scheme.id %}" class="text-base font-semibold text-slate-700 hover:text-primary dark:text-navy-100 dark:hover:text-accent-light line-clamp-2 mb-1" title="{{ scheme.name }}">
+                        {{ scheme.name }}
+                    </a>
+                    <div class="flex flex-wrap gap-2 items-center">
+                        {% if scheme.category %}
+                        <span class="badge rounded-full bg-slate-150 px-2 py-0.5 text-xs text-slate-800 dark:bg-navy-500 dark:text-navy-100">
+                            {{ scheme.category.name }}
+                        </span>
+                        {% endif %}
 
-                    <!-- Stats Grid -->
-                    <div class="grid grid-cols-2 gap-3 py-3 border-t border-b border-slate-150 dark:border-navy-500 mb-4">
-                        <div>
-                            <p class="text-xs text-slate-400 dark:text-navy-300">1Y Return</p>
-                            <p class="text-sm font-medium {% if scheme.calculated_returns.1Y and scheme.calculated_returns.1Y > 0 %}text-success{% elif scheme.calculated_returns.1Y and scheme.calculated_returns.1Y < 0 %}text-error{% else %}text-slate-700 dark:text-navy-100{% endif %}">
-                                {% if scheme.calculated_returns.1Y %}{{ scheme.calculated_returns.1Y }}%{% else %}--{% endif %}
-                            </p>
-                        </div>
-                        <div>
-                            <p class="text-xs text-slate-400 dark:text-navy-300">3Y Return</p>
-                            <p class="text-sm font-medium {% if scheme.calculated_returns.3Y and scheme.calculated_returns.3Y > 0 %}text-success{% elif scheme.calculated_returns.3Y and scheme.calculated_returns.3Y < 0 %}text-error{% else %}text-slate-700 dark:text-navy-100{% endif %}">
-                                {% if scheme.calculated_returns.3Y %}{{ scheme.calculated_returns.3Y }}%{% else %}--{% endif %}
-                            </p>
-                        </div>
-                        <div>
-                            <p class="text-xs text-slate-400 dark:text-navy-300">Latest NAV</p>
-                            <p class="text-sm font-medium text-slate-700 dark:text-navy-100">
-                                {% if scheme.latest_nav_val %}₹{{ scheme.latest_nav_val|floatformat:2 }}{% else %}N/A{% endif %}
-                            </p>
-                             <p class="text-[10px] text-slate-400 dark:text-navy-300">{{ scheme.latest_nav_date|date:"d M Y" }}</p>
-                        </div>
-                        <div>
-                            <p class="text-xs text-slate-400 dark:text-navy-300">Min Inv.</p>
-                            <p class="text-sm font-medium text-slate-700 dark:text-navy-100">
-                                ₹{{ scheme.min_purchase_amount|intcomma|default:"0" }}
-                            </p>
-                        </div>
+                        {% if scheme.riskometer %}
+                             <!-- Risk Badge Logic -->
+                             {% if scheme.riskometer == 'Low' %}
+                             <span class="badge rounded-full bg-success/10 px-2 py-0.5 text-xs text-success">{{ scheme.riskometer }}</span>
+                             {% elif scheme.riskometer == 'High' or scheme.riskometer == 'Very High' %}
+                             <span class="badge rounded-full bg-error/10 px-2 py-0.5 text-xs text-error">{{ scheme.riskometer }}</span>
+                             {% else %}
+                             <span class="badge rounded-full bg-warning/10 px-2 py-0.5 text-xs text-warning">{{ scheme.riskometer }}</span>
+                             {% endif %}
+                        {% endif %}
                     </div>
                 </div>
 
-                <!-- Footer Actions -->
-                <div class="flex space-x-2 mt-auto">
-                    <a href="{% url 'investments:order_create' %}?scheme_id={{ scheme.id }}" class="btn h-9 flex-1 bg-primary text-xs+ font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90">
-                        Invest
+                <!-- Middle: Stats (Fixed width or flex) -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 lg:flex lg:space-x-8 gap-4 lg:gap-0 border-t border-b lg:border-none border-slate-150 dark:border-navy-500 py-3 lg:py-0">
+                    <div class="text-center lg:text-left">
+                        <p class="text-[10px] uppercase text-slate-400 dark:text-navy-300 font-medium">1Y Return</p>
+                        <p class="text-sm font-semibold {% if scheme.calculated_returns.1Y and scheme.calculated_returns.1Y > 0 %}text-success{% elif scheme.calculated_returns.1Y and scheme.calculated_returns.1Y < 0 %}text-error{% else %}text-slate-700 dark:text-navy-100{% endif %}">
+                            {% if scheme.calculated_returns.1Y %}{{ scheme.calculated_returns.1Y }}%{% else %}--{% endif %}
+                        </p>
+                    </div>
+                    <div class="text-center lg:text-left">
+                        <p class="text-[10px] uppercase text-slate-400 dark:text-navy-300 font-medium">3Y Return</p>
+                        <p class="text-sm font-semibold {% if scheme.calculated_returns.3Y and scheme.calculated_returns.3Y > 0 %}text-success{% elif scheme.calculated_returns.3Y and scheme.calculated_returns.3Y < 0 %}text-error{% else %}text-slate-700 dark:text-navy-100{% endif %}">
+                            {% if scheme.calculated_returns.3Y %}{{ scheme.calculated_returns.3Y }}%{% else %}--{% endif %}
+                        </p>
+                    </div>
+                    <div class="text-center lg:text-left">
+                        <p class="text-[10px] uppercase text-slate-400 dark:text-navy-300 font-medium">NAV</p>
+                         <p class="text-sm font-semibold text-slate-700 dark:text-navy-100">
+                            {% if scheme.latest_nav_val %}₹{{ scheme.latest_nav_val|floatformat:2 }}{% else %}N/A{% endif %}
+                        </p>
+                    </div>
+                    <div class="text-center lg:text-left">
+                        <p class="text-[10px] uppercase text-slate-400 dark:text-navy-300 font-medium">Min Inv.</p>
+                        <p class="text-sm font-semibold text-slate-700 dark:text-navy-100">
+                            ₹{{ scheme.min_purchase_amount|intcomma|default:"0" }}
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Right: Actions -->
+                <div class="flex lg:flex-col gap-2 shrink-0 min-w-[120px]">
+                    <a href="{% url 'investments:order_create' %}?scheme_id={{ scheme.id }}" class="btn h-8 w-full bg-primary text-xs font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90">
+                        Invest Now
                     </a>
-                    <a href="{% url 'products:scheme_detail' scheme.id %}" class="btn h-9 flex-1 border border-slate-300 font-medium text-slate-800 hover:bg-slate-150 focus:bg-slate-150 active:bg-slate-150/80 dark:border-navy-450 dark:text-navy-50 dark:hover:bg-navy-500 dark:focus:bg-navy-500 dark:active:bg-navy-500/90">
-                        Details
+                    <a href="{% url 'products:scheme_detail' scheme.id %}" class="btn h-8 w-full border border-slate-300 font-medium text-xs text-slate-700 hover:bg-slate-150 focus:bg-slate-150 active:bg-slate-150/80 dark:border-navy-450 dark:text-navy-100 dark:hover:bg-navy-500 dark:focus:bg-navy-500 dark:active:bg-navy-500/90">
+                        View Details
                     </a>
                 </div>
             </div>

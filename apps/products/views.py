@@ -76,26 +76,46 @@ class SchemeExplorerView(LoginRequiredMixin, ListView):
                 Q(isin__icontains=search_query)
             )
 
-        category_id = self.request.GET.get('category')
-        if category_id:
-            queryset = queryset.filter(category_id=category_id)
+        category_ids = [x for x in self.request.GET.getlist('category') if x.isdigit()]
+        if category_ids:
+            queryset = queryset.filter(category_id__in=category_ids)
 
-        amc_id = self.request.GET.get('amc')
-        if amc_id:
-            queryset = queryset.filter(amc_id=amc_id)
+        amc_ids = [x for x in self.request.GET.getlist('amc') if x.isdigit()]
+        if amc_ids:
+            queryset = queryset.filter(amc_id__in=amc_ids)
 
-        risk = self.request.GET.get('risk')
-        if risk:
-            queryset = queryset.filter(riskometer=risk)
+        risks = self.request.GET.getlist('risk')
+        if risks:
+            queryset = queryset.filter(riskometer__in=risks)
 
-        scheme_type = self.request.GET.get('scheme_type')
-        if scheme_type:
-             queryset = queryset.filter(scheme_type=scheme_type)
+        scheme_types = self.request.GET.getlist('scheme_type')
+        if scheme_types:
+             queryset = queryset.filter(scheme_type__in=scheme_types)
 
         return queryset.order_by('name')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+
+        # Pass selected filters to context for template rendering
+        selected_cats = []
+        for x in self.request.GET.getlist('category'):
+            try:
+                selected_cats.append(int(x))
+            except ValueError:
+                pass
+        context['selected_categories'] = selected_cats
+
+        selected_amcs = []
+        for x in self.request.GET.getlist('amc'):
+            try:
+                selected_amcs.append(int(x))
+            except ValueError:
+                pass
+        context['selected_amcs'] = selected_amcs
+
+        context['selected_risks'] = self.request.GET.getlist('risk')
+        context['selected_scheme_types'] = self.request.GET.getlist('scheme_type')
 
         # Calculate returns for displayed schemes
         for scheme in context['schemes']:
