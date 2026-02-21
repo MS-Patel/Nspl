@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'widget_tweaks',
     'apps.administration',
+    'apps.core',
     'apps.users',
     'apps.products',
     'apps.investments',
