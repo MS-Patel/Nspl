@@ -94,6 +94,7 @@
                                         </button>
                                     </form>
                                 </div>
+                                <p class="text-tiny text-slate-400 mt-1 text-right">Mandatory for tax compliance.</p>
                             {% endif %}
                         {% endif %}
                     </div>
@@ -124,6 +125,9 @@
                             {% endif %}
                         </div>
                     </div>
+                    {% if investor.nominee_auth_status != 'A' %}
+                        <p class="text-tiny text-slate-400 mt-1">If "Pending", investor receives SMS/Email to approve nominee.</p>
+                    {% endif %}
 
                     {% if investor.bse_remarks %}
                     <div class="mt-2 rounded-lg bg-slate-50 p-2 text-xs text-slate-500 dark:bg-navy-900">
@@ -158,6 +162,7 @@
                                 Approve & Push to BSE
                             </button>
                         </form>
+                        <p class="text-tiny text-slate-400 text-center">Registers new client or updates existing details on BSE.</p>
 
                         <!-- Distinct Button for Triggering Auth if Pending -->
                         {% if investor.nominee_auth_status == 'P' and investor.ucc_code %}
@@ -247,7 +252,10 @@
                     <div class="my-4 h-px bg-slate-200 dark:bg-navy-500"></div>
 
                     <div class="flex items-center justify-between mb-4">
-                        <h4 class="text-lg font-medium text-slate-700 dark:text-navy-100">Mandates</h4>
+                        <div>
+                            <h4 class="text-lg font-medium text-slate-700 dark:text-navy-100">Mandates</h4>
+                            <p class="text-tiny text-slate-400">Required for automating SIP payments.</p>
+                        </div>
                          {% if user.user_type == 'RM' or user.user_type == 'DISTRIBUTOR' or user.user_type == 'ADMIN' or user.user_type == 'INVESTOR' %}
                         <a href="{% url 'investments:mandate_create' %}?investor_id={{ investor.id }}" class="btn h-8 rounded-full bg-primary/10 px-3 text-xs+ font-medium text-primary hover:bg-primary/20 focus:bg-primary/20 active:bg-primary/25 dark:bg-accent-light/10 dark:text-accent-light dark:hover:bg-accent-light/20 dark:focus:bg-accent-light/20 dark:active:bg-accent-light/25">
                             Create Mandate
@@ -332,6 +340,7 @@
                                         Opt Out of Nomination
                                     </button>
                                 </form>
+                                <p class="text-tiny text-slate-400 ml-4 hidden sm:block">Updates BSE to mark nomination as 'Opt-Out'.</p>
                                 {% endif %}
                             {% else %}
                              <span class="tag rounded-full bg-slate-150 text-slate-500 dark:bg-navy-500 dark:text-navy-100">Opted Out</span>
