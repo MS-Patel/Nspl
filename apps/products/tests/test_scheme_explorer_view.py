@@ -61,3 +61,14 @@ class SchemeExplorerViewTest(TestCase):
         self.assertEqual(schemes[0].id, s1.id)
         self.assertEqual(schemes[1].id, s2.id)
         self.assertEqual(schemes[2].id, s3.id)
+
+    def test_ajax_request_returns_partial(self):
+        SchemeFactory()
+        # Simulate AJAX request
+        response = self.client.get(
+            self.url,
+            HTTP_X_REQUESTED_WITH='XMLHttpRequest'
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'products/partials/scheme_list_partial.html')
+        self.assertTemplateNotUsed(response, 'products/scheme_explore.html')
