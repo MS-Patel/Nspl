@@ -26,7 +26,7 @@ from apps.core.utils.sample_headers import (
 from .utils.calculations import get_scheme_returns, get_peer_comparison
 import json
 from django.core.serializers.json import DjangoJSONEncoder
-from django.db.models import Q
+from django.db.models import Q, Case, When, Value, IntegerField
 
 User = get_user_model()
 
@@ -92,7 +92,43 @@ class SchemeExplorerView(LoginRequiredMixin, ListView):
         if scheme_types:
              queryset = queryset.filter(scheme_type__in=scheme_types)
 
-        return queryset.order_by('name')
+        # Sorting Logic
+        sort_param = self.request.GET.get('sort', 'name') # Default sort by name
+
+        if sort_param == 'popularity':
+            queryset = queryset.order_by('-aum')
+        elif sort_param == 'rating_high':
+            # Map riskometer values to integers (High Risk first)
+            queryset = queryset.annotate(
+                risk_val=Case(
+                    When(riskometer='Low', then=Value(1)),
+                    When(riskometer='Low to Moderate', then=Value(2)),
+                    When(riskometer='Moderate', then=Value(3)),
+                    When(riskometer='Moderately High', then=Value(4)),
+                    When(riskometer='High', then=Value(5)),
+                    When(riskometer='Very High', then=Value(6)),
+                    default=Value(0),
+                    output_field=IntegerField(),
+                )
+            ).order_by('-risk_val')
+        elif sort_param == 'rating_low':
+             # Map riskometer values to integers (Low Risk first)
+            queryset = queryset.annotate(
+                risk_val=Case(
+                    When(riskometer='Low', then=Value(1)),
+                    When(riskometer='Low to Moderate', then=Value(2)),
+                    When(riskometer='Moderate', then=Value(3)),
+                    When(riskometer='Moderately High', then=Value(4)),
+                    When(riskometer='High', then=Value(5)),
+                    When(riskometer='Very High', then=Value(6)),
+                    default=Value(7), # Place unrated at the end for ascending sort
+                    output_field=IntegerField(),
+                )
+            ).order_by('risk_val')
+        else:
+            queryset = queryset.order_by('name')
+
+        return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -116,6 +152,7 @@ class SchemeExplorerView(LoginRequiredMixin, ListView):
 
         context['selected_risks'] = self.request.GET.getlist('risk')
         context['selected_scheme_types'] = self.request.GET.getlist('scheme_type')
+        context['current_sort'] = self.request.GET.get('sort', 'name')
 
         # Calculate returns for displayed schemes
         for scheme in context['schemes']:
