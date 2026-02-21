@@ -103,11 +103,6 @@
                 </div>
             </div>
 
-            <div class="mt-4 flex justify-end">
-                <button type="submit" class="btn bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90 w-full">
-                    Apply Filters
-                </button>
-            </div>
         </div>
 
         <!-- Main Content -->
@@ -231,6 +226,46 @@
 
         // Initial attach
         attachPaginationListeners();
+
+        // Handle active filter removal (Delegation)
+        container.addEventListener('click', function(e) {
+            // Check for remove single filter
+            const removeBtn = e.target.closest('.remove-filter-btn');
+            if (removeBtn) {
+                const type = removeBtn.dataset.type;
+                const value = removeBtn.dataset.value;
+
+                if (type === 'search') {
+                    const searchInput = form.querySelector('input[name="search"]');
+                    if (searchInput) {
+                        searchInput.value = '';
+                        searchInput.dispatchEvent(new Event('input'));
+                    }
+                } else {
+                    // Checkboxes
+                    const checkbox = form.querySelector(`input[name="${type}"][value="${value}"]`);
+                    if (checkbox) {
+                        checkbox.checked = false;
+                        checkbox.dispatchEvent(new Event('change'));
+                    }
+                }
+                return;
+            }
+
+            // Check for clear all
+            const clearBtn = e.target.closest('.clear-all-filters-btn');
+            if (clearBtn) {
+                const filterNames = ['search', 'category', 'amc', 'scheme_type', 'risk'];
+                filterNames.forEach(name => {
+                     const els = form.querySelectorAll(`[name="${name}"]`);
+                     els.forEach(el => {
+                         if(el.type === 'checkbox' || el.type === 'radio') el.checked = false;
+                         else el.value = '';
+                     });
+                });
+                fetchSchemes();
+            }
+        });
 
         // Handle back/forward browser buttons
         window.addEventListener('popstate', function() {

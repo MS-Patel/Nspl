@@ -139,6 +139,9 @@ class SchemeExplorerView(LoginRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
 
         # Pass selected filters to context for template rendering
+        active_filters = []
+
+        # Categories
         selected_cats = []
         for x in self.request.GET.getlist('category'):
             try:
@@ -147,6 +150,16 @@ class SchemeExplorerView(LoginRequiredMixin, ListView):
                 pass
         context['selected_categories'] = selected_cats
 
+        if selected_cats:
+            cats = SchemeCategory.objects.filter(id__in=selected_cats)
+            for c in cats:
+                active_filters.append({
+                    'type': 'category',
+                    'label': c.name,
+                    'value': c.id
+                })
+
+        # AMCs
         selected_amcs = []
         for x in self.request.GET.getlist('amc'):
             try:
@@ -155,8 +168,45 @@ class SchemeExplorerView(LoginRequiredMixin, ListView):
                 pass
         context['selected_amcs'] = selected_amcs
 
-        context['selected_risks'] = self.request.GET.getlist('risk')
-        context['selected_scheme_types'] = self.request.GET.getlist('scheme_type')
+        if selected_amcs:
+            amcs = AMC.objects.filter(id__in=selected_amcs)
+            for a in amcs:
+                active_filters.append({
+                    'type': 'amc',
+                    'label': a.name,
+                    'value': a.id
+                })
+
+        # Risks
+        risks = self.request.GET.getlist('risk')
+        context['selected_risks'] = risks
+        for r in risks:
+             active_filters.append({
+                'type': 'risk',
+                'label': r,
+                'value': r
+            })
+
+        # Scheme Types
+        scheme_types = self.request.GET.getlist('scheme_type')
+        context['selected_scheme_types'] = scheme_types
+        for st in scheme_types:
+             active_filters.append({
+                'type': 'scheme_type',
+                'label': st,
+                'value': st
+            })
+
+        # Search Query
+        search_query = self.request.GET.get('search')
+        if search_query:
+            active_filters.append({
+                'type': 'search',
+                'label': f'Search: {search_query}',
+                'value': search_query
+            })
+
+        context['active_filters'] = active_filters
         context['current_sort'] = self.request.GET.get('sort', 'name')
 
         # Calculate returns for displayed schemes
