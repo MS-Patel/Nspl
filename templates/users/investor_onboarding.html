@@ -10,6 +10,16 @@
         </h2>
     </div>
 
+    <div class="card p-4 sm:p-5 mb-6 bg-info/10 dark:bg-info/15 text-slate-600 dark:text-navy-100">
+        <h3 class="text-base font-medium mb-2">Onboarding Guide</h3>
+        <ol class="list-decimal list-inside space-y-1 text-xs+">
+            <li>Complete all 5 steps of this form with accurate details matching the PAN card.</li>
+            <li>Once saved, you must click <b>"Push to BSE"</b> on the Investor Detail page to register the client.</li>
+            <li>After registration, upload <b>FATCA</b> details (mandatory).</li>
+            <li>Create a <b>Mandate</b> to enable SIP transactions.</li>
+        </ol>
+    </div>
+
     <!-- Give the form a specific ID for validation -->
     <form method="post" id="investorOnboardingForm" class="relative">
         {% csrf_token %}
@@ -413,6 +423,7 @@
                                 <label class="block">
                                     <span>Nomination Opt</span>
                                     {% render_field form.nomination_opt class="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" %}
+                                    <span class="text-tiny text-slate-400">Select 'No' to opt-out of nomination (Requires declaration).</span>
                                 </label>
                                 <label class="block">
                                     <span>Authentication Mode</span>

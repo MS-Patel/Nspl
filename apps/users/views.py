@@ -770,7 +770,12 @@ class PushToBSEView(LoginRequiredMixin, View):
                     messages.warning(request, f"FATCA Upload Warning: {fatca_response.get('remarks')}")
 
             else:
-                messages.error(request, f"BSE Error: {response.get('remarks')}")
+                # Handle "MODIFICATION NOT FOUND" as a non-error
+                remarks = response.get('remarks', '')
+                if "FAILED : MODIFICATION NOT FOUND" in remarks.upper():
+                    messages.info(request, "BSE Record is already up to date. No changes were necessary.")
+                else:
+                    messages.error(request, f"BSE Error: {remarks}")
         except Exception as e:
              messages.error(request, f"API Call Failed: {str(e)}")
 
