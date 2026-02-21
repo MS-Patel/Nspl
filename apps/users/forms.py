@@ -487,6 +487,32 @@ class InvestorProfileForm(forms.ModelForm):
 
             # Admin has full access (default)
 
+    def clean(self):
+        cleaned_data = super().clean()
+        dob = cleaned_data.get("dob")
+
+        if dob:
+            today = date.today()
+            age = today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
+
+            if age < 18:
+                # Is Minor
+                guardian_name = cleaned_data.get("guardian_name")
+                guardian_pan = cleaned_data.get("guardian_pan")
+
+                if not guardian_name:
+                    self.add_error('guardian_name', "Guardian Name is required for minor investor.")
+
+                if not guardian_pan:
+                    self.add_error('guardian_pan', "Guardian PAN is required for minor investor.")
+
+                # Enforce Tax Status
+                tax_status = cleaned_data.get("tax_status")
+                if tax_status != InvestorProfile.MINOR:
+                     self.add_error('tax_status', "Tax Status must be 'On Behalf of Minor' for investors under 18.")
+
+        return cleaned_data
+
     def clean_pan(self):
         pan = self.cleaned_data.get('pan')
         if pan:

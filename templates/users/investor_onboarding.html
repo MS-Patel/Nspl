@@ -235,7 +235,7 @@
                             </div>
 
                             <!-- Guardian Details (Conditional Logic can be added later) -->
-                            <div class="mt-4 border-t pt-4">
+                            <div class="mt-4 border-t pt-4" id="guardian-section">
                                 <h5 class="font-medium">Guardian Details (If Minor)</h5>
                                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 mt-2">
                                     <label class="block">
@@ -703,6 +703,134 @@
                 }
             });
         }
+
+        // --- Minor Check Logic ---
+        const dobInput = document.getElementById('dob');
+        const guardianSection = document.getElementById('guardian-section');
+        const taxStatusSelect = document.getElementById('tax_status');
+
+        function checkMinorStatus() {
+            if(!dobInput.value) return;
+
+            const dob = new Date(dobInput.value);
+            const today = new Date();
+            let age = today.getFullYear() - dob.getFullYear();
+            const m = today.getMonth() - dob.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+                age--;
+            }
+
+            const isMinor = age < 18;
+
+            // Update Validation Rules
+            if (window.validation) {
+                if (isMinor) {
+                    // Add Guardian Fields to Step 2 Validation
+                    if (!stepFields[2].includes('#guardian_name')) {
+                        window.validation.addField('#guardian_name', [
+                            { rule: 'required', errorMessage: 'Guardian Name is required for minor' }
+                        ]);
+                        stepFields[2].push('#guardian_name');
+                    }
+
+                    if (!stepFields[2].includes('#guardian_pan')) {
+                        window.validation.addField('#guardian_pan', [
+                            { rule: 'required', errorMessage: 'Guardian PAN is required for minor' },
+                            { rule: 'customRegexp', value: /[A-Z]{5}[0-9]{4}[A-Z]{1}/, errorMessage: 'Invalid PAN format' }
+                        ]);
+                        stepFields[2].push('#guardian_pan');
+                    }
+
+                } else {
+                    // Remove Validation if exists
+                    if (stepFields[2].includes('#guardian_name')) {
+                        window.validation.removeField('#guardian_name');
+                        stepFields[2] = stepFields[2].filter(id => id !== '#guardian_name');
+                    }
+                    if (stepFields[2].includes('#guardian_pan')) {
+                        window.validation.removeField('#guardian_pan');
+                        stepFields[2] = stepFields[2].filter(id => id !== '#guardian_pan');
+                    }
+                }
+            }
+        }
+
+        if(dobInput) {
+            dobInput.addEventListener('input', checkMinorStatus);
+            dobInput.addEventListener('change', checkMinorStatus);
+            // Run on load
+            setTimeout(checkMinorStatus, 500);
+        }
+
+        // --- Nominee Minor Check Logic ---
+        function checkNomineeMinorStatus(dobInput) {
+            if (!dobInput.value) return;
+
+            // Get the ID suffix to identify the row (e.g., id_nominees-0-date_of_birth -> 0)
+            const parts = dobInput.id.split('-');
+            if (parts.length < 3) return;
+            const index = parts[1]; // Assuming standard Django formset ID format
+
+            const dob = new Date(dobInput.value);
+            const today = new Date();
+            let age = today.getFullYear() - dob.getFullYear();
+            const m = today.getMonth() - dob.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+                age--;
+            }
+
+            const isMinor = age < 18;
+            const guardianNameId = `#id_nominees-${index}-guardian_name`;
+            const guardianPanId = `#id_nominees-${index}-guardian_pan`;
+
+            if (window.validation) {
+                if (isMinor) {
+                    // Add validation rules
+                    if (!stepFields[5].includes(guardianNameId)) {
+                        // Check if field exists in DOM
+                        if(document.querySelector(guardianNameId)) {
+                            window.validation.addField(guardianNameId, [
+                                { rule: 'required', errorMessage: 'Guardian Name is required for minor nominee' }
+                            ]);
+                            stepFields[5].push(guardianNameId);
+                        }
+                    }
+                    if (!stepFields[5].includes(guardianPanId)) {
+                        if(document.querySelector(guardianPanId)) {
+                            window.validation.addField(guardianPanId, [
+                                { rule: 'required', errorMessage: 'Guardian PAN is required for minor nominee' },
+                                { rule: 'customRegexp', value: /[A-Z]{5}[0-9]{4}[A-Z]{1}/, errorMessage: 'Invalid PAN format' }
+                            ]);
+                            stepFields[5].push(guardianPanId);
+                        }
+                    }
+                } else {
+                    // Remove validation rules
+                    if (stepFields[5].includes(guardianNameId)) {
+                        window.validation.removeField(guardianNameId);
+                        stepFields[5] = stepFields[5].filter(id => id !== guardianNameId);
+                    }
+                    if (stepFields[5].includes(guardianPanId)) {
+                        window.validation.removeField(guardianPanId);
+                        stepFields[5] = stepFields[5].filter(id => id !== guardianPanId);
+                    }
+                }
+            }
+        }
+
+        // Attach listeners to all Nominee DOB fields
+        // We use event delegation or querySelectorAll if static.
+        // Assuming static for now (extra=1). If dynamic add supported, need to re-attach.
+        const nomineeDobInputs = document.querySelectorAll('[id$="-date_of_birth"]');
+        nomineeDobInputs.forEach(input => {
+            // Filter only nominee inputs (check name/id structure)
+            if (input.id.includes('nominees')) {
+                input.addEventListener('input', () => checkNomineeMinorStatus(input));
+                input.addEventListener('change', () => checkNomineeMinorStatus(input));
+                // Initial check
+                setTimeout(() => checkNomineeMinorStatus(input), 500);
+            }
+        });
 
         // --- 3. Step Buttons Event Listeners ---
 
