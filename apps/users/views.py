@@ -463,86 +463,89 @@ class InvestorCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
         bank_accounts = context['bank_accounts']
         nominees = context['nominees']
 
-        with transaction.atomic():
-            # 1. Create User
-            pan = form.cleaned_data['pan']
-            fname = form.cleaned_data.get('firstname', '').strip()
-            mname = form.cleaned_data.get('middlename', '').strip()
-            lname = form.cleaned_data.get('lastname', '').strip()
-            full_name = f"{fname} {mname} {lname}".replace('  ', ' ').strip()
-            email = form.cleaned_data['email']
+        try:
+            with transaction.atomic():
+                # 1. Create User
+                pan = form.cleaned_data['pan']
+                fname = form.cleaned_data.get('firstname', '').strip()
+                mname = form.cleaned_data.get('middlename', '').strip()
+                lname = form.cleaned_data.get('lastname', '').strip()
+                full_name = f"{fname} {mname} {lname}".replace('  ', ' ').strip()
+                email = form.cleaned_data['email']
 
-            user = User.objects.create_user(
-                username=pan,
-                email=email,
-                password=pan,
-                name=full_name,
-                user_type=User.Types.INVESTOR
-            )
+                user = User.objects.create_user(
+                    username=pan,
+                    email=email,
+                    password=pan,
+                    name=full_name,
+                    user_type=User.Types.INVESTOR
+                )
 
-            # 2. Save Investor Profile
-            self.object = form.save(commit=False)
-            self.object.user = user
+                # 2. Save Investor Profile
+                self.object = form.save(commit=False)
+                self.object.user = user
 
-            # --- Hierarchy Logic ---
-            if self.request.user.user_type == User.Types.DISTRIBUTOR:
-                # Distributor creates: Forced hierarchy
-                dist = self.request.user.distributor_profile
-                self.object.distributor = dist
-                self.object.rm = dist.rm
-                if dist.rm:
-                    self.object.branch = dist.rm.branch
-
-            elif self.request.user.user_type == User.Types.RM:
-                # RM creates:
-                # If they picked a distributor (handled by form), use it.
-                # If distributor is set, sync RM/Branch.
-                # If distributor is None (Direct), set RM to self, Branch to self.
-
-                selected_distributor = form.cleaned_data.get('distributor')
-
-                if selected_distributor:
-                    # Consistency check: The selected distributor must belong to this RM (filtered in form, but double check)
-                    if selected_distributor.rm and selected_distributor.rm.user != self.request.user:
-                         # This shouldn't happen if form queryset is correct, but safe fallback
-                         # Force RM to be the distributor's RM
-                         self.object.rm = selected_distributor.rm
-                    else:
-                         self.object.rm = self.request.user.rm_profile
-
-                    if self.object.rm:
-                         self.object.branch = self.object.rm.branch
-                else:
-                    # Direct Client
-                    self.object.rm = self.request.user.rm_profile
-                    self.object.branch = self.request.user.rm_profile.branch
-
-            elif self.request.user.user_type == User.Types.ADMIN:
-                # Admin creates:
-                # Form data for Distributor/RM/Branch takes precedence.
-                # However, we should enforce consistency if Distributor is selected.
-                dist = form.cleaned_data.get('distributor')
-                if dist:
+                # --- Hierarchy Logic ---
+                if self.request.user.user_type == User.Types.DISTRIBUTOR:
+                    # Distributor creates: Forced hierarchy
+                    dist = self.request.user.distributor_profile
+                    self.object.distributor = dist
                     self.object.rm = dist.rm
                     if dist.rm:
                         self.object.branch = dist.rm.branch
-                # If no distributor, respect RM/Branch selected in form.
-                # If RM selected but no Branch, populate Branch.
-                if not dist and form.cleaned_data.get('rm') and not form.cleaned_data.get('branch'):
-                     self.object.branch = form.cleaned_data.get('rm').branch
 
-            self.object.kyc_status = True  # Mock KYC
-            self.object.save()
+                elif self.request.user.user_type == User.Types.RM:
+                    # RM creates:
+                    # If they picked a distributor (handled by form), use it.
+                    # If distributor is set, sync RM/Branch.
+                    # If distributor is None (Direct), set RM to self, Branch to self.
 
-            # 3. Save Formsets
-            if bank_accounts.is_valid() and nominees.is_valid():
-                bank_accounts.instance = self.object
-                bank_accounts.instance = self.object
-                bank_accounts.save()
-                nominees.instance = self.object
-                nominees.save()
-            else:
-                return self.form_invalid(form)
+                    selected_distributor = form.cleaned_data.get('distributor')
+
+                    if selected_distributor:
+                        # Consistency check: The selected distributor must belong to this RM (filtered in form, but double check)
+                        if selected_distributor.rm and selected_distributor.rm.user != self.request.user:
+                             # This shouldn't happen if form queryset is correct, but safe fallback
+                             # Force RM to be the distributor's RM
+                             self.object.rm = selected_distributor.rm
+                        else:
+                             self.object.rm = self.request.user.rm_profile
+
+                        if self.object.rm:
+                             self.object.branch = self.object.rm.branch
+                    else:
+                        # Direct Client
+                        self.object.rm = self.request.user.rm_profile
+                        self.object.branch = self.request.user.rm_profile.branch
+
+                elif self.request.user.user_type == User.Types.ADMIN:
+                    # Admin creates:
+                    # Form data for Distributor/RM/Branch takes precedence.
+                    # However, we should enforce consistency if Distributor is selected.
+                    dist = form.cleaned_data.get('distributor')
+                    if dist:
+                        self.object.rm = dist.rm
+                        if dist.rm:
+                            self.object.branch = dist.rm.branch
+                    # If no distributor, respect RM/Branch selected in form.
+                    # If RM selected but no Branch, populate Branch.
+                    if not dist and form.cleaned_data.get('rm') and not form.cleaned_data.get('branch'):
+                         self.object.branch = form.cleaned_data.get('rm').branch
+
+                self.object.kyc_status = True  # Mock KYC
+                self.object.save()
+
+                # 3. Save Formsets
+                if bank_accounts.is_valid() and nominees.is_valid():
+                    bank_accounts.instance = self.object
+                    bank_accounts.save()
+                    nominees.instance = self.object
+                    nominees.save()
+                else:
+                    raise ValueError("Formsets invalid")
+
+        except ValueError:
+            return self.form_invalid(form)
 
         if self.request.headers.get('x-requested-with') == 'XMLHttpRequest':
             return JsonResponse({'status': 'success', 'message': 'Investor Profile Created Successfully'})
@@ -589,60 +592,64 @@ class InvestorUpdateView(LoginRequiredMixin, InvestorAccessMixin, UpdateView):
         bank_accounts = context['bank_accounts']
         nominees = context['nominees']
 
-        with transaction.atomic():
-            # 1. Update User (Name/Email)
-            fname = form.cleaned_data.get('firstname', '').strip()
-            mname = form.cleaned_data.get('middlename', '').strip()
-            lname = form.cleaned_data.get('lastname', '').strip()
-            email = form.cleaned_data.get('email')
+        try:
+            with transaction.atomic():
+                # 1. Update User (Name/Email)
+                fname = form.cleaned_data.get('firstname', '').strip()
+                mname = form.cleaned_data.get('middlename', '').strip()
+                lname = form.cleaned_data.get('lastname', '').strip()
+                email = form.cleaned_data.get('email')
 
-            # Construct full name and update User
-            user = self.object.user
-            full_name = f"{fname} {mname} {lname}".replace('  ', ' ').strip()
-            if full_name:
-                user.name = full_name
-            if email:
-                user.email = email
-            user.save()
+                # Construct full name and update User
+                user = self.object.user
+                full_name = f"{fname} {mname} {lname}".replace('  ', ' ').strip()
+                if full_name:
+                    user.name = full_name
+                if email:
+                    user.email = email
+                user.save()
 
-            # 2. Save Investor Profile
-            self.object = form.save(commit=False)
+                # 2. Save Investor Profile
+                self.object = form.save(commit=False)
 
-            # --- Hierarchy Update Logic ---
-            # Enforce consistency if Distributor changes
-            # Note: We trust the form's logic for filtering choices, but backend enforcement is safer.
+                # --- Hierarchy Update Logic ---
+                # Enforce consistency if Distributor changes
+                # Note: We trust the form's logic for filtering choices, but backend enforcement is safer.
 
-            new_distributor = form.cleaned_data.get('distributor')
-            # If user has permission to change distributor (Admin or RM)
-            if self.request.user.user_type in [User.Types.ADMIN, User.Types.RM]:
-                 if new_distributor:
-                      # If a distributor is set, it dictates the chain.
-                      self.object.rm = new_distributor.rm
-                      if new_distributor.rm:
-                           self.object.branch = new_distributor.rm.branch
-                      else:
-                           # If Distributor has no RM (Root?), maybe leave existing RM or clear?
-                           # Assuming Distributor always has RM or Root is special case.
-                           # If Root (Direct to Company via Dist), RM might be null?
-                           # For now, let's assume we sync.
-                           pass
-                 else:
-                      # If Distributor is cleared (Direct)
-                      # If Admin, they could have manually set RM/Branch.
-                      # If RM, they are likely setting it to Direct under THEMSELVES.
-                      if self.request.user.user_type == User.Types.RM:
-                           self.object.rm = self.request.user.rm_profile
-                           self.object.branch = self.request.user.rm_profile.branch
+                new_distributor = form.cleaned_data.get('distributor')
+                # If user has permission to change distributor (Admin or RM)
+                if self.request.user.user_type in [User.Types.ADMIN, User.Types.RM]:
+                     if new_distributor:
+                          # If a distributor is set, it dictates the chain.
+                          self.object.rm = new_distributor.rm
+                          if new_distributor.rm:
+                               self.object.branch = new_distributor.rm.branch
+                          else:
+                               # If Distributor has no RM (Root?), maybe leave existing RM or clear?
+                               # Assuming Distributor always has RM or Root is special case.
+                               # If Root (Direct to Company via Dist), RM might be null?
+                               # For now, let's assume we sync.
+                               pass
+                     else:
+                          # If Distributor is cleared (Direct)
+                          # If Admin, they could have manually set RM/Branch.
+                          # If RM, they are likely setting it to Direct under THEMSELVES.
+                          if self.request.user.user_type == User.Types.RM:
+                               self.object.rm = self.request.user.rm_profile
+                               self.object.branch = self.request.user.rm_profile.branch
 
-            self.object.save()
+                self.object.save()
 
-            # 3. Save Formsets
-            if bank_accounts.is_valid() and nominees.is_valid():
-                bank_accounts.save()
-                nominees.save()
-            else:
-                # If formsets are invalid, render the form again with errors
-                return self.form_invalid(form)
+                # 3. Save Formsets
+                if bank_accounts.is_valid() and nominees.is_valid():
+                    bank_accounts.save()
+                    nominees.save()
+                else:
+                    # If formsets are invalid, render the form again with errors
+                    raise ValueError("Formsets invalid")
+
+        except ValueError:
+            return self.form_invalid(form)
 
         if self.request.headers.get('x-requested-with') == 'XMLHttpRequest':
             return JsonResponse({'status': 'success', 'message': 'Investor Profile Updated Successfully'})
