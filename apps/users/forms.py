@@ -453,6 +453,12 @@ class InvestorProfileForm(forms.ModelForm):
         self.request_user = kwargs.pop('user', None) # Pass request.user for logic
         super().__init__(*args, **kwargs)
 
+        # Restrict Nomination Auth Mode to Online OTP only
+        self.fields['nomination_auth_mode'].choices = [
+            (InvestorProfile.ONLINE_OTP, 'Online/OTP')
+        ]
+        self.fields['nomination_auth_mode'].initial = InvestorProfile.ONLINE_OTP
+
         # Populate initial user data if instance exists
         if self.instance and self.instance.pk and self.instance.user:
             self.fields['email'].initial = self.instance.user.email

@@ -218,6 +218,12 @@ class MandateForm(forms.ModelForm):
         if not self.initial.get('end_date'):
             self.initial['end_date'] = date.today() + relativedelta(years=39)
 
+        # Restrict Mandate Type to E-Mandate (Net Banking) only as per BSE requirement
+        self.fields['mandate_type'].choices = [
+            (Mandate.NET_BANKING, 'E-Mandate (Net Banking)')
+        ]
+        self.fields['mandate_type'].initial = Mandate.NET_BANKING
+
         if self.user:
             if self.user.user_type == 'DISTRIBUTOR':
                 self.fields['investor'].queryset = InvestorProfile.objects.filter(distributor__user=self.user)
