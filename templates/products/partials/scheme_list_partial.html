@@ -1,5 +1,24 @@
 {% load humanize %}
 
+{% if active_filters %}
+<div class="flex flex-wrap gap-2 mb-4">
+    {% for filter in active_filters %}
+    <span class="badge flex items-center gap-1 rounded-full bg-slate-150 px-3 py-1 text-slate-800 dark:bg-navy-500 dark:text-navy-100">
+        {{ filter.label }}
+        <button type="button" class="remove-filter-btn hover:text-error focus:text-error"
+                data-type="{{ filter.type }}" data-value="{{ filter.value }}">
+            <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+    </span>
+    {% endfor %}
+    <button type="button" class="btn h-6 rounded-full px-3 text-xs+ font-medium text-primary hover:bg-primary/20 focus:bg-primary/20 active:bg-primary/25 dark:text-accent-light dark:hover:bg-accent-light/20 dark:focus:bg-accent-light/20 dark:active:bg-accent-light/25 clear-all-filters-btn">
+        Clear All
+    </button>
+</div>
+{% endif %}
+
 {% if schemes %}
 <div class="grid grid-cols-1 gap-4">
     {% for scheme in schemes %}
