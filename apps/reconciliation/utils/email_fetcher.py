@@ -5,6 +5,7 @@ import logging
 import zipfile
 import shutil
 import tempfile
+from datetime import datetime, timedelta
 from email.header import decode_header
 from django.conf import settings
 
@@ -19,6 +20,7 @@ class RTAEmailFetcher:
         self.sender_filters = settings.RTA_EMAIL_SENDER_FILTERS
         self.subject_filters = settings.RTA_EMAIL_SUBJECT_FILTERS
         self.file_passwords = settings.RTA_FILE_PASSWORD
+        self.fetch_days = getattr(settings, 'RTA_EMAIL_FETCH_DAYS', 7)
         self.conn = None
         self.temp_dir = None
 
@@ -59,7 +61,7 @@ class RTAEmailFetcher:
 
     def fetch_emails(self):
         """
-        Fetches UNSEEN emails matching filters.
+        Fetches UNSEEN emails matching filters from the last N days.
         Returns a list of tuples: (email_id, [list_of_file_paths])
         """
         if not self.conn:
@@ -69,7 +71,13 @@ class RTAEmailFetcher:
         try:
             self.conn.select('INBOX')
 
-            typ, data = self.conn.search(None, 'UNSEEN')
+            # Calculate date threshold for search
+            date_threshold = (datetime.now() - timedelta(days=self.fetch_days)).strftime("%d-%b-%Y")
+            search_criteria = f'(UNSEEN SINCE "{date_threshold}")'
+
+            logger.info(f"Searching for emails with criteria: {search_criteria}")
+
+            typ, data = self.conn.search(None, search_criteria)
             if typ != 'OK':
                 logger.warning("No messages found or search failed.")
                 return []

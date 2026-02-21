@@ -205,6 +205,9 @@ RTA_FILE_PASSWORD = [p.strip() for p in os.environ.get('RTA_FILE_PASSWORD', '').
 RTA_EMAIL_SENDER_FILTERS = [s.strip().lower() for s in os.environ.get('RTA_EMAIL_SENDER_FILTERS', '').split(',') if s.strip()]
 RTA_EMAIL_SUBJECT_FILTERS = [s.strip().lower() for s in os.environ.get('RTA_EMAIL_SUBJECT_FILTERS', 'Transaction Report,WBR2').split(',') if s.strip()]
 
+# Number of days to look back for emails
+RTA_EMAIL_FETCH_DAYS = int(os.environ.get('RTA_EMAIL_FETCH_DAYS', 7))
+
 # SMS Configuration
 SMS_API_KEY = os.environ.get('SMS_API_KEY', '64c7a50d19c21')
 SMS_SENDER_ID = os.environ.get('SMS_SENDER_ID', 'NSPLMF')
