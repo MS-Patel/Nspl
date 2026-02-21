@@ -1,48 +1,99 @@
-from django.test import TestCase
+from django.test import TestCase, Client
 from django.urls import reverse
-from apps.users.models import User
+from apps.products.models import Scheme, AMC, SchemeCategory
 from apps.products.factories import SchemeFactory, AMCFactory, SchemeCategoryFactory
-from apps.products.models import Scheme
+from apps.users.factories import UserFactory
 
-class SchemeExplorerViewTest(TestCase):
+class SchemeExplorerViewTests(TestCase):
     def setUp(self):
-        self.user = User.objects.create_user(
-            username='testuser', password='password', user_type=User.Types.ADMIN
-        )
+        self.client = Client()
+        self.url = reverse('products:scheme_explore')
+
+        # Create User and Login
+        self.user = UserFactory(username='testuser', password='password')
         self.client.force_login(self.user)
 
-        self.amc = AMCFactory(name="Test AMC")
-        self.category = SchemeCategoryFactory(name="Equity")
-        self.scheme1 = SchemeFactory(name="Alpha Fund", amc=self.amc, category=self.category, riskometer='High')
-        self.scheme2 = SchemeFactory(name="Beta Fund", amc=self.amc, category=self.category, riskometer='Low')
+        # Create Categories
+        self.cat_equity = SchemeCategoryFactory(name='Equity', code='EQ')
+        self.cat_debt = SchemeCategoryFactory(name='Debt', code='DEBT')
+        self.cat_hybrid = SchemeCategoryFactory(name='Hybrid', code='HYB')
 
-    def test_explorer_view_status_code(self):
-        url = reverse('products:scheme_explore')
-        response = self.client.get(url)
+        # Create AMCs
+        self.amc_hdfc = AMCFactory(name='HDFC Mutual Fund', code='HDFC')
+        self.amc_sbi = AMCFactory(name='SBI Mutual Fund', code='SBI')
+
+        # Create Schemes
+        self.scheme1 = SchemeFactory(
+            name='HDFC Equity Fund',
+            category=self.cat_equity,
+            amc=self.amc_hdfc,
+            scheme_type='Open Ended',
+            riskometer='High'
+        )
+        self.scheme2 = SchemeFactory(
+            name='SBI Debt Fund',
+            category=self.cat_debt,
+            amc=self.amc_sbi,
+            scheme_type='Open Ended',
+            riskometer='Low'
+        )
+        self.scheme3 = SchemeFactory(
+            name='HDFC Hybrid Fund',
+            category=self.cat_hybrid,
+            amc=self.amc_hdfc,
+            scheme_type='Close Ended',
+            riskometer='Moderate'
+        )
+
+    def test_view_status_code(self):
+        response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
 
-    def test_explorer_view_context(self):
-        url = reverse('products:scheme_explore')
-        response = self.client.get(url)
-        self.assertTrue('schemes' in response.context)
-        # Assuming no other schemes in DB, length should be 2.
-        # But to be safe, check if our schemes are present.
-        scheme_ids = [s.id for s in response.context['schemes']]
-        self.assertIn(self.scheme1.id, scheme_ids)
-        self.assertIn(self.scheme2.id, scheme_ids)
+    def test_filter_single_category(self):
+        response = self.client.get(self.url, {'category': self.cat_equity.id})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'HDFC Equity Fund')
+        self.assertNotContains(response, 'SBI Debt Fund')
+        self.assertNotContains(response, 'HDFC Hybrid Fund')
 
-        self.assertTrue('amcs' in response.context)
-        self.assertTrue('categories' in response.context)
-        self.assertTrue('risks' in response.context)
+    def test_filter_multiple_categories(self):
+        # Simulate multiple selections for the same key 'category'
+        # Client.get handles list values for query parameters correctly
+        response = self.client.get(self.url, {'category': [self.cat_equity.id, self.cat_debt.id]})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'HDFC Equity Fund')
+        self.assertContains(response, 'SBI Debt Fund')
+        self.assertNotContains(response, 'HDFC Hybrid Fund')
 
-    def test_search_filter(self):
-        url = reverse('products:scheme_explore')
-        response = self.client.get(url, {'search': 'Alpha'})
-        self.assertEqual(len(response.context['schemes']), 1)
-        self.assertEqual(response.context['schemes'][0].name, "Alpha Fund")
+    def test_filter_multiple_amcs(self):
+        response = self.client.get(self.url, {'amc': [self.amc_hdfc.id, self.amc_sbi.id]})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'HDFC Equity Fund')
+        self.assertContains(response, 'SBI Debt Fund')
+        self.assertContains(response, 'HDFC Hybrid Fund')
 
-    def test_risk_filter(self):
-        url = reverse('products:scheme_explore')
-        response = self.client.get(url, {'risk': 'High'})
-        self.assertEqual(len(response.context['schemes']), 1)
-        self.assertEqual(response.context['schemes'][0].name, "Alpha Fund")
+    def test_filter_combined(self):
+        # Filter for HDFC schemes that are Equity
+        response = self.client.get(self.url, {
+            'amc': [self.amc_hdfc.id],
+            'category': [self.cat_equity.id]
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'HDFC Equity Fund')
+        self.assertNotContains(response, 'SBI Debt Fund')
+        self.assertNotContains(response, 'HDFC Hybrid Fund')
+
+    def test_filter_riskometer(self):
+        response = self.client.get(self.url, {'risk': ['High', 'Low']})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'HDFC Equity Fund')
+        self.assertContains(response, 'SBI Debt Fund')
+        self.assertNotContains(response, 'HDFC Hybrid Fund')
+
+    def test_context_preservation(self):
+        # Ensure selected filters are passed back to context
+        response = self.client.get(self.url, {'category': [self.cat_equity.id, self.cat_debt.id]})
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('selected_categories', response.context)
+        # Verify the list contains the expected items (order might vary)
+        self.assertEqual(set(response.context['selected_categories']), {self.cat_equity.id, self.cat_debt.id})
