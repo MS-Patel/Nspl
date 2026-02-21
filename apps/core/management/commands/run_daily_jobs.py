@@ -11,25 +11,23 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS("Starting Daily Jobs..."))
 
         try:
-            # 0. Fetch RTA Emails
-            self.stdout.write("Step 0: Fetching RTA Emails...")
+            # 1. Sync BSE Reports (Orders, Allotments) - Get Provisional Data First
+            self.stdout.write("Step 1: Syncing BSE Reports...")
+            call_command('sync_bse_reports', days=1)
+
+            # 2. Fetch RTA Emails - Confirm Transactions (Matches Provisional)
+            self.stdout.write("Step 2: Fetching RTA Emails...")
             call_command('fetch_rta_emails')
 
-            # 1. Fetch Latest NAVs
-            self.stdout.write("Step 1: Fetching NAVs...")
+            # 3. Fetch Latest NAVs
+            self.stdout.write("Step 3: Fetching NAVs...")
             call_command('update_navs')
-            self.stdout.write("Step 1a: Fetching BSE NAVs...")
+            self.stdout.write("Step 3a: Fetching BSE NAVs...")
             call_command('update_bse_navs')
 
-            # 2. Update Holding Valuations (Requires Latest NAVs)
-            self.stdout.write("Step 2: Updating Holding Valuations...")
+            # 4. Update Holding Valuations (Requires Latest Units from Steps 1/2 and NAVs from Step 3)
+            self.stdout.write("Step 4: Updating Holding Valuations...")
             call_command('update_holding_values')
-
-            # 3. Sync BSE Reports (Orders, Allotments)
-            self.stdout.write("Step 3: Syncing BSE Reports...")
-            # Assuming 'sync_bse_reports' is the command name.
-            # I checked previously and it was in apps/reports/management/commands/sync_bse_reports.py
-            call_command('sync_bse_reports', days=1)
 
             self.stdout.write(self.style.SUCCESS("Daily Jobs Completed Successfully."))
 
