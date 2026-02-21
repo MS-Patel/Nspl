@@ -308,8 +308,23 @@ def sync_bse_daily_reports(days=3):
     logger.info(f"Starting BSE Report Sync from {from_date} to {to_date}")
 
     _sync_order_status(client, from_date, to_date)
-    _sync_allotments(client, from_date, to_date)
-    _sync_redemptions(client, from_date, to_date)
+    impacted_holdings_allot = _sync_allotments(client, from_date, to_date)
+    impacted_holdings_redemp = _sync_redemptions(client, from_date, to_date)
+
+    # Process Recalculations
+    all_impacted = set()
+    if impacted_holdings_allot:
+        all_impacted.update(impacted_holdings_allot)
+    if impacted_holdings_redemp:
+        all_impacted.update(impacted_holdings_redemp)
+
+    if all_impacted:
+        logger.info(f"Recalculating {len(all_impacted)} holdings affected by BSE Sync...")
+        for investor, scheme, folio_number in all_impacted:
+            try:
+                recalculate_holding(investor, scheme, folio_number)
+            except Exception as e:
+                logger.error(f"Failed to recalculate holding for {folio_number}: {e}")
 
     logger.info("Completed BSE Report Sync")
 
@@ -355,7 +370,9 @@ def _sync_order_status(client, from_date, to_date):
 def _sync_allotments(client, from_date, to_date):
     """
     Fetches Allotment Statement and updates Transaction records.
+    Returns a set of (investor, scheme, folio_number) tuples for recalculation.
     """
+    impacted_holdings = set()
     try:
         response = client.get_allotment_statement(from_date=from_date, to_date=to_date, order_type="All")
         if response and getattr(response, 'Status', None) == '100' and getattr(response, 'AllotmentDetails', None):
@@ -363,6 +380,13 @@ def _sync_allotments(client, from_date, to_date):
                 try:
                     bse_order_id = item.OrderNo
                     if not bse_order_id:
+                        continue
+
+                    # Check if transaction with this BSE Order ID exists
+                    existing_txn = Transaction.objects.filter(bse_order_id=bse_order_id).first()
+
+                    # If it exists and is NOT provisional (i.e., Confirmed by RTA), skip overwrite
+                    if existing_txn and not existing_txn.is_provisional:
                         continue
 
                     # Find Investor
@@ -376,17 +400,11 @@ def _sync_allotments(client, from_date, to_date):
                         continue
 
                     # Upsert Transaction
-                    # Note: We rely on txn_number being unique.
-                    # For BSE Allotments, txn_number should be the OrderNo.
-
                     allotted_units = Decimal(item.AllottedUnit) if item.AllottedUnit else Decimal(0)
                     allotted_amt = Decimal(item.AllottedAmt) if item.AllottedAmt else Decimal(0)
                     nav = Decimal(item.Nav) if item.Nav else Decimal(0)
 
-                    # Parse Date (BSE format might vary, assuming DD/MM/YYYY or standard datetime)
-                    # The Zeep client might return a datetime object or string depending on WSDL
-                    # If it is a string 'DD/MM/YYYY', we need to parse.
-                    # Usually zeep parses xs:dateTime to python datetime.
+                    # Parse Date
                     txn_date = item.AllotmentDate
                     if isinstance(txn_date, str):
                         try:
@@ -409,10 +427,17 @@ def _sync_allotments(client, from_date, to_date):
                         'nav': nav
                     }
 
-                    Transaction.objects.update_or_create(
-                        txn_number=bse_order_id,
-                        defaults=defaults
-                    )
+                    if existing_txn:
+                        # Update existing provisional transaction
+                        for key, value in defaults.items():
+                            setattr(existing_txn, key, value)
+                        existing_txn.save()
+                    else:
+                        # Create new provisional transaction
+                        Transaction.objects.create(
+                            txn_number=bse_order_id,
+                            **defaults
+                        )
 
                     # Also ensure Folio exists
                     if item.FolioNo:
@@ -422,16 +447,22 @@ def _sync_allotments(client, from_date, to_date):
                             folio_number=item.FolioNo
                         )
 
+                    impacted_holdings.add((investor, scheme, item.FolioNo))
+
                 except Exception as ex:
                     logger.error(f"Failed to process allotment for {item.OrderNo}: {ex}")
 
     except Exception as e:
         logger.error(f"Error in _sync_allotments: {e}")
 
+    return impacted_holdings
+
 def _sync_redemptions(client, from_date, to_date):
     """
     Fetches Redemption Statement and updates Transaction records.
+    Returns a set of (investor, scheme, folio_number) tuples for recalculation.
     """
+    impacted_holdings = set()
     try:
         response = client.get_redemption_statement(from_date=from_date, to_date=to_date)
         if response and getattr(response, 'Status', None) == '100' and getattr(response, 'RedemptionDetails', None):
@@ -439,6 +470,13 @@ def _sync_redemptions(client, from_date, to_date):
                 try:
                     bse_order_id = item.OrderNo
                     if not bse_order_id:
+                        continue
+
+                    # Check if transaction with this BSE Order ID exists
+                    existing_txn = Transaction.objects.filter(bse_order_id=bse_order_id).first()
+
+                    # If it exists and is NOT provisional (i.e., Confirmed by RTA), skip overwrite
+                    if existing_txn and not existing_txn.is_provisional:
                         continue
 
                     # Find Investor
@@ -477,10 +515,19 @@ def _sync_redemptions(client, from_date, to_date):
                         'nav': nav
                     }
 
-                    Transaction.objects.update_or_create(
-                        txn_number=bse_order_id,
-                        defaults=defaults
-                    )
+                    if existing_txn:
+                        # Update existing provisional transaction
+                        for key, value in defaults.items():
+                            setattr(existing_txn, key, value)
+                        existing_txn.save()
+                    else:
+                        # Create new provisional transaction
+                        Transaction.objects.create(
+                            txn_number=bse_order_id,
+                            **defaults
+                        )
+
+                    impacted_holdings.add((investor, scheme, item.FolioNo))
 
                     # Update Order status if found
                     Order.objects.filter(bse_order_id=bse_order_id).update(status=Order.ALLOTTED, allotted_units=units)
@@ -490,3 +537,5 @@ def _sync_redemptions(client, from_date, to_date):
 
     except Exception as e:
         logger.error(f"Error in _sync_redemptions: {e}")
+
+    return impacted_holdings
