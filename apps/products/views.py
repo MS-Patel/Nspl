@@ -8,7 +8,7 @@ from django.contrib.auth import get_user_model
 from django.http import HttpResponse
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
-from .models import Scheme, AMC
+from .models import Scheme, AMC, SchemeCategory
 from .forms import (
     SchemeUploadForm, NAVUploadForm, SchemeForm,
     SchemeHoldingFormSet, SchemeSectorFormSet,
@@ -26,6 +26,7 @@ from apps.core.utils.sample_headers import (
 from .utils.calculations import get_scheme_returns, get_peer_comparison
 import json
 from django.core.serializers.json import DjangoJSONEncoder
+from django.db.models import Q
 
 User = get_user_model()
 
@@ -55,6 +56,68 @@ class SchemeListView(LoginRequiredMixin, TemplateView):
             })
 
         context['grid_data_json'] = json.dumps(data, cls=DjangoJSONEncoder)
+        return context
+
+class SchemeExplorerView(LoginRequiredMixin, ListView):
+    model = Scheme
+    template_name = 'products/scheme_explore.html'
+    context_object_name = 'schemes'
+    paginate_by = 12
+
+    def get_queryset(self):
+        queryset = super().get_queryset().select_related('amc', 'category')
+
+        # Filtering
+        search_query = self.request.GET.get('search')
+        if search_query:
+            queryset = queryset.filter(
+                Q(name__icontains=search_query) |
+                Q(scheme_code__icontains=search_query) |
+                Q(isin__icontains=search_query)
+            )
+
+        category_id = self.request.GET.get('category')
+        if category_id:
+            queryset = queryset.filter(category_id=category_id)
+
+        amc_id = self.request.GET.get('amc')
+        if amc_id:
+            queryset = queryset.filter(amc_id=amc_id)
+
+        risk = self.request.GET.get('risk')
+        if risk:
+            queryset = queryset.filter(riskometer=risk)
+
+        scheme_type = self.request.GET.get('scheme_type')
+        if scheme_type:
+             queryset = queryset.filter(scheme_type=scheme_type)
+
+        return queryset.order_by('name')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        # Calculate returns for displayed schemes
+        for scheme in context['schemes']:
+             scheme.calculated_returns = get_scheme_returns(scheme)
+             # Fetch latest NAV explicitly if needed, but we can access via nav_history reversed
+             latest_nav = scheme.nav_history.order_by('-nav_date').first()
+             scheme.latest_nav_val = latest_nav.net_asset_value if latest_nav else None
+             scheme.latest_nav_date = latest_nav.nav_date if latest_nav else None
+
+        # Filter Options
+        context['categories'] = SchemeCategory.objects.all().order_by('name')
+        context['amcs'] = AMC.objects.filter(is_active=True).order_by('name')
+        context['risks'] = [c[0] for c in Scheme.RISKOMETER_CHOICES]
+        # Get distinct scheme types from DB to avoid empty options, exclude None/Empty
+        context['scheme_types'] = [t for t in Scheme.objects.values_list('scheme_type', flat=True).distinct().order_by('scheme_type') if t]
+
+        # Preserve query params for pagination
+        query_params = self.request.GET.copy()
+        if 'page' in query_params:
+            del query_params['page']
+        context['query_params'] = query_params.urlencode()
+
         return context
 
 class SchemeDetailView(LoginRequiredMixin, DetailView):

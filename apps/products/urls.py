@@ -3,6 +3,7 @@ from . import views
 
 app_name = 'products'
 urlpatterns = [
+    path('explore/', views.SchemeExplorerView.as_view(), name='scheme_explore'),
     path('schemes/', views.SchemeListView.as_view(), name='scheme_list'),
     path('schemes/<int:pk>/', views.SchemeDetailView.as_view(), name='scheme_detail'),
     path('schemes/<int:pk>/edit/', views.SchemeUpdateView.as_view(), name='scheme_edit'), # New Edit Route
