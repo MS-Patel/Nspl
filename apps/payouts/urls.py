@@ -12,4 +12,10 @@ urlpatterns = [
     path('payouts/import/<int:pk>/reprocess/', views.ReprocessImportView.as_view(), name='reprocess_import'),
     path('payouts/import/<int:pk>/export/', views.ExportPayoutReportView.as_view(), name='export_payout_report'),
     path('payouts/import-list/', views.BrokerageImportListView.as_view(), name='import_list'),
+
+    # Category Management
+    path('payouts/categories/', views.DistributorCategoryListView.as_view(), name='category_list'),
+    path('payouts/categories/add/', views.DistributorCategoryCreateView.as_view(), name='category_add'),
+    path('payouts/categories/<int:pk>/edit/', views.DistributorCategoryUpdateView.as_view(), name='category_edit'),
+    path('payouts/categories/<int:pk>/delete/', views.DistributorCategoryDeleteView.as_view(), name='category_delete'),
 ]

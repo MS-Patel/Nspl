@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.views.generic import TemplateView, ListView, DetailView, CreateView, View
+from django.views.generic import TemplateView, ListView, DetailView, CreateView, View, UpdateView, DeleteView
 from django.contrib import messages
+from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth import get_user_model
 from django.http import JsonResponse, HttpResponse
@@ -259,3 +260,38 @@ class ExportPayoutReportView(LoginRequiredMixin, UserPassesTestMixin, View):
         response['Content-Disposition'] = f'attachment; filename={filename}'
 
         return response
+
+
+class DistributorCategoryListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
+    model = DistributorCategory
+    template_name = 'payouts/category_list.html'
+    context_object_name = 'object_list'
+
+    def test_func(self):
+        return self.request.user.user_type == User.Types.ADMIN
+
+class DistributorCategoryCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
+    model = DistributorCategory
+    template_name = 'payouts/category_form.html'
+    fields = ['name', 'min_aum', 'max_aum', 'share_percentage']
+    success_url = reverse_lazy('payouts:category_list')
+
+    def test_func(self):
+        return self.request.user.user_type == User.Types.ADMIN
+
+class DistributorCategoryUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = DistributorCategory
+    template_name = 'payouts/category_form.html'
+    fields = ['name', 'min_aum', 'max_aum', 'share_percentage']
+    success_url = reverse_lazy('payouts:category_list')
+
+    def test_func(self):
+        return self.request.user.user_type == User.Types.ADMIN
+
+class DistributorCategoryDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = DistributorCategory
+    template_name = 'payouts/category_confirm_delete.html'
+    success_url = reverse_lazy('payouts:category_list')
+
+    def test_func(self):
+        return self.request.user.user_type == User.Types.ADMIN

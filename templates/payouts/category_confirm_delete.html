@@ -1,0 +1,41 @@
+{% extends "layout/base.html" %}
+
+{% block content %}
+<div class="flex items-center space-x-4 py-5 lg:py-6">
+    <h2 class="text-xl font-medium text-slate-800 dark:text-navy-50 lg:text-2xl">
+        Delete Category
+    </h2>
+    <div class="hidden h-full py-1 sm:flex">
+        <div class="h-full w-px bg-slate-300 dark:bg-navy-600"></div>
+    </div>
+    <ul class="hidden flex-wrap items-center space-x-2 sm:flex">
+         <li class="flex items-center space-x-2">
+            <a class="text-primary transition-colors hover:text-primary-focus dark:text-accent-light dark:hover:text-accent" href="{% url 'payouts:category_list' %}">Categories</a>
+            <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+        </li>
+        <li>Delete</li>
+    </ul>
+</div>
+
+<div class="card p-4 sm:p-5 max-w-lg mx-auto">
+    <div class="text-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="size-20 mx-auto text-error" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+        <h3 class="mt-4 text-lg font-medium text-slate-700 dark:text-navy-100">Confirm Deletion</h3>
+        <p class="mt-2 text-slate-500">Are you sure you want to delete the category "<strong>{{ object.name }}</strong>"? This action cannot be undone.</p>
+    </div>
+
+    <form method="post" class="mt-6 flex justify-center space-x-4">
+        {% csrf_token %}
+        <a href="{% url 'payouts:category_list' %}" class="btn border border-slate-300 font-medium text-slate-800 hover:bg-slate-150 focus:bg-slate-150 active:bg-slate-150/80 dark:border-navy-450 dark:text-navy-50 dark:hover:bg-navy-500 dark:focus:bg-navy-500 dark:active:bg-navy-500/90">
+            Cancel
+        </a>
+        <button type="submit" class="btn bg-error font-medium text-white hover:bg-error-focus focus:bg-error-focus active:bg-error-focus/90">
+            Yes, Delete It
+        </button>
+    </form>
+</div>
+{% endblock %}
