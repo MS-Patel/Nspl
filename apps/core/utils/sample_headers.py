@@ -44,7 +44,7 @@ INVESTOR_CHOICES = {
 
 # --- Distributor Sample Headers ---
 DISTRIBUTOR_HEADERS = [
-    'ARN', 'Name', 'Email', 'Mobile', 'PAN', 'EUIN',
+    'ARN', 'Broker Code', 'Name', 'Email', 'Mobile', 'PAN', 'EUIN',
     'Parent ARN (Optional)', 'RM Employee Code (Optional)',
     'Address', 'City', 'State', 'Pincode', 'Country',
     'Alternate Mobile', 'Alternate Email',
