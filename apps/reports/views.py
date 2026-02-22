@@ -39,12 +39,16 @@ class InvestorReportView(LoginRequiredMixin, TemplateView):
         data = []
         for inv in qs:
             # Flatten Bank Details (Take first or default) - Kept for convenience
-            bank = inv.bank_accounts.filter(is_default=True).first()
-            if not bank:
-                bank = inv.bank_accounts.first()
+            # Use Python-level filtering on prefetched related objects to avoid N+1 queries
+            all_banks = list(inv.bank_accounts.all())
+            bank = next((b for b in all_banks if b.is_default), None)
+            if not bank and all_banks:
+                bank = all_banks[0]
 
             # Flatten Nominee (Take first) - Kept for convenience
-            nominee = inv.nominees.first()
+            # Use Python-level filtering on prefetched related objects to avoid N+1 queries
+            all_nominees = list(inv.nominees.all())
+            nominee = all_nominees[0] if all_nominees else None
 
             row = {
                 'id': inv.id,
