@@ -193,17 +193,17 @@ CVL_SERVICE_URL = os.environ.get('CVL_SERVICE_URL', "https://pancheck.www.kracvl
 # RTA Email Configuration
 RTA_EMAIL_HOST = os.environ.get('RTA_EMAIL_HOST', 'imap.gmail.com')
 RTA_EMAIL_PORT = int(os.environ.get('RTA_EMAIL_PORT', 993))
-RTA_EMAIL_USER = os.environ.get('RTA_EMAIL_USER', '')
-RTA_EMAIL_PASSWORD = os.environ.get('RTA_EMAIL_PASSWORD', '')
+RTA_EMAIL_USER = os.environ.get('RTA_EMAIL_USER', 'support@navinchandrasecurities.com')
+RTA_EMAIL_PASSWORD = os.environ.get('RTA_EMAIL_PASSWORD', 'hhswkzurczgjphtv')
 
 # Passwords for encrypted RTA files (comma-separated list)
 # Note: RTA_FILE_PASSWORD env var should be comma separated if multiple
-RTA_FILE_PASSWORD = [p.strip() for p in os.environ.get('RTA_FILE_PASSWORD', '').split(',') if p.strip()]
+RTA_FILE_PASSWORD = [p.strip() for p in os.environ.get('RTA_FILE_PASSWORD', '123456,Navin@2026').split(',') if p.strip()]
 
 # Filters for identifying relevant emails
 # Note: Env vars should be comma separated
-RTA_EMAIL_SENDER_FILTERS = [s.strip().lower() for s in os.environ.get('RTA_EMAIL_SENDER_FILTERS', '').split(',') if s.strip()]
-RTA_EMAIL_SUBJECT_FILTERS = [s.strip().lower() for s in os.environ.get('RTA_EMAIL_SUBJECT_FILTERS', 'Transaction Report,WBR2').split(',') if s.strip()]
+RTA_EMAIL_SENDER_FILTERS = [s.strip().lower() for s in os.environ.get('RTA_EMAIL_SENDER_FILTERS', 'donotreply@camsonline.com,distributorcare@kfintech.com').split(',') if s.strip()]
+RTA_EMAIL_SUBJECT_FILTERS = [s.strip().lower() for s in os.environ.get('RTA_EMAIL_SUBJECT_FILTERS', 'Transaction Feeds Report,WBR2').split(',') if s.strip()]
 
 # Number of days to look back for emails
 RTA_EMAIL_FETCH_DAYS = int(os.environ.get('RTA_EMAIL_FETCH_DAYS', 7))
