@@ -126,9 +126,9 @@ class RedemptionCreateView(CreateView):
                 order.bse_remarks = result.get('remarks')
                 messages.success(self.request, f"Redemption Order Placed. Ref: {result.get('remarks')}")
             elif result['status'] == 'exception':
-                 order.status = Order.PENDING
-                 order.bse_remarks = f"System Error: {result.get('remarks')}"
-                 messages.error(self.request, f"System Error (Order saved as Pending): {result.get('remarks')}")
+                order.status = Order.PENDING
+                order.bse_remarks = f"System Error: {result.get('remarks')}"
+                messages.error(self.request, f"System Error (Order saved as Pending): {result.get('remarks')}")
             else:
                 order.status = Order.REJECTED
                 order.bse_remarks = result.get('remarks')
@@ -209,7 +209,9 @@ class MandateCreateView(CreateView):
 
         except Exception as e:
             logger.exception("Mandate Registration Failed")
-            messages.error(self.request, f"System Error: {str(e)}")
+            mandate.status = Mandate.PENDING
+            mandate.save()
+            messages.error(self.request, f"System Error (Mandate saved as Pending): {str(e)}")
 
         # self.object might not be set if we are not calling super().form_valid(form)
         self.object = mandate
@@ -243,8 +245,8 @@ class MandateRetryView(LoginRequiredMixin, View):
                 mandate.save()
                 messages.success(request, "Mandate submitted successfully. Please authorize it.")
             elif result['status'] == 'exception':
-                 # Still failed (network/system), but we keep it pending for another retry
-                 messages.error(request, f"System Error (Retry failed): {result['remarks']}")
+                # Still failed (network/system), but we keep it pending for another retry
+                messages.error(request, f"System Error (Retry failed): {result['remarks']}")
             else:
                 # BSE Rejected it
                 mandate.status = Mandate.REJECTED
@@ -253,7 +255,9 @@ class MandateRetryView(LoginRequiredMixin, View):
 
         except Exception as e:
             logger.exception("Mandate Retry Failed")
-            messages.error(request, f"System Error: {str(e)}")
+            mandate.status = Mandate.PENDING
+            mandate.save()
+            messages.error(request, f"System Error (Mandate remains Pending): {str(e)}")
 
         return redirect('users:investor_detail', pk=mandate.investor.pk)
 
@@ -414,13 +418,13 @@ def order_create(request):
 
                         messages.success(request, f"SIP Registered Successfully! Reg No: {result['bse_reg_no']}")
                     elif result['status'] == 'exception':
-                         # Keep SIP as Pending
-                         sip.status = SIP.STATUS_PENDING
-                         sip.save()
-                         order.status = Order.PENDING
-                         order.bse_remarks = f"System Error: {result['remarks']}"
-                         order.save()
-                         messages.error(request, f"System Error (SIP saved as Pending): {result['remarks']}")
+                        # Keep SIP as Pending
+                        sip.status = SIP.STATUS_PENDING
+                        sip.save()
+                        order.status = Order.PENDING
+                        order.bse_remarks = f"System Error: {result['remarks']}"
+                        order.save()
+                        messages.error(request, f"System Error (SIP saved as Pending): {result['remarks']}")
                     else:
                         sip.status = SIP.STATUS_PENDING # Or Rejected
                         sip.save()
@@ -432,7 +436,10 @@ def order_create(request):
 
                 except Exception as e:
                     logger.exception("SIP Registration Failed")
-                    messages.error(request, f"System Error: {str(e)}")
+                    order.status = Order.PENDING
+                    order.bse_remarks = f"System Error: {str(e)}"
+                    order.save()
+                    messages.error(request, f"System Error (SIP saved as Pending): {str(e)}")
 
             # Execute Lumpsum Order on BSE
             elif order.transaction_type in [Order.PURCHASE, Order.REDEMPTION]:
@@ -447,10 +454,10 @@ def order_create(request):
                         order.bse_remarks = result.get('remarks')
                         messages.success(request, f"Order {order.unique_ref_no} placed on BSE: {result.get('remarks')}")
                     elif result['status'] == 'exception':
-                         order.status = Order.PENDING
-                         order.bse_remarks = f"System Error: {result.get('remarks')}"
-                         order.save()
-                         messages.error(request, f"System Error (Order saved as Pending): {result.get('remarks')}")
+                        order.status = Order.PENDING
+                        order.bse_remarks = f"System Error: {result.get('remarks')}"
+                        order.save()
+                        messages.error(request, f"System Error (Order saved as Pending): {result.get('remarks')}")
                     else:
                         order.status = Order.REJECTED
                         order.bse_remarks = result.get('remarks')
@@ -481,10 +488,10 @@ def order_create(request):
                         order.bse_remarks = result.get('remarks')
                         messages.success(request, f"Switch Order {order.unique_ref_no} placed on BSE: {result.get('remarks')}")
                     elif result['status'] == 'exception':
-                         order.status = Order.PENDING
-                         order.bse_remarks = f"System Error: {result.get('remarks')}"
-                         order.save()
-                         messages.error(request, f"System Error (Order saved as Pending): {result.get('remarks')}")
+                        order.status = Order.PENDING
+                        order.bse_remarks = f"System Error: {result.get('remarks')}"
+                        order.save()
+                        messages.error(request, f"System Error (Order saved as Pending): {result.get('remarks')}")
                     else:
                         order.status = Order.REJECTED
                         order.bse_remarks = result.get('remarks')

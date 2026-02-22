@@ -275,6 +275,12 @@ class BSEStarMFClient:
         token, _ = self._get_auth_details()
         return token
 
+    def _is_connection_error(self, remarks):
+        """Checks if the remarks indicate a connection/network error."""
+        if not remarks:
+            return False
+        return any(kw in str(remarks).lower() for kw in ['connection', 'timeout', 'rejected by peer', 'network', 'unreachable'])
+
     def _retry_call(self, func, *args, **kwargs):
         """
         Executes a function with exponential backoff retry logic.
@@ -294,7 +300,10 @@ class BSEStarMFClient:
                 retries += 1
 
     def place_order(self, order):
-        return self._retry_call(self._place_order_internal, order)
+        try:
+            return self._retry_call(self._place_order_internal, order)
+        except Exception as e:
+            return {'status': 'exception', 'remarks': str(e)}
 
     def _place_order_internal(self, order):
         # COMPLIANCE GUARD
@@ -331,15 +340,26 @@ class BSEStarMFClient:
                 # Handle Echo format where remarks are at index 6
                 if len(parts) > 6 and not parts[0].isdigit():
                      remarks = parts[6]
+
+                # Check for connection errors in remarks
+                if self._is_connection_error(remarks):
+                    return {'status': 'exception', 'remarks': remarks}
+
                 return {
                     'status': 'error',
                     'remarks': remarks
                 }
         except Exception as e:
             bse_logger.error(f"ORDER ENTRY ERROR: {str(e)}")
-            return {'status': 'exception', 'remarks': str(e)}
+            raise e
 
     def switch_order(self, order):
+        try:
+            return self._retry_call(self._switch_order_internal, order)
+        except Exception as e:
+            return {'status': 'exception', 'remarks': str(e)}
+
+    def _switch_order_internal(self, order):
         # COMPLIANCE GUARD
         investor = order.investor
         if investor.nominee_auth_status == InvestorProfile.AUTH_PENDING and investor.nomination_opt == 'Y':
@@ -374,16 +394,24 @@ class BSEStarMFClient:
                 # Handle Echo format where remarks are at index 6
                 if len(parts) > 6 and not parts[0].isdigit():
                      remarks = parts[6]
+
+                # Check for connection errors in remarks
+                if self._is_connection_error(remarks):
+                    return {'status': 'exception', 'remarks': remarks}
+
                 return {
                     'status': 'error',
                     'remarks': remarks
                 }
         except Exception as e:
             bse_logger.error(f"SWITCH ORDER ENTRY ERROR: {str(e)}")
-            return {'status': 'exception', 'remarks': str(e)}
+            raise e
 
     def register_sip(self, sip):
-        return self._retry_call(self._register_sip_internal, sip)
+        try:
+            return self._retry_call(self._register_sip_internal, sip)
+        except Exception as e:
+            return {'status': 'exception', 'remarks': str(e)}
 
     def _register_sip_internal(self, sip):
         investor = sip.investor
@@ -420,6 +448,11 @@ class BSEStarMFClient:
                 # Handle Echo format where remarks are at index 6
                 if len(parts) > 6 and not parts[0].isdigit():
                      remarks = parts[6]
+
+                # Check for connection errors in remarks
+                if any(kw in remarks.lower() for kw in ['connection', 'timeout', 'rejected by peer', 'network']):
+                     return {'status': 'exception', 'remarks': remarks}
+
                 return {
                     'status': 'error',
                     'remarks': remarks
@@ -430,7 +463,10 @@ class BSEStarMFClient:
             raise e
 
     def register_mandate(self, mandate):
-        return self._retry_call(self._register_mandate_internal, mandate)
+        try:
+            return self._retry_call(self._register_mandate_internal, mandate)
+        except Exception as e:
+            return {'status': 'exception', 'remarks': str(e)}
 
     def _register_mandate_internal(self, mandate):
         try:
@@ -453,9 +489,13 @@ class BSEStarMFClient:
                     'mandate_id': parts[2] if len(parts) > 2 else None,
                 }
             else:
+                remarks = parts[1] if len(parts) > 1 else response
+                if self._is_connection_error(remarks):
+                    return {'status': 'exception', 'remarks': remarks}
+
                 return {
                     'status': 'error',
-                    'remarks': parts[1] if len(parts) > 1 else response
+                    'remarks': remarks
                 }
         except Exception as e:
             bse_logger.error(f"MANDATE REG ERROR: {str(e)}")
@@ -482,10 +522,13 @@ class BSEStarMFClient:
             if result.get("Status") == "0":
                 return {"status": "success", "remarks": result.get("Remarks"), "data": result}
             else:
-                return {"status": "error", "remarks": result.get("Remarks"), "data": result}
+                remarks = result.get("Remarks", "")
+                if self._is_connection_error(remarks):
+                    return {"status": "exception", "remarks": remarks, "data": result}
+                return {"status": "error", "remarks": remarks, "data": result}
         except Exception as e:
             bse_logger.error(f"API Error: {str(e)}")
-            return {"status": "error", "remarks": f"HTTP/Network Error: {str(e)}"}
+            return {"status": "exception", "remarks": f"HTTP/Network Error: {str(e)}"}
 
     def fatca_upload(self, investor):
         try:
@@ -508,10 +551,13 @@ class BSEStarMFClient:
             if parts[0] == '100':
                  return {'status': 'success', 'remarks': parts[1] if len(parts) > 1 else 'FATCA Uploaded'}
             else:
-                return {'status': 'error', 'remarks': parts[1] if len(parts) > 1 else response}
+                remarks = parts[1] if len(parts) > 1 else response
+                if self._is_connection_error(remarks):
+                    return {'status': 'exception', 'remarks': remarks}
+                return {'status': 'error', 'remarks': remarks}
         except Exception as e:
             bse_logger.error(f"FATCA UPLOAD ERROR: {str(e)}")
-            return {'status': 'error', 'remarks': str(e)}
+            return {'status': 'exception', 'remarks': str(e)}
 
     def get_mandate_auth_url(self, client_code, mandate_id, loopback_url=""):
         payload = {
@@ -692,10 +738,13 @@ class BSEStarMFClient:
             if parts[0] == '100':
                 return {'status': 'success', 'remarks': parts[1] if len(parts) > 1 else 'Success'}
             else:
-                return {'status': 'error', 'remarks': parts[1] if len(parts) > 1 else response}
+                remarks = parts[1] if len(parts) > 1 else response
+                if self._is_connection_error(remarks):
+                    return {'status': 'exception', 'remarks': remarks}
+                return {'status': 'error', 'remarks': remarks}
         except Exception as e:
             bse_logger.error(f"PAYMENT STATUS ERROR: {str(e)}")
-            return {'status': 'error', 'remarks': str(e)}
+            return {'status': 'exception', 'remarks': str(e)}
 
     def get_mandate_status(self, mandate_id, client_code=None):
         encrypted_password, _ = self._get_query_auth_token()
@@ -766,7 +815,7 @@ class BSEStarMFClient:
             }
         except Exception as e:
             bse_logger.error(f"PAN CHECK ERROR: {str(e)}")
-            return {'status': 'error', 'remarks': str(e)}
+            return {'status': 'exception', 'remarks': str(e)}
 
     def bulk_update_nominee_flags(self, investor_list):
         """
@@ -819,8 +868,11 @@ class BSEStarMFClient:
             if result.get("Status") == "0":
                 return {"status": "success", "remarks": result.get("Remarks", "Success"), "data": result}
             else:
-                return {"status": "error", "remarks": result.get("Remarks", str(result)), "data": result}
+                remarks = result.get("Remarks", str(result))
+                if self._is_connection_error(remarks):
+                    return {"status": "exception", "remarks": remarks, "data": result}
+                return {"status": "error", "remarks": remarks, "data": result}
 
         except Exception as e:
             bse_logger.error(f"NOMINEE FLAG UPDATE ERROR: {str(e)}")
-            return {'status': 'error', 'remarks': str(e)}
+            return {'status': 'exception', 'remarks': str(e)}
