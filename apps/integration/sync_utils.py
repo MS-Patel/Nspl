@@ -335,14 +335,27 @@ def _sync_order_status(client, from_date, to_date):
     try:
         response = client.get_order_status(from_date=from_date, to_date=to_date)
         if response and getattr(response, 'Status', None) == '100' and getattr(response, 'OrderDetails', None):
-            for item in response.OrderDetails.OrderDetails:
+            order_details = response.OrderDetails.OrderDetails
+            bse_order_ids = [getattr(item, 'OrderNumber', None) for item in order_details if getattr(item, 'OrderNumber', None)]
+
+            # Fetch all relevant orders in a single query
+            # Order model has default ordering = ['-created_at']
+            orders_qs = Order.objects.filter(bse_order_id__in=bse_order_ids)
+
+            # Map bse_order_id to the most recent Order record
+            order_map = {}
+            for order in orders_qs:
+                if order.bse_order_id not in order_map:
+                    order_map[order.bse_order_id] = order
+
+            for item in order_details:
                 bse_order_id = getattr(item, 'OrderNumber', None)
                 if not bse_order_id:
                     continue
 
                 # Update matching order
                 try:
-                    order = Order.objects.filter(bse_order_id=bse_order_id).first()
+                    order = order_map.get(bse_order_id)
                     if order:
                         bse_status_text = item.OrderStatus.upper()
 
