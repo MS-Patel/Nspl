@@ -9,29 +9,108 @@ from datetime import datetime
 User = get_user_model()
 logger = logging.getLogger(__name__)
 
-def read_file_to_dicts(file_obj):
+# --- Column Mappings ---
+# Maps internal keys to possible external variations (lowercase, stripped)
+DISTRIBUTOR_COLUMN_MAP = {
+    'arn': ['arn', 'arn number', 'distributor arn', 'arn code', 'arn no'],
+    'broker code': ['broker code', 'sub broker code', 'sub-broker code', 'broker id'],
+    'name': ['name', 'distributor name', 'agent name'],
+    'email': ['email', 'email id', 'email address'],
+    'mobile': ['mobile', 'mobile number', 'mobile no', 'phone', 'contact number'],
+    'pan': ['pan', 'pan number', 'pan no'],
+    'euin': ['euin', 'euin number'],
+    'parent arn (optional)': ['parent arn', 'parent arn (optional)', 'master arn'],
+    'rm employee code (optional)': ['rm employee code', 'rm employee code (optional)', 'rm code', 'relationship manager code'],
+}
+
+INVESTOR_COLUMN_MAP = {
+    'pan': ['pan', 'pan number', 'investor pan'],
+    'first name': ['first name', 'firstname', 'f_name'],
+    'middle name': ['middle name', 'middlename', 'm_name'],
+    'last name': ['last name', 'lastname', 'l_name', 'surname'],
+    'email': ['email', 'email id'],
+    'mobile': ['mobile', 'mobile number', 'phone'],
+}
+
+RM_COLUMN_MAP = {
+    'employee code': ['employee code', 'emp code', 'rm code', 'rm id'],
+    'branch code': ['branch code', 'branch id'],
+    'name': ['name', 'rm name'],
+}
+
+def normalize_headers(input_headers, mapping):
     """
-    Reads a CSV or Excel file and returns a list of dictionaries.
-    Keys are normalized (lowercase, stripped).
+    Normalizes a list of headers based on a mapping dictionary.
+    Returns a dictionary mapping: {Original Header -> Normalized Key}
+    """
+    normalized_map = {}
+    input_headers_lower = [h.strip().lower() for h in input_headers]
+
+    # Pre-compute reverse mapping for O(1) lookups: {variation: standard_key}
+    reverse_mapping = {}
+    for key, variations in mapping.items():
+        for variation in variations:
+            reverse_mapping[variation] = key
+
+    # Match input headers
+    for original_header in input_headers:
+        header_lower = str(original_header).strip().lower()
+
+        # 1. Check exact match in reverse mapping
+        if header_lower in reverse_mapping:
+             normalized_map[original_header] = reverse_mapping[header_lower]
+        else:
+             # 2. Check if standard key is contained in header (fuzzy fallback)
+             # Be careful with fuzzy matches (e.g., 'email' matching 'alternate email')
+             # So we prioritize exact variations first.
+             # If no match found, keep original or normalized lower
+             normalized_map[original_header] = header_lower
+
+    return normalized_map
+
+def read_file_to_dicts(file_obj, column_mapping=None):
+    """
+    Reads a CSV or Excel file and returns a list of dictionaries with normalized keys.
     """
     data = []
     filename = file_obj.name.lower()
 
     try:
+        # 1. Read Data into List of Dicts (Raw Headers)
+        raw_data = []
         if filename.endswith(('.xls', '.xlsx')):
             df = pd.read_excel(file_obj)
-            # Replace NaN with empty string
             df = df.fillna('')
-            # Convert to list of dicts
-            records = df.to_dict('records')
-            # Normalize keys
-            data = [{str(k).strip().lower(): v for k, v in row.items()} for row in records]
+            raw_data = df.to_dict('records')
         else:
-            # Assume CSV
             decoded_file = file_obj.read().decode('utf-8-sig').splitlines()
             reader = csv.DictReader(decoded_file)
-            reader.fieldnames = [name.strip().lower() for name in reader.fieldnames]
-            data = list(reader)
+            raw_data = list(reader)
+
+        if not raw_data:
+            return []
+
+        # 2. Normalize Headers
+        if column_mapping:
+            # Get headers from first row keys
+            sample_headers = list(raw_data[0].keys())
+            header_map = normalize_headers(sample_headers, column_mapping)
+
+            # Transform Data
+            normalized_data = []
+            for row in raw_data:
+                new_row = {}
+                for k, v in row.items():
+                    # Map key if possible, else use lowercase
+                    new_key = header_map.get(k, str(k).strip().lower())
+                    new_row[new_key] = v
+                normalized_data.append(new_row)
+            data = normalized_data
+        else:
+            # Fallback to simple lowercase normalization
+            for row in raw_data:
+                 data.append({str(k).strip().lower(): v for k, v in row.items()})
+
     except Exception as e:
         logger.error(f"Error reading file {filename}: {e}")
         raise ValueError(f"Error reading file: {str(e)}")
@@ -86,7 +165,15 @@ def import_investors_from_file(file_obj):
     errors = []
 
     try:
-        rows = read_file_to_dicts(file_obj)
+        rows = read_file_to_dicts(file_obj, INVESTOR_COLUMN_MAP)
+
+        # Validate Required Columns
+        if rows and 'pan' not in rows[0]:
+             # Check if 'pan' key exists in the first row (even if value is empty)
+             # read_file_to_dicts ensures keys exist for all rows if from DF, but CSV DictReader might vary?
+             # Actually DictReader keys are consistent.
+             # If mapping failed, 'pan' key won't be there.
+             return 0, ["Critical Error: 'PAN' column not found in file. Please check headers."]
 
         for row_idx, row in enumerate(rows, start=1):
             try:
@@ -245,7 +332,11 @@ def import_distributors_from_file(file_obj):
     errors = []
 
     try:
-        rows = read_file_to_dicts(file_obj)
+        rows = read_file_to_dicts(file_obj, DISTRIBUTOR_COLUMN_MAP)
+
+        # Validate Required Columns
+        if rows and 'arn' not in rows[0]:
+             return 0, ["Critical Error: 'ARN' column not found in file. Supported headers: ARN, ARN Number, Distributor ARN, ARN Code."]
 
         for row_idx, row in enumerate(rows, start=1):
             try:
@@ -346,7 +437,11 @@ def import_rms_from_file(file_obj):
     errors = []
 
     try:
-        rows = read_file_to_dicts(file_obj)
+        rows = read_file_to_dicts(file_obj, RM_COLUMN_MAP)
+
+        # Validate Required Columns
+        if rows and 'employee code' not in rows[0]:
+             return 0, ["Critical Error: 'Employee Code' column not found in file. Supported headers: Employee Code, Emp Code, RM Code."]
 
         for row_idx, row in enumerate(rows, start=1):
             try:
