@@ -670,7 +670,7 @@ def get_bse_order_params(order, member_id, user_id, password, pass_key):
         'Remarks': '',
         'KYCStatus': 'Y',
         'RefNo': '', # Optional
-        'SubBrCode': '',
+        'SubBrCode': order.distributor.broker_code if order.distributor else '',
         'EUIN': euin,
         'EUINVal': euin_flag,
         'MinRedeem': 'N',
@@ -741,7 +741,7 @@ def get_bse_xsip_order_params(sip, member_id, user_id, password, pass_key):
         'FirstOrderFlag': 'Y',
         'Brokerage': '',
         'MandateID': sip.mandate.mandate_id,
-        'SubberCode': '', # Updated Name
+        'SubberCode': sip.investor.distributor.broker_code if sip.investor.distributor else '',
         'Euin': euin, # Use correct EUIN
         'EuinVal': euin_val, # Updated Name
         'DPC': 'Y', # Guideline mandates 'Y'
@@ -878,7 +878,7 @@ def get_bse_switch_order_params(order, member_id, user_id, password, pass_key):
         'Remarks': '',
         'KYCStatus': 'Y',
         'RefNo': '',
-        'SubBrCode': '',
+        'SubBrCode': order.distributor.broker_code if order.distributor else '',
         'Euin': euin,
         'EuinVal': euin_flag,
         'MinRedeem': 'N',

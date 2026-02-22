@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.db.models.functions import Length
 from django.utils.translation import gettext_lazy as _
 from .constants import STATE_CHOICES
 
@@ -94,6 +95,7 @@ class DistributorProfile(models.Model):
     parent = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='sub_distributors')
 
     arn_number = models.CharField(max_length=50, unique=True, help_text="AMFI Registration Number")
+    broker_code = models.CharField(max_length=20, unique=True, blank=True, help_text="Auto-generated Sub Broker Code (e.g. BBF0001)")
     euin = models.CharField(max_length=50, blank=True, help_text="Employee Unique Identification Number")
     pan = models.CharField(max_length=10, blank=True)
     mobile = models.CharField(max_length=15, blank=True)
@@ -123,6 +125,24 @@ class DistributorProfile(models.Model):
     # Status
     is_active = models.BooleanField(default=True, help_text="Designates whether this Distributor profile is active.")
 
+    def save(self, *args, **kwargs):
+        if not self.broker_code:
+            # Generate auto-increment code
+            # Sort by length descending, then by code descending to handle BBF9999 vs BBF10000 correctly
+            last_code = DistributorProfile.objects.filter(broker_code__startswith='BBF').annotate(code_len=Length('broker_code')).order_by('-code_len', '-broker_code').values_list('broker_code', flat=True).first()
+            if last_code:
+                try:
+                    # Extract number part '0001' from 'BBF0001'
+                    last_num = int(last_code[3:])
+                    new_num = last_num + 1
+                except ValueError:
+                    new_num = 1
+            else:
+                new_num = 1
+
+            self.broker_code = f"BBF{new_num:04d}"
+
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.user.username} (ARN-{self.arn_number})"
