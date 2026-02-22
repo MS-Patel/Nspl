@@ -89,12 +89,22 @@
                         {{ form.arn_number|add_class:"form-input w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" }}
                         <span class="text-tiny+ text-error">{{ form.arn_number.errors.0 }}</span>
                     </div>
+                    <div>
+                        <label class="block mb-1 text-sm font-medium">Broker Code</label>
+                        {{ form.broker_code|add_class:"form-input w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" }}
+                        {% if form.broker_code.help_text %}
+                        <span class="text-tiny+ text-slate-400">{{ form.broker_code.help_text }}</span>
+                        {% endif %}
+                        <span class="text-tiny+ text-error">{{ form.broker_code.errors.0 }}</span>
+                    </div>
+                </div>
+                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                      <div>
                         <label class="block mb-1 text-sm font-medium">EUIN</label>
                         {{ form.euin|add_class:"form-input w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" }}
                         <span class="text-tiny+ text-error">{{ form.euin.errors.0 }}</span>
                     </div>
-                </div>
+                 </div>
                  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                      <div>
                         <label class="block mb-1 text-sm font-medium">PAN</label>
