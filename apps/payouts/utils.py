@@ -1,4 +1,5 @@
 import pandas as pd
+import datetime
 from decimal import Decimal
 from simpledbf import Dbf5
 import os
@@ -57,7 +58,7 @@ def process_cams_file(brokerage_import):
     transactions = []
     for _, row in df.iterrows():
         # Clean Row Data
-        data = row.to_dict()
+        data = clean_pandas_data(row.to_dict())
 
         # Extract Key Fields (Handle variations in column names if necessary)
         brokerage = Decimal(str(row.get('BRKAGE_AMT', 0) or 0))
@@ -76,7 +77,7 @@ def process_cams_file(brokerage_import):
             scheme_name=row.get('SCHEME_NAM', row.get('SCHEME_COD', '')), # Sometimes SCHEME_COD is a code
             amount=amount,
             brokerage_amount=brokerage,
-            raw_data=str(data)
+            raw_data=data
         )
 
         # Attempt Mapping
@@ -93,7 +94,7 @@ def process_karvy_file(brokerage_import):
 
     transactions = []
     for _, row in df.iterrows():
-        data = row.to_dict()
+        data = clean_pandas_data(row.to_dict())
 
         brokerage = Decimal(str(row.get('Brokerage (in Rs.)', 0) or 0))
         amount = Decimal(str(row.get('Amount (in Rs.)', 0) or 0))
@@ -116,7 +117,7 @@ def process_karvy_file(brokerage_import):
             scheme_name=row.get('Fund Description', row.get('Scheme Name', '')),
             amount=amount,
             brokerage_amount=brokerage,
-            raw_data=str(data)
+            raw_data=data
         )
 
         map_transaction(transaction)
@@ -244,6 +245,24 @@ def calculate_payouts(brokerage_import):
         payouts_to_create.append(payout)
 
     Payout.objects.bulk_create(payouts_to_create)
+
+def clean_pandas_data(data):
+    """
+    Cleans a pandas-derived dictionary, converting non-serializable types to Python natives.
+    """
+    cleaned = {}
+    for k, v in data.items():
+        if pd.isna(v):
+            cleaned[k] = None
+        elif isinstance(v, (pd.Timestamp, datetime.datetime, datetime.date)):
+             cleaned[k] = str(v)
+        elif isinstance(v, (pd.Timedelta)):
+             cleaned[k] = str(v)
+        elif hasattr(v, 'item'): # numpy types like np.int64
+             cleaned[k] = v.item()
+        else:
+             cleaned[k] = v
+    return cleaned
 
 def get_distributor_category(aum):
     """
