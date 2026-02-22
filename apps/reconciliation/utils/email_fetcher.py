@@ -5,6 +5,10 @@ import logging
 import zipfile
 import shutil
 import tempfile
+import requests
+import urllib.parse
+import re
+from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 from email.header import decode_header
 from django.conf import settings
@@ -118,6 +122,11 @@ class RTAEmailFetcher:
 
                     # Process Attachments
                     file_paths = self.process_attachments(msg)
+
+                    # Process Links (CAMS/Karvy)
+                    link_files = self.process_links(msg)
+                    file_paths.extend(link_files)
+
                     if file_paths:
                         results.append((num, file_paths))
 
@@ -171,6 +180,117 @@ class RTAEmailFetcher:
                 saved_files.append(filepath)
 
         return saved_files
+
+    def process_links(self, msg):
+        """
+        Parses email body for CAMS and Karvy download links.
+        """
+        saved_files = []
+        html_content = ""
+
+        # Extract HTML content
+        if msg.is_multipart():
+            for part in msg.walk():
+                if part.get_content_type() == "text/html":
+                    payload = part.get_payload(decode=True)
+                    if payload:
+                        html_content = payload.decode(part.get_content_charset() or 'utf-8', errors='ignore')
+                        break
+        else:
+            if msg.get_content_type() == "text/html":
+                payload = msg.get_payload(decode=True)
+                if payload:
+                    html_content = payload.decode(msg.get_content_charset() or 'utf-8', errors='ignore')
+
+        if not html_content:
+            return []
+
+        soup = BeautifulSoup(html_content, 'html.parser')
+
+        # 1. CAMS: Look for "DownloadURL" in a table cell
+        # "DownloadURL" in the table cell preceding the link.
+        cams_links = []
+        download_cells = soup.find_all(string=re.compile("DownloadURL", re.IGNORECASE))
+        for cell in download_cells:
+            # The cell is a NavigableString, parent is the <td>
+            parent_td = cell.parent
+            if parent_td and parent_td.name == 'td':
+                 # Look for next sibling td
+                next_td = parent_td.find_next_sibling('td')
+                if next_td:
+                    link = next_td.find('a', href=True)
+                    if link and 'camsonline.com' in link['href']:
+                        cams_links.append(link['href'])
+
+        # 2. Karvy: Look for "Click Here" link before "to download"
+        # "click here link before to download transaction report word"
+        karvy_links = []
+        click_here_links = soup.find_all('a', string=re.compile("Click Here", re.IGNORECASE))
+        for link in click_here_links:
+            if 'href' in link.attrs and 'kfintech.com' in link['href']:
+                # Check context if needed, but domain filter + "Click Here" is strong signal
+                # Checking next text node for "download" as requested
+                next_node = link.next_sibling
+                if next_node and "download" in str(next_node).lower():
+                     karvy_links.append(link['href'])
+                else:
+                    # Sometimes markup might be nested, let's be lenient if domain matches and text is "Click Here"
+                     karvy_links.append(link['href'])
+
+        # Deduplicate
+        all_links = list(set(cams_links + karvy_links))
+
+        for url in all_links:
+            try:
+                filepath = self.download_file(url)
+                if filepath:
+                    if filepath.lower().endswith('.zip'):
+                        extracted = self.extract_zip(filepath)
+                        saved_files.extend(extracted)
+                    else:
+                        saved_files.append(filepath)
+            except Exception as e:
+                logger.error(f"Error downloading file from {url}: {e}")
+
+        return saved_files
+
+    def download_file(self, url):
+        try:
+            logger.info(f"Downloading file from {url}")
+            response = requests.get(url, stream=True, timeout=30)
+            response.raise_for_status()
+
+            filename = None
+            if "Content-Disposition" in response.headers:
+                content_disposition = response.headers["Content-Disposition"]
+                filename_match = re.search(r'filename="?([^"]+)"?', content_disposition)
+                if filename_match:
+                    filename = filename_match.group(1)
+
+            if not filename:
+                # Fallback to URL path
+                path = urllib.parse.urlparse(url).path
+                filename = os.path.basename(path)
+
+            if not filename or filename == '':
+                # Last resort
+                filename = f"downloaded_file_{datetime.now().strftime('%Y%m%d%H%M%S')}"
+
+            # Sanitize filename
+            filename = "".join([c for c in filename if c.isalpha() or c.isdigit() or c in '._- ']).strip()
+
+            filepath = os.path.join(self.temp_dir, filename)
+
+            with open(filepath, 'wb') as f:
+                for chunk in response.iter_content(chunk_size=8192):
+                    f.write(chunk)
+
+            logger.info(f"Downloaded to {filepath}")
+            return filepath
+
+        except Exception as e:
+            logger.error(f"Download failed: {e}")
+            raise
 
     def extract_zip(self, zip_path):
         extracted_files = []
