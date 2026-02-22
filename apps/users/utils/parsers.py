@@ -371,12 +371,7 @@ def import_distributors_from_file(file_obj):
                         user.save()
 
                     # Check/Create Profile
-                    profile, created = DistributorProfile.objects.get_or_create(user=user, defaults={'broker_code': broker_code})
-
-                    if pan: profile.pan = pan
-                    if mobile: profile.mobile = mobile
-                    if euin: profile.euin = euin
-                    if broker_code: profile.arn_number = arn
+                    profile, created = DistributorProfile.objects.get_or_create(user=user,broker_code=broker_code, defaults={'pan': pan, 'mobile': mobile, 'euin': euin, 'arn_number': arn})
 
                     # Address Details
                     if row.get('address'): profile.address = row.get('address')
