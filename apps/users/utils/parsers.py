@@ -341,9 +341,6 @@ def import_distributors_from_file(file_obj):
         for row_idx, row in enumerate(rows, start=1):
             try:
                 arn = str(row.get('arn', '')).strip().upper()
-                if not arn:
-                    continue
-
                 name = str(row.get('name', '')).strip()
                 email = str(row.get('email', '')).strip()
                 mobile = str(row.get('mobile', '')).strip()
@@ -372,6 +369,11 @@ def import_distributors_from_file(file_obj):
 
                     # Check/Create Profile
                     profile, created = DistributorProfile.objects.get_or_create(user=user,broker_code=broker_code, defaults={'pan': pan, 'mobile': mobile, 'euin': euin, 'arn_number': arn})
+
+                    if pan: profile.pan = pan
+                    if mobile: profile.mobile = mobile
+                    if euin: profile.euin = euin
+                    if broker_code: profile.arn_number = arn
 
                     # Address Details
                     if row.get('address'): profile.address = row.get('address')
