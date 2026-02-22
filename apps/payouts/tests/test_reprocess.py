@@ -18,7 +18,8 @@ class TestReprocessLogic:
         rm = RMProfile.objects.create(user=rm_user, employee_code='RM888')
 
         dist_user = User.objects.create(username='dist_reprocess', user_type='DISTRIBUTOR')
-        dist = DistributorProfile.objects.create(user=dist_user, arn_number='888888', rm=rm)
+        # We'll use broker_code for mapping now
+        dist = DistributorProfile.objects.create(user=dist_user, arn_number='888888', rm=rm, broker_code='SUB-123')
 
         # Investor
         inv_user = User.objects.create(username='inv_reprocess', user_type='INVESTOR')
@@ -36,34 +37,48 @@ class TestReprocessLogic:
         }
 
     def test_reprocess_mapping(self, setup_basics):
+        """
+        Tests that reprocessing works when the missing link (DistributorProfile match) is added.
+        Logic is based on Sub-Broker Code matching.
+        """
         data = setup_basics
         dist = data['distributor']
-        investor = data['investor']
-        scheme = data['scheme']
+
+        # Temporarily change distributor broker code so it DOESN'T match
+        original_code = dist.broker_code
+        dist.broker_code = "MISMATCHED"
+        dist.save()
 
         # 1. Create Import
         imp = BrokerageImport.objects.create(month=2, year=2025)
 
-        # 2. Create Unmapped Transaction (Folio '999/999' doesn't exist yet)
+        # 2. Create Unmapped Transaction with valid Sub-Broker Code in raw_data
         txn = BrokerageTransaction.objects.create(
             import_file=imp,
             source='CAMS',
             folio_number='999/999',
             amount=Decimal('10000'),
             brokerage_amount=Decimal('100'),
-            is_mapped=False
+            is_mapped=False,
+            raw_data={'SUBBROK': original_code} # This matches the original code
         )
 
-        # 3. Run Reprocess - Should fail to map
+        # 3. Run Reprocess - Should fail to map because Distributor has MISMATCHED code
         mapped_count = reprocess_brokerage_import(imp)
         assert mapped_count == 0
         txn.refresh_from_db()
         assert txn.is_mapped is False
+        # Note: We cannot check mapping_remark here because reprocess_brokerage_import
+        # only saves the transaction if is_mapped becomes True.
 
-        # 4. Create the missing Holding (which links Folio to Investor -> Distributor)
+        # 4. Correct the Distributor Profile (Simulate "Adding/Fixing Distributor")
+        dist.broker_code = original_code
+        dist.save()
+
+        # Also ensure Holding exists for Payout Calculation (AUM)
         Holding.objects.create(
-            investor=investor,
-            scheme=scheme,
+            investor=data['investor'],
+            scheme=data['scheme'],
             folio_number='999/999',
             current_value=Decimal('10000'),
             units=100
@@ -76,7 +91,7 @@ class TestReprocessLogic:
         txn.refresh_from_db()
         assert txn.is_mapped is True
         assert txn.distributor == dist
-        assert "Mapped via Folio 999/999" in txn.mapping_remark
+        assert f"Mapped via Sub-Broker Code {original_code}" in txn.mapping_remark
 
         # 6. Verify Payout was created
         payout = Payout.objects.filter(brokerage_import=imp, distributor=dist).first()
