@@ -6,6 +6,8 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth import get_user_model
 from django.http import JsonResponse, HttpResponse
 from django.db import transaction
+from django.db.models import Q
+from django.core.paginator import Paginator
 from .models import Payout, BrokerageImport, BrokerageTransaction, DistributorCategory
 from .forms import BrokerageUploadForm
 from .utils import process_brokerage_import, reprocess_brokerage_import
@@ -181,28 +183,77 @@ class BrokerageImportDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailV
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # Fetch transactions, prioritizing unmapped ones
-        transactions = self.object.transactions.all().order_by('is_mapped', 'id')
-
-        parsed_transactions = []
-        for txn in transactions:
-            raw = txn.raw_data
-            if isinstance(raw, str):
-                try:
-                    raw = ast.literal_eval(raw)
-                except:
-                    raw = {}
-            else:
-                raw = txn.raw_data or {}
-
-            txn.parsed_raw_data = raw
-            # Normalize PAN for display to avoid template lookup errors
-            txn.display_pan = raw.get('InvPAN') or raw.get('PAN_NO') or raw.get('PAN_NUMBER') or '-'
-
-            parsed_transactions.append(txn)
-
-        context['transactions'] = parsed_transactions
+        # We no longer load all transactions here to improve performance.
+        # Data is fetched via AJAX.
         return context
+
+    def get(self, request, *args, **kwargs):
+        is_ajax = (
+            request.headers.get('x-requested-with') == 'XMLHttpRequest' or
+            request.GET.get('format') == 'json'
+        )
+
+        if is_ajax:
+            self.object = self.get_object()
+            qs = self.object.transactions.all()
+
+            # Search
+            keyword = request.GET.get('keyword', '')
+            if keyword:
+                qs = qs.filter(
+                    Q(investor_name__icontains=keyword) |
+                    Q(folio_number__icontains=keyword) |
+                    Q(scheme_name__icontains=keyword)
+                )
+
+            # Sorting
+            # Grid.js sends ?sort=... sometimes, but let's stick to default ordering first
+            # The previous logic ordered by 'is_mapped', 'id'.
+            qs = qs.order_by('is_mapped', 'id')
+
+            # Pagination
+            try:
+                limit = int(request.GET.get('limit', 10))
+                page_num = int(request.GET.get('page', 0)) + 1
+            except ValueError:
+                limit = 10
+                page_num = 1
+
+            paginator = Paginator(qs, limit)
+            page = paginator.get_page(page_num)
+
+            data = []
+            for txn in page.object_list:
+                raw = txn.raw_data
+                if isinstance(raw, str):
+                    try:
+                        raw = ast.literal_eval(raw)
+                    except:
+                        raw = {}
+                else:
+                    raw = txn.raw_data or {}
+
+                display_pan = raw.get('InvPAN') or raw.get('PAN_NO') or raw.get('PAN_NUMBER') or '-'
+
+                data.append({
+                    'id': txn.id,
+                    'status': txn.is_mapped,
+                    'source': txn.source,
+                    'investor': txn.investor_name,
+                    'folio': txn.folio_number,
+                    'pan': display_pan,
+                    'scheme': txn.scheme_name,
+                    'amount': float(txn.amount),
+                    'brokerage': float(txn.brokerage_amount),
+                    'remark': txn.mapping_remark
+                })
+
+            return JsonResponse({
+                'data': data,
+                'total': paginator.count
+            })
+
+        return super().get(request, *args, **kwargs)
 
 class ReprocessImportView(LoginRequiredMixin, UserPassesTestMixin, View):
     def test_func(self):
