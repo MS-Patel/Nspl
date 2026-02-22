@@ -140,6 +140,7 @@
           formatter: (cell) => Gridjs.html(`<span class="font-medium text-slate-700 dark:text-navy-100">${cell}</span>`)
         },
         { id: "arn", name: "ARN" },
+        { id: "broker_code", name: "Broker Code" },
         { id: "mobile", name: "Mobile" },
         { id: "rm_name", name: "RM" },
         {
@@ -188,6 +189,7 @@
     const columns = [
       { id: 'name', name: 'Name' },
       { id: 'arn', name: 'ARN' },
+      { id: 'broker_code', name: 'Broker Code' },
       { id: 'mobile', name: 'Mobile' },
       { id: 'rm_name', name: 'Relationship Manager' },
       { id: 'status', name: 'Status' },
@@ -237,6 +239,7 @@
       const filteredData = tableData.filter(item =>
           item.name.toLowerCase().includes(keyword) ||
           item.arn.toLowerCase().includes(keyword) ||
+          (item.broker_code && item.broker_code.toLowerCase().includes(keyword)) ||
           item.mobile.toLowerCase().includes(keyword) ||
           item.rm_name.toLowerCase().includes(keyword)
       );

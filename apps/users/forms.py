@@ -157,6 +157,7 @@ class RMChangeForm(forms.ModelForm):
 
 class DistributorCreationForm(UserCreationForm):
     arn_number = forms.CharField(max_length=50)
+    broker_code = forms.CharField(max_length=20, required=False, help_text="Leave blank to auto-generate (e.g. BBF0001)")
     euin = forms.CharField(max_length=50, required=False)
     pan = forms.CharField(max_length=10, required=False)
     mobile = forms.CharField(max_length=15, required=False)
@@ -225,6 +226,7 @@ class DistributorCreationForm(UserCreationForm):
                     rm=rm_profile,
                     parent=self.cleaned_data.get('parent_distributor'),
                     arn_number=self.cleaned_data['arn_number'],
+                    broker_code=self.cleaned_data.get('broker_code', ''),
                     euin=self.cleaned_data.get('euin', ''),
                     pan=self.cleaned_data.get('pan', ''),
                     mobile=self.cleaned_data.get('mobile', ''),
@@ -253,6 +255,7 @@ class DistributorChangeForm(forms.ModelForm):
 
     # Profile fields
     arn_number = forms.CharField(max_length=50)
+    broker_code = forms.CharField(max_length=20, required=False, help_text="Sub Broker Code")
     parent = forms.ModelChoiceField(queryset=DistributorProfile.objects.all(), required=False, label="Parent Distributor")
     rm = forms.ModelChoiceField(queryset=RMProfile.objects.all(), required=False, label="Relationship Manager")
 
@@ -264,7 +267,7 @@ class DistributorChangeForm(forms.ModelForm):
     class Meta:
         model = DistributorProfile
         fields = [
-            'arn_number', 'euin', 'pan', 'mobile',
+            'arn_number', 'broker_code', 'euin', 'pan', 'mobile',
             'parent', 'rm',
             'dob', 'gstin',
             'address', 'city', 'state', 'pincode', 'country',
