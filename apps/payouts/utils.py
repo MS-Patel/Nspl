@@ -127,60 +127,49 @@ def process_karvy_file(brokerage_import):
 def map_transaction(transaction):
     """
     Logic to link a transaction to a DistributorProfile.
+    Mapping is now strictly based on Sub-Broker Code matching.
     """
-    mapped = False
+    import ast
 
-    # 1. Map via Sub-Broker Code (if present in raw data)
-    # CAMS: SUB_BRK_CO / SUB_BRK_AR
-    # Karvy: Sub-Broker Code
+    transaction.is_mapped = False
+    transaction.distributor = None
 
-    # We need to parse raw_data back from string or pass it in.
-    # For simplicity, let's assume we look at specific known fields.
-    # Note: In `bulk_create`, `save()` isn't called, so this logic runs before bulk_create object construction.
+    try:
+        raw = ast.literal_eval(transaction.raw_data) if isinstance(transaction.raw_data, str) else transaction.raw_data
 
-    # (Since I'm doing bulk_create, I'm setting attributes on the object instance)
+        # Normalize keys to uppercase for easier lookup
+        # raw keys might be mixed case
+        raw_upper = {k.upper(): v for k, v in raw.items()}
 
-    # Logic:
-    # Find Distributor by PAN (via Investor) or ARN
+        # Keys to look for (Normalized to Upper)
+        # CAMS: subbrok -> SUBBROK
+        # Karvy: Sub-Broker -> SUB-BROKER, td_broker -> TD_BROKER, TD_AGENT -> TD_AGENT
 
-    distributor = None
+        keys_to_check = ['SUBBROK', 'SUB-BROKER', 'TD_BROKER', 'TD_AGENT', 'SUB_BRK_CO']
 
-    # Try 1: Folio Number Mapping
-    # We check if we have this Folio mapped to an Investor in our system.
-    if transaction.folio_number:
-        # Clean folio
-        folio = str(transaction.folio_number).strip()
-        # Find Investor with this folio in Holdings (most reliable link)
-        # OR check InvestorProfile -> but InvestorProfile doesn't store Folio directly (Holding does).
-        # But we can try to find an investor via PAN if available in file.
+        sub_broker_code = None
+        for key in keys_to_check:
+            val = raw_upper.get(key)
+            if val:
+                val_str = str(val).strip()
+                if val_str and val_str.lower() not in ['nan', 'none', '']:
+                    sub_broker_code = val_str
+                    break
 
-        # Let's search Holdings first.
-        holding = Holding.objects.filter(folio_number=folio).select_related('investor__distributor').first()
-        if holding and holding.investor.distributor:
-            distributor = holding.investor.distributor
-            transaction.mapping_remark = f"Mapped via Folio {folio}"
-            mapped = True
+        if sub_broker_code:
+            # Match against DistributorProfile.broker_code (Case Insensitive)
+            distributor = DistributorProfile.objects.filter(broker_code__iexact=sub_broker_code).first()
+            if distributor:
+                transaction.distributor = distributor
+                transaction.is_mapped = True
+                transaction.mapping_remark = f"Mapped via Sub-Broker Code {sub_broker_code}"
+            else:
+                transaction.mapping_remark = f"Sub-Broker Code {sub_broker_code} not found"
+        else:
+            transaction.mapping_remark = "No Sub-Broker Code found"
 
-    # Try 2: Investor PAN (if available in file)
-    # Karvy: 'InvPAN'
-    # CAMS: 'PAN_NO'
-    if not mapped:
-        import ast
-        try:
-            raw = ast.literal_eval(transaction.raw_data) if isinstance(transaction.raw_data, str) else transaction.raw_data
-            pan = raw.get('InvPAN', raw.get('PAN_NO', raw.get('PAN_NUMBER', '')))
-            if pan:
-                investor = InvestorProfile.objects.filter(pan=pan).select_related('distributor').first()
-                if investor and investor.distributor:
-                    distributor = investor.distributor
-                    transaction.mapping_remark = f"Mapped via Investor PAN {pan}"
-                    mapped = True
-        except:
-            pass
-
-    if mapped and distributor:
-        transaction.distributor = distributor
-        transaction.is_mapped = True
+    except Exception as e:
+        transaction.mapping_remark = f"Error during mapping: {str(e)}"
 
 def reprocess_brokerage_import(brokerage_import):
     """
