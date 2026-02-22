@@ -334,6 +334,7 @@ class DistributorListView(LoginRequiredMixin, IsAdminOrRMMixin, ListView):
                 'id': dist.id,
                 'name': dist.user.name if dist.user.name else dist.user.username,
                 'arn': dist.arn_number,
+                'broker_code': dist.broker_code,
                 'mobile': dist.mobile,
                 'rm_name': dist.rm.user.name if dist.rm and dist.rm.user.name else (dist.rm.user.username if dist.rm else ''),
                 'status': 'Active' if dist.user.is_active else 'Inactive',

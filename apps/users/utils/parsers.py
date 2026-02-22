@@ -258,6 +258,7 @@ def import_distributors_from_file(file_obj):
                 mobile = str(row.get('mobile', '')).strip()
                 pan = str(row.get('pan', '')).strip().upper()
                 euin = str(row.get('euin', '')).strip().upper()
+                broker_code = str(row.get('broker code', row.get('sub broker code', ''))).strip()
 
                 # Optional Hierarchy
                 parent_arn = str(row.get('parent arn (optional)', '')).strip().upper()
@@ -284,6 +285,7 @@ def import_distributors_from_file(file_obj):
                     if pan: profile.pan = pan
                     if mobile: profile.mobile = mobile
                     if euin: profile.euin = euin
+                    if broker_code: profile.broker_code = broker_code
 
                     # Address Details
                     if row.get('address'): profile.address = row.get('address')
