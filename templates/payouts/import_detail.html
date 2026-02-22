@@ -1,128 +1,215 @@
 {% extends "layout/base.html" %}
+{% load static humanize %}
 
 {% block content %}
-<div class="container-fluid">
-    <h1 class="h3 mb-4 text-gray-800">Import Details: {{ object.get_month_display }} {{ object.year }}</h1>
+<div class="flex flex-col space-y-4 py-4">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <h2 class="text-xl font-medium text-slate-800 dark:text-navy-50">
+            Import Details: {{ object.get_month_display }} {{ object.year }}
+        </h2>
+        <div class="mt-2 sm:mt-0">
+             <span class="text-xs text-slate-400">Uploaded: {{ object.uploaded_at|date:"M d, Y H:i" }}</span>
+        </div>
+    </div>
 
-    <div class="row">
-        <div class="col-lg-6">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Status Information</h6>
+    <!-- Status & Files Grid -->
+    <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <!-- Status Card -->
+        <div class="card p-4">
+            <h3 class="text-base font-medium text-slate-700 dark:text-navy-100 mb-4 border-b border-slate-150 pb-2 dark:border-navy-600">
+                Status Information
+            </h3>
+            <div class="space-y-3">
+                <div class="flex justify-between">
+                    <span class="font-medium text-slate-600 dark:text-navy-100">Status:</span>
+                    <span class="badge rounded-full
+                        {% if object.status == 'COMPLETED' %}bg-success/10 text-success dark:bg-success/15
+                        {% elif object.status == 'FAILED' %}bg-error/10 text-error dark:bg-error/15
+                        {% elif object.status == 'PROCESSING' %}bg-info/10 text-info dark:bg-info/15
+                        {% else %}bg-warning/10 text-warning dark:bg-warning/15{% endif %}">
+                        {{ object.get_status_display|default:object.status }}
+                    </span>
                 </div>
-                <div class="card-body">
-                    <p><strong>Status:</strong> {{ object.status }}</p>
-                    <p><strong>Uploaded At:</strong> {{ object.uploaded_at }}</p>
-                    <p><strong>Processed At:</strong> {{ object.processed_at }}</p>
-                    {% if object.error_log %}
-                    <div class="alert alert-danger">
-                        <strong>Error Log:</strong><br>
-                        <pre>{{ object.error_log }}</pre>
-                    </div>
-                    {% endif %}
+                <div class="flex justify-between">
+                    <span class="font-medium text-slate-600 dark:text-navy-100">Processed At:</span>
+                    <span class="text-slate-500 dark:text-navy-300">{{ object.processed_at|default:"-" }}</span>
                 </div>
+                {% if object.error_log %}
+                <div class="mt-2 rounded-lg bg-slate-100 p-3 text-xs text-error dark:bg-navy-600">
+                    <strong class="block mb-1">Error Log:</strong>
+                    <pre class="whitespace-pre-wrap font-mono">{{ object.error_log }}</pre>
+                </div>
+                {% endif %}
             </div>
         </div>
-        <div class="col-lg-6">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Files</h6>
+
+        <!-- Files Card -->
+        <div class="card p-4">
+            <h3 class="text-base font-medium text-slate-700 dark:text-navy-100 mb-4 border-b border-slate-150 pb-2 dark:border-navy-600">
+                Files
+            </h3>
+            <div class="space-y-3">
+                <div class="flex justify-between items-center">
+                    <span class="font-medium text-slate-600 dark:text-navy-100">CAMS File:</span>
+                    {% if object.cams_file %}
+                        <a href="{{ object.cams_file.url }}" class="btn h-8 rounded-full bg-primary/10 px-3 text-xs font-medium text-primary hover:bg-primary/20 focus:bg-primary/20 active:bg-primary/25 dark:bg-accent-light/10 dark:text-accent-light dark:hover:bg-accent-light/20">
+                            <i class="fas fa-download mr-1"></i> Download
+                        </a>
+                    {% else %}
+                        <span class="text-slate-400 text-sm">None</span>
+                    {% endif %}
                 </div>
-                <div class="card-body">
-                    <p><strong>CAMS File:</strong> {% if object.cams_file %}<a href="{{ object.cams_file.url }}">Download</a>{% else %}None{% endif %}</p>
-                    <p><strong>Karvy File:</strong> {% if object.karvy_file %}<a href="{{ object.karvy_file.url }}">Download</a>{% else %}None{% endif %}</p>
+                <div class="flex justify-between items-center">
+                    <span class="font-medium text-slate-600 dark:text-navy-100">Karvy File:</span>
+                    {% if object.karvy_file %}
+                        <a href="{{ object.karvy_file.url }}" class="btn h-8 rounded-full bg-primary/10 px-3 text-xs font-medium text-primary hover:bg-primary/20 focus:bg-primary/20 active:bg-primary/25 dark:bg-accent-light/10 dark:text-accent-light dark:hover:bg-accent-light/20">
+                            <i class="fas fa-download mr-1"></i> Download
+                        </a>
+                    {% else %}
+                        <span class="text-slate-400 text-sm">None</span>
+                    {% endif %}
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Payouts Generated -->
-    <div class="card shadow mb-4">
-        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-            <h6 class="m-0 font-weight-bold text-primary">Payouts Generated</h6>
-            <a href="{% url 'payouts:export_payout_report' object.id %}" class="btn btn-sm btn-success shadow-sm">
-                <i class="fas fa-download fa-sm text-white-50"></i> Download Report
+    <div class="card p-4">
+        <div class="flex flex-col sm:flex-row items-center justify-between mb-4 border-b border-slate-150 pb-2 dark:border-navy-600">
+            <h3 class="text-base font-medium text-slate-700 dark:text-navy-100">Payouts Generated</h3>
+            <a href="{% url 'payouts:export_payout_report' object.id %}" class="btn mt-2 sm:mt-0 h-8 gap-2 bg-success text-white hover:bg-success-focus focus:bg-success-focus active:bg-success-focus/90">
+                <i class="fas fa-file-excel"></i> Download Report
             </a>
         </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-bordered" width="100%" cellspacing="0">
-                    <thead>
-                        <tr>
-                            <th>Distributor</th>
-                            <th>AUM</th>
-                            <th>Category</th>
-                            <th>Payable</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for payout in object.payouts.all %}
-                        <tr>
-                            <td>{{ payout.distributor }}</td>
-                            <td>₹{{ payout.total_aum }}</td>
-                            <td>{{ payout.category }}</td>
-                            <td>₹{{ payout.payable_amount }}</td>
-                            <td><a href="{% url 'payout_detail' payout.id %}" class="btn btn-sm btn-info">View</a></td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+        <div class="is-scrollbar-hidden min-w-full overflow-x-auto">
+            <table class="w-full text-left is-hoverable">
+                <thead>
+                    <tr class="border-y border-transparent border-b-slate-200 dark:border-b-navy-500">
+                        <th class="whitespace-nowrap px-4 py-3 font-semibold uppercase text-slate-800 dark:text-navy-100 lg:px-5">Distributor</th>
+                        <th class="whitespace-nowrap px-4 py-3 font-semibold uppercase text-slate-800 dark:text-navy-100 lg:px-5">AUM</th>
+                        <th class="whitespace-nowrap px-4 py-3 font-semibold uppercase text-slate-800 dark:text-navy-100 lg:px-5">Category</th>
+                        <th class="whitespace-nowrap px-4 py-3 font-semibold uppercase text-slate-800 dark:text-navy-100 lg:px-5">Payable</th>
+                        <th class="whitespace-nowrap px-4 py-3 font-semibold uppercase text-slate-800 dark:text-navy-100 lg:px-5">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for payout in object.payouts.all %}
+                    <tr class="border-y border-transparent border-b-slate-200 dark:border-b-navy-500 hover:bg-slate-50 dark:hover:bg-navy-900">
+                        <td class="whitespace-nowrap px-4 py-3 sm:px-5">{{ payout.distributor }}</td>
+                        <td class="whitespace-nowrap px-4 py-3 sm:px-5">₹{{ payout.total_aum|intcomma }}</td>
+                        <td class="whitespace-nowrap px-4 py-3 sm:px-5">{{ payout.category }}</td>
+                        <td class="whitespace-nowrap px-4 py-3 sm:px-5 font-semibold text-success">₹{{ payout.payable_amount|intcomma }}</td>
+                        <td class="whitespace-nowrap px-4 py-3 sm:px-5">
+                            <a href="{% url 'payouts:payout_detail' payout.id %}" class="btn h-7 w-7 rounded-full bg-info/10 p-0 text-info hover:bg-info/20 focus:bg-info/20 active:bg-info/25">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="px-4 py-3 text-center text-slate-400">No payouts generated yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
 
     <!-- Transactions List -->
-    <div class="card shadow mb-4">
-        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-            <h6 class="m-0 font-weight-bold text-primary">Transactions</h6>
+    <div class="card p-4">
+        <div class="flex flex-col sm:flex-row items-center justify-between mb-4 border-b border-slate-150 pb-2 dark:border-navy-600">
+            <h3 class="text-base font-medium text-slate-700 dark:text-navy-100">Transactions</h3>
             <form method="post" action="{% url 'payouts:reprocess_import' object.id %}" onsubmit="return confirm('Are you sure you want to reprocess unmapped transactions? This will recalculate payouts.');">
                 {% csrf_token %}
-                <button type="submit" class="btn btn-sm btn-warning shadow-sm">
-                    <i class="fas fa-sync-alt fa-sm text-white-50"></i> Retry Mapping
+                <button type="submit" class="btn mt-2 sm:mt-0 h-8 gap-2 bg-warning text-white hover:bg-warning-focus focus:bg-warning-focus active:bg-warning-focus/90">
+                    <i class="fas fa-sync-alt"></i> Retry Mapping
                 </button>
             </form>
         </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-bordered table-sm" width="100%" cellspacing="0">
-                    <thead>
-                        <tr>
-                            <th>Status</th>
-                            <th>Source</th>
-                            <th>Investor (Raw)</th>
-                            <th>Folio</th>
-                            <th>PAN (Raw)</th>
-                            <th>Scheme</th>
-                            <th>Amount</th>
-                            <th>Brokerage</th>
-                            <th>Remark</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for txn in transactions %}
-                        <tr {% if not txn.is_mapped %}class="table-warning"{% endif %}>
-                            <td>
-                                {% if txn.is_mapped %}
-                                    <span class="badge badge-success">Mapped</span>
-                                {% else %}
-                                    <span class="badge badge-danger">Unmapped</span>
-                                {% endif %}
-                            </td>
-                            <td>{{ txn.source }}</td>
-                            <td>{{ txn.investor_name }}</td>
-                            <td>{{ txn.folio_number }}</td>
-                            <td>{{ txn.display_pan }}</td>
-                            <td>{{ txn.scheme_name }}</td>
-                            <td>{{ txn.amount }}</td>
-                            <td>{{ txn.brokerage_amount }}</td>
-                            <td>{{ txn.mapping_remark }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
+
+        <!-- Grid.js Container -->
+        <div id="transactions-grid" class="w-full"></div>
     </div>
 </div>
+{% endblock %}
+
+{% block javascript %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const grid = new window.Gridjs.Grid({
+            columns: [
+                {
+                    name: 'Status',
+                    id: 'status',
+                    formatter: (cell) => {
+                        return window.Gridjs.html(
+                            cell
+                            ? `<span class="badge rounded-full bg-success/10 text-success dark:bg-success/15">Mapped</span>`
+                            : `<span class="badge rounded-full bg-error/10 text-error dark:bg-error/15">Unmapped</span>`
+                        );
+                    },
+                    width: '100px'
+                },
+                { name: 'Source', id: 'source', width: '80px' },
+                { name: 'Investor', id: 'investor' },
+                { name: 'Folio', id: 'folio' },
+                { name: 'PAN', id: 'pan' },
+                { name: 'Scheme', id: 'scheme' },
+                {
+                    name: 'Amount',
+                    id: 'amount',
+                    formatter: (cell) => `₹${parseFloat(cell).toFixed(2)}`
+                },
+                {
+                    name: 'Brokerage',
+                    id: 'brokerage',
+                    formatter: (cell) => `₹${parseFloat(cell).toFixed(2)}`
+                },
+                { name: 'Remark', id: 'remark' }
+            ],
+            server: {
+                url: window.location.origin + window.location.pathname + '?format=json',
+                then: data => data.data,
+                total: data => data.total
+            },
+            search: {
+                enabled: true,
+                server: {
+                    url: (prev, keyword) => {
+                         const sep = prev.includes('?') ? '&' : '?';
+                         return `${prev}${sep}keyword=${keyword}`;
+                    }
+                }
+            },
+            sort: false, // Server-side sorting not fully implemented in view yet, keeping simple
+            pagination: {
+                enabled: true,
+                limit: 10,
+                server: {
+                    url: (prev, page, limit) => {
+                        const sep = prev.includes('?') ? '&' : '?';
+                        return `${prev}${sep}limit=${limit}&page=${page}`;
+                    }
+                }
+            },
+            fixedHeader: true,
+            height: '500px',
+            className: {
+                table: 'w-full text-left border-collapse',
+                th: 'bg-slate-50 dark:bg-navy-800 font-semibold text-slate-700 dark:text-navy-100 p-3 border-b border-slate-200 dark:border-navy-500 whitespace-nowrap',
+                td: 'p-3 border-b border-slate-100 dark:border-navy-600 text-slate-600 dark:text-navy-200',
+                pagination: 'flex items-center justify-between p-4',
+                paginationSummary: 'text-sm text-slate-500 dark:text-navy-300',
+                paginationButton: 'btn h-8 w-8 rounded-lg p-0 hover:bg-slate-100 focus:bg-slate-100 active:bg-slate-150/80 dark:hover:bg-navy-500 dark:focus:bg-navy-500 dark:active:bg-navy-500/90 mx-1',
+                paginationButtonCurrent: 'bg-primary text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90',
+            },
+            language: {
+                'search': {
+                    'placeholder': 'Search Investor, Folio or Scheme...'
+                }
+            }
+        }).render(document.getElementById("transactions-grid"));
+    });
+</script>
 {% endblock %}
