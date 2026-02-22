@@ -333,7 +333,7 @@ def import_distributors_from_file(file_obj):
 
     try:
         rows = read_file_to_dicts(file_obj, DISTRIBUTOR_COLUMN_MAP)
-
+        print(rows[0] if rows else "No rows found")
         # Validate Required Columns
         if rows and 'arn' not in rows[0]:
              return 0, ["Critical Error: 'ARN' column not found in file. Supported headers: ARN, ARN Number, Distributor ARN, ARN Code."]
@@ -359,24 +359,24 @@ def import_distributors_from_file(file_obj):
                     # Check/Create User
                     user = None
                     try:
-                        user = User.objects.get(username=arn)
+                        user = User.objects.get(username=broker_code)
                         # Upsert User Details
                         if name: user.name = name
                         if email: user.email = email
                         user.save()
                     except User.DoesNotExist:
-                        user = User.objects.create_user(username=arn, email=email, password=arn)
+                        user = User.objects.create_user(username=broker_code, email=email, password=arn)
                         user.name = name
                         user.user_type = User.Types.DISTRIBUTOR
                         user.save()
 
                     # Check/Create Profile
-                    profile, created = DistributorProfile.objects.get_or_create(user=user, defaults={'arn_number': arn})
+                    profile, created = DistributorProfile.objects.get_or_create(user=user, defaults={'broker_code': broker_code})
 
                     if pan: profile.pan = pan
                     if mobile: profile.mobile = mobile
                     if euin: profile.euin = euin
-                    if broker_code: profile.broker_code = broker_code
+                    if broker_code: profile.arn_number = arn
 
                     # Address Details
                     if row.get('address'): profile.address = row.get('address')
