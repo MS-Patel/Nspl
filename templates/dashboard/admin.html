@@ -1,5 +1,5 @@
 {% extends 'layout/base.html' %}
-{% load humanize %}
+{% load humanize core_extras %}
 
 {% block page_title %}Admin Dashboard{% endblock %}
 
@@ -22,7 +22,7 @@
                 </svg>
             </div>
         </div>
-        <p class="mt-4 text-2xl font-semibold text-slate-700 dark:text-navy-100">₹ {{ total_aum|intcomma }}</p>
+        <p class="mt-4 text-2xl font-semibold text-slate-700 dark:text-navy-100">₹ {{ total_aum|indian_large_number }}</p>
     </div>
 
     <!-- RMs -->
