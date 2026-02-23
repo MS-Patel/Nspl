@@ -64,7 +64,7 @@
             <p class="mb-4 text-slate-500">
                 Upload a CSV file to map investors in bulk.
                 <br>
-                <small>Columns required: <code>investor_pan</code>, <code>distributor_arn</code></small>
+                <small>Columns required: <code>investor_pan</code>, <code>distributor_pan</code></small>
             </p>
             <form method="post" action="{% url 'users:distributor_mapping' %}" enctype="multipart/form-data">
                 {% csrf_token %}
