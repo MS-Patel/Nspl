@@ -6,7 +6,13 @@ app_name = 'investments'
 urlpatterns = [
     path('order/create/', views.order_create, name='order_create'),
     path('order/list/', views.order_list, name='order_list'),
-    path('holdings/', views.HoldingListView.as_view(), name='holding_list'),
+
+    # Points to Investor List now
+    path('holdings/', views.PortfolioInvestorListView.as_view(), name='holding_list'),
+
+    # New: Investor Portfolio Dashboard
+    path('portfolio/<int:investor_id>/', views.InvestorPortfolioView.as_view(), name='investor_portfolio'),
+
     path('folio/<path:folio_number>/', views.FolioDetailView.as_view(), name='folio_detail'),
     path('redemption/create/<int:holding_id>/', views.RedemptionCreateView.as_view(), name='redemption_create'),
     path('mandate/create/', views.MandateCreateView.as_view(), name='mandate_create'),

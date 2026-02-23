@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.db.models import Q
+from django.db.models import Q, Sum
 from django.http import JsonResponse, HttpResponseForbidden
 from django.urls import reverse
 from django.views import View
@@ -883,5 +883,141 @@ class FolioDetailView(LoginRequiredMixin, TemplateView):
             'series': json.dumps(allocation_series)
         }
         context['fund_data'] = fund_data
+
+        return context
+
+class PortfolioInvestorListView(LoginRequiredMixin, ListView):
+    model = InvestorProfile
+    template_name = 'investments/portfolio_investor_list.html'
+    context_object_name = 'investors'
+
+    def get_queryset(self):
+        user = self.request.user
+        qs = InvestorProfile.objects.select_related('user', 'distributor', 'distributor__user')
+
+        # Filter by Role
+        if user.user_type == 'ADMIN':
+            pass
+        elif user.user_type == 'RM':
+             qs = qs.filter(Q(distributor__rm__user=user) | Q(rm__user=user))
+        elif user.user_type == 'DISTRIBUTOR':
+            qs = qs.filter(distributor__user=user)
+        elif user.user_type == 'INVESTOR':
+            qs = qs.filter(user=user)
+        else:
+            qs = qs.none()
+
+        # Annotate with Total AUM
+        qs = qs.annotate(total_aum=Sum('holdings__current_value'))
+
+        # Return investors even if AUM is 0, but sort by AUM desc
+        return qs.order_by('-total_aum', 'user__name')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        data = []
+        for inv in self.get_queryset():
+            aum = inv.total_aum or 0
+
+            # Action URL to the new portfolio dashboard
+            # Assuming URL name 'investor_portfolio'
+            try:
+                action_url = reverse('investments:investor_portfolio', args=[inv.id])
+            except:
+                action_url = "#" # Fallback until URL is configured
+
+            data.append({
+                'id': inv.id,
+                'name': inv.user.name or inv.user.username,
+                'pan': inv.pan,
+                'distributor': inv.distributor.user.name if inv.distributor and inv.distributor.user.name else (inv.distributor.user.username if inv.distributor else '-'),
+                'total_aum': round(float(aum), 2),
+                'action_url': action_url
+            })
+        context['grid_data_json'] = json.dumps(data)
+        return context
+
+class InvestorPortfolioView(LoginRequiredMixin, TemplateView):
+    template_name = 'investments/investor_portfolio_dashboard.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        investor_id = self.kwargs.get('investor_id')
+        user = self.request.user
+
+        # 1. Fetch Investor & Check Access
+        try:
+            investor = InvestorProfile.objects.get(id=investor_id)
+        except InvestorProfile.DoesNotExist:
+             raise Http404("Investor not found")
+
+        if not has_access_to_investor(user, investor_id):
+             raise Http404("Access Denied")
+
+        # 2. Fetch Holdings
+        holdings = Holding.objects.filter(investor=investor).select_related('scheme', 'scheme__amc')
+
+        # 3. Aggregate
+        total_current_value = 0.0
+        total_invested_value = 0.0
+
+        # Group by Folio Number
+        folios_map = {}
+
+        for h in holdings:
+            cv = float(h.current_value) if h.current_value else 0.0
+            iv = float(h.units * h.average_cost)
+
+            total_current_value += cv
+            total_invested_value += iv
+
+            f_num = h.folio_number
+            if f_num not in folios_map:
+                amc_name = h.scheme.amc.name if h.scheme and h.scheme.amc else "Unknown AMC"
+
+                folios_map[f_num] = {
+                    'folio_number': f_num,
+                    'amc_name': amc_name,
+                    'current_value': 0.0,
+                    'invested_value': 0.0,
+                    'gain_loss': 0.0,
+                    'gain_loss_percent': 0.0,
+                    'folio_url': reverse('investments:folio_detail', kwargs={'folio_number': f_num})
+                }
+
+            folios_map[f_num]['current_value'] += cv
+            folios_map[f_num]['invested_value'] += iv
+
+
+        # Calculate Gain/Loss per Folio
+        folio_list = []
+        for f_num, data in folios_map.items():
+            current = data['current_value']
+            invested = data['invested_value']
+            gain_loss = current - invested
+            percent = (gain_loss / invested * 100) if invested > 0 else 0.0
+
+            data['gain_loss'] = round(gain_loss, 2)
+            data['gain_loss_percent'] = round(percent, 2)
+            data['current_value'] = round(current, 2)
+            data['invested_value'] = round(invested, 2)
+
+            folio_list.append(data)
+
+        # 4. Context
+        context['investor'] = investor
+        context['summary'] = {
+            'total_current_value': round(total_current_value, 2),
+            'total_invested_value': round(total_invested_value, 2),
+            'total_gain_loss': round(total_current_value - total_invested_value, 2),
+        }
+
+        # Calculate Portfolio Percent
+        if total_invested_value > 0:
+            context['summary']['gain_loss_percent'] = round(((total_current_value - total_invested_value) / total_invested_value) * 100, 2)
+        else:
+            context['summary']['gain_loss_percent'] = 0.0
+
+        context['folio_list_json'] = json.dumps(folio_list)
 
         return context
