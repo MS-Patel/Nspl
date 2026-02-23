@@ -214,7 +214,7 @@ RTA_EMAIL_SENDER_FILTERS = [s.strip().lower() for s in os.environ.get('RTA_EMAIL
 RTA_EMAIL_SUBJECT_FILTERS = [s.strip().lower() for s in os.environ.get('RTA_EMAIL_SUBJECT_FILTERS', 'Transaction Feeds Report,WBR2').split(',') if s.strip()]
 
 # Number of days to look back for emails
-RTA_EMAIL_FETCH_DAYS = int(os.environ.get('RTA_EMAIL_FETCH_DAYS', 7))
+RTA_EMAIL_FETCH_DAYS = int(os.environ.get('RTA_EMAIL_FETCH_DAYS', 3))
 
 # SMS Configuration
 SMS_API_KEY = os.environ.get('SMS_API_KEY', '64c7a50d19c21')

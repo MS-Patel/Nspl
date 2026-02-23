@@ -77,7 +77,7 @@ class RTAEmailFetcher:
 
             # Calculate date threshold for search
             date_threshold = (datetime.now() - timedelta(days=self.fetch_days)).strftime("%d-%b-%Y")
-            search_criteria = f'(UNSEEN SINCE "{date_threshold}")'
+            search_criteria = f'(SINCE "{date_threshold}")'
 
             logger.info(f"Searching for emails with criteria: {search_criteria}")
 
@@ -319,8 +319,8 @@ class RTAEmailFetcher:
                         success = True
                         logger.info(f"Successfully extracted {zip_path}")
                         break
-                    except (RuntimeError, pyzipper.BadZipFile, pyzipper.LargeZipFile):
-                        continue
+                    except (RuntimeError, pyzipper.BadZipFile, pyzipper.LargeZipFile) as e:
+                        logger.error(f"Failed to extract {zip_path}: {e}")
 
                 if not success:
                     logger.error(f"Failed to extract {zip_path}: Incorrect password or unsupported encryption.")
