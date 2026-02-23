@@ -119,7 +119,7 @@
                             <td class="whitespace-nowrap px-4 py-3 sm:px-5">₹{{ p.payable_amount }}</td>
                             <td class="whitespace-nowrap px-4 py-3 sm:px-5">{{ p.brokerage_import.get_month_display }} {{ p.brokerage_import.year }}</td>
                             <td class="whitespace-nowrap px-4 py-3 sm:px-5">
-                                <a href="{% url 'payout_detail' p.id %}" class="btn h-7 rounded bg-primary px-3 text-xs font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90">
+                                <a href="{% url 'payouts:payout_detail' p.id %}" class="btn h-7 rounded bg-primary px-3 text-xs font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90">
                                     View
                                 </a>
                             </td>

@@ -33,7 +33,7 @@
                             <td class="font-weight-bold">₹{{ payout.payable_amount }}</td>
                             <td>{{ payout.status }}</td>
                             <td>
-                                <a href="{% url 'payout_detail' payout.pk %}" class="btn btn-sm btn-info">View</a>
+                                <a href="{% url 'payouts:payout_detail' payout.pk %}" class="btn btn-sm btn-info">View</a>
                             </td>
                         </tr>
                         {% endfor %}
