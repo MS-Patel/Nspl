@@ -890,8 +890,8 @@ class DistributorMappingView(LoginRequiredMixin, IsAdminOrRMMixin, TemplateView)
             if reader.fieldnames:
                 reader.fieldnames = [name.lower().strip() for name in reader.fieldnames]
 
-            if 'investor_pan' not in reader.fieldnames or 'distributor_arn' not in reader.fieldnames:
-                 messages.error(request, "CSV must contain 'investor_pan' and 'distributor_arn' columns.")
+            if 'investor_pan' not in reader.fieldnames or 'distributor_pan' not in reader.fieldnames:
+                 messages.error(request, "CSV must contain 'investor_pan' and 'distributor_pan' columns.")
                  return redirect('users:distributor_mapping')
 
             success_count = 0
@@ -900,7 +900,7 @@ class DistributorMappingView(LoginRequiredMixin, IsAdminOrRMMixin, TemplateView)
             with transaction.atomic():
                 for row_idx, row in enumerate(reader, start=1):
                     pan = row.get('investor_pan', '').strip()
-                    arn = row.get('distributor_arn', '').strip()
+                    dist_pan = row.get('distributor_pan', '').strip()
 
                     if not pan: continue
 
@@ -926,14 +926,14 @@ class DistributorMappingView(LoginRequiredMixin, IsAdminOrRMMixin, TemplateView)
 
                     # 2. Find Distributor
                     distributor = None
-                    if arn:
+                    if dist_pan:
                         try:
                             qs = DistributorProfile.objects.all()
                             if request.user.user_type == User.Types.RM:
                                 qs = qs.filter(rm__user=request.user)
-                            distributor = qs.get(arn_number__iexact=arn)
+                            distributor = qs.get(pan__iexact=dist_pan)
                         except DistributorProfile.DoesNotExist:
-                            errors.append(f"Row {row_idx}: Distributor ARN {arn} not found (or access denied).")
+                            errors.append(f"Row {row_idx}: Distributor PAN {dist_pan} not found (or access denied).")
                             continue
 
                     # 3. Apply Mapping

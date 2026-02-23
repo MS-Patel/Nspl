@@ -23,7 +23,7 @@ def distributor_user(db):
 @pytest.fixture
 def rm_distributor(db, rm_user):
     user = User.objects.create_user(username="dist_rm", password="password", user_type=User.Types.DISTRIBUTOR)
-    dist = DistributorProfile.objects.create(user=user, arn_number="ARN-RM1", rm=rm_user.rm_profile)
+    dist = DistributorProfile.objects.create(user=user, arn_number="ARN-RM1", rm=rm_user.rm_profile, pan="ABCDE1234J")
     return dist
 
 @pytest.fixture
@@ -130,7 +130,7 @@ class TestDistributorMapping:
         client.force_login(admin_user)
         url = reverse('users:distributor_mapping')
 
-        csv_content = f"investor_pan,distributor_arn\n{investor_unmapped.pan},{rm_distributor.arn_number}"
+        csv_content = f"investor_pan,distributor_pan\n{investor_unmapped.pan},{rm_distributor.pan}"
         csv_file = SimpleUploadedFile("mapping.csv", csv_content.encode('utf-8'), content_type="text/csv")
 
         data = {
