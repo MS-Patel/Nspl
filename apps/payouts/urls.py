@@ -11,6 +11,7 @@ urlpatterns = [
     path('payouts/import/<int:pk>/', views.BrokerageImportDetailView.as_view(), name='import_detail'),
     path('payouts/import/<int:pk>/reprocess/', views.ReprocessImportView.as_view(), name='reprocess_import'),
     path('payouts/import/<int:pk>/export/', views.ExportPayoutReportView.as_view(), name='export_payout_report'),
+    path('payouts/import/<int:pk>/export-transactions/', views.ExportTransactionReportView.as_view(), name='export_transaction_report'),
     path('payouts/import-list/', views.BrokerageImportListView.as_view(), name='import_list'),
 
     # Category Management
