@@ -362,7 +362,7 @@ def import_distributors_from_file(file_obj):
                         if email: user.email = email
                         user.save()
                     except User.DoesNotExist:
-                        user = User.objects.create_user(username=broker_code, email=email, password=arn)
+                        user = User.objects.create_user(username=broker_code, email=email, password=pan)
                         user.name = name
                         user.user_type = User.Types.DISTRIBUTOR
                         user.save()
@@ -373,7 +373,6 @@ def import_distributors_from_file(file_obj):
                     if pan: profile.pan = pan
                     if mobile: profile.mobile = mobile
                     if euin: profile.euin = euin
-                    if broker_code: profile.arn_number = arn
 
                     # Address Details
                     if row.get('address'): profile.address = row.get('address')
