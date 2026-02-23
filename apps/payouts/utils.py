@@ -146,10 +146,7 @@ def map_transaction(transaction):
         # CAMS: subbrok -> SUBBROK
         # Karvy: Sub-Broker -> SUB-BROKER, td_broker -> TD_BROKER, TD_AGENT -> TD_AGENT
 
-        keys_to_check = [
-            'SUBBROK', 'SUB-BROKER', 'TD_BROKER', 'TD_AGENT', 'SUB_BRK_CO',
-            'SUB BROKER', 'SUB BROKER CODE', 'BROKER CODE', 'BROKER_CODE'
-        ]
+        keys_to_check = ['AE_CODE', 'SUB-BROKER']
 
         sub_broker_code = None
         for key in keys_to_check:
