@@ -1,0 +1,157 @@
+{% extends 'layout/base.html' %}
+{% load static humanize core_extras %}
+
+{% block title %}Investor Portfolio - {{ investor.user.name }}{% endblock %}
+
+{% block content %}
+<div class="my-5 flex h-8 items-center justify-between px-4 sm:px-5">
+    <div class="flex items-center space-x-4">
+        <h2 class="text-xl font-medium text-slate-800 dark:text-navy-50 lg:text-2xl">
+            {{ investor.user.name }}'s Portfolio
+        </h2>
+        <div class="hidden h-full py-1 sm:flex">
+            <div class="h-full w-px bg-slate-300 dark:bg-navy-600"></div>
+        </div>
+        <ul class="hidden flex-wrap items-center space-x-2 sm:flex">
+            <li class="flex items-center space-x-2">
+                <a class="text-primary transition-colors hover:text-primary-focus dark:text-accent-light dark:hover:text-accent" href="{% url 'investments:holding_list' %}">Portfolio Investors</a>
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+            </li>
+            <li>Dashboard</li>
+        </ul>
+    </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="grid grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-5 lg:gap-6 px-4 sm:px-5">
+    <!-- Current Value -->
+    <div class="card flex-row justify-between p-4 sm:p-5">
+        <div>
+            <p class="text-xs+ font-medium text-slate-700 dark:text-navy-100">
+                Current Value
+            </p>
+            <div class="mt-2 flex items-baseline space-x-0.5">
+                <span class="text-2xl font-semibold text-slate-700 dark:text-navy-100">
+                    ₹ {{ summary.total_current_value|indian_large_number }}
+                </span>
+            </div>
+            <p class="text-xs text-slate-400">Total Assets Under Management</p>
+        </div>
+        <div class="mask is-hexagon flex h-10 w-10 items-center justify-center bg-primary/10 text-primary">
+            <i class="fa-solid fa-chart-pie text-xl"></i>
+        </div>
+    </div>
+
+    <!-- Invested Value -->
+    <div class="card flex-row justify-between p-4 sm:p-5">
+        <div>
+            <p class="text-xs+ font-medium text-slate-700 dark:text-navy-100">
+                Invested Amount
+            </p>
+            <div class="mt-2 flex items-baseline space-x-0.5">
+                <span class="text-2xl font-semibold text-slate-700 dark:text-navy-100">
+                    ₹ {{ summary.total_invested_value|indian_large_number }}
+                </span>
+            </div>
+            <p class="text-xs text-slate-400">Total Capital Deployment</p>
+        </div>
+        <div class="mask is-hexagon flex h-10 w-10 items-center justify-center bg-info/10 text-info">
+            <i class="fa-solid fa-wallet text-xl"></i>
+        </div>
+    </div>
+
+    <!-- Gain/Loss -->
+    <div class="card flex-row justify-between p-4 sm:p-5">
+        <div>
+            <p class="text-xs+ font-medium text-slate-700 dark:text-navy-100">
+                Total Gain/Loss
+            </p>
+            <div class="mt-2 flex items-baseline space-x-0.5">
+                <span class="text-2xl font-semibold {% if summary.total_gain_loss >= 0 %}text-success{% else %}text-error{% endif %}">
+                    ₹ {{ summary.total_gain_loss|indian_large_number }}
+                </span>
+            </div>
+             <p class="text-xs {% if summary.total_gain_loss >= 0 %}text-success{% else %}text-error{% endif %}">
+                {{ summary.gain_loss_percent }}% Return
+            </p>
+        </div>
+        <div class="mask is-hexagon flex h-10 w-10 items-center justify-center {% if summary.total_gain_loss >= 0 %}bg-success/10 text-success{% else %}bg-error/10 text-error{% endif %}">
+            <i class="fa-solid fa-arrow-trend-{% if summary.total_gain_loss >= 0 %}up{% else %}down{% endif %} text-xl"></i>
+        </div>
+    </div>
+</div>
+
+<!-- Folio List Table -->
+<div class="mt-4 sm:mt-5 lg:mt-6 px-4 sm:px-5">
+    <div class="card pb-4">
+        <div class="flex items-center justify-between p-4 sm:p-5">
+            <h2 class="font-medium tracking-wide text-slate-700 line-clamp-1 dark:text-navy-100 lg:text-base">
+                Folio Summary
+            </h2>
+        </div>
+        <div class="px-4 sm:px-5">
+            <div id="folio-grid"></div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block javascript %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const gridData = {{ folio_list_json|safe }};
+        const gridContainer = document.getElementById("folio-grid");
+
+        const formatCurrency = (amount) => {
+            return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(amount);
+        };
+
+        const gridConfig = {
+            columns: [
+                {
+                    id: 'folio_number',
+                    name: 'Folio Number',
+                    formatter: (cell, row) => {
+                        return Gridjs.html(`<a href="${row.cells[5].data}" class="text-primary hover:underline font-medium">${cell}</a>`);
+                    }
+                },
+                { id: 'amc_name', name: 'AMC', width: '25%' },
+                {
+                    id: 'invested_value',
+                    name: 'Invested',
+                    formatter: (cell) => formatCurrency(cell)
+                },
+                {
+                    id: 'current_value',
+                    name: 'Current Value',
+                    formatter: (cell) => formatCurrency(cell)
+                },
+                {
+                    id: 'gain_loss',
+                    name: 'Gain/Loss',
+                    formatter: (cell, row) => {
+                        const val = parseFloat(cell);
+                        const cls = val >= 0 ? "text-success" : "text-error";
+                        return Gridjs.html(`<span class="${cls} font-medium">${formatCurrency(val)}</span>`);
+                    }
+                },
+                { id: 'folio_url', hidden: true }
+            ],
+            data: gridData,
+            search: true,
+            sort: true,
+            pagination: { limit: 10 },
+            className: {
+                table: 'is-hoverable w-full text-left',
+                tbody: 'text-slate-600 dark:text-navy-200',
+                thead: 'bg-slate-200 text-slate-800 dark:bg-navy-800 dark:text-navy-100',
+            }
+        };
+
+        new Gridjs.Grid(gridConfig).render(gridContainer);
+    });
+</script>
+{% endblock %}
