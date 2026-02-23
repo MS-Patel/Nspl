@@ -140,13 +140,16 @@ def map_transaction(transaction):
 
         # Normalize keys to uppercase for easier lookup
         # raw keys might be mixed case
-        raw_upper = {k.upper(): v for k, v in raw.items()}
+        raw_upper = {str(k).upper().strip(): v for k, v in raw.items()}
 
         # Keys to look for (Normalized to Upper)
         # CAMS: subbrok -> SUBBROK
         # Karvy: Sub-Broker -> SUB-BROKER, td_broker -> TD_BROKER, TD_AGENT -> TD_AGENT
 
-        keys_to_check = ['SUBBROK', 'SUB-BROKER', 'TD_BROKER', 'TD_AGENT', 'SUB_BRK_CO']
+        keys_to_check = [
+            'SUBBROK', 'SUB-BROKER', 'TD_BROKER', 'TD_AGENT', 'SUB_BRK_CO',
+            'SUB BROKER', 'SUB BROKER CODE', 'BROKER CODE', 'BROKER_CODE'
+        ]
 
         sub_broker_code = None
         for key in keys_to_check:

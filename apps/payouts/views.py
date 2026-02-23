@@ -166,6 +166,64 @@ class PayoutDetailView(LoginRequiredMixin, DetailView):
             return qs.filter(distributor__user=user)
         return qs.none()
 
+    def get(self, request, *args, **kwargs):
+        is_ajax = (
+            request.headers.get('x-requested-with') == 'XMLHttpRequest' or
+            request.GET.get('format') == 'json'
+        )
+
+        if is_ajax:
+            self.object = self.get_object()
+
+            # Efficient Filtering
+            qs = BrokerageTransaction.objects.filter(
+                import_file=self.object.brokerage_import,
+                distributor=self.object.distributor
+            )
+
+            # Search logic
+            keyword = request.GET.get('keyword', '')
+            if keyword:
+                qs = qs.filter(
+                    Q(investor_name__icontains=keyword) |
+                    Q(folio_number__icontains=keyword) |
+                    Q(scheme_name__icontains=keyword)
+                )
+
+            # Sorting logic
+            qs = qs.order_by('-transaction_date', 'id')
+
+            # Pagination
+            try:
+                limit = int(request.GET.get('limit', 10))
+                page_num = int(request.GET.get('page', 0)) + 1
+            except ValueError:
+                limit = 10
+                page_num = 1
+
+            paginator = Paginator(qs, limit)
+            page = paginator.get_page(page_num)
+
+            data = []
+            for txn in page.object_list:
+                data.append({
+                    'date': txn.transaction_date,
+                    'source': txn.source,
+                    'investor': txn.investor_name,
+                    'folio': txn.folio_number,
+                    'scheme': txn.scheme_name,
+                    'amount': float(txn.amount),
+                    'brokerage': float(txn.brokerage_amount),
+                    'remark': txn.mapping_remark
+                })
+
+            return JsonResponse({
+                'data': data,
+                'total': paginator.count
+            })
+
+        return super().get(request, *args, **kwargs)
+
 class BrokerageImportListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     model = BrokerageImport
     template_name = 'payouts/import_list.html'
