@@ -2,7 +2,7 @@ import imaplib
 import email
 import os
 import logging
-import zipfile
+import pyzipper
 import shutil
 import tempfile
 import requests
@@ -295,7 +295,7 @@ class RTAEmailFetcher:
     def extract_zip(self, zip_path):
         extracted_files = []
         try:
-            with zipfile.ZipFile(zip_path, 'r') as zf:
+            with pyzipper.AESZipFile(zip_path, 'r') as zf:
                 # Try passwords
                 passwords = [None] # Try no password first
                 if self.file_passwords:
@@ -319,7 +319,7 @@ class RTAEmailFetcher:
                         success = True
                         logger.info(f"Successfully extracted {zip_path}")
                         break
-                    except (RuntimeError, zipfile.BadZipFile, zipfile.LargeZipFile):
+                    except (RuntimeError, pyzipper.BadZipFile, pyzipper.LargeZipFile):
                         continue
 
                 if not success:
