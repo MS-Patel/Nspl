@@ -46,6 +46,7 @@ class BrokerageUploadView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     def test_func(self):
         return self.request.user.user_type == User.Types.ADMIN
 
+
     def post(self, request, *args, **kwargs):
         self.object = None
         form = self.get_form()
@@ -264,6 +265,13 @@ class BrokerageImportDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailV
                     Q(scheme_name__icontains=keyword)
                 )
 
+            # Filter by Status
+            status = request.GET.get('status', 'all')
+            if status == 'mapped':
+                qs = qs.filter(is_mapped=True)
+            elif status == 'unmapped':
+                qs = qs.filter(is_mapped=False)
+
             # Sorting
             # Grid.js sends ?sort=... sometimes, but let's stick to default ordering first
             # The previous logic ordered by 'is_mapped', 'id'.
@@ -404,3 +412,43 @@ class DistributorCategoryDeleteView(LoginRequiredMixin, UserPassesTestMixin, Del
 
     def test_func(self):
         return self.request.user.user_type == User.Types.ADMIN
+
+class ExportTransactionReportView(LoginRequiredMixin, UserPassesTestMixin, View):
+    def test_func(self):
+        return self.request.user.user_type == User.Types.ADMIN
+
+    def get(self, request, pk, *args, **kwargs):
+        brokerage_import = get_object_or_404(BrokerageImport, pk=pk)
+        transactions = brokerage_import.transactions.select_related('distributor', 'distributor__user').all()
+
+        data = []
+        for txn in transactions:
+            data.append({
+                'Transaction Date': txn.transaction_date,
+                'Source': txn.source,
+                'Investor Name': txn.investor_name,
+                'Folio Number': txn.folio_number,
+                'Scheme Name': txn.scheme_name,
+                'Amount': txn.amount,
+                'Brokerage Amount': txn.brokerage_amount,
+                'Status': 'Mapped' if txn.is_mapped else 'Unmapped',
+                'Mapped Distributor': txn.distributor.user.username if txn.distributor else '',
+                'Remark': txn.mapping_remark
+            })
+
+        df = pd.DataFrame(data)
+
+        output = io.BytesIO()
+        with pd.ExcelWriter(output, engine='openpyxl') as writer:
+            df.to_excel(writer, index=False, sheet_name='Transactions')
+
+        output.seek(0)
+
+        response = HttpResponse(
+            output.read(),
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        filename = f"transaction_report_{brokerage_import.id}.xlsx"
+        response['Content-Disposition'] = f'attachment; filename={filename}'
+
+        return response
