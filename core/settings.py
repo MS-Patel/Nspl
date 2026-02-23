@@ -133,7 +133,7 @@ USE_I18N = True
 
 USE_L10N = True
 
-USE_THOUSAND_SEPARATOR = True
+USE_THOUSAND_SEPARATOR = False
 
 FORMAT_MODULE_PATH = [
     'apps.core.formats',

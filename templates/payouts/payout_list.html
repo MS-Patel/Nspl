@@ -1,4 +1,5 @@
 {% extends "layout/base.html" %}
+{% load humanize %}
 
 {% block content %}
 <div class="container-fluid">
@@ -26,11 +27,11 @@
                         <tr>
                             <td>{{ payout.distributor }}</td>
                             <td>{{ payout.brokerage_import.get_month_display }} {{ payout.brokerage_import.year }}</td>
-                            <td>₹{{ payout.total_aum }}</td>
+                            <td>₹{{ payout.total_aum|intcomma }}</td>
                             <td>{{ payout.category }}</td>
-                            <td>₹{{ payout.gross_brokerage }}</td>
+                            <td>₹{{ payout.gross_brokerage|intcomma }}</td>
                             <td>{{ payout.share_percentage }}%</td>
-                            <td class="font-weight-bold">₹{{ payout.payable_amount }}</td>
+                            <td class="font-weight-bold">₹{{ payout.payable_amount|intcomma }}</td>
                             <td>{{ payout.status }}</td>
                             <td>
                                 <a href="{% url 'payouts:payout_detail' payout.pk %}" class="btn btn-sm btn-info">View</a>
