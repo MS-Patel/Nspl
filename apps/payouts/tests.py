@@ -17,8 +17,7 @@ class TestBrokerageUploadView(TestCase):
     def test_duplicate_check_returns_409(self):
         BrokerageImport.objects.create(month=1, year=2024)
         response = self.client.post(self.url, {
-            'month': 1,
-            'year': 2024,
+            'month_year': '2024-01',
         }, HTTP_X_REQUESTED_WITH='XMLHttpRequest')
         self.assertEqual(response.status_code, 409)
         self.assertEqual(response.json()['status'], 'conflict')
@@ -28,8 +27,7 @@ class TestBrokerageUploadView(TestCase):
         old_id = old_import.id
 
         response = self.client.post(self.url, {
-            'month': 1,
-            'year': 2024,
+            'month_year': '2024-01',
             'overwrite': 'true'
         }, HTTP_X_REQUESTED_WITH='XMLHttpRequest')
 
@@ -47,8 +45,7 @@ class TestBrokerageUploadView(TestCase):
         invalid_file = SimpleUploadedFile("test.txt", b"content", content_type="text/plain")
 
         response = self.client.post(self.url, {
-            'month': 2,
-            'year': 2024,
+            'month_year': '2024-02',
             'overwrite': 'true',
             'cams_file': invalid_file
         }, HTTP_X_REQUESTED_WITH='XMLHttpRequest')

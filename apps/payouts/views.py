@@ -58,9 +58,19 @@ class BrokerageUploadView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
 
         # Form is invalid. Check for duplicates and overwrite request.
         try:
+            month_year = request.POST.get('month_year')
             month = request.POST.get('month')
             year = request.POST.get('year')
             overwrite = request.POST.get('overwrite')
+
+            # Parse month/year from combined string if not provided individually
+            if month_year and (not month or not year):
+                try:
+                    year_str, month_str = month_year.split('-')
+                    year = int(year_str)
+                    month = int(month_str)
+                except (ValueError, AttributeError):
+                    pass
 
             duplicate_exists = False
             if month and year:
