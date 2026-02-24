@@ -68,14 +68,13 @@ def process_cams_file(brokerage_import):
 
         if txn_date:
             txn_date = txn_date.date()
-
         # Scheme Determination
         scheme_code = str(row.get('SCHEME_COD', '')).strip()
         scheme = None
         if scheme_code:
-            scheme = Scheme.objects.filter(rta_scheme_code=scheme_code).first()
+            scheme = Scheme.objects.filter(channel_partner_code=scheme_code).first()
             if not scheme:
-                scheme = Scheme.objects.filter(amc_scheme_code=scheme_code).first()
+                scheme = Scheme.objects.filter(rta_scheme_code=scheme_code).first()
             if not scheme:
                 scheme = Scheme.objects.filter(scheme_code=scheme_code).first()
 
@@ -119,14 +118,13 @@ def process_karvy_file(brokerage_import):
                 txn_date = pd.to_datetime(txn_date_str, dayfirst=True).date()
             except:
                 pass
-
         # Scheme Determination
-        product_code = str(row.get('Product Code', row.get('FMCODE', ''))).strip()
+        product_code = str(row.get('Product Code', '')).strip()
         scheme = None
         if product_code:
-            scheme = Scheme.objects.filter(rta_scheme_code=product_code).first()
+            scheme = Scheme.objects.filter(channel_partner_code=product_code).first()
             if not scheme:
-                scheme = Scheme.objects.filter(amc_scheme_code=product_code).first()
+                scheme = Scheme.objects.filter(rta_scheme_code=product_code).first()
             if not scheme:
                 scheme = Scheme.objects.filter(scheme_code=product_code).first()
 
@@ -169,7 +167,7 @@ def map_transaction(transaction):
         # CAMS: subbrok -> SUBBROK
         # Karvy: Sub-Broker -> SUB-BROKER, td_broker -> TD_BROKER, TD_AGENT -> TD_AGENT
 
-        keys_to_check = ['AE_CODE', 'SUB-BROKER', 'SUBBROK']
+        keys_to_check = ['AE_CODE', 'SUB-BROKER']
 
         sub_broker_code = None
         for key in keys_to_check:
