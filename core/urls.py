@@ -21,7 +21,6 @@ from django.conf import settings
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('apps.website.urls'), name="website"),
     path('administration/', include('apps.administration.urls'), name="web"),
     path('', include('apps.users.urls'), name="users"),
     path('', include('apps.products.urls'), name="products"),
@@ -31,6 +30,7 @@ urlpatterns = [
     path('', include('apps.analytics.urls'), name="analytics"),
     path('integration/', include('apps.integration.urls'), name="integration"),
     path('reports/', include('apps.reports.urls'), name="reports"),
+    path('', include('apps.website.urls'), name="website"),
 ]
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

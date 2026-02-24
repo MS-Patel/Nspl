@@ -1,11 +1,10 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Loader2 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import logo from "@/assets/logo.png";
 
@@ -16,7 +15,6 @@ const Login = () => {
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
-  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,23 +22,49 @@ const Login = () => {
 
     try {
       if (isRegister) {
-        const { error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: window.location.origin,
-            data: { full_name: fullName },
-          },
-        });
-        if (error) throw error;
         toast({
-          title: "Registration successful!",
-          description: "Please check your email to verify your account.",
+          title: "Registration not available",
+          description: "Please contact support to create an account.",
+          variant: "destructive",
         });
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-        navigate("/dashboard");
+        // CSRF Token
+        const getCookie = (name: string) => {
+          let cookieValue = null;
+          if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+              const cookie = cookies[i].trim();
+              if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+              }
+            }
+          }
+          return cookieValue;
+        }
+        const csrftoken = getCookie('csrftoken');
+
+        const response = await fetch('/users/api/auth/login/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken || '',
+          },
+          body: JSON.stringify({ username: email, password: password }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.status === 'success') {
+          toast({
+            title: "Login successful!",
+            description: "Redirecting...",
+          });
+          window.location.href = data.redirect_url || '/dashboard/admin/';
+        } else {
+          throw new Error(data.message || 'Login failed');
+        }
       }
     } catch (error: any) {
       toast({
@@ -90,8 +114,8 @@ const Login = () => {
                 </div>
               )}
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" required />
+                <Label htmlFor="email">Username / Email</Label>
+                <Input id="email" type="text" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Username or Email" required />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>

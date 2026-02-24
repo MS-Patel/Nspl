@@ -10,30 +10,50 @@ class TestAuthenticationIntegration:
     def test_login_redirects(self, client):
         # Admin Login
         admin = User.objects.create_superuser(username='admin', password='password', user_type=User.Types.ADMIN)
-        response = client.post(reverse('users:login'), {'username': 'admin', 'password': 'password'})
-        assert response.status_code == 302
-        assert response.url == reverse('users:admin_dashboard')
+        response = client.post(
+            reverse('users:api_login'),
+            {'username': 'admin', 'password': 'password'},
+            content_type='application/json'
+        )
+        assert response.status_code == 200
+        assert response.json()['status'] == 'success'
+        assert response.json()['redirect_url'] == reverse('users:admin_dashboard')
         client.logout()
 
         # RM Login
         rm_profile = RMProfileFactory(user__password='password')
-        response = client.post(reverse('users:login'), {'username': rm_profile.user.username, 'password': 'password'})
-        assert response.status_code == 302
-        assert response.url == reverse('users:rm_dashboard')
+        response = client.post(
+            reverse('users:api_login'),
+            {'username': rm_profile.user.username, 'password': 'password'},
+            content_type='application/json'
+        )
+        assert response.status_code == 200
+        assert response.json()['status'] == 'success'
+        assert response.json()['redirect_url'] == reverse('users:rm_dashboard')
         client.logout()
 
         # Distributor Login
         dist_profile = DistributorProfileFactory(user__password='password')
-        response = client.post(reverse('users:login'), {'username': dist_profile.user.username, 'password': 'password'})
-        assert response.status_code == 302
-        assert response.url == reverse('users:distributor_dashboard')
+        response = client.post(
+            reverse('users:api_login'),
+            {'username': dist_profile.user.username, 'password': 'password'},
+            content_type='application/json'
+        )
+        assert response.status_code == 200
+        assert response.json()['status'] == 'success'
+        assert response.json()['redirect_url'] == reverse('users:distributor_dashboard')
         client.logout()
 
         # Investor Login
         investor_user = InvestorUserFactory(password='password')
-        response = client.post(reverse('users:login'), {'username': investor_user.username, 'password': 'password'})
-        assert response.status_code == 302
-        assert response.url == reverse('users:investor_dashboard')
+        response = client.post(
+            reverse('users:api_login'),
+            {'username': investor_user.username, 'password': 'password'},
+            content_type='application/json'
+        )
+        assert response.status_code == 200
+        assert response.json()['status'] == 'success'
+        assert response.json()['redirect_url'] == reverse('users:investor_dashboard')
         client.logout()
 
     def test_navigation_menu_visibility(self, client):
@@ -91,3 +111,13 @@ class TestFormValidation:
         form = response.context['form']
         assert not form.is_valid()
         assert 'arn_number' in form.errors
+
+@pytest.mark.django_db
+def test_react_app_loads(client):
+    response = client.get('/')
+    assert response.status_code == 200
+    assert b'<div id="root">' in response.content
+
+    response = client.get('/login/')
+    assert response.status_code == 200
+    assert b'<div id="root">' in response.content

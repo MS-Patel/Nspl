@@ -1,61 +1,29 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, LogOut, User, PieChart, BarChart3, Shield, Landmark } from "lucide-react";
-import type { User as SupaUser } from "@supabase/supabase-js";
 
 const Dashboard = () => {
-  const [user, setUser] = useState<SupaUser | null>(null);
+  const [user, setUser] = useState<any | null>(null);
   const [role, setRole] = useState<string | null>(null);
   const [fullName, setFullName] = useState<string>("");
   const navigate = useNavigate();
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session) {
-        navigate("/login");
-        return;
-      }
-      setUser(session.user);
-    });
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) {
-        navigate("/login");
-        return;
-      }
-      setUser(session.user);
-    });
-
-    return () => subscription.unsubscribe();
-  }, [navigate]);
-
-  useEffect(() => {
-    if (!user) return;
-
-    const fetchUserData = async () => {
-      const [{ data: roles }, { data: profile }] = await Promise.all([
-        supabase.from("user_roles").select("role").eq("user_id", user.id),
-        supabase.from("profiles").select("full_name").eq("user_id", user.id).single(),
-      ]);
-
-      if (roles && roles.length > 0) setRole(roles[0].role);
-      if (profile) setFullName(profile.full_name || "");
-    };
-
-    fetchUserData();
-  }, [user]);
+    // Mock user for UI preview or redirect
+    // In production, this route should be handled by Django
+    setUser({ email: 'demo@example.com' });
+    setFullName("Demo User");
+  }, []);
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate("/");
+    window.location.href = "/users/logout/";
   };
 
   if (!user) return null;
 
-  const roleLabel = role === "partner" ? "Partner" : role === "employee" ? "Employee" : "Customer";
+  const roleLabel = "User";
 
   return (
     <div className="min-h-screen bg-background">
@@ -84,8 +52,11 @@ const Dashboard = () => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <h1 className="text-3xl font-bold text-foreground mb-2">Welcome, {fullName || "User"}!</h1>
         <p className="text-muted-foreground mb-8">
-          You are logged in as <span className="font-semibold text-primary">{roleLabel}</span>. Here's your dashboard.
+          You are logged in as <span className="font-semibold text-primary">{roleLabel}</span>.
         </p>
+         <p className="mb-4">
+            <a href="/dashboard/admin/" className="text-primary hover:underline">Go to Admin Dashboard</a>
+         </p>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
           {[
@@ -107,34 +78,6 @@ const Dashboard = () => {
             </Card>
           ))}
         </div>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2" style={{ fontFamily: 'DM Sans' }}>
-              <User className="w-5 h-5" /> Profile
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="grid sm:grid-cols-2 gap-4 text-sm">
-              <div>
-                <span className="text-muted-foreground">Name:</span>
-                <p className="font-medium text-foreground">{fullName || "—"}</p>
-              </div>
-              <div>
-                <span className="text-muted-foreground">Email:</span>
-                <p className="font-medium text-foreground">{user.email}</p>
-              </div>
-              <div>
-                <span className="text-muted-foreground">Role:</span>
-                <p className="font-medium text-foreground">{roleLabel}</p>
-              </div>
-              <div>
-                <span className="text-muted-foreground">ARN:</span>
-                <p className="font-medium text-foreground">147231</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </main>
     </div>
   );

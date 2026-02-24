@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.urls import reverse
 from apps.users.models import User
+from django.views.generic import TemplateView
 
 def get_dashboard_url(user):
     if user.user_type == User.Types.RM:
@@ -62,4 +63,9 @@ def documentsdownload(request):
         dashboard_url = get_dashboard_url(request.user)
     return render(request, 'website/documentsdownload.html', {'dashboard_url': dashboard_url})
 
+from django.views.decorators.csrf import ensure_csrf_cookie
+from django.utils.decorators import method_decorator
 
+@method_decorator(ensure_csrf_cookie, name='dispatch')
+class ReactAppView(TemplateView):
+    template_name = "index.html"

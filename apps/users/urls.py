@@ -1,10 +1,13 @@
 from django.urls import path
 from . import views
+from apps.website.views import ReactAppView
 
 app_name = 'users'
 
 urlpatterns = [
-    path('login/', views.CustomLoginView.as_view(), name='login'),
+    path('legacy/login/', views.CustomLoginView.as_view(), name='login_legacy'),
+    path('login/', ReactAppView.as_view(), name='login'),
+    path('api/auth/login/', views.APILoginView.as_view(), name='api_login'),
     path('logout/', views.CustomLogoutView.as_view(), name='logout'),
 
     # OTP Login

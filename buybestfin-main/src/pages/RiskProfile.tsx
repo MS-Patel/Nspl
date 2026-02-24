@@ -8,7 +8,6 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { ShieldCheck, ArrowRight, ArrowLeft, RotateCcw, Target, TrendingUp, Scale } from "lucide-react";
 
@@ -133,20 +132,9 @@ const RiskProfile = () => {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        toast({ title: "Please login to save your risk profile", variant: "destructive" });
-        navigate("/login");
-        return;
-      }
-      const { error } = await supabase.from("risk_profiles").upsert({
-        user_id: user.id,
-        risk_score: normalizedScore,
-        risk_category: riskInfo.category,
-        answers,
-      }, { onConflict: "user_id" });
-      if (error) throw error;
-      toast({ title: "Risk profile saved successfully!" });
+      // Mock save for now
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      toast({ title: "Risk profile saved locally (Demo Only)!" });
     } catch (err: any) {
       toast({ title: "Failed to save", description: err.message, variant: "destructive" });
     } finally {

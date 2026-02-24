@@ -14,7 +14,7 @@ from django.utils import timezone
 from django.db.models import Count, Sum
 from django.db import models
 from django.utils.crypto import get_random_string
-from django.contrib.auth import login
+from django.contrib.auth import login, authenticate
 from .models import RMProfile, DistributorProfile, InvestorProfile, BankAccount, Nominee, Document, OneTimePassword
 from .utils.sms import send_sms_with_template
 from .forms import (
@@ -1321,3 +1321,33 @@ class UserPasswordResetConfirmView(PasswordResetConfirmView):
 
 class UserPasswordResetCompleteView(PasswordResetCompleteView):
     template_name = 'users/password_reset_complete.html'
+
+class APILoginView(View):
+    def post(self, request, *args, **kwargs):
+        try:
+            data = json.loads(request.body)
+            username = data.get('username')
+            password = data.get('password')
+        except json.JSONDecodeError:
+            return JsonResponse({'status': 'error', 'message': 'Invalid JSON'}, status=400)
+
+        if not username or not password:
+            return JsonResponse({'status': 'error', 'message': 'Username and password required'}, status=400)
+
+        user = authenticate(request, username=username, password=password)
+
+        if user:
+            login(request, user)
+
+            # Determine redirect URL
+            redirect_url = reverse('users:admin_dashboard') # Default
+            if user.user_type == User.Types.RM:
+                redirect_url = reverse('users:rm_dashboard')
+            elif user.user_type == User.Types.DISTRIBUTOR:
+                redirect_url = reverse('users:distributor_dashboard')
+            elif user.user_type == User.Types.INVESTOR:
+                redirect_url = reverse('users:investor_dashboard')
+
+            return JsonResponse({'status': 'success', 'redirect_url': redirect_url})
+        else:
+            return JsonResponse({'status': 'error', 'message': 'Invalid credentials'}, status=401)
