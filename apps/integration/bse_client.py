@@ -341,6 +341,14 @@ class BSEStarMFClient:
                 if len(parts) > 6 and not parts[0].isdigit():
                      remarks = parts[6]
 
+                     # Check if it's a success response in Echo format (status 0 at the end)
+                     if parts[-1].strip() == '0':
+                         return {
+                             'status': 'success',
+                             'bse_order_id': parts[2] if len(parts) > 2 else "",
+                             'remarks': remarks
+                         }
+
                 # Check for connection errors in remarks
                 if self._is_connection_error(remarks):
                     return {'status': 'exception', 'remarks': remarks}
@@ -394,6 +402,14 @@ class BSEStarMFClient:
                 # Handle Echo format where remarks are at index 6
                 if len(parts) > 6 and not parts[0].isdigit():
                      remarks = parts[6]
+
+                     # Check if it's a success response in Echo format (status 0 at the end)
+                     if parts[-1].strip() == '0':
+                         return {
+                             'status': 'success',
+                             'bse_order_id': parts[2] if len(parts) > 2 else "",
+                             'remarks': remarks
+                         }
 
                 # Check for connection errors in remarks
                 if self._is_connection_error(remarks):
