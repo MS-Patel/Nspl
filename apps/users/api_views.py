@@ -51,8 +51,32 @@ class RMDashboardAPIView(APIView):
         if request.user.user_type != User.Types.RM:
              return Response({'error': 'Permission denied'}, status=403)
 
-        # Placeholder for RM specific stats if any
-        return Response({'message': 'RM Dashboard API'})
+        user = request.user
+
+        # 1. Distributors
+        distributors = DistributorProfile.objects.filter(rm__user=user)
+        distributor_count = distributors.count()
+
+        # 2. Investors
+        investors = InvestorProfile.objects.filter(
+            Q(distributor__rm__user=user) | Q(rm__user=user)
+        )
+        investor_count = investors.count()
+
+        # 3. Total AUM
+        aum_agg = Holding.objects.filter(investor__in=investors).aggregate(total_aum=Sum('current_value'))
+        total_aum = aum_agg['total_aum'] or 0
+
+        # 4. Recent Orders
+        recent_orders = Order.objects.filter(investor__in=investors).select_related('investor__user', 'scheme').order_by('-created_at')[:5]
+        recent_orders_data = OrderSerializer(recent_orders, many=True).data
+
+        return Response({
+            'distributor_count': distributor_count,
+            'investor_count': investor_count,
+            'total_aum': total_aum,
+            'recent_orders': recent_orders_data
+        })
 
 class DistributorDashboardAPIView(APIView):
     permission_classes = [IsAuthenticated]
