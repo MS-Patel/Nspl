@@ -8,6 +8,7 @@ from django.utils import timezone
 from .models import BrokerageTransaction, Payout, DistributorCategory
 from apps.users.models import DistributorProfile, InvestorProfile
 from apps.reconciliation.models import Holding
+from apps.products.models import Scheme
 from django.db.models import Sum
 
 def process_brokerage_import(brokerage_import):
@@ -68,6 +69,16 @@ def process_cams_file(brokerage_import):
         if txn_date:
             txn_date = txn_date.date()
 
+        # Scheme Determination
+        scheme_code = str(row.get('SCHEME_COD', '')).strip()
+        scheme = None
+        if scheme_code:
+            scheme = Scheme.objects.filter(rta_scheme_code=scheme_code).first()
+            if not scheme:
+                scheme = Scheme.objects.filter(amc_scheme_code=scheme_code).first()
+            if not scheme:
+                scheme = Scheme.objects.filter(scheme_code=scheme_code).first()
+
         transaction = BrokerageTransaction(
             import_file=brokerage_import,
             source=BrokerageTransaction.SOURCE_CAMS,
@@ -75,6 +86,7 @@ def process_cams_file(brokerage_import):
             investor_name=row.get('INV_NAME', ''),
             folio_number=row.get('FOLIO_NO', ''),
             scheme_name=row.get('SCHEME_NAM', row.get('SCHEME_COD', '')), # Sometimes SCHEME_COD is a code
+            scheme=scheme,
             amount=amount,
             brokerage_amount=brokerage,
             raw_data=data
@@ -108,6 +120,16 @@ def process_karvy_file(brokerage_import):
             except:
                 pass
 
+        # Scheme Determination
+        product_code = str(row.get('Product Code', row.get('FMCODE', ''))).strip()
+        scheme = None
+        if product_code:
+            scheme = Scheme.objects.filter(rta_scheme_code=product_code).first()
+            if not scheme:
+                scheme = Scheme.objects.filter(amc_scheme_code=product_code).first()
+            if not scheme:
+                scheme = Scheme.objects.filter(scheme_code=product_code).first()
+
         transaction = BrokerageTransaction(
             import_file=brokerage_import,
             source=BrokerageTransaction.SOURCE_KARVY,
@@ -115,6 +137,7 @@ def process_karvy_file(brokerage_import):
             investor_name=row.get('Investor Name', ''),
             folio_number=str(row.get('Account Number', row.get('Folio Number', ''))),
             scheme_name=row.get('Fund Description', row.get('Scheme Name', '')),
+            scheme=scheme,
             amount=amount,
             brokerage_amount=brokerage,
             raw_data=data
@@ -146,7 +169,7 @@ def map_transaction(transaction):
         # CAMS: subbrok -> SUBBROK
         # Karvy: Sub-Broker -> SUB-BROKER, td_broker -> TD_BROKER, TD_AGENT -> TD_AGENT
 
-        keys_to_check = ['AE_CODE', 'SUB-BROKER']
+        keys_to_check = ['AE_CODE', 'SUB-BROKER', 'SUBBROK']
 
         sub_broker_code = None
         for key in keys_to_check:

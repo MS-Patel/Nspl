@@ -67,6 +67,7 @@ class BrokerageTransaction(models.Model):
     investor_name = models.CharField(max_length=255, blank=True)
     folio_number = models.CharField(max_length=50, blank=True)
     scheme_name = models.CharField(max_length=255, blank=True)
+    scheme = models.ForeignKey('products.Scheme', on_delete=models.SET_NULL, null=True, blank=True, related_name='brokerage_transactions')
     amount = models.DecimalField(max_digits=15, decimal_places=2, default=0)
 
     # Commission
