@@ -7,7 +7,7 @@ app_name = 'users'
 urlpatterns = [
     path('legacy/login/', views.CustomLoginView.as_view(), name='login_legacy'),
     path('login/', ReactAppView.as_view(), name='login'),
-    path('api/auth/login/', views.APILoginView.as_view(), name='api_login'),
+    path('users/api/auth/login/', views.APILoginView.as_view(), name='api_login'),
     path('logout/', views.CustomLogoutView.as_view(), name='logout'),
 
     # OTP Login
