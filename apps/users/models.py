@@ -146,7 +146,7 @@ class DistributorProfile(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.user.username} (ARN-{self.arn_number})"
+        return f"{self.broker_code} (PAN-{self.pan})"
 
 class InvestorProfile(models.Model):
     # Tax Status Choices
