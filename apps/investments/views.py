@@ -25,6 +25,7 @@ from apps.integration.bse_client import BSEStarMFClient
 from apps.integration.sync_utils import sync_pending_orders
 import logging
 import json
+import math
 
 logger = logging.getLogger(__name__)
 
@@ -840,13 +841,23 @@ class FolioDetailView(LoginRequiredMixin, TemplateView):
 
             transactions_data = []
             for txn in txns:
+                sip_amt = float(txn.amount) + float(txn.stamp_duty or 0)
+                amount = float(txn.amount)
+                units = float(txn.units)
+                nav = float(txn.nav) if txn.nav else None
+
+                if math.isnan(sip_amt): sip_amt = 0.0
+                if math.isnan(amount): amount = 0.0
+                if math.isnan(units): units = 0.0
+                if nav is not None and math.isnan(nav): nav = 0.0
+
                 transactions_data.append({
                     'date': txn.date.strftime('%Y-%m-%d'),
                     'type': readable_txn_type(txn.txn_type_code),
-                    'sip_amount': float(txn.amount) + float(txn.stamp_duty or 0),
-                    'amount': float(txn.amount),
-                    'units': float(txn.units),
-                    'nav': float(txn.nav) if txn.nav else None,
+                    'sip_amount': sip_amt,
+                    'amount': amount,
+                    'units': units,
+                    'nav': nav,
                 })
 
             fund_data.append({

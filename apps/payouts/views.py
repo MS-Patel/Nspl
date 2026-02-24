@@ -14,6 +14,7 @@ from .utils import process_brokerage_import, reprocess_brokerage_import
 import ast
 import pandas as pd
 import io
+import math
 
 User = get_user_model()
 
@@ -207,14 +208,22 @@ class PayoutDetailView(LoginRequiredMixin, DetailView):
 
             data = []
             for txn in page.object_list:
+                amount_val = float(txn.amount)
+                brokerage_val = float(txn.brokerage_amount)
+
+                if math.isnan(amount_val):
+                    amount_val = 0.0
+                if math.isnan(brokerage_val):
+                    brokerage_val = 0.0
+
                 data.append({
                     'date': txn.transaction_date,
                     'source': txn.source,
                     'investor': txn.investor_name,
                     'folio': txn.folio_number,
                     'scheme': txn.scheme_name,
-                    'amount': float(txn.amount),
-                    'brokerage': float(txn.brokerage_amount),
+                    'amount': amount_val,
+                    'brokerage': brokerage_val,
                     'remark': txn.mapping_remark
                 })
 
@@ -301,6 +310,14 @@ class BrokerageImportDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailV
 
                 display_pan = raw.get('InvPAN') or raw.get('PAN_NO') or raw.get('PAN_NUMBER') or '-'
 
+                amount_val = float(txn.amount)
+                brokerage_val = float(txn.brokerage_amount)
+
+                if math.isnan(amount_val):
+                    amount_val = 0.0
+                if math.isnan(brokerage_val):
+                    brokerage_val = 0.0
+
                 data.append({
                     'id': txn.id,
                     'status': txn.is_mapped,
@@ -309,8 +326,8 @@ class BrokerageImportDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailV
                     'folio': txn.folio_number,
                     'pan': display_pan,
                     'scheme': txn.scheme_name,
-                    'amount': float(txn.amount),
-                    'brokerage': float(txn.brokerage_amount),
+                    'amount': amount_val,
+                    'brokerage': brokerage_val,
                     'remark': txn.mapping_remark
                 })
 
