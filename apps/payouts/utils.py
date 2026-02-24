@@ -9,7 +9,7 @@ from .models import BrokerageTransaction, Payout, DistributorCategory
 from apps.users.models import DistributorProfile, InvestorProfile
 from apps.reconciliation.models import Holding
 from apps.products.models import Scheme
-from django.db.models import Sum
+from django.db.models import Sum, Q
 
 def process_brokerage_import(brokerage_import):
     """
@@ -19,13 +19,16 @@ def process_brokerage_import(brokerage_import):
     brokerage_import.save()
 
     try:
+        # Pre-fetch Schemes and Distributors to optimize lookups
+        scheme_map, distributor_map = prefetch_mapping_data()
+
         # 1. Process CAMS File
         if brokerage_import.cams_file:
-            process_cams_file(brokerage_import)
+            process_cams_file(brokerage_import, scheme_map, distributor_map)
 
         # 2. Process Karvy File
         if brokerage_import.karvy_file:
-            process_karvy_file(brokerage_import)
+            process_karvy_file(brokerage_import, scheme_map, distributor_map)
 
         # 3. Calculate Payouts
         calculate_payouts(brokerage_import)
@@ -40,7 +43,37 @@ def process_brokerage_import(brokerage_import):
         brokerage_import.save()
         raise e
 
-def process_cams_file(brokerage_import):
+def prefetch_mapping_data():
+    """
+    Fetches all Schemes and Distributors into memory for fast lookup.
+    """
+    # Scheme Map: {(rta_code, amc_code, scheme_code) -> Scheme}
+    # Since we look up by any of these, we can build a combined lookup strategy.
+    # To save memory, we'll store multiple keys pointing to the same object.
+
+    schemes = Scheme.objects.all()
+    scheme_map = {}
+    for s in schemes:
+        if s.rta_scheme_code:
+            scheme_map[s.rta_scheme_code.strip().upper()] = s
+        if s.amc_scheme_code:
+            scheme_map[s.amc_scheme_code.strip().upper()] = s
+        if s.scheme_code:
+            scheme_map[s.scheme_code.strip().upper()] = s
+
+    # Distributor Map: {broker_code -> Distributor}
+    # Also include old_broker_code
+    distributors = DistributorProfile.objects.all()
+    distributor_map = {}
+    for d in distributors:
+        if d.broker_code:
+            distributor_map[d.broker_code.strip().upper()] = d
+        if d.old_broker_code:
+            distributor_map[d.old_broker_code.strip().upper()] = d
+
+    return scheme_map, distributor_map
+
+def process_cams_file(brokerage_import, scheme_map, distributor_map):
     file_path = brokerage_import.cams_file.path
 
     # Check file extension
@@ -55,8 +88,9 @@ def process_cams_file(brokerage_import):
     # BROK_CODE, BRKAGE_AMT, INV_NAME, FOLIO_NO, SCHEME_COD, TRXN_TYPE, PROC_DATE
     # Note: Column names in DBF are often truncated to 10 chars.
 
-    # We iterate and save raw transactions
     transactions = []
+
+    # Iterate through rows
     for _, row in df.iterrows():
         # Clean Row Data
         data = clean_pandas_data(row.to_dict())
@@ -64,20 +98,52 @@ def process_cams_file(brokerage_import):
         # Extract Key Fields (Handle variations in column names if necessary)
         brokerage = get_safe_decimal(row.get('BRKAGE_AMT', 0))
         amount = get_safe_decimal(row.get('PLOT_AMOUN', 0))
-        txn_date = pd.to_datetime(row.get('TRXN_DATE', row.get('PROC_DATE'))) if row.get('TRXN_DATE') or row.get('PROC_DATE') else None
 
-        if txn_date:
-            txn_date = txn_date.date()
+        # Date Handling
+        raw_date = row.get('TRXN_DATE', row.get('PROC_DATE'))
+        txn_date = None
+
+        if pd.notna(raw_date):
+            try:
+                dt = pd.to_datetime(raw_date)
+                if not pd.isna(dt):
+                    txn_date = dt.date()
+            except (ValueError, TypeError):
+                txn_date = None
 
         # Scheme Determination
-        scheme_code = str(row.get('SCHEME_COD', '')).strip()
-        scheme = None
-        if scheme_code:
-            scheme = Scheme.objects.filter(rta_scheme_code=scheme_code).first()
-            if not scheme:
-                scheme = Scheme.objects.filter(amc_scheme_code=scheme_code).first()
-            if not scheme:
-                scheme = Scheme.objects.filter(scheme_code=scheme_code).first()
+        scheme_code_raw = str(row.get('SCHEME_COD', '')).strip().upper()
+        scheme = scheme_map.get(scheme_code_raw)
+
+        # Distributor Mapping Logic (In-Memory)
+        distributor = None
+        is_mapped = False
+        mapping_remark = "No Sub-Broker Code found"
+
+        # Keys to look for (Normalized to Upper)
+        # CAMS: subbrok -> SUBBROK
+        # Karvy: Sub-Broker -> SUB-BROKER, td_broker -> TD_BROKER, TD_AGENT -> TD_AGENT
+        keys_to_check = ['AE_CODE', 'SUB-BROKER', 'SUBBROK']
+
+        # Normalize keys in row to uppercase for easier lookup
+        row_upper = {str(k).upper().strip(): v for k, v in data.items()}
+
+        sub_broker_code = None
+        for key in keys_to_check:
+            val = row_upper.get(key)
+            if val:
+                val_str = str(val).strip()
+                if val_str and val_str.lower() not in ['nan', 'none', '']:
+                    sub_broker_code = val_str
+                    break
+
+        if sub_broker_code:
+            distributor = distributor_map.get(sub_broker_code.upper())
+            if distributor:
+                is_mapped = True
+                mapping_remark = f"Mapped via Sub-Broker Code {sub_broker_code}"
+            else:
+                mapping_remark = f"Sub-Broker Code {sub_broker_code} not found"
 
         transaction = BrokerageTransaction(
             import_file=brokerage_import,
@@ -85,20 +151,22 @@ def process_cams_file(brokerage_import):
             transaction_date=txn_date,
             investor_name=row.get('INV_NAME', ''),
             folio_number=row.get('FOLIO_NO', ''),
-            scheme_name=row.get('SCHEME_NAM', row.get('SCHEME_COD', '')), # Sometimes SCHEME_COD is a code
+            scheme_name=row.get('SCHEME_NAM', row.get('SCHEME_COD', '')),
             scheme=scheme,
             amount=amount,
             brokerage_amount=brokerage,
+            distributor=distributor,
+            is_mapped=is_mapped,
+            mapping_remark=mapping_remark,
             raw_data=data
         )
 
-        # Attempt Mapping
-        map_transaction(transaction)
         transactions.append(transaction)
 
-    BrokerageTransaction.objects.bulk_create(transactions)
+    # Batch Insert
+    BrokerageTransaction.objects.bulk_create(transactions, batch_size=1000)
 
-def process_karvy_file(brokerage_import):
+def process_karvy_file(brokerage_import, scheme_map, distributor_map):
     file_path = brokerage_import.karvy_file.path
     df = pd.read_csv(file_path)
 
@@ -114,21 +182,42 @@ def process_karvy_file(brokerage_import):
         # Karvy Date format often DD/MM/YYYY
         txn_date_str = row.get('Transaction Date', row.get('Process Date'))
         txn_date = None
-        if txn_date_str:
+        if pd.notna(txn_date_str):
             try:
-                txn_date = pd.to_datetime(txn_date_str, dayfirst=True).date()
-            except:
-                pass
+                dt = pd.to_datetime(txn_date_str, dayfirst=True)
+                if not pd.isna(dt):
+                    txn_date = dt.date()
+            except (ValueError, TypeError):
+                txn_date = None
 
         # Scheme Determination
-        product_code = str(row.get('Product Code', row.get('FMCODE', ''))).strip()
-        scheme = None
-        if product_code:
-            scheme = Scheme.objects.filter(rta_scheme_code=product_code).first()
-            if not scheme:
-                scheme = Scheme.objects.filter(amc_scheme_code=product_code).first()
-            if not scheme:
-                scheme = Scheme.objects.filter(scheme_code=product_code).first()
+        product_code_raw = str(row.get('Product Code', row.get('FMCODE', ''))).strip().upper()
+        scheme = scheme_map.get(product_code_raw)
+
+        # Distributor Mapping Logic (In-Memory)
+        distributor = None
+        is_mapped = False
+        mapping_remark = "No Sub-Broker Code found"
+
+        keys_to_check = ['AE_CODE', 'SUB-BROKER', 'SUBBROK']
+        row_upper = {str(k).upper().strip(): v for k, v in data.items()}
+
+        sub_broker_code = None
+        for key in keys_to_check:
+            val = row_upper.get(key)
+            if val:
+                val_str = str(val).strip()
+                if val_str and val_str.lower() not in ['nan', 'none', '']:
+                    sub_broker_code = val_str
+                    break
+
+        if sub_broker_code:
+            distributor = distributor_map.get(sub_broker_code.upper())
+            if distributor:
+                is_mapped = True
+                mapping_remark = f"Mapped via Sub-Broker Code {sub_broker_code}"
+            else:
+                mapping_remark = f"Sub-Broker Code {sub_broker_code} not found"
 
         transaction = BrokerageTransaction(
             import_file=brokerage_import,
@@ -140,40 +229,48 @@ def process_karvy_file(brokerage_import):
             scheme=scheme,
             amount=amount,
             brokerage_amount=brokerage,
+            distributor=distributor,
+            is_mapped=is_mapped,
+            mapping_remark=mapping_remark,
             raw_data=data
         )
 
-        map_transaction(transaction)
         transactions.append(transaction)
 
-    BrokerageTransaction.objects.bulk_create(transactions)
+    BrokerageTransaction.objects.bulk_create(transactions, batch_size=1000)
 
-def map_transaction(transaction):
+
+def reprocess_brokerage_import(brokerage_import):
     """
-    Logic to link a transaction to a DistributorProfile.
-    Mapping is now strictly based on Sub-Broker Code matching.
+    Retries mapping for unmapped transactions and recalculates payouts.
     """
-    import ast
+    # Optimized reprocessing: fetch map once, iterate objects, then bulk update
+    _, distributor_map = prefetch_mapping_data()
 
-    transaction.is_mapped = False
-    transaction.distributor = None
+    unmapped_transactions = BrokerageTransaction.objects.filter(
+        import_file=brokerage_import,
+        is_mapped=False
+    )
 
-    try:
-        raw = ast.literal_eval(transaction.raw_data) if isinstance(transaction.raw_data, str) else transaction.raw_data
+    updated_txns = []
+    mapped_count = 0
 
-        # Normalize keys to uppercase for easier lookup
-        # raw keys might be mixed case
-        raw_upper = {str(k).upper().strip(): v for k, v in raw.items()}
+    for txn in unmapped_transactions:
+        # Re-apply mapping logic
+        raw_data = txn.raw_data
+        if isinstance(raw_data, str):
+            import ast
+            try:
+                raw_data = ast.literal_eval(raw_data)
+            except:
+                raw_data = {}
 
-        # Keys to look for (Normalized to Upper)
-        # CAMS: subbrok -> SUBBROK
-        # Karvy: Sub-Broker -> SUB-BROKER, td_broker -> TD_BROKER, TD_AGENT -> TD_AGENT
-
+        row_upper = {str(k).upper().strip(): v for k, v in raw_data.items()}
         keys_to_check = ['AE_CODE', 'SUB-BROKER', 'SUBBROK']
 
         sub_broker_code = None
         for key in keys_to_check:
-            val = raw_upper.get(key)
+            val = row_upper.get(key)
             if val:
                 val_str = str(val).strip()
                 if val_str and val_str.lower() not in ['nan', 'none', '']:
@@ -181,41 +278,23 @@ def map_transaction(transaction):
                     break
 
         if sub_broker_code:
-            # Match against DistributorProfile.broker_code (Case Insensitive)
-            distributor = DistributorProfile.objects.filter(broker_code__iexact=sub_broker_code).first()
-
-            # If not found, try matching against old_broker_code
-            if not distributor:
-                distributor = DistributorProfile.objects.filter(old_broker_code__iexact=sub_broker_code).first()
-
+            distributor = distributor_map.get(sub_broker_code.upper())
             if distributor:
-                transaction.distributor = distributor
-                transaction.is_mapped = True
-                transaction.mapping_remark = f"Mapped via Sub-Broker Code {sub_broker_code}"
+                txn.distributor = distributor
+                txn.is_mapped = True
+                txn.mapping_remark = f"Mapped via Sub-Broker Code {sub_broker_code}"
+                updated_txns.append(txn)
+                mapped_count += 1
             else:
-                transaction.mapping_remark = f"Sub-Broker Code {sub_broker_code} not found"
-        else:
-            transaction.mapping_remark = "No Sub-Broker Code found"
+                # Update remark even if still failed, to show we tried
+                prev_remark = txn.mapping_remark
+                new_remark = f"Sub-Broker Code {sub_broker_code} not found"
+                if prev_remark != new_remark:
+                    txn.mapping_remark = new_remark
+                    updated_txns.append(txn)
 
-    except Exception as e:
-        transaction.mapping_remark = f"Error during mapping: {str(e)}"
-
-def reprocess_brokerage_import(brokerage_import):
-    """
-    Retries mapping for unmapped transactions and recalculates payouts.
-    """
-    unmapped_transactions = BrokerageTransaction.objects.filter(
-        import_file=brokerage_import,
-        is_mapped=False
-    )
-
-    mapped_count = 0
-    for txn in unmapped_transactions:
-        # map_transaction modifies the object in-place
-        map_transaction(txn)
-        if txn.is_mapped:
-            txn.save()
-            mapped_count += 1
+    if updated_txns:
+        BrokerageTransaction.objects.bulk_update(updated_txns, ['distributor', 'is_mapped', 'mapping_remark'], batch_size=1000)
 
     # Always recalculate payouts to reflect any changes
     calculate_payouts(brokerage_import)
