@@ -29,8 +29,8 @@ class RMProfileAdmin(admin.ModelAdmin):
 
 @admin.register(DistributorProfile)
 class DistributorProfileAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user', 'arn_number', 'rm', 'parent')
-    search_fields = ('user__username', 'user__name', 'arn_number')
+    list_display = ('id', 'user', 'arn_number', 'broker_code', 'old_broker_code', 'rm', 'parent')
+    search_fields = ('user__username', 'user__name', 'arn_number', 'broker_code', 'old_broker_code')
     list_filter = ('rm__branch',)
 
 @admin.register(InvestorProfile)

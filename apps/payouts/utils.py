@@ -160,6 +160,11 @@ def map_transaction(transaction):
         if sub_broker_code:
             # Match against DistributorProfile.broker_code (Case Insensitive)
             distributor = DistributorProfile.objects.filter(broker_code__iexact=sub_broker_code).first()
+
+            # If not found, try matching against old_broker_code
+            if not distributor:
+                distributor = DistributorProfile.objects.filter(old_broker_code__iexact=sub_broker_code).first()
+
             if distributor:
                 transaction.distributor = distributor
                 transaction.is_mapped = True
