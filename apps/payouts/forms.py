@@ -25,6 +25,11 @@ class BrokerageUploadForm(forms.ModelForm):
         try:
             # Format from input type="month" is typically "YYYY-MM"
             date_obj = datetime.datetime.strptime(data, '%Y-%m')
+
+            # Check for existing import
+            if BrokerageImport.objects.filter(month=date_obj.month, year=date_obj.year).exists():
+                raise ValidationError("Brokerage Import for this month already exists.")
+
             return date_obj
         except ValueError:
             raise ValidationError("Invalid date format. Please use YYYY-MM.")
