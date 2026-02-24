@@ -11,6 +11,7 @@ from django.core.paginator import Paginator
 from .models import Payout, BrokerageImport, BrokerageTransaction, DistributorCategory
 from .forms import BrokerageUploadForm
 from .utils import process_brokerage_import, reprocess_brokerage_import
+from apps.products.models import Scheme
 import ast
 import pandas as pd
 import io
@@ -368,6 +369,7 @@ class ExportPayoutReportView(LoginRequiredMixin, UserPassesTestMixin, View):
         for p in payouts:
             data.append({
                 'Distributor Name': p.distributor.user.get_full_name() or p.distributor.user.username,
+                'Broker Code': p.distributor.broker_code,
                 'ARN Number': p.distributor.arn_number,
                 'PAN': p.distributor.pan,
                 'Total AUM': p.total_aum,
@@ -391,6 +393,81 @@ class ExportPayoutReportView(LoginRequiredMixin, UserPassesTestMixin, View):
             content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         )
         filename = f"payout_report_{brokerage_import.id}.xlsx"
+        response['Content-Disposition'] = f'attachment; filename={filename}'
+
+        return response
+
+
+class ExportAMCPayoutReportView(LoginRequiredMixin, UserPassesTestMixin, View):
+    def test_func(self):
+        return self.request.user.user_type == User.Types.ADMIN
+
+    def get(self, request, pk, *args, **kwargs):
+        brokerage_import = get_object_or_404(BrokerageImport, pk=pk)
+
+        # 1. Fetch Transactions
+        transactions = brokerage_import.transactions.select_related('distributor').all()
+
+        # 2. Fetch Payouts to get share percentage
+        # Map distributor_id -> share_percentage
+        payouts = brokerage_import.payouts.all()
+        distributor_share_map = {p.distributor_id: p.share_percentage for p in payouts}
+
+        # 3. Pre-fetch Schemes for lookup
+        # We can fetch all schemes and create a map: name -> amc_name
+        schemes = Scheme.objects.select_related('amc').all()
+        scheme_map = {s.name.lower(): s.amc.name for s in schemes}
+
+        amc_stats = {} # amc_name -> {'gross': 0, 'payable': 0}
+
+        for txn in transactions:
+            amc_name = "Unknown"
+
+            # Try matching by name
+            if txn.scheme_name:
+                scheme_name_lower = txn.scheme_name.lower().strip()
+                if scheme_name_lower in scheme_map:
+                    amc_name = scheme_map[scheme_name_lower]
+                else:
+                    # Fuzzy / Partial Match Attempt
+                    # Many times RTA name is slightly different or contains extra spaces
+                    # This is basic, but helps catch some
+                    pass
+
+            if amc_name not in amc_stats:
+                amc_stats[amc_name] = {'gross': 0.0, 'payable': 0.0}
+
+            gross = float(txn.brokerage_amount)
+            if math.isnan(gross): gross = 0.0
+
+            share_pct = float(distributor_share_map.get(txn.distributor_id, 0.0))
+            payable = gross * (share_pct / 100.0)
+
+            amc_stats[amc_name]['gross'] += gross
+            amc_stats[amc_name]['payable'] += payable
+
+        # Create DataFrame
+        data = []
+        for amc, stats in amc_stats.items():
+            data.append({
+                'AMC Name': amc,
+                'Gross Brokerage': stats['gross'],
+                'Payable Amount': stats['payable']
+            })
+
+        df = pd.DataFrame(data)
+
+        output = io.BytesIO()
+        with pd.ExcelWriter(output, engine='openpyxl') as writer:
+            df.to_excel(writer, index=False, sheet_name='AMC Payouts')
+
+        output.seek(0)
+
+        response = HttpResponse(
+            output.read(),
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        filename = f"amc_payout_report_{brokerage_import.id}.xlsx"
         response['Content-Disposition'] = f'attachment; filename={filename}'
 
         return response
