@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from . import api_views
 from apps.website.views import ReactAppView
 
 app_name = 'users'
@@ -14,11 +15,20 @@ urlpatterns = [
     path('otp/send/', views.SendOTPView.as_view(), name='send_otp'),
     path('otp/login/', views.VerifyOTPLoginView.as_view(), name='verify_otp_login'),
 
-    # Dashboards
-    path('dashboard/admin/', views.AdminDashboardView.as_view(), name='admin_dashboard'),
-    path('dashboard/rm/', views.RMDashboardView.as_view(), name='rm_dashboard'),
-    path('dashboard/distributor/', views.DistributorDashboardView.as_view(), name='distributor_dashboard'),
-    path('dashboard/investor/', views.InvestorDashboardView.as_view(), name='investor_dashboard'),
+    # API Dashboards
+    path('api/dashboard/admin/', api_views.AdminDashboardAPIView.as_view(), name='api_admin_dashboard'),
+    path('api/dashboard/rm/', api_views.RMDashboardAPIView.as_view(), name='api_rm_dashboard'),
+    path('api/dashboard/distributor/', api_views.DistributorDashboardAPIView.as_view(), name='api_distributor_dashboard'),
+    path('api/dashboard/investor/', api_views.InvestorDashboardAPIView.as_view(), name='api_investor_dashboard'),
+
+    # User Info
+    path('api/user/me/', api_views.UserMeAPIView.as_view(), name='api_user_me'),
+
+    # Dashboards (React)
+    path('dashboard/admin/', ReactAppView.as_view(), name='admin_dashboard'),
+    path('dashboard/rm/', ReactAppView.as_view(), name='rm_dashboard'),
+    path('dashboard/distributor/', ReactAppView.as_view(), name='distributor_dashboard'),
+    path('dashboard/investor/', ReactAppView.as_view(), name='investor_dashboard'),
 
     # User Management
     path('users/rm/', views.RMListView.as_view(), name='rm_list'),

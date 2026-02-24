@@ -15,6 +15,8 @@ import UnlistedEquities from "./pages/UnlistedEquities";
 import LiveMarket from "./pages/LiveMarket";
 import NotFound from "./pages/NotFound";
 import ChatWidget from "./components/ChatWidget";
+import DashboardLayout from "@/components/layout/DashboardLayout";
+import AdminDashboard from "@/pages/dashboard/AdminDashboard";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +37,12 @@ const App = () => (
           <Route path="/products" element={<Products />} />
           <Route path="/unlisted-equities" element={<UnlistedEquities />} />
           <Route path="/live-market" element={<LiveMarket />} />
+
+          {/* Dashboard Routes */}
+          <Route path="/dashboard" element={<DashboardLayout />}>
+            <Route path="admin" element={<AdminDashboard />} />
+          </Route>
+
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
