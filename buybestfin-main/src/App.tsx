@@ -17,6 +17,10 @@ import NotFound from "./pages/NotFound";
 import ChatWidget from "./components/ChatWidget";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import AdminDashboard from "@/pages/dashboard/AdminDashboard";
+import RMDashboard from "@/pages/dashboard/RMDashboard";
+import DistributorDashboard from "@/pages/dashboard/DistributorDashboard";
+import InvestorDashboard from "@/pages/dashboard/InvestorDashboard";
+import RoleGuard from "@/components/auth/RoleGuard";
 
 const queryClient = new QueryClient();
 
@@ -38,9 +42,28 @@ const App = () => (
           <Route path="/unlisted-equities" element={<UnlistedEquities />} />
           <Route path="/live-market" element={<LiveMarket />} />
 
-          {/* Dashboard Routes */}
+          {/* Dashboard Routes with Role Guards */}
           <Route path="/dashboard" element={<DashboardLayout />}>
-            <Route path="admin" element={<AdminDashboard />} />
+            <Route path="admin" element={
+              <RoleGuard allowedRoles={['ADMIN']}>
+                <AdminDashboard />
+              </RoleGuard>
+            } />
+            <Route path="rm" element={
+              <RoleGuard allowedRoles={['RM', 'ADMIN']}>
+                <RMDashboard />
+              </RoleGuard>
+            } />
+            <Route path="distributor" element={
+              <RoleGuard allowedRoles={['DISTRIBUTOR', 'ADMIN', 'RM']}>
+                <DistributorDashboard />
+              </RoleGuard>
+            } />
+            <Route path="investor" element={
+              <RoleGuard allowedRoles={['INVESTOR', 'ADMIN', 'RM', 'DISTRIBUTOR']}>
+                <InvestorDashboard />
+              </RoleGuard>
+            } />
           </Route>
 
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

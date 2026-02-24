@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import logo from "@/assets/logo.png";
+import { api } from "@/lib/api";
 
 const Login = () => {
   const [isRegister, setIsRegister] = useState(false);
@@ -28,35 +29,12 @@ const Login = () => {
           variant: "destructive",
         });
       } else {
-        // CSRF Token
-        const getCookie = (name: string) => {
-          let cookieValue = null;
-          if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-              const cookie = cookies[i].trim();
-              if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-              }
-            }
-          }
-          return cookieValue;
-        }
-        const csrftoken = getCookie('csrftoken');
-
-        const response = await fetch('/users/api/auth/login/', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': csrftoken || '',
-          },
-          body: JSON.stringify({ username: email, password: password }),
+        const data = await api.post('/users/api/auth/login/', {
+            username: email,
+            password: password
         });
 
-        const data = await response.json();
-
-        if (response.ok && data.status === 'success') {
+        if (data.status === 'success') {
           toast({
             title: "Login successful!",
             description: "Redirecting...",
@@ -67,9 +45,12 @@ const Login = () => {
         }
       }
     } catch (error: any) {
+      console.error("Login error:", error);
+      const message = error.response?.data?.message || error.message || "An error occurred during login.";
+
       toast({
         title: "Error",
-        description: error.message,
+        description: message,
         variant: "destructive",
       });
     } finally {

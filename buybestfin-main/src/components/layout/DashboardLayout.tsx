@@ -16,7 +16,7 @@ export default function DashboardLayout() {
         setUser(data);
       } catch (error) {
         console.error('Failed to fetch user', error);
-        window.location.href = '/users/legacy/login/'; // Redirect to login
+        window.location.href = '/login'; // Redirect to login
       } finally {
         setLoading(false);
       }
