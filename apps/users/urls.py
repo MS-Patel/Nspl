@@ -21,6 +21,10 @@ urlpatterns = [
     path('api/dashboard/distributor/', api_views.DistributorDashboardAPIView.as_view(), name='api_distributor_dashboard'),
     path('api/dashboard/investor/', api_views.InvestorDashboardAPIView.as_view(), name='api_investor_dashboard'),
 
+    # API: Investor Module
+    path('api/investors/', api_views.InvestorListAPIView.as_view(), name='api_investor_list'),
+    path('api/investors/<int:pk>/', api_views.InvestorDetailAPIView.as_view(), name='api_investor_detail'),
+
     # User Info
     path('api/user/me/', api_views.UserMeAPIView.as_view(), name='api_user_me'),
 

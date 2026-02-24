@@ -33,7 +33,7 @@ const DashboardNavbar = ({ user }: DashboardNavbarProps) => {
     if (user.role === 'ADMIN' || user.role === 'RM' || user.role === 'DISTRIBUTOR') {
         items.push({
             title: "Investors",
-            url: "/users/investor/",
+            url: "/dashboard/investors",
         });
     }
 
