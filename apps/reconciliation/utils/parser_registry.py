@@ -1,6 +1,6 @@
 import os
 import logging
-from apps.reconciliation.parsers import CAMSXLSParser, KarvyXLSParser, CAMSParser, KarvyParser
+from apps.reconciliation.parsers import CAMSXLSParser, KarvyXLSParser, CAMSParser, KarvyParser, DBFParser
 
 logger = logging.getLogger(__name__)
 
@@ -12,8 +12,13 @@ def get_parser_for_file(file_path):
     filename = os.path.basename(file_path)
     parser = None
 
+    # DBF Files
+    if filename.lower().endswith('.dbf'):
+        logger.info(f"Detected DBF File: {filename}")
+        parser = DBFParser(file_path=file_path)
+
     # Excel Files
-    if filename.lower().endswith('.xls') or filename.lower().endswith('.xlsx'):
+    elif filename.lower().endswith('.xls') or filename.lower().endswith('.xlsx'):
         if 'WBR2' in filename:
             logger.info(f"Detected CAMS WBR2: {filename}")
             parser = CAMSXLSParser(file_path=file_path)

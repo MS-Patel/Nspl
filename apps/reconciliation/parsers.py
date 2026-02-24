@@ -903,3 +903,262 @@ class FranklinParser(BaseParser):
             logger.error(f"Franklin Parsing failed: {e}")
             if not self.rta_file:
                 raise e
+
+
+class DBFParser(BaseParser):
+    """
+    Parses .dbf files (CAMS or Karvy) by converting to DataFrame.
+    """
+    def parse(self):
+        try:
+            # Load DBF
+            from simpledbf import Dbf5
+            dbf = Dbf5(self.file_path)
+            df = dbf.to_dataframe()
+
+            # Normalize columns to lowercase
+            df.columns = df.columns.str.lower()
+
+            # Detect Format
+            if 'prodcode' in df.columns and 'trxnno' in df.columns:
+                logger.info("Detected CAMS DBF Format")
+                self.parse_cams(df)
+            elif 'fmcode' in df.columns and 'td_trno' in df.columns:
+                logger.info("Detected Karvy DBF Format")
+                self.parse_karvy(df)
+            else:
+                logger.warning(f"Unknown DBF Format. Columns: {list(df.columns)}")
+                # Save error file with unknown format info
+                if self.rta_file:
+                     self.rta_file.status = RTAFile.STATUS_FAILED
+                     self.rta_file.error_log = f"Unknown DBF Format. Columns: {list(df.columns)}"
+                     self.rta_file.save()
+                return
+
+            self.process_impacted_holdings()
+
+            if self.rta_file:
+                if self.failed_rows:
+                     self.save_error_file()
+
+                self.rta_file.status = RTAFile.STATUS_PROCESSED
+                self.rta_file.processed_at = timezone.now()
+                self.rta_file.save()
+
+        except Exception as e:
+            if self.rta_file:
+                self.rta_file.status = RTAFile.STATUS_FAILED
+                self.rta_file.error_log = str(e)
+                self.rta_file.save()
+            logger.error(f"DBF Parsing failed: {e}")
+            if not self.rta_file:
+                raise e
+
+    def parse_cams(self, df):
+        # CAMS Logic (similar to CAMSXLSParser)
+        for _, row in df.iterrows():
+                try:
+                    with transaction.atomic():
+                        pan = str(row.get('pan', '')).strip()
+                        if not pan or pan.lower() == 'nan': continue
+
+                        inv_name = str(row.get('inv_name', '')).strip()
+                        investor = self.get_or_create_provisional_investor(pan, inv_name, is_offline=True)
+
+                        scheme_code = str(row.get('prodcode', '')).strip()
+                        # Fallback to scheme name if code fails? No, rely on mapping
+                        scheme = self.get_scheme(scheme_code)
+                        if not scheme:
+                            logger.warning(f"Scheme not found for CAMS DBF: {scheme_code}")
+                            row_dict = row.to_dict()
+                            row_dict['error'] = f"Scheme not found: {scheme_code}"
+                            self.failed_rows.append(row_dict)
+                            continue
+
+                        folio_number = str(row.get('folio_no', '')).strip()
+                        original_txn_number = str(row.get('trxnno', '')).strip()
+
+                        date_val = row.get('traddate')
+                        txn_date = self.parse_date(date_val)
+                        if not txn_date: continue
+
+                        amount = self.clean_decimal(row.get('amount'))
+                        units = self.clean_decimal(row.get('units'))
+                        txn_type = str(row.get('trxntype', '')).strip()
+                        txn_stat = str(row.get('trxnstat', '')).strip()
+                        nav_date = str(row.get('postdate', '')).strip()
+
+                        # Determine NAV
+                        nav = None
+                        # Try explicit columns
+                        raw_price = row.get('purprice') or row.get('price') or row.get('nav')
+                        if not pd.isna(raw_price):
+                            nav = self.clean_decimal(raw_price)
+
+                        # Fallback to calculation
+                        if (nav is None or nav == 0) and units != 0:
+                            nav = abs(amount) / abs(units)
+
+                        # Generate Row Fingerprint for Uniqueness
+                        # Fields: FMCODE(prodcode), TD_ACNO(folio), TD_TRNO(trxnno), TD_PRDT(traddate),
+                        # TD_UNITS, TD_AMT, TD_TRTYPE(trxntype), TRNSTAT, NAVDATE(postdate)
+                        # We use available CAMS equivalents
+                        fingerprint = self.generate_fingerprint([
+                            scheme_code, folio_number, original_txn_number, str(txn_date),
+                            units, amount, txn_type, txn_stat, nav_date
+                        ])
+
+                        # Use fingerprint as unique suffix
+                        unique_txn_number = f"{original_txn_number}-{fingerprint}"
+
+                        # New fields for Fuzzy Logic
+                        description = str(row.get('trxn_nature', '')).strip()
+                        tr_flag = str(row.get('trxn_type_flag', '')).strip()
+                        # If not found under full names, try short codes seen in some files
+                        if not tr_flag:
+                             tr_flag = str(row.get('trflag', '')).strip()
+
+                        # Extract structured extra fields
+                        broker_code = str(row.get('brokcode', '')).strip() or None
+                        sub_broker_code = str(row.get('subbrok', '')).strip() or None
+                        euin = str(row.get('euin', '')).strip() or None
+
+                        bank_account_no = str(row.get('bank_acno', '')).strip() or None
+                        bank_name = str(row.get('bank_name', '')).strip() or None
+
+                        stt = self.clean_decimal(row.get('stt'))
+                        stamp_duty = self.clean_decimal(row.get('stamp_duty'))
+                        load_amount = self.clean_decimal(row.get('load'))
+                        tax_amount = self.clean_decimal(row.get('tax'))
+
+                        status_desc = str(row.get('trxnstat', '')).strip() or None
+                        remarks = str(row.get('remarks', '')).strip() or str(row.get('usercode', '')).strip() or None
+                        location = str(row.get('location', '')).strip() or None
+
+                        # Convert row to dict for JSON storage, handling non-serializable types if any (pandas usually fine)
+                        # We use .to_dict() which creates a dict of python objects.
+                        # Dates might need string conversion if JSON serializer complains,
+                        # but Django's JSONField usually handles standard types or we can default=str
+                        # Handle NaN values to prevent JSON serialization errors (Postgres rejects NaN)
+                        raw_row_data = {k: str(v) if pd.notna(v) else None for k, v in row.items()}
+
+                        self.match_or_create_transaction(
+                            investor, scheme, folio_number, unique_txn_number, txn_date, amount, units, txn_type, 'CAMS',
+                            description=description, tr_flag=tr_flag, original_txn_number=original_txn_number, nav=nav,
+                            raw_data=raw_row_data,
+                            broker_code=broker_code, sub_broker_code=sub_broker_code, euin=euin,
+                            bank_account_no=bank_account_no, bank_name=bank_name,
+                            stt=stt, stamp_duty=stamp_duty, load_amount=load_amount, tax_amount=tax_amount,
+                            status_desc=status_desc, remarks=remarks, location=location
+                        )
+                except Exception as e:
+                    logger.error(f"Error processing CAMS DBF row: {e}")
+                    row_dict = row.to_dict()
+                    row_dict['error'] = str(e)
+                    self.failed_rows.append(row_dict)
+
+    def parse_karvy(self, df):
+        # Karvy Logic (similar to KarvyXLSParser)
+        for _, row in df.iterrows():
+                try:
+                    with transaction.atomic():
+                        # Use lowercase 'pan1'
+                        pan = str(row.get('pan1', '')).strip()
+                        if not pan or pan.lower() == 'nan': continue
+
+                        inv_name = str(row.get('invname', '')).strip()
+                        investor = self.get_or_create_provisional_investor(pan, inv_name, is_offline=True)
+
+                        scheme_code = str(row.get('fmcode', '')).strip()
+                        scheme = self.get_scheme(scheme_code)
+                        if not scheme:
+                            logger.warning(f"Scheme not found for Karvy DBF: {scheme_code}")
+                            row_dict = row.to_dict()
+                            row_dict['error'] = f"Scheme not found: {scheme_code}"
+                            self.failed_rows.append(row_dict)
+                            continue
+
+                        folio_number = str(row.get('td_acno', '')).strip()
+                        original_txn_number = str(row.get('td_trno', '')).strip()
+
+                        # Try NAVDATE, fallback to TD_PRDT
+                        # keys are lowercase now
+                        date_val = row.get('navdate')
+                        if pd.isna(date_val): date_val = row.get('td_prdt')
+                        txn_date = self.parse_date(date_val)
+                        if not txn_date: continue
+
+                        amount = self.clean_decimal(row.get('td_amt'))
+                        units = self.clean_decimal(row.get('td_units'))
+                        txn_type = str(row.get('td_trtype', '')).strip()
+
+                        # Determine NAV
+                        nav = None
+                        # Try explicit columns: td_pop (Price of Purchase) or td_nav?
+                        raw_price = row.get('td_pop') or row.get('td_nav') or row.get('nav')
+                        if not pd.isna(raw_price):
+                            nav = self.clean_decimal(raw_price)
+
+                        # Fallback to calculation
+                        if (nav is None or nav == 0) and units != 0:
+                            nav = abs(amount) / abs(units)
+
+                        # For Fingerprint
+                        fund_desc = str(row.get('td_fund', '')).strip() # TD_FUND
+                        prdt_date = str(row.get('td_prdt', '')).strip() # TD_PRDT
+                        trn_stat = str(row.get('trnstat', '')).strip() # TRNSTAT
+                        nav_date_raw = str(row.get('navdate', '')).strip() # NAVDATE
+
+                        # Generate Row Fingerprint
+                        # Fields: FMCODE, TD_ACNO, TD_FUND, TD_TRNO, TD_PRDT, TD_UNITS, TD_AMT, TD_TRTYPE, TRNSTAT, NAVDATE
+                        fingerprint = self.generate_fingerprint([
+                            scheme_code, folio_number, fund_desc, original_txn_number, prdt_date,
+                            units, amount, txn_type, trn_stat, nav_date_raw
+                        ])
+
+                        unique_txn_number = f"{original_txn_number}-{fingerprint}"
+
+                        # New fields for Fuzzy Logic
+                        description = str(row.get('trdesc', '')).strip()
+                        tr_flag = str(row.get('trflag', '')).strip()
+                        # If not found, try alternative names
+                        if not tr_flag:
+                             tr_flag = str(row.get('trxn_type_flag', '')).strip()
+
+                        # Extract structured extra fields
+                        broker_code = str(row.get('agent_code', '')).strip() or str(row.get('arn_code', '')).strip() or None
+                        sub_broker_code = str(row.get('sub_agent_code', '')).strip() or None
+                        euin = str(row.get('euin', '')).strip() or None
+
+                        stt = self.clean_decimal(row.get('stt'))
+                        stamp_duty = self.clean_decimal(row.get('stamp_duty'))
+
+                        # Try finding other cols
+                        ihno = str(row.get('ihno', '')).strip() or None
+                        ih_dt_val = row.get('ih_dt')
+                        ih_dt = self.parse_date(ih_dt_val) if ih_dt_val else None
+
+                        bank_name = str(row.get('bank_name', '')).strip() or None
+                        load_amount = self.clean_decimal(row.get('load'))
+                        tax_amount = self.clean_decimal(row.get('tax'))
+                        remarks = str(row.get('remarks', '')).strip() or None
+                        location = str(row.get('td_branch', '')).strip() or None
+
+                        # Handle NaN values to prevent JSON serialization errors (Postgres rejects NaN)
+                        raw_row_data = {k: str(v) if pd.notna(v) else None for k, v in row.items()}
+
+                        self.match_or_create_transaction(
+                            investor, scheme, folio_number, unique_txn_number, txn_date, amount, units, txn_type, 'KARVY',
+                            description=description, tr_flag=tr_flag, original_txn_number=original_txn_number, nav=nav,
+                            raw_data=raw_row_data,
+                            broker_code=broker_code, sub_broker_code=sub_broker_code, euin=euin,
+                            stt=stt, stamp_duty=stamp_duty,
+                            instrument_no=ihno, instrument_date=ih_dt, bank_name=bank_name,
+                            load_amount=load_amount, tax_amount=tax_amount,
+                            remarks=remarks, location=location
+                        )
+                except Exception as e:
+                    logger.error(f"Error processing Karvy DBF row: {e}")
+                    row_dict = row.to_dict()
+                    row_dict['error'] = str(e)
+                    self.failed_rows.append(row_dict)

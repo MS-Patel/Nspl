@@ -23,7 +23,11 @@ class RTAEmailFetcher:
         self.password = settings.RTA_EMAIL_PASSWORD
         self.sender_filters = settings.RTA_EMAIL_SENDER_FILTERS
         self.subject_filters = settings.RTA_EMAIL_SUBJECT_FILTERS
-        self.file_passwords = settings.RTA_FILE_PASSWORD
+
+        self.file_passwords = getattr(settings, 'RTA_FILE_PASSWORD', [])
+        if isinstance(self.file_passwords, str):
+            self.file_passwords = [self.file_passwords]
+
         self.fetch_days = getattr(settings, 'RTA_EMAIL_FETCH_DAYS', 7)
         self.conn = None
         self.temp_dir = None
@@ -320,7 +324,10 @@ class RTAEmailFetcher:
                         logger.info(f"Successfully extracted {zip_path}")
                         break
                     except (RuntimeError, pyzipper.BadZipFile, pyzipper.LargeZipFile) as e:
-                        logger.error(f"Failed to extract {zip_path}: {e}")
+                        if pwd is None:
+                            logger.info(f"Extraction failed without password for {zip_path}: {e}")
+                        else:
+                            logger.warning(f"Extraction failed with provided password for {zip_path}: {e}")
 
                 if not success:
                     logger.error(f"Failed to extract {zip_path}: Incorrect password or unsupported encryption.")
