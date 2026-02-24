@@ -61,8 +61,8 @@ def process_cams_file(brokerage_import):
         data = clean_pandas_data(row.to_dict())
 
         # Extract Key Fields (Handle variations in column names if necessary)
-        brokerage = Decimal(str(row.get('BRKAGE_AMT', 0) or 0))
-        amount = Decimal(str(row.get('PLOT_AMOUN', 0) or 0))
+        brokerage = get_safe_decimal(row.get('BRKAGE_AMT', 0))
+        amount = get_safe_decimal(row.get('PLOT_AMOUN', 0))
         txn_date = pd.to_datetime(row.get('TRXN_DATE', row.get('PROC_DATE'))) if row.get('TRXN_DATE') or row.get('PROC_DATE') else None
 
         if txn_date:
@@ -96,8 +96,8 @@ def process_karvy_file(brokerage_import):
     for _, row in df.iterrows():
         data = clean_pandas_data(row.to_dict())
 
-        brokerage = Decimal(str(row.get('Brokerage (in Rs.)', 0) or 0))
-        amount = Decimal(str(row.get('Amount (in Rs.)', 0) or 0))
+        brokerage = get_safe_decimal(row.get('Brokerage (in Rs.)', 0))
+        amount = get_safe_decimal(row.get('Amount (in Rs.)', 0))
 
         # Karvy Date format often DD/MM/YYYY
         txn_date_str = row.get('Transaction Date', row.get('Process Date'))
@@ -278,3 +278,21 @@ def get_distributor_category(aum):
             if cat.max_aum is None or aum < cat.max_aum:
                 return cat
     return None
+
+def get_safe_decimal(val):
+    """
+    Safely converts a value to Decimal, handling NaN and other invalid formats by returning 0.
+    """
+    if pd.isna(val) or val is None:
+        return Decimal(0)
+
+    try:
+        s = str(val).strip()
+        if not s or s.lower() == 'nan':
+            return Decimal(0)
+        d = Decimal(s)
+        if d.is_nan():
+            return Decimal(0)
+        return d
+    except (ValueError, TypeError, ArithmeticError):
+        return Decimal(0)
