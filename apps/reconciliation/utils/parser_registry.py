@@ -18,12 +18,12 @@ def get_parser_for_file(file_path):
         parser = DBFParser(file_path=file_path)
 
     # Excel Files
-    elif filename.lower().endswith('.xls') or filename.lower().endswith('.xlsx'):
+    elif filename.lower().endswith('.csv'):
         if 'WBR2' in filename:
             logger.info(f"Detected CAMS WBR2: {filename}")
             parser = CAMSXLSParser(file_path=file_path)
-        elif 'MFSD201' in filename:
-            logger.info(f"Detected Karvy MFSD201: {filename}")
+        elif 'MFSD307' in filename:
+            logger.info(f"Detected Karvy MFSD307: {filename}")
             parser = KarvyXLSParser(file_path=file_path)
         else:
              # Basic fallback logic if filename isn't explicit but content might be?
