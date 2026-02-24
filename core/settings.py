@@ -201,8 +201,8 @@ CVL_SERVICE_URL = os.environ.get('CVL_SERVICE_URL', "https://pancheck.www.kracvl
 # RTA Email Configuration
 RTA_EMAIL_HOST = os.environ.get('RTA_EMAIL_HOST', 'imap.gmail.com')
 RTA_EMAIL_PORT = int(os.environ.get('RTA_EMAIL_PORT', 993))
-RTA_EMAIL_USER = os.environ.get('RTA_EMAIL_USER', 'support@navinchandrasecurities.com')
-RTA_EMAIL_PASSWORD = os.environ.get('RTA_EMAIL_PASSWORD', 'hhswkzurczgjphtv')
+RTA_EMAIL_USER = os.environ.get('RTA_EMAIL_USER', 'info@navinchandrasecurities.com')
+RTA_EMAIL_PASSWORD = os.environ.get('RTA_EMAIL_PASSWORD', 'zqdcbricbumdqyyo')
 
 # Passwords for encrypted RTA files (comma-separated list)
 # Note: RTA_FILE_PASSWORD env var should be comma separated if multiple
