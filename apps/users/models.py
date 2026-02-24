@@ -96,6 +96,7 @@ class DistributorProfile(models.Model):
 
     arn_number = models.CharField(max_length=50, null=True, blank=True, help_text="AMFI Registration Number")
     broker_code = models.CharField(max_length=20, unique=True, blank=True, help_text="Auto-generated Sub Broker Code (e.g. BBF0001)")
+    old_broker_code = models.CharField(max_length=20, null=True, blank=True, help_text="Old Broker Code for backward compatibility")
     euin = models.CharField(max_length=50, blank=True, help_text="Employee Unique Identification Number")
     pan = models.CharField(max_length=10, blank=True)
     mobile = models.CharField(max_length=15, blank=True)
