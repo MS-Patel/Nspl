@@ -34,11 +34,11 @@
 
         <!-- Payouts (Admin, RM, Distributor) -->
         {% if user.is_staff or user.user_type == 'ADMIN' or user.user_type == 'RM' or user.user_type == 'DISTRIBUTOR' %}
-        <button class="tooltip-main-sidebar flex size-11 items-center justify-center rounded-lg outline-hidden transition-colors duration-200 hover:bg-primary/20 focus:bg-primary/20 active:bg-primary/25 dark:hover:bg-navy-300/20 dark:focus:bg-navy-300/20 dark:active:bg-navy-300/25" data-tooltip="Payouts" data-placement="right">
+        <a href="{% url 'payouts:dashboard' %}" class="tooltip-main-sidebar flex size-11 items-center justify-center rounded-lg outline-hidden transition-colors duration-200 hover:bg-primary/20 focus:bg-primary/20 active:bg-primary/25 dark:hover:bg-navy-300/20 dark:focus:bg-navy-300/20 dark:active:bg-navy-300/25" data-tooltip="Payouts" data-placement="right">
            <svg xmlns="http://www.w3.org/2000/svg" class="size-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-        </button>
+        </a>
         {% endif %}
 
       </div>
@@ -79,33 +79,10 @@
 
             <!-- Payouts -->
             {% if user.is_staff or user.user_type == 'ADMIN' or user.user_type == 'RM' or user.user_type == 'DISTRIBUTOR' %}
-            <li class="ac nav-parent [&.is-active_svg]:rotate-90 [&.is-active_.ac-trigger]:font-semibold [&.is-active_.ac-trigger]:text-slate-800 dark:[&.is-active_.ac-trigger]:text-navy-50">
-                <button class="ac-trigger flex w-full items-center justify-between py-2 text-xs-plus tracking-wide text-slate-600 outline-hidden transition-[color,padding-left] duration-300 ease-in-out hover:text-slate-800 dark:text-navy-200 dark:hover:text-navy-50">
-                  <span>Payouts</span>
-                  <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-slate-400 transition-transform ease-in-out" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                  </svg>
-                </button>
-                <ul class="ac-panel">
-                  <li>
-                    <a href="{% url 'payouts:payout_list' %}" class="nav-link flex items-center justify-between p-2 text-xs-plus tracking-wide outline-hidden transition-[color,padding-left] duration-300 ease-in-out hover:pl-4" data-default-class="text-slate-600 hover:text-slate-800 dark:text-navy-200 dark:hover:text-navy-50" data-active-class="font-medium text-primary dark:text-accent-light">
-                      <div class="flex items-center space-x-2">
-                        <div class="size-1.5 rounded-full border border-current opacity-40"></div>
-                        <span>Payout Reports</span>
-                      </div>
-                    </a>
-                  </li>
-                  {% if user.is_staff or user.user_type == 'ADMIN' %}
-                  <li>
-                    <a href="{% url 'payouts:upload' %}" class="nav-link flex items-center justify-between p-2 text-xs-plus tracking-wide outline-hidden transition-[color,padding-left] duration-300 ease-in-out hover:pl-4" data-default-class="text-slate-600 hover:text-slate-800 dark:text-navy-200 dark:hover:text-navy-50" data-active-class="font-medium text-primary dark:text-accent-light">
-                      <div class="flex items-center space-x-2">
-                        <div class="size-1.5 rounded-full border border-current opacity-40"></div>
-                        <span>Generate Payouts</span>
-                      </div>
-                    </a>
-                  </li>
-                  {% endif %}
-                </ul>
+            <li>
+                <a href="{% url 'payouts:dashboard' %}" class="nav-link flex items-center justify-between py-2 text-xs-plus tracking-wide outline-hidden transition-[color,padding-left] duration-300 ease-in-out hover:text-slate-800 dark:text-navy-200 dark:hover:text-navy-50" data-default-class="text-slate-600 hover:text-slate-800 dark:text-navy-200 dark:hover:text-navy-50" data-active-class="font-medium text-primary dark:text-accent-light">
+                    <span>Payouts</span>
+                </a>
             </li>
             {% endif %}
 
