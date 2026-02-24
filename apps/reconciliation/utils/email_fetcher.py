@@ -238,6 +238,8 @@ class RTAEmailFetcher:
             if 'href' in link.attrs and 'kfintech.com' in link['href']:
                 # Check context if needed, but domain filter + "Click Here" is strong signal
                 # Checking next text node for "download" as requested
+                karvy_links.append(link['href'])
+                break
                 next_node = link.next_sibling
                 if next_node and "download" in str(next_node).lower():
                      karvy_links.append(link['href'])
