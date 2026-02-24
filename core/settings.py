@@ -211,7 +211,7 @@ RTA_FILE_PASSWORD = [p.strip() for p in os.environ.get('RTA_FILE_PASSWORD', '123
 # Filters for identifying relevant emails
 # Note: Env vars should be comma separated
 RTA_EMAIL_SENDER_FILTERS = [s.strip().lower() for s in os.environ.get('RTA_EMAIL_SENDER_FILTERS', 'donotreply@camsonline.com,distributorcare@kfintech.com').split(',') if s.strip()]
-RTA_EMAIL_SUBJECT_FILTERS = [s.strip().lower() for s in os.environ.get('RTA_EMAIL_SUBJECT_FILTERS', 'Transaction Feeds Report,WBR2').split(',') if s.strip()]
+RTA_EMAIL_SUBJECT_FILTERS = [s.strip().lower() for s in os.environ.get('RTA_EMAIL_SUBJECT_FILTERS', 'Subscribed Transaction Feeds Report,WBR2. Investor Transactions for a Period').split(',') if s.strip()]
 
 # Number of days to look back for emails
 RTA_EMAIL_FETCH_DAYS = int(os.environ.get('RTA_EMAIL_FETCH_DAYS', 3))
