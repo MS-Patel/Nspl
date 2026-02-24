@@ -406,7 +406,7 @@ class ExportAMCPayoutReportView(LoginRequiredMixin, UserPassesTestMixin, View):
         brokerage_import = get_object_or_404(BrokerageImport, pk=pk)
 
         # 1. Fetch Transactions
-        transactions = brokerage_import.transactions.select_related('distributor').all()
+        transactions = brokerage_import.transactions.select_related('distributor', 'scheme', 'scheme__amc').all()
 
         # 2. Fetch Payouts to get share percentage
         # Map distributor_id -> share_percentage
@@ -423,8 +423,11 @@ class ExportAMCPayoutReportView(LoginRequiredMixin, UserPassesTestMixin, View):
         for txn in transactions:
             amc_name = "Unknown"
 
-            # Try matching by name
-            if txn.scheme_name:
+            # 1. Try direct relationship
+            if txn.scheme and txn.scheme.amc:
+                amc_name = txn.scheme.amc.name
+            # 2. Try matching by name (Fallback)
+            elif txn.scheme_name:
                 scheme_name_lower = txn.scheme_name.lower().strip()
                 if scheme_name_lower in scheme_map:
                     amc_name = scheme_map[scheme_name_lower]
