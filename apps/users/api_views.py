@@ -1,13 +1,14 @@
 from rest_framework.views import APIView
+from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from django.db.models import Sum
+from django.db.models import Sum, Q
 from .models import RMProfile, DistributorProfile, InvestorProfile
 from apps.reconciliation.models import Holding
 from apps.investments.models import Order, SIP
-from .serializers import OrderSerializer
+from .serializers import OrderSerializer, InvestorSerializer
 from apps.reconciliation.utils.valuation import calculate_portfolio_valuation
-from apps.integration.sync_utils import sync_pending_orders, sync_sip_child_orders
+from apps.integration.sync_utils import sync_pending_orders, sync_sip_child_orders, sync_pending_mandates
 from django.contrib.auth import get_user_model
 import logging
 import json
@@ -133,3 +134,63 @@ class UserMeAPIView(APIView):
             'role': user.user_type,
             'id': user.id
         })
+
+# --- Investor Module API Views ---
+
+class InvestorListAPIView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = InvestorSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        qs = InvestorProfile.objects.select_related(
+            'user', 'distributor', 'distributor__user', 'rm', 'rm__user'
+        ).prefetch_related(
+            'bank_accounts', 'nominees', 'documents'
+        )
+
+        if user.user_type == User.Types.DISTRIBUTOR:
+            return qs.filter(distributor__user=user)
+        elif user.user_type == User.Types.RM:
+            # RM sees investors where (distributor.rm == self) OR (rm == self [Direct])
+            return qs.filter(Q(distributor__rm__user=user) | Q(rm__user=user))
+        elif user.user_type == User.Types.ADMIN:
+            return qs
+
+        return qs.none()
+
+class InvestorDetailAPIView(generics.RetrieveUpdateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = InvestorSerializer
+    queryset = InvestorProfile.objects.all()
+
+    def get_object(self):
+        obj = super().get_object()
+        user = self.request.user
+
+        # Check permissions
+        has_access = False
+        if user.user_type == User.Types.ADMIN:
+            has_access = True
+        elif user.user_type == User.Types.DISTRIBUTOR:
+            if obj.distributor and obj.distributor.user == user:
+                has_access = True
+        elif user.user_type == User.Types.RM:
+             if (obj.rm and obj.rm.user == user) or (obj.distributor and obj.distributor.rm and obj.distributor.rm.user == user):
+                 has_access = True
+        elif user.user_type == User.Types.INVESTOR:
+             if obj.user == user:
+                 has_access = True
+
+        if not has_access:
+            self.permission_denied(self.request, message="You do not have permission to view this investor.")
+
+        # Sync Mandates & Orders on Retrieve
+        if self.request.method == 'GET':
+             try:
+                sync_pending_mandates(user=user, investor=obj)
+                sync_pending_orders(user=user, investor=obj)
+             except Exception as e:
+                logger.error(f"Sync failed in InvestorDetailAPIView: {e}")
+
+        return obj

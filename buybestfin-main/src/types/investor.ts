@@ -1,0 +1,87 @@
+export interface BankAccount {
+    id: number;
+    bank_name: string;
+    account_number: string;
+    ifsc_code: string;
+    account_type: string;
+    account_type_display: string;
+    branch_name: string;
+    is_default: boolean;
+    bse_index: number | null;
+}
+
+export interface Nominee {
+    id: number;
+    name: string;
+    relationship: string;
+    relationship_display: string;
+    percentage: string; // Decimal string
+    date_of_birth: string | null;
+    guardian_name: string;
+    guardian_pan: string;
+    pan: string;
+    address_1: string;
+    address_2: string;
+    address_3: string;
+    city: string;
+    state: string;
+    pincode: string;
+    country: string;
+    mobile: string;
+    email: string;
+    id_type: string;
+    id_type_display: string;
+    id_number: string;
+}
+
+export interface Document {
+    id: number;
+    document_type: string;
+    document_type_display: string;
+    file_url: string | null;
+    uploaded_at: string;
+    description: string;
+}
+
+export interface Investor {
+    id: number;
+    name: string;
+    username: string; // PAN
+    email: string;
+    pan: string;
+    mobile: string;
+    distributor_name: string | null;
+    rm_name: string | null;
+    status: string;
+
+    // Details
+    dob: string | null;
+    gender: string;
+    address_1: string;
+    address_2: string;
+    address_3: string;
+    city: string;
+    state: string;
+    pincode: string;
+    country: string;
+
+    tax_status: string;
+    tax_status_display: string;
+    occupation: string;
+    occupation_display: string;
+    holding_nature: string;
+    holding_nature_display: string;
+    kyc_type: string;
+    kyc_type_display: string;
+
+    nominee_auth_status: string;
+    nominee_auth_status_display: string;
+    ucc_code: string | null;
+    bse_remarks: string;
+    last_verified_at: string | null;
+    kyc_status: boolean;
+
+    bank_accounts: BankAccount[];
+    nominees: Nominee[];
+    documents: Document[];
+}

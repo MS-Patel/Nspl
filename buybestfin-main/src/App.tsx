@@ -20,6 +20,8 @@ import AdminDashboard from "@/pages/dashboard/AdminDashboard";
 import RMDashboard from "@/pages/dashboard/RMDashboard";
 import DistributorDashboard from "@/pages/dashboard/DistributorDashboard";
 import InvestorDashboard from "@/pages/dashboard/InvestorDashboard";
+import InvestorList from "@/pages/dashboard/investors/InvestorList";
+import InvestorDetail from "@/pages/dashboard/investors/InvestorDetail";
 import RoleGuard from "@/components/auth/RoleGuard";
 
 const queryClient = new QueryClient();
@@ -62,6 +64,16 @@ const App = () => (
             <Route path="investor" element={
               <RoleGuard allowedRoles={['INVESTOR', 'ADMIN', 'RM', 'DISTRIBUTOR']}>
                 <InvestorDashboard />
+              </RoleGuard>
+            } />
+            <Route path="investors" element={
+              <RoleGuard allowedRoles={['ADMIN', 'RM', 'DISTRIBUTOR']}>
+                <InvestorList />
+              </RoleGuard>
+            } />
+            <Route path="investors/:id" element={
+              <RoleGuard allowedRoles={['ADMIN', 'RM', 'DISTRIBUTOR']}>
+                <InvestorDetail />
               </RoleGuard>
             } />
           </Route>
