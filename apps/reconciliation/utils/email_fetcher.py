@@ -8,6 +8,7 @@ import tempfile
 import requests
 import urllib.parse
 import re
+import mimetypes
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 from email.header import decode_header
@@ -70,7 +71,8 @@ class RTAEmailFetcher:
     def fetch_emails(self):
         """
         Fetches UNSEEN emails matching filters from the last N days.
-        Returns a list of tuples: (email_id, [list_of_file_paths])
+        Returns a list of tuples: (email_id, [list_of_file_dicts])
+        Each dict has 'path' and 'source' (URL or 'Attachment: <name>')
         """
         if not self.conn:
             # If not connected (e.g. config missing), return empty
@@ -81,7 +83,7 @@ class RTAEmailFetcher:
 
             # Calculate date threshold for search
             date_threshold = (datetime.now() - timedelta(days=self.fetch_days)).strftime("%d-%b-%Y")
-            search_criteria = f'(SINCE "{date_threshold}")'
+            search_criteria = f'(UNSEEN SINCE "{date_threshold}")'
 
             logger.info(f"Searching for emails with criteria: {search_criteria}")
 
@@ -125,14 +127,14 @@ class RTAEmailFetcher:
                     logger.info(f"Processing email: {subject} from {sender}")
 
                     # Process Attachments
-                    file_paths = self.process_attachments(msg)
+                    file_items = self.process_attachments(msg)
 
                     # Process Links (CAMS/Karvy)
                     link_files = self.process_links(msg)
-                    file_paths.extend(link_files)
+                    file_items.extend(link_files)
 
-                    if file_paths:
-                        results.append((num, file_paths))
+                    if file_items:
+                        results.append((num, file_items))
 
                 except Exception as e:
                     logger.error(f"Error processing email {num}: {e}")
@@ -143,7 +145,7 @@ class RTAEmailFetcher:
             return []
 
     def process_attachments(self, msg):
-        saved_files = []
+        saved_items = []
         for part in msg.walk():
             if part.get_content_maintype() == 'multipart':
                 continue
@@ -176,20 +178,22 @@ class RTAEmailFetcher:
                 logger.error(f"Error saving attachment {filename}: {e}")
                 continue
 
+            source_info = f"Attachment: {filename}"
             # Handle ZIP
             if filename.lower().endswith('.zip'):
                 extracted = self.extract_zip(filepath)
-                saved_files.extend(extracted)
+                for f in extracted:
+                    saved_items.append({'path': f, 'source': source_info})
             else:
-                saved_files.append(filepath)
+                saved_items.append({'path': filepath, 'source': source_info})
 
-        return saved_files
+        return saved_items
 
     def process_links(self, msg):
         """
         Parses email body for CAMS and Karvy download links.
         """
-        saved_files = []
+        saved_items = []
         html_content = ""
 
         # Extract HTML content
@@ -250,13 +254,14 @@ class RTAEmailFetcher:
                 if filepath:
                     if filepath.lower().endswith('.zip'):
                         extracted = self.extract_zip(filepath)
-                        saved_files.extend(extracted)
+                        for f in extracted:
+                            saved_items.append({'path': f, 'source': url})
                     else:
-                        saved_files.append(filepath)
+                        saved_items.append({'path': filepath, 'source': url})
             except Exception as e:
                 logger.error(f"Error downloading file from {url}: {e}")
 
-        return saved_files
+        return saved_items
 
     def download_file(self, url):
         try:
@@ -271,8 +276,11 @@ class RTAEmailFetcher:
                 if filename_match:
                     filename = filename_match.group(1)
 
+            # Fallback 1: Try guessing from Content-Type if filename missing or generic
+            content_type = response.headers.get('Content-Type', '')
+
             if not filename:
-                # Fallback to URL path
+                # Fallback 2: URL path
                 path = urllib.parse.urlparse(url).path
                 filename = os.path.basename(path)
 
@@ -283,11 +291,54 @@ class RTAEmailFetcher:
             # Sanitize filename
             filename = "".join([c for c in filename if c.isalpha() or c.isdigit() or c in '._- ']).strip()
 
+            # Append extension if missing, based on content-type
+            root, ext = os.path.splitext(filename)
+            if not ext and content_type:
+                 guess_ext = mimetypes.guess_extension(content_type.split(';')[0].strip())
+                 if guess_ext:
+                     filename = f"{filename}{guess_ext}"
+
             filepath = os.path.join(self.temp_dir, filename)
 
             with open(filepath, 'wb') as f:
                 for chunk in response.iter_content(chunk_size=8192):
                     f.write(chunk)
+
+            # Post-processing: Magic Byte detection if extension is missing or generic
+            # Re-check extension
+            root, ext = os.path.splitext(filepath)
+
+            # Skip checking if we already have a trusted extension like .csv or .txt
+            # to avoid false positives with DBF magic bytes (like 'c' for 0x63)
+            if ext.lower() in ['.csv', '.txt', '.log']:
+                 return filepath
+
+            try:
+                with open(filepath, 'rb') as f:
+                    header = f.read(4)
+
+                new_ext = None
+                if header.startswith(b'PK\x03\x04'):
+                    new_ext = '.zip'
+                # DBF header checks: 0x03 (dBase III), 0x30 (VFP), 0x83 (dBase III+), 0xF5 (FoxPro)
+                # Removed 0x63 ('c'), 0x43 ('C') to avoid conflict with CSV/text
+                elif header and header[0] in [0x03, 0x30, 0x31, 0x32, 0x83, 0x8B, 0xCB, 0xF5]:
+                     new_ext = '.dbf'
+
+                if new_ext:
+                    if not ext or ext.lower() != new_ext:
+                        new_filepath = f"{root}{new_ext}"
+                        # Ensure uniqueness if file exists
+                        if os.path.exists(new_filepath):
+                            timestamp = datetime.now().strftime('%H%M%S')
+                            new_filepath = f"{root}_{timestamp}{new_ext}"
+
+                        os.rename(filepath, new_filepath)
+                        logger.info(f"Renamed {filepath} to {new_filepath} based on content detection.")
+                        filepath = new_filepath
+
+            except Exception as e:
+                logger.warning(f"Failed to inspect file magic bytes for {filepath}: {e}")
 
             logger.info(f"Downloaded to {filepath}")
             return filepath

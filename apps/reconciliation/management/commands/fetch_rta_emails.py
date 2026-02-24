@@ -1,4 +1,5 @@
 import logging
+import os
 from django.core.management.base import BaseCommand
 from apps.reconciliation.utils.email_fetcher import RTAEmailFetcher
 from apps.reconciliation.utils.parser_registry import get_parser_for_file
@@ -27,23 +28,35 @@ class Command(BaseCommand):
 
                 self.stdout.write(f"Found {len(emails)} emails. Processing...")
 
-                for email_id, file_paths in emails:
+                for email_id, file_items in emails:
                     email_success = True
                     processed_count = 0
 
-                    if not file_paths:
+                    if not file_items:
                         self.stdout.write(f"Email {email_id} had no valid attachments.")
                         continue
 
-                    for file_path in file_paths:
+                    for item in file_items:
+                        file_path = item.get('path')
+                        source = item.get('source', 'Unknown Source')
+
                         try:
                             parser = get_parser_for_file(file_path)
                             if not parser:
                                 # Not a recognized RTA file
-                                self.stdout.write(f"Skipping unknown file: {file_path}")
+                                self.stdout.write(f"Skipping unknown file: {file_path} from {source}")
+
+                                # Log first 100 bytes to help debug (e.g. check if it's HTML error page)
+                                try:
+                                    with open(file_path, 'rb') as f:
+                                        content_sample = f.read(100)
+                                        self.stdout.write(f"File Header Sample: {content_sample}")
+                                except Exception as e:
+                                    self.stdout.write(f"Could not read file sample: {e}")
+
                                 continue
 
-                            self.stdout.write(f"Processing file: {file_path}")
+                            self.stdout.write(f"Processing file: {file_path} from {source}")
                             parser.parse()
                             self.stdout.write(self.style.SUCCESS(f"Successfully processed {file_path}"))
                             processed_count += 1

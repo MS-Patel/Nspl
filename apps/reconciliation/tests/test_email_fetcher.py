@@ -125,7 +125,11 @@ def test_fetch_emails_with_cams_link(mock_imap, mock_get):
         email_id, files = results[0]
         assert email_id == b'123'
         assert len(files) == 1
-        assert 'test_cams_data.csv' in files[0] # Should be the extracted file
+
+        # Verify structure: list of dicts with 'path' and 'source'
+        assert isinstance(files[0], dict)
+        assert 'test_cams_data.csv' in files[0]['path']
+        assert files[0]['source'] == 'https://mailback12.camsonline.com/mailback_result/testfile.zip'
 
         # Verify requests.get was called correctly
         mock_get.assert_called_with('https://mailback12.camsonline.com/mailback_result/testfile.zip', stream=True, timeout=30)
@@ -183,7 +187,8 @@ def test_fetch_emails_with_karvy_link(mock_imap, mock_get):
         email_id, files = results[0]
         assert email_id == b'456'
         assert len(files) == 1
-        assert 'karvy_report.csv' in files[0]
+        assert 'karvy_report.csv' in files[0]['path']
+        assert files[0]['source'] == 'https://scdelivery.kfintech.com/c/?u=xyz'
 
         mock_get.assert_called_with('https://scdelivery.kfintech.com/c/?u=xyz', stream=True, timeout=30)
 
@@ -253,4 +258,72 @@ def test_fetch_emails_with_aes_encrypted_zip(mock_imap, mock_get):
         email_id, files = results[0]
         assert email_id == b'789'
         assert len(files) == 1
-        assert 'encrypted_data.csv' in files[0] # Should be the extracted file
+        assert 'encrypted_data.csv' in files[0]['path']
+        assert files[0]['source'] == 'https://mailback12.camsonline.com/mailback_result/encrypted.zip'
+
+@patch('apps.reconciliation.utils.email_fetcher.requests.get')
+@patch('apps.reconciliation.utils.email_fetcher.imaplib.IMAP4_SSL')
+def test_fetch_emails_magic_byte_detection(mock_imap, mock_get):
+    """
+    Test case where filename is generic/missing but content is a valid ZIP,
+    and verify it gets renamed and extracted.
+    """
+    # Setup IMAP mock
+    mock_conn = MagicMock()
+    mock_imap.return_value = mock_conn
+
+    # Mock search result with one email ID
+    mock_conn.search.return_value = ('OK', [b'999'])
+
+    # Mock fetch result with HTML content containing generic link
+    # Using Karvy like structure so process_links picks it up
+    html_content = """
+    <html>
+        <body>
+            <a href="http://scdelivery.kfintech.com/download">Click Here</a> to download.
+        </body>
+    </html>
+    """
+
+    msg = MIMEMultipart()
+    msg['From'] = 'sender@kfintech.com'
+    msg['Subject'] = 'Report'
+    msg.attach(MIMEText(html_content, 'html'))
+
+    mock_conn.fetch.return_value = ('OK', [(b'999 (RFC822 {123}', msg.as_bytes())])
+
+    # Mock requests.get response
+    mock_response = MagicMock()
+    mock_response.status_code = 200
+
+    # Create a valid ZIP content
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, 'w') as zf:
+        zf.writestr('magic_data.csv', 'data')
+    zip_content = zip_buffer.getvalue()
+
+    mock_response.iter_content = MagicMock(return_value=[zip_content])
+    # NO Content-Disposition, NO Content-Type hinting at extension
+    mock_response.headers = {'Content-Type': 'application/octet-stream'}
+    mock_get.return_value = mock_response
+
+    # Mock settings
+    with patch.object(settings, 'RTA_EMAIL_FETCH_DAYS', 7, create=True), \
+         patch.object(settings, 'RTA_EMAIL_HOST', 'imap.test.com', create=True), \
+         patch.object(settings, 'RTA_EMAIL_USER', 'test@test.com', create=True), \
+         patch.object(settings, 'RTA_EMAIL_PASSWORD', 'password', create=True), \
+         patch.object(settings, 'RTA_EMAIL_SENDER_FILTERS', ['kfintech.com'], create=True), \
+         patch.object(settings, 'RTA_EMAIL_SUBJECT_FILTERS', [], create=True), \
+         patch.object(settings, 'RTA_FILE_PASSWORD', [], create=True):
+
+        fetcher = RTAEmailFetcher()
+        fetcher.connect()
+        results = fetcher.fetch_emails()
+
+        # Assertions
+        assert len(results) == 1
+        email_id, files = results[0]
+        # Should have detected it as ZIP, renamed to .zip, and then extracted it
+        assert len(files) == 1
+        assert 'magic_data.csv' in files[0]['path']
+        assert files[0]['source'] == 'http://scdelivery.kfintech.com/download'
