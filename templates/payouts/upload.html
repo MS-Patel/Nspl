@@ -51,7 +51,7 @@
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 mt-4">
                     <!-- CAMS File -->
                     <div>
-                        <label class="block text-sm font-medium text-slate-700 dark:text-navy-100 mb-1">CAMS File (.dbf / .csv)</label>
+                        <label class="block text-sm font-medium text-slate-700 dark:text-navy-100 mb-1">CAMS File (.dbf)</label>
                         <div class="flex items-center space-x-3">
                              <label class="btn bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90 cursor-pointer">
                                 {{ form.cams_file }}
@@ -100,6 +100,23 @@
 {% block javascript %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Initialize Flatpickr for Month Selection
+        const monthYearInput = document.getElementById('{{ form.month_year.auto_id }}');
+        if (monthYearInput && window.flatpickr && window.monthSelectPlugin) {
+            flatpickr(monthYearInput, {
+                plugins: [
+                    new window.monthSelectPlugin({
+                        shorthand: true,
+                        dateFormat: "Y-m",
+                        altFormat: "F Y",
+                        theme: "light"
+                    })
+                ],
+                altInput: true,
+                dateFormat: "Y-m",
+            });
+        }
+
         // File Name Update Logic
         const camsInput = document.getElementById('{{ form.cams_file.auto_id }}');
         const karvyInput = document.getElementById('{{ form.karvy_file.auto_id }}');

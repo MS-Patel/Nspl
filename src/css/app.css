@@ -7,6 +7,7 @@
 
 @import "./pages.css" layer(pages);
 @import "highlight.js/styles/atom-one-dark.css" layer(components); /* Just for demo purpose only for highlighting code */
+@import "flatpickr/dist/plugins/monthSelect/style.css" layer(components);
 @import "./fontawesome-all.css" layer(utilities);
 
 @custom-variant dark (&:where(.dark, .dark *));
