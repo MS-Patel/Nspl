@@ -1401,3 +1401,26 @@ class APILoginView(View):
             return JsonResponse({'status': 'success', 'redirect_url': redirect_url})
         else:
             return JsonResponse({'status': 'error', 'message': 'Invalid credentials'}, status=401)
+
+class APIAuthStatusView(View):
+    def get(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            user = request.user
+            redirect_url = reverse('users:admin_dashboard') # Default
+            if user.user_type == User.Types.RM:
+                redirect_url = reverse('users:rm_dashboard')
+            elif user.user_type == User.Types.DISTRIBUTOR:
+                redirect_url = reverse('users:distributor_dashboard')
+            elif user.user_type == User.Types.INVESTOR:
+                redirect_url = reverse('users:investor_dashboard')
+
+            return JsonResponse({
+                'is_authenticated': True,
+                'redirect_url': redirect_url,
+                'username': user.username,
+                'name': user.name or user.username
+            })
+        else:
+            return JsonResponse({
+                'is_authenticated': False
+            })
