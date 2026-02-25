@@ -88,9 +88,11 @@ const InvestorList = () => {
             <h1 className="text-3xl font-bold tracking-tight">Investors</h1>
             <p className="text-muted-foreground">Manage your investor base.</p>
         </div>
-        <Button disabled>
-            <Plus className="mr-2 h-4 w-4" /> Onboard Investor (Coming Soon)
-        </Button>
+        <Link to="/dashboard/investors/new">
+            <Button>
+                <Plus className="mr-2 h-4 w-4" /> Onboard Investor
+            </Button>
+        </Link>
       </div>
 
       <Card>
