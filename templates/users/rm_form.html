@@ -32,14 +32,6 @@
                 User Details
             </h3>
             <div class="grid grid-cols-1 gap-4">
-                {% if not is_update %}
-                <div>
-                    <label class="block mb-1 text-sm font-medium">Username *</label>
-                    {{ form.username|add_class:"form-input w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" }}
-                    <span class="text-tiny+ text-error">{{ form.username.errors.0 }}</span>
-                </div>
-                {% endif %}
-
                 <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                      <div>
                         <label class="block mb-1 text-sm font-medium">Full Name *</label>
@@ -52,21 +44,6 @@
                         <span class="text-tiny+ text-error">{{ form.email.errors.0 }}</span>
                     </div>
                 </div>
-
-                {% if not is_update %}
-                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    <div>
-                        <label class="block mb-1 text-sm font-medium">Password *</label>
-                        {{ form.password|add_class:"form-input w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" }}
-                        <span class="text-tiny+ text-error">{{ form.password.errors.0 }}</span>
-                    </div>
-                    <div>
-                        <label class="block mb-1 text-sm font-medium">Confirm Password *</label>
-                        {{ form.confirm_password|add_class:"form-input w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" }}
-                        <span class="text-tiny+ text-error">{{ form.confirm_password.errors.0 }}</span>
-                    </div>
-                </div>
-                {% endif %}
 
                 <div class="flex items-center space-x-2 mt-2">
                     <label class="inline-flex items-center space-x-2">
@@ -90,12 +67,17 @@
                         <span class="text-tiny+ text-error">{{ form.employee_code.errors.0 }}</span>
                     </div>
                     <div>
+                        <label class="block mb-1 text-sm font-medium">PAN *</label>
+                        {{ form.pan|add_class:"form-input w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" }}
+                        <span class="text-tiny+ text-error">{{ form.pan.errors.0 }}</span>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                     <div>
                         <label class="block mb-1 text-sm font-medium">Branch</label>
                         {{ form.branch|add_class:"form-select w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" }}
                         <span class="text-tiny+ text-error">{{ form.branch.errors.0 }}</span>
                     </div>
-                </div>
-                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                      <div>
                         <label class="block mb-1 text-sm font-medium">GSTIN</label>
                         {{ form.gstin|add_class:"form-input w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" }}

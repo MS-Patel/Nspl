@@ -68,6 +68,7 @@ class RMProfile(models.Model):
     # Personal / Business Details
     dob = models.DateField(null=True, blank=True, verbose_name="Date of Birth")
     gstin = models.CharField(max_length=15, blank=True, verbose_name="GSTIN")
+    pan = models.CharField(max_length=10, blank=True)
 
     # Bank Details
     bank_name = models.CharField(max_length=100, blank=True)
@@ -126,22 +127,25 @@ class DistributorProfile(models.Model):
     # Status
     is_active = models.BooleanField(default=True, help_text="Designates whether this Distributor profile is active.")
 
+    @staticmethod
+    def generate_broker_code():
+        # Generate auto-increment code
+        # Sort by length descending, then by code descending to handle BBF9999 vs BBF10000 correctly
+        last_code = DistributorProfile.objects.filter(broker_code__startswith='BBF').annotate(code_len=Length('broker_code')).order_by('-code_len', '-broker_code').values_list('broker_code', flat=True).first()
+        if last_code:
+            try:
+                # Extract number part '0001' from 'BBF0001'
+                last_num = int(last_code[3:])
+                new_num = last_num + 1
+            except ValueError:
+                new_num = 1
+        else:
+            new_num = 1
+        return f"BBF{new_num:04d}"
+
     def save(self, *args, **kwargs):
         if not self.broker_code:
-            # Generate auto-increment code
-            # Sort by length descending, then by code descending to handle BBF9999 vs BBF10000 correctly
-            last_code = DistributorProfile.objects.filter(broker_code__startswith='BBF').annotate(code_len=Length('broker_code')).order_by('-code_len', '-broker_code').values_list('broker_code', flat=True).first()
-            if last_code:
-                try:
-                    # Extract number part '0001' from 'BBF0001'
-                    last_num = int(last_code[3:])
-                    new_num = last_num + 1
-                except ValueError:
-                    new_num = 1
-            else:
-                new_num = 1
-
-            self.broker_code = f"BBF{new_num:04d}"
+            self.broker_code = self.generate_broker_code()
 
         super().save(*args, **kwargs)
 
