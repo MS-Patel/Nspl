@@ -20,4 +20,8 @@ urlpatterns = [
     path('payouts/categories/add/', views.DistributorCategoryCreateView.as_view(), name='category_add'),
     path('payouts/categories/<int:pk>/edit/', views.DistributorCategoryUpdateView.as_view(), name='category_edit'),
     path('payouts/categories/<int:pk>/delete/', views.DistributorCategoryDeleteView.as_view(), name='category_delete'),
+
+    # Folio Mapping
+    path('payouts/folio-mappings/', views.FolioMappingListView.as_view(), name='folio_mapping_list'),
+    path('payouts/folio-mappings/import/', views.FolioMappingImportView.as_view(), name='folio_mapping_import'),
 ]

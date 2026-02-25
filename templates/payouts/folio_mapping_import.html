@@ -1,0 +1,43 @@
+{% extends "layout/base.html" %}
+
+{% block content %}
+<div class="flex flex-col items-center justify-center py-8">
+    <div class="card w-full max-w-lg p-6">
+        <h2 class="text-xl font-medium text-slate-800 dark:text-navy-50 mb-4">
+            Import Folio Mappings
+        </h2>
+        <p class="text-slate-500 mb-6 text-sm">
+            Upload a CSV file containing <strong>folio_number</strong> and <strong>broker_code</strong> (or <strong>arn</strong>).
+            This will update existing mappings or create new ones.
+        </p>
+
+        <form method="post" enctype="multipart/form-data" class="space-y-4">
+            {% csrf_token %}
+
+            <div>
+                <label class="block mb-2 text-sm font-medium text-slate-700 dark:text-navy-100">
+                    Select CSV File
+                </label>
+                <input type="file" name="csv_file" accept=".csv" required
+                    class="block w-full text-sm text-slate-500
+                    file:mr-4 file:py-2 file:px-4
+                    file:rounded-full file:border-0
+                    file:text-sm file:font-semibold
+                    file:bg-primary/10 file:text-primary
+                    hover:file:bg-primary/20
+                    dark:file:bg-accent/10 dark:file:text-accent
+                "/>
+            </div>
+
+            <div class="flex justify-end space-x-2 pt-4">
+                <a href="{% url 'payouts:folio_mapping_list' %}" class="btn min-w-[7rem] border border-slate-300 font-medium text-slate-700 hover:bg-slate-150 focus:bg-slate-150 active:bg-slate-150/80 dark:border-navy-450 dark:text-navy-100 dark:hover:bg-navy-500 dark:focus:bg-navy-500 dark:active:bg-navy-500/90">
+                    Cancel
+                </a>
+                <button type="submit" class="btn min-w-[7rem] bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90">
+                    Import
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,83 @@
+{% extends "layout/base.html" %}
+{% load static humanize %}
+
+{% block content %}
+<div class="flex flex-col space-y-4 py-4">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <h2 class="text-xl font-medium text-slate-800 dark:text-navy-50">
+            Folio to Distributor Mappings
+        </h2>
+        <div class="mt-2 sm:mt-0 flex space-x-2">
+            <a href="{% url 'payouts:folio_mapping_import' %}" class="btn bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90">
+                <i class="fas fa-file-upload mr-2"></i> Import Mappings
+            </a>
+        </div>
+    </div>
+
+    <div class="card p-4">
+        <div class="flex flex-col sm:flex-row items-center justify-between mb-4 space-y-2 sm:space-y-0">
+            <form method="get" class="relative flex w-full sm:w-64">
+                <input name="search" value="{{ request.GET.search|default:'' }}" class="form-input peer h-9 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 pl-9 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" placeholder="Search..." type="text" />
+                <span class="pointer-events-none absolute flex h-full w-10 items-center justify-center text-slate-400 peer-focus:text-primary dark:text-navy-300 dark:peer-focus:text-accent">
+                    <i class="fas fa-search"></i>
+                </span>
+            </form>
+        </div>
+
+        <div class="is-scrollbar-hidden min-w-full overflow-x-auto">
+            <table class="w-full text-left is-hoverable">
+                <thead>
+                    <tr class="border-y border-transparent border-b-slate-200 dark:border-b-navy-500">
+                        <th class="whitespace-nowrap px-4 py-3 font-semibold uppercase text-slate-800 dark:text-navy-100 lg:px-5">Folio Number</th>
+                        <th class="whitespace-nowrap px-4 py-3 font-semibold uppercase text-slate-800 dark:text-navy-100 lg:px-5">Distributor</th>
+                        <th class="whitespace-nowrap px-4 py-3 font-semibold uppercase text-slate-800 dark:text-navy-100 lg:px-5">Broker Code</th>
+                        <th class="whitespace-nowrap px-4 py-3 font-semibold uppercase text-slate-800 dark:text-navy-100 lg:px-5">Updated At</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for obj in object_list %}
+                    <tr class="border-y border-transparent border-b-slate-200 dark:border-b-navy-500 hover:bg-slate-50 dark:hover:bg-navy-900">
+                        <td class="whitespace-nowrap px-4 py-3 sm:px-5">{{ obj.folio_number }}</td>
+                        <td class="whitespace-nowrap px-4 py-3 sm:px-5">
+                            {{ obj.distributor.user.get_full_name|default:obj.distributor.user.username }}
+                        </td>
+                        <td class="whitespace-nowrap px-4 py-3 sm:px-5">
+                            <span class="badge rounded-full bg-info/10 text-info dark:bg-info/15">
+                                {{ obj.distributor.broker_code }}
+                            </span>
+                        </td>
+                        <td class="whitespace-nowrap px-4 py-3 sm:px-5 text-slate-400 text-xs">
+                            {{ obj.updated_at|date:"M d, Y H:i" }}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="px-4 py-3 text-center text-slate-400">No mappings found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if is_paginated %}
+        <div class="flex flex-col sm:flex-row items-center justify-between space-y-2 sm:space-y-0 p-4">
+            <span class="text-xs text-slate-500">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+            </span>
+            <div class="flex space-x-2">
+                {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" class="btn h-8 w-8 rounded-lg p-0 hover:bg-slate-100 focus:bg-slate-100 active:bg-slate-150/80 dark:hover:bg-navy-500 dark:focus:bg-navy-500 dark:active:bg-navy-500/90">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
+                {% endif %}
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" class="btn h-8 w-8 rounded-lg p-0 hover:bg-slate-100 focus:bg-slate-100 active:bg-slate-150/80 dark:hover:bg-navy-500 dark:focus:bg-navy-500 dark:active:bg-navy-500/90">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -111,3 +111,12 @@ class Payout(models.Model):
 
     def __str__(self):
         return f"{self.distributor.user.username} - {self.payable_amount}"
+
+class FolioDistributorMapping(models.Model):
+    folio_number = models.CharField(max_length=50, unique=True, db_index=True)
+    distributor = models.ForeignKey(DistributorProfile, on_delete=models.CASCADE, related_name='folio_mappings')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.folio_number} -> {self.distributor.user.username}"
