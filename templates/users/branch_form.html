@@ -22,23 +22,38 @@
 <div class="card p-4 sm:p-5">
     <form method="post">
         {% csrf_token %}
-        {% include 'includes/form_errors.html' %}
+        {% if form.non_field_errors %}
+        <div class="alert flex rounded-lg border border-error text-error mb-4">
+            <div class="p-4">
+                {{ form.non_field_errors }}
+            </div>
+        </div>
+        {% endif %}
 
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <label class="block">
                 <span>Branch Name</span>
                 <input class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
                     name="{{ form.name.name }}" type="text" value="{{ form.name.value|default_if_none:'' }}" required />
+                {% if form.name.errors %}
+                <span class="text-tiny text-error">{{ form.name.errors.0 }}</span>
+                {% endif %}
             </label>
             <label class="block">
                 <span>Branch Code</span>
                 <input class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
                     name="{{ form.code.name }}" type="text" value="{{ form.code.value|default_if_none:'' }}" required />
+                {% if form.code.errors %}
+                <span class="text-tiny text-error">{{ form.code.errors.0 }}</span>
+                {% endif %}
             </label>
             <label class="block">
                 <span>City</span>
                 <input class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
                     name="{{ form.city.name }}" type="text" value="{{ form.city.value|default_if_none:'' }}" />
+                {% if form.city.errors %}
+                <span class="text-tiny text-error">{{ form.city.errors.0 }}</span>
+                {% endif %}
             </label>
             <label class="block">
                 <span>State</span>
@@ -48,16 +63,25 @@
                         <option value="{{ code }}" {% if form.state.value == code %}selected{% endif %}>{{ name }}</option>
                     {% endfor %}
                 </select>
+                {% if form.state.errors %}
+                <span class="text-tiny text-error">{{ form.state.errors.0 }}</span>
+                {% endif %}
             </label>
             <label class="block">
                 <span>Pincode</span>
                 <input class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
                     name="{{ form.pincode.name }}" type="text" value="{{ form.pincode.value|default_if_none:'' }}" />
+                {% if form.pincode.errors %}
+                <span class="text-tiny text-error">{{ form.pincode.errors.0 }}</span>
+                {% endif %}
             </label>
             <label class="block col-span-2">
                 <span>Address</span>
                 <textarea class="form-textarea mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
                     name="{{ form.address.name }}" rows="3">{{ form.address.value|default_if_none:'' }}</textarea>
+                {% if form.address.errors %}
+                <span class="text-tiny text-error">{{ form.address.errors.0 }}</span>
+                {% endif %}
             </label>
         </div>
 
