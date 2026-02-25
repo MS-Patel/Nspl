@@ -18,17 +18,21 @@ class TestUserCreation:
 
         url = reverse('users:rm_create')
         data = {
-            'username': 'rm1',
             'email': 'rm1@example.com',
             'name': 'RM One',
-            'password': 'password',
-            'confirm_password': 'password',
-            'employee_code': 'EMP001'
+            'employee_code': 'EMP001',
+            'pan': 'ABCDE1234F',
+            'is_active': True
         }
         response = client.post(url, data)
+        if response.status_code != 302:
+            print(response.context['form'].errors)
+
         assert response.status_code == 302
-        assert User.objects.filter(username='rm1').exists()
-        assert RMProfile.objects.filter(user__username='rm1', employee_code='EMP001').exists()
+        assert User.objects.filter(username='EMP001').exists()
+        rm_user = User.objects.get(username='EMP001')
+        assert rm_user.check_password('ABCDE1234F')
+        assert RMProfile.objects.filter(user=rm_user, employee_code='EMP001').exists()
 
     def test_distributor_creation(self, client):
         rm_profile = RMProfileFactory()
@@ -36,20 +40,25 @@ class TestUserCreation:
 
         url = reverse('users:distributor_create')
         data = {
-            'username': 'dist1',
             'email': 'dist1@example.com',
             'name': 'Dist One',
-            'password': 'password',
-            'confirm_password': 'password',
             'arn_number': 'ARN-12345',
-            'mobile': '9999999999'
+            'mobile': '9999999999',
+            'pan': 'FGHIJ5678K',
+            'is_active': True
         }
         response = client.post(url, data)
+        if response.status_code != 302:
+            print(response.context['form'].errors)
+
         assert response.status_code == 302
 
-        dist = DistributorProfile.objects.get(user__username='dist1')
+        # Since broker_code is auto-generated, we find by email or logic
+        dist = DistributorProfile.objects.get(user__email='dist1@example.com')
         assert dist.rm == rm_profile
         assert dist.arn_number == 'ARN-12345'
+        assert dist.user.username.startswith('BBF')
+        assert dist.user.check_password('FGHIJ5678K')
 
     def test_investor_creation(self, client):
         dist_profile = DistributorProfileFactory()

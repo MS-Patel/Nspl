@@ -62,8 +62,9 @@ class BranchForm(forms.ModelForm):
         model = Branch
         fields = ['name', 'code', 'address', 'city', 'state', 'pincode']
 
-class RMCreationForm(UserCreationForm):
+class RMCreationForm(forms.ModelForm):
     employee_code = forms.CharField(max_length=50)
+    pan = forms.CharField(max_length=10, validators=[pan_validator], required=True)
     branch = forms.ModelChoiceField(queryset=Branch.objects.all(), required=False)
 
     # Address Details
@@ -91,16 +92,33 @@ class RMCreationForm(UserCreationForm):
     # Status
     is_active = forms.BooleanField(initial=True, required=False, label="Active Status")
 
+    class Meta:
+        model = User
+        fields = ['email', 'name']
+
+    def clean(self):
+        cleaned_data = super().clean()
+        code = cleaned_data.get('employee_code')
+        if code and User.objects.filter(username=code).exists():
+             self.add_error('employee_code', "User with this Employee Code already exists.")
+        return cleaned_data
+
     def save(self, commit=True):
         with transaction.atomic():
             user = super().save(commit=False)
             user.user_type = User.Types.RM
             user.is_active = self.cleaned_data['is_active']
+
+            # Set Username and Password
+            user.username = self.cleaned_data['employee_code']
+            user.set_password(self.cleaned_data['pan'])
+
             if commit:
                 user.save()
                 RMProfile.objects.create(
                     user=user,
                     employee_code=self.cleaned_data['employee_code'],
+                    pan=self.cleaned_data['pan'],
                     branch=self.cleaned_data.get('branch'),
                     address=self.cleaned_data.get('address', ''),
                     city=self.cleaned_data.get('city', ''),
@@ -137,7 +155,7 @@ class RMChangeForm(forms.ModelForm):
     class Meta:
         model = RMProfile
         fields = [
-            'employee_code', 'branch', 'dob', 'gstin',
+            'employee_code', 'pan', 'branch', 'dob', 'gstin',
             'address', 'city', 'state', 'pincode', 'country',
             'alternate_mobile', 'alternate_email',
             'bank_name', 'account_number', 'ifsc_code', 'account_type', 'branch_name',
@@ -163,12 +181,12 @@ class RMChangeForm(forms.ModelForm):
             # Update Profile
             return super().save(commit=commit)
 
-class DistributorCreationForm(UserCreationForm):
+class DistributorCreationForm(forms.ModelForm):
     arn_number = forms.CharField(max_length=50, required=False)
     broker_code = forms.CharField(max_length=20, required=False, help_text="Leave blank to auto-generate (e.g. BBF0001)")
     old_broker_code = forms.CharField(max_length=20, required=False, help_text="Old Broker Code for backward compatibility")
     euin = forms.CharField(max_length=50, required=False)
-    pan = forms.CharField(max_length=10, required=False)
+    pan = forms.CharField(max_length=10, required=True, validators=[pan_validator])
     mobile = forms.CharField(max_length=15, required=False)
 
     # Optional parent distributor for hierarchy
@@ -210,6 +228,10 @@ class DistributorCreationForm(UserCreationForm):
     # Status
     is_active = forms.BooleanField(initial=True, required=False, label="Active Status")
 
+    class Meta:
+        model = User
+        fields = ['email', 'name']
+
     def __init__(self, *args, **kwargs):
         self.rm_user = kwargs.pop('rm_user', None)
         super().__init__(*args, **kwargs)
@@ -217,11 +239,28 @@ class DistributorCreationForm(UserCreationForm):
         if self.rm_user and self.rm_user.user_type == User.Types.RM:
             self.fields['rm'].widget = forms.HiddenInput()
 
+    def clean(self):
+        cleaned_data = super().clean()
+        code = cleaned_data.get('broker_code')
+        if code and User.objects.filter(username=code).exists():
+             self.add_error('broker_code', "User with this Broker Code already exists.")
+        return cleaned_data
+
     def save(self, commit=True):
         with transaction.atomic():
             user = super().save(commit=False)
             user.user_type = User.Types.DISTRIBUTOR
             user.is_active = self.cleaned_data['is_active']
+
+            # Broker Code Generation
+            broker_code = self.cleaned_data.get('broker_code')
+            if not broker_code:
+                broker_code = DistributorProfile.generate_broker_code()
+
+            # Set Username and Password
+            user.username = broker_code
+            user.set_password(self.cleaned_data['pan'])
+
             if commit:
                 user.save()
 
@@ -235,7 +274,7 @@ class DistributorCreationForm(UserCreationForm):
                     rm=rm_profile,
                     parent=self.cleaned_data.get('parent_distributor'),
                     arn_number=self.cleaned_data['arn_number'],
-                    broker_code=self.cleaned_data.get('broker_code', ''),
+                    broker_code=broker_code,
                     old_broker_code=self.cleaned_data.get('old_broker_code', ''),
                     euin=self.cleaned_data.get('euin', ''),
                     pan=self.cleaned_data.get('pan', ''),
