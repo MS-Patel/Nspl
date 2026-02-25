@@ -5,7 +5,7 @@ from simpledbf import Dbf5
 import os
 from django.conf import settings
 from django.utils import timezone
-from .models import BrokerageTransaction, Payout, DistributorCategory
+from .models import BrokerageTransaction, Payout, DistributorCategory, FolioDistributorMapping
 from apps.users.models import DistributorProfile, InvestorProfile
 from apps.reconciliation.models import Holding
 from apps.products.models import Scheme
@@ -20,15 +20,15 @@ def process_brokerage_import(brokerage_import):
 
     try:
         # Pre-fetch Schemes and Distributors to optimize lookups
-        scheme_map, distributor_map = prefetch_mapping_data()
+        scheme_map, distributor_map, folio_map = prefetch_mapping_data()
 
         # 1. Process CAMS File
         if brokerage_import.cams_file:
-            process_cams_file(brokerage_import, scheme_map, distributor_map)
+            process_cams_file(brokerage_import, scheme_map, distributor_map, folio_map)
 
         # 2. Process Karvy File
         if brokerage_import.karvy_file:
-            process_karvy_file(brokerage_import, scheme_map, distributor_map)
+            process_karvy_file(brokerage_import, scheme_map, distributor_map, folio_map)
 
         # 3. Calculate Payouts
         calculate_payouts(brokerage_import)
@@ -71,9 +71,14 @@ def prefetch_mapping_data():
         if d.old_broker_code:
             distributor_map[d.old_broker_code.strip().upper()] = d
 
-    return scheme_map, distributor_map
+    # Folio Map: {folio_number -> Distributor}
+    folio_map = {}
+    for fm in FolioDistributorMapping.objects.select_related('distributor').all():
+        folio_map[fm.folio_number.strip()] = fm.distributor
 
-def process_cams_file(brokerage_import, scheme_map, distributor_map):
+    return scheme_map, distributor_map, folio_map
+
+def process_cams_file(brokerage_import, scheme_map, distributor_map, folio_map):
     file_path = brokerage_import.cams_file.path
 
     # Check file extension
@@ -145,6 +150,16 @@ def process_cams_file(brokerage_import, scheme_map, distributor_map):
             else:
                 mapping_remark = f"Sub-Broker Code {sub_broker_code} not found"
 
+        # Fallback: Folio Whitelist
+        if not is_mapped:
+            folio_raw = row.get('FOLIO_NO', '')
+            if folio_raw:
+                folio_clean = str(folio_raw).strip()
+                if folio_clean in folio_map:
+                    distributor = folio_map[folio_clean]
+                    is_mapped = True
+                    mapping_remark = "Mapped via Folio Whitelist"
+
         transaction = BrokerageTransaction(
             import_file=brokerage_import,
             source=BrokerageTransaction.SOURCE_CAMS,
@@ -166,7 +181,7 @@ def process_cams_file(brokerage_import, scheme_map, distributor_map):
     # Batch Insert
     BrokerageTransaction.objects.bulk_create(transactions, batch_size=1000)
 
-def process_karvy_file(brokerage_import, scheme_map, distributor_map):
+def process_karvy_file(brokerage_import, scheme_map, distributor_map, folio_map):
     file_path = brokerage_import.karvy_file.path
     df = pd.read_csv(file_path)
 
@@ -219,6 +234,16 @@ def process_karvy_file(brokerage_import, scheme_map, distributor_map):
             else:
                 mapping_remark = f"Sub-Broker Code {sub_broker_code} not found"
 
+        # Fallback: Folio Whitelist
+        if not is_mapped:
+            folio_raw = str(row.get('Account Number', row.get('Folio Number', '')))
+            if folio_raw:
+                folio_clean = folio_raw.strip()
+                if folio_clean in folio_map:
+                    distributor = folio_map[folio_clean]
+                    is_mapped = True
+                    mapping_remark = "Mapped via Folio Whitelist"
+
         transaction = BrokerageTransaction(
             import_file=brokerage_import,
             source=BrokerageTransaction.SOURCE_KARVY,
@@ -245,7 +270,7 @@ def reprocess_brokerage_import(brokerage_import):
     Retries mapping for unmapped transactions and recalculates payouts.
     """
     # Optimized reprocessing: fetch map once, iterate objects, then bulk update
-    _, distributor_map = prefetch_mapping_data()
+    _, distributor_map, folio_map = prefetch_mapping_data()
 
     unmapped_transactions = BrokerageTransaction.objects.filter(
         import_file=brokerage_import,
@@ -292,6 +317,24 @@ def reprocess_brokerage_import(brokerage_import):
                 if prev_remark != new_remark:
                     txn.mapping_remark = new_remark
                     updated_txns.append(txn)
+
+        # Fallback: Folio Whitelist
+        if not txn.is_mapped:
+            folio_raw = txn.folio_number
+            if folio_raw:
+                folio_clean = str(folio_raw).strip()
+                if folio_clean in folio_map:
+                    txn.distributor = folio_map[folio_clean]
+                    txn.is_mapped = True
+                    txn.mapping_remark = "Mapped via Folio Whitelist"
+                    # If it wasn't already in updated_txns from the logic above (which appends on remark change), append now.
+                    # But if it WAS appended (remark change) and now we update it again, we need to handle that.
+                    # List approach: if we modify the object, it's the same object reference.
+                    # So if updated_txns contains txn, it holds the latest state.
+                    # We just need to ensure we don't append it twice.
+                    if txn not in updated_txns:
+                        updated_txns.append(txn)
+                    mapped_count += 1
 
     if updated_txns:
         BrokerageTransaction.objects.bulk_update(updated_txns, ['distributor', 'is_mapped', 'mapping_remark'], batch_size=1000)

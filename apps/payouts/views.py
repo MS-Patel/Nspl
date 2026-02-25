@@ -8,14 +8,16 @@ from django.http import JsonResponse, HttpResponse
 from django.db import transaction
 from django.db.models import Q
 from django.core.paginator import Paginator
-from .models import Payout, BrokerageImport, BrokerageTransaction, DistributorCategory
+from .models import Payout, BrokerageImport, BrokerageTransaction, DistributorCategory, FolioDistributorMapping
 from .forms import BrokerageUploadForm
 from .utils import process_brokerage_import, reprocess_brokerage_import
 from apps.products.models import Scheme
+from apps.users.models import DistributorProfile
 import ast
 import pandas as pd
 import io
 import math
+import csv
 
 User = get_user_model()
 
@@ -406,6 +408,103 @@ class ExportPayoutReportView(LoginRequiredMixin, UserPassesTestMixin, View):
         response['Content-Disposition'] = f'attachment; filename={filename}'
 
         return response
+
+class FolioMappingListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
+    model = FolioDistributorMapping
+    template_name = 'payouts/folio_mapping_list.html'
+    context_object_name = 'object_list'
+    paginate_by = 50
+
+    def test_func(self):
+        return self.request.user.user_type == User.Types.ADMIN
+
+    def get_queryset(self):
+        qs = super().get_queryset().select_related('distributor', 'distributor__user')
+        search = self.request.GET.get('search')
+        if search:
+            qs = qs.filter(
+                Q(folio_number__icontains=search) |
+                Q(distributor__user__username__icontains=search) |
+                Q(distributor__broker_code__icontains=search)
+            )
+        return qs.order_by('-updated_at')
+
+class FolioMappingImportView(LoginRequiredMixin, UserPassesTestMixin, View):
+    template_name = 'payouts/folio_mapping_import.html'
+
+    def test_func(self):
+        return self.request.user.user_type == User.Types.ADMIN
+
+    def get(self, request, *args, **kwargs):
+        return render(request, self.template_name)
+
+    def post(self, request, *args, **kwargs):
+        csv_file = request.FILES.get('csv_file')
+        if not csv_file:
+            messages.error(request, "Please upload a CSV file.")
+            return redirect('payouts:folio_mapping_import')
+
+        if not csv_file.name.endswith('.csv'):
+             messages.error(request, "File must be a CSV.")
+             return redirect('payouts:folio_mapping_import')
+
+        try:
+            decoded_file = csv_file.read().decode('utf-8').splitlines()
+            reader = csv.DictReader(decoded_file)
+
+            # Normalize headers
+            reader.fieldnames = [name.strip().lower() for name in reader.fieldnames]
+
+            if 'folio_number' not in reader.fieldnames:
+                 messages.error(request, "CSV must contain 'folio_number' column.")
+                 return redirect('payouts:folio_mapping_import')
+
+            dist_col = next((col for col in reader.fieldnames if col in ['broker_code', 'arn', 'arn_number']), None)
+            if not dist_col:
+                 messages.error(request, "CSV must contain 'broker_code' or 'arn' column.")
+                 return redirect('payouts:folio_mapping_import')
+
+            created_count = 0
+            updated_count = 0
+            errors = []
+
+            for row in reader:
+                folio = row.get('folio_number', '').strip()
+                dist_identifier = row.get(dist_col, '').strip()
+
+                if not folio or not dist_identifier:
+                    continue
+
+                # Find Distributor
+                distributor = DistributorProfile.objects.filter(
+                    Q(broker_code__iexact=dist_identifier) |
+                    Q(arn_number__iexact=dist_identifier)
+                ).first()
+
+                if not distributor:
+                    errors.append(f"Distributor not found for {dist_identifier} (Folio: {folio})")
+                    continue
+
+                obj, created = FolioDistributorMapping.objects.update_or_create(
+                    folio_number=folio,
+                    defaults={'distributor': distributor}
+                )
+
+                if created:
+                    created_count += 1
+                else:
+                    updated_count += 1
+
+            if created_count > 0 or updated_count > 0:
+                messages.success(request, f"Imported successfully: {created_count} created, {updated_count} updated.")
+
+            if errors:
+                messages.warning(request, f"Some rows failed: {len(errors)} errors. First few: {', '.join(errors[:5])}")
+
+        except Exception as e:
+            messages.error(request, f"Error processing CSV: {str(e)}")
+
+        return redirect('payouts:folio_mapping_list')
 
 
 class ExportAMCPayoutReportView(LoginRequiredMixin, UserPassesTestMixin, View):

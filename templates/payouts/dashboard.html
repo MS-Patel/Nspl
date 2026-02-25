@@ -24,11 +24,14 @@
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
         <p class="text-slate-500 dark:text-navy-200">Manage brokerage imports and view payout reports.</p>
         <div class="flex space-x-2">
+            <a href="{% url 'payouts:folio_mapping_list' %}" class="btn bg-secondary font-medium text-white hover:bg-secondary-focus focus:bg-secondary-focus active:bg-secondary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90">
+                <i class="fas fa-link mr-2"></i> Folio Map
+            </a>
              <a href="{% url 'payouts:category_list' %}" class="btn bg-info font-medium text-white hover:bg-info-focus focus:bg-info-focus active:bg-info-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90">
-                <i class="fas fa-list mr-2"></i> Manage Categories
+                <i class="fas fa-list mr-2"></i> Categories
             </a>
             <a href="{% url 'payouts:upload' %}" class="btn bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90">
-                <i class="fas fa-upload mr-2"></i> Upload Files
+                <i class="fas fa-upload mr-2"></i> Upload
             </a>
         </div>
     </div>
