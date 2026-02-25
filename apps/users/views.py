@@ -2,7 +2,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.views import LoginView, LogoutView
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
-from django.views.generic import TemplateView, ListView, CreateView, DetailView, FormView, UpdateView
+from django.views.generic import TemplateView, ListView, CreateView, DetailView, FormView, UpdateView, DeleteView
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.contrib import messages
@@ -15,13 +15,13 @@ from django.db.models import Count, Sum
 from django.db import models
 from django.utils.crypto import get_random_string
 from django.contrib.auth import login, authenticate
-from .models import RMProfile, DistributorProfile, InvestorProfile, BankAccount, Nominee, Document, OneTimePassword
+from .models import RMProfile, DistributorProfile, InvestorProfile, BankAccount, Nominee, Document, OneTimePassword, Branch
 from .utils.sms import send_sms_with_template
 from .forms import (
     RMCreationForm, RMChangeForm, DistributorCreationForm, DistributorChangeForm,
     InvestorCreationForm, InvestorProfileForm,
     BankAccountFormSet, NomineeFormSet, DocumentForm, InvestorUploadForm, DistributorUploadForm,
-    UserProfileForm, RMProfileUpdateForm, DistributorProfileUpdateForm, RMUploadForm
+    UserProfileForm, RMProfileUpdateForm, DistributorProfileUpdateForm, RMUploadForm, BranchForm
 )
 from .utils.parsers import import_investors_from_file, import_distributors_from_file, import_rms_from_file
 from .services import validate_investor_for_bse
@@ -263,6 +263,56 @@ class InvestorDashboardView(LoginRequiredMixin, TemplateView):
         return context
 
 # --- User Management Views (The Permissions Layer) ---
+
+# 0. Branch Management (Admin Only)
+class BranchListView(LoginRequiredMixin, IsAdminMixin, ListView):
+    model = Branch
+    template_name = 'users/branch_list.html'
+    context_object_name = 'branches'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        data = []
+        for branch in self.get_queryset():
+            data.append({
+                'id': branch.id,
+                'name': branch.name,
+                'code': branch.code,
+                'city': branch.city,
+                'state': branch.state,
+                'action_url': reverse('users:branch_update', args=[branch.pk]),
+                'delete_url': reverse('users:branch_delete', args=[branch.pk])
+            })
+        context['grid_data_json'] = json.dumps(data)
+        return context
+
+class BranchCreateView(LoginRequiredMixin, IsAdminMixin, CreateView):
+    model = Branch
+    form_class = BranchForm
+    template_name = 'users/branch_form.html'
+    success_url = reverse_lazy('users:branch_list')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = "Create Branch"
+        return context
+
+class BranchUpdateView(LoginRequiredMixin, IsAdminMixin, UpdateView):
+    model = Branch
+    form_class = BranchForm
+    template_name = 'users/branch_form.html'
+    success_url = reverse_lazy('users:branch_list')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = "Update Branch"
+        context['is_update'] = True
+        return context
+
+class BranchDeleteView(LoginRequiredMixin, IsAdminMixin, DeleteView):
+    model = Branch
+    template_name = 'users/branch_confirm_delete.html'
+    success_url = reverse_lazy('users:branch_list')
 
 # 1. RM Management (Admin Only)
 class RMListView(LoginRequiredMixin, IsAdminMixin, ListView):
