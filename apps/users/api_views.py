@@ -1,7 +1,8 @@
 from rest_framework.views import APIView
-from rest_framework import generics
+from rest_framework import generics, filters
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.pagination import PageNumberPagination
 from django.db.models import Sum, Q
 from .models import RMProfile, DistributorProfile, InvestorProfile
 from apps.reconciliation.models import Holding
@@ -15,6 +16,11 @@ import json
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
+
+class StandardResultsSetPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 100
 
 class AdminDashboardAPIView(APIView):
     permission_classes = [IsAuthenticated]
@@ -164,6 +170,9 @@ class UserMeAPIView(APIView):
 class InvestorListAPIView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = InvestorSerializer
+    pagination_class = StandardResultsSetPagination
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['user__name', 'pan', 'user__email']
 
     def get_queryset(self):
         user = self.request.user
@@ -171,7 +180,7 @@ class InvestorListAPIView(generics.ListAPIView):
             'user', 'distributor', 'distributor__user', 'rm', 'rm__user'
         ).prefetch_related(
             'bank_accounts', 'nominees', 'documents'
-        )
+        ).order_by('-id')
 
         if user.user_type == User.Types.DISTRIBUTOR:
             return qs.filter(distributor__user=user)
