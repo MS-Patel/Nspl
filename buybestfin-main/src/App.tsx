@@ -23,6 +23,10 @@ import InvestorDashboard from "@/pages/dashboard/InvestorDashboard";
 import InvestorList from "@/pages/dashboard/investors/InvestorList";
 import CreateInvestor from "@/pages/dashboard/investors/CreateInvestor";
 import InvestorDetail from "@/pages/dashboard/investors/InvestorDetail";
+import InvestPage from "@/pages/dashboard/InvestPage";
+import OrdersPage from "@/pages/dashboard/OrdersPage";
+import SIPsPage from "@/pages/dashboard/SIPsPage";
+import MandatesPage from "@/pages/dashboard/MandatesPage";
 import RoleGuard from "@/components/auth/RoleGuard";
 
 const queryClient = new QueryClient();
@@ -80,6 +84,26 @@ const App = () => (
             <Route path="investors/:id" element={
               <RoleGuard allowedRoles={['ADMIN', 'RM', 'DISTRIBUTOR']}>
                 <InvestorDetail />
+              </RoleGuard>
+            } />
+            <Route path="invest" element={
+              <RoleGuard allowedRoles={['ADMIN', 'RM', 'DISTRIBUTOR', 'INVESTOR']}>
+                <InvestPage />
+              </RoleGuard>
+            } />
+            <Route path="orders" element={
+              <RoleGuard allowedRoles={['ADMIN', 'RM', 'DISTRIBUTOR', 'INVESTOR']}>
+                <OrdersPage />
+              </RoleGuard>
+            } />
+            <Route path="sips" element={
+              <RoleGuard allowedRoles={['ADMIN', 'RM', 'DISTRIBUTOR', 'INVESTOR']}>
+                <SIPsPage />
+              </RoleGuard>
+            } />
+            <Route path="mandates" element={
+              <RoleGuard allowedRoles={['ADMIN', 'RM', 'DISTRIBUTOR', 'INVESTOR']}>
+                <MandatesPage />
               </RoleGuard>
             } />
           </Route>
