@@ -29,6 +29,12 @@ import SIPsPage from "@/pages/dashboard/SIPsPage";
 import MandatesPage from "@/pages/dashboard/MandatesPage";
 import RoleGuard from "@/components/auth/RoleGuard";
 
+// User Management
+import RMList from "@/pages/dashboard/users/rm/RMList";
+import RMForm from "@/pages/dashboard/users/rm/RMForm";
+import DistributorList from "@/pages/dashboard/users/distributor/DistributorList";
+import DistributorForm from "@/pages/dashboard/users/distributor/DistributorForm";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -36,7 +42,7 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
+      <BrowserRouter basename="/static">
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/login" element={<Login />} />
@@ -86,6 +92,41 @@ const App = () => (
                 <InvestorDetail />
               </RoleGuard>
             } />
+
+            {/* RM Management */}
+            <Route path="rms" element={
+              <RoleGuard allowedRoles={['ADMIN']}>
+                <RMList />
+              </RoleGuard>
+            } />
+            <Route path="rms/new" element={
+              <RoleGuard allowedRoles={['ADMIN']}>
+                <RMForm />
+              </RoleGuard>
+            } />
+            <Route path="rms/:id" element={
+              <RoleGuard allowedRoles={['ADMIN']}>
+                <RMForm />
+              </RoleGuard>
+            } />
+
+            {/* Distributor Management */}
+            <Route path="distributors" element={
+              <RoleGuard allowedRoles={['ADMIN', 'RM']}>
+                <DistributorList />
+              </RoleGuard>
+            } />
+            <Route path="distributors/new" element={
+              <RoleGuard allowedRoles={['ADMIN', 'RM']}>
+                <DistributorForm />
+              </RoleGuard>
+            } />
+            <Route path="distributors/:id" element={
+              <RoleGuard allowedRoles={['ADMIN', 'RM']}>
+                <DistributorForm />
+              </RoleGuard>
+            } />
+
             <Route path="invest" element={
               <RoleGuard allowedRoles={['ADMIN', 'RM', 'DISTRIBUTOR', 'INVESTOR']}>
                 <InvestPage />

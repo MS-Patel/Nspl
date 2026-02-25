@@ -2,7 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from apps.investments.models import Order, Mandate
-from apps.users.models import InvestorProfile, RMProfile, DistributorProfile, BankAccount, Nominee, Document
+from apps.users.models import InvestorProfile, RMProfile, DistributorProfile, BankAccount, Nominee, Document, Branch
 from apps.products.models import Scheme
 
 User = get_user_model()
@@ -11,6 +11,11 @@ class SchemeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Scheme
         fields = ['id', 'name', 'scheme_code']
+
+class BranchSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Branch
+        fields = ['id', 'name', 'code']
 
 class BankAccountSerializer(serializers.ModelSerializer):
     account_type_display = serializers.CharField(source='get_account_type_display', read_only=True)
@@ -229,3 +234,136 @@ class DistributorSerializer(serializers.ModelSerializer):
     class Meta:
         model = DistributorProfile
         fields = ['id', 'name', 'arn_number', 'broker_code']
+
+# --- New Serializers ---
+
+class RMSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(source='user.name', read_only=True)
+    username = serializers.CharField(source='user.username', read_only=True)
+    email = serializers.EmailField(source='user.email', read_only=True)
+    branch_name = serializers.CharField(source='branch.name', read_only=True)
+
+    class Meta:
+        model = RMProfile
+        fields = [
+            'id', 'name', 'username', 'email', 'employee_code', 'branch', 'branch_name',
+            'mobile', 'alternate_mobile', 'alternate_email',
+            'address', 'city', 'state', 'pincode', 'country',
+            'dob', 'gstin', 'is_active',
+            'bank_name', 'account_number', 'ifsc_code'
+        ]
+
+class RMCreateSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(write_only=True)
+    email = serializers.EmailField(write_only=True)
+    password = serializers.CharField(write_only=True, style={'input_type': 'password'})
+    username = serializers.CharField(write_only=True) # Usually employee code or email, but let's make it explicit
+
+    class Meta:
+        model = RMProfile
+        fields = [
+            'name', 'email', 'password', 'username', 'employee_code', 'branch',
+            'mobile', 'alternate_mobile', 'alternate_email',
+            'address', 'city', 'state', 'pincode',
+            'dob', 'gstin',
+            'bank_name', 'account_number', 'ifsc_code'
+        ]
+
+    def create(self, validated_data):
+        name = validated_data.pop('name')
+        email = validated_data.pop('email')
+        password = validated_data.pop('password')
+        username = validated_data.pop('username')
+
+        user = User.objects.create_user(
+            username=username,
+            email=email,
+            password=password,
+            name=name,
+            user_type=User.Types.RM
+        )
+
+        rm_profile = RMProfile.objects.create(user=user, **validated_data)
+        return rm_profile
+
+    def update(self, instance, validated_data):
+        # Handle user fields separately if provided
+        user_data = {}
+        if 'name' in validated_data:
+            user_data['name'] = validated_data.pop('name')
+        if 'email' in validated_data:
+            user_data['email'] = validated_data.pop('email')
+        # We generally don't update password/username here for simplicity, or we can add logic.
+
+        if user_data:
+            for attr, value in user_data.items():
+                setattr(instance.user, attr, value)
+            instance.user.save()
+
+        return super().update(instance, validated_data)
+
+
+class DistributorProfileSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(source='user.name', read_only=True)
+    username = serializers.CharField(source='user.username', read_only=True)
+    email = serializers.EmailField(source='user.email', read_only=True)
+    rm_name = serializers.CharField(source='rm.user.name', read_only=True, allow_null=True)
+
+    class Meta:
+        model = DistributorProfile
+        fields = [
+            'id', 'name', 'username', 'email', 'arn_number', 'broker_code',
+            'rm', 'rm_name', 'parent',
+            'mobile', 'alternate_mobile', 'alternate_email',
+            'address', 'city', 'state', 'pincode', 'country',
+            'dob', 'gstin', 'pan', 'is_active',
+            'bank_name', 'account_number', 'ifsc_code'
+        ]
+
+class DistributorCreateSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(write_only=True)
+    email = serializers.EmailField(write_only=True)
+    password = serializers.CharField(write_only=True, style={'input_type': 'password'})
+    username = serializers.CharField(write_only=True) # Login ID
+
+    class Meta:
+        model = DistributorProfile
+        fields = [
+            'name', 'email', 'password', 'username', 'arn_number',
+            'rm', 'parent',
+            'mobile', 'alternate_mobile', 'alternate_email',
+            'address', 'city', 'state', 'pincode',
+            'dob', 'gstin', 'pan',
+            'bank_name', 'account_number', 'ifsc_code'
+        ]
+
+    def create(self, validated_data):
+        name = validated_data.pop('name')
+        email = validated_data.pop('email')
+        password = validated_data.pop('password')
+        username = validated_data.pop('username')
+
+        user = User.objects.create_user(
+            username=username,
+            email=email,
+            password=password,
+            name=name,
+            user_type=User.Types.DISTRIBUTOR
+        )
+
+        distributor = DistributorProfile.objects.create(user=user, **validated_data)
+        return distributor
+
+    def update(self, instance, validated_data):
+        user_data = {}
+        if 'name' in validated_data:
+            user_data['name'] = validated_data.pop('name')
+        if 'email' in validated_data:
+            user_data['email'] = validated_data.pop('email')
+
+        if user_data:
+            for attr, value in user_data.items():
+                setattr(instance.user, attr, value)
+            instance.user.save()
+
+        return super().update(instance, validated_data)

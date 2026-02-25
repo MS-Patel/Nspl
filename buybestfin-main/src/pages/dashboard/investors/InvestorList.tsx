@@ -11,10 +11,18 @@ import {
 } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Plus, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Plus, Loader2, ChevronLeft, ChevronRight, Filter } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { Investor } from '@/types/investor';
+import { Investor } from '@/types/users';
 import { useDebounce } from '@/hooks/use-debounce';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface PaginatedResponse {
     count: number;
@@ -31,12 +39,16 @@ const InvestorList = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
 
+  // Filters
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [offlineFilter, setOfflineFilter] = useState<boolean>(false);
+
   const debouncedSearch = useDebounce(search, 500);
 
   useEffect(() => {
-    // Reset to page 1 when search changes
+    // Reset to page 1 when search or filters change
     setPage(1);
-  }, [debouncedSearch]);
+  }, [debouncedSearch, statusFilter, offlineFilter]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -46,6 +58,12 @@ const InvestorList = () => {
         queryParams.append('page', page.toString());
         if (debouncedSearch) {
             queryParams.append('search', debouncedSearch);
+        }
+        if (statusFilter !== 'all') {
+            queryParams.append('status', statusFilter);
+        }
+        if (offlineFilter) {
+            queryParams.append('is_offline', 'true');
         }
 
         const result = await api.get<PaginatedResponse | Investor[]>(`/api/investors/?${queryParams.toString()}`);
@@ -71,7 +89,7 @@ const InvestorList = () => {
     };
 
     fetchData();
-  }, [page, debouncedSearch]);
+  }, [page, debouncedSearch, statusFilter, offlineFilter]);
 
   const handleNextPage = () => {
     if (page < totalPages) setPage(page + 1);
@@ -97,16 +115,44 @@ const InvestorList = () => {
 
       <Card>
         <CardHeader>
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                 <CardTitle>All Investors ({totalCount})</CardTitle>
-                <div className="relative w-64">
-                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        placeholder="Search investors..."
-                        className="pl-8"
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                    />
+
+                <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto">
+                    {/* Filters */}
+                    <div className="flex items-center gap-2">
+                        <Select value={statusFilter} onValueChange={setStatusFilter}>
+                            <SelectTrigger className="w-[140px]">
+                                <SelectValue placeholder="Status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All Status</SelectItem>
+                                <SelectItem value="active">Active</SelectItem>
+                                <SelectItem value="inactive">Inactive</SelectItem>
+                            </SelectContent>
+                        </Select>
+
+                        <div className="flex items-center space-x-2 border rounded-md p-2 h-10 bg-background">
+                            <Checkbox
+                                id="offline"
+                                checked={offlineFilter}
+                                onCheckedChange={(checked) => setOfflineFilter(!!checked)}
+                            />
+                            <label htmlFor="offline" className="text-sm font-medium leading-none cursor-pointer">
+                                Offline
+                            </label>
+                        </div>
+                    </div>
+
+                    <div className="relative w-full md:w-64">
+                        <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            placeholder="Search investors..."
+                            className="pl-8"
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                        />
+                    </div>
                 </div>
             </div>
         </CardHeader>
@@ -131,7 +177,7 @@ const InvestorList = () => {
                     {investors.length === 0 ? (
                         <TableRow>
                             <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                                No investors found.
+                                No investors found matching your criteria.
                             </TableCell>
                         </TableRow>
                     ) : (
@@ -142,6 +188,11 @@ const InvestorList = () => {
                                     {inv.name}
                                 </Link>
                                 <div className="text-xs text-muted-foreground">{inv.username}</div>
+                                {inv.is_offline && (
+                                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-800 ml-2">
+                                        Offline
+                                    </span>
+                                )}
                             </TableCell>
                             <TableCell>{inv.pan}</TableCell>
                             <TableCell>{inv.email}</TableCell>

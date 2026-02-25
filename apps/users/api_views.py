@@ -7,12 +7,14 @@ from django.db.models import Sum, Q
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
-from .models import RMProfile, DistributorProfile, InvestorProfile, BankAccount, Nominee, Document
+from .models import RMProfile, DistributorProfile, InvestorProfile, BankAccount, Nominee, Document, Branch
 from apps.reconciliation.models import Holding
 from apps.investments.models import Order, SIP
 from .serializers import (
     OrderSerializer, InvestorSerializer, InvestorCreateSerializer,
-    BankAccountSerializer, NomineeSerializer, DocumentSerializer, DistributorSerializer
+    BankAccountSerializer, NomineeSerializer, DocumentSerializer, DistributorSerializer,
+    RMSerializer, RMCreateSerializer, DistributorProfileSerializer, DistributorCreateSerializer,
+    BranchSerializer
 )
 from apps.reconciliation.utils.valuation import calculate_portfolio_valuation
 from apps.integration.sync_utils import sync_pending_orders, sync_sip_child_orders, sync_pending_mandates
@@ -188,14 +190,26 @@ class InvestorListAPIView(generics.ListAPIView):
         ).order_by('-id')
 
         if user.user_type == User.Types.DISTRIBUTOR:
-            return qs.filter(distributor__user=user)
+            qs = qs.filter(distributor__user=user)
         elif user.user_type == User.Types.RM:
             # RM sees investors where (distributor.rm == self) OR (rm == self [Direct])
-            return qs.filter(Q(distributor__rm__user=user) | Q(rm__user=user))
+            qs = qs.filter(Q(distributor__rm__user=user) | Q(rm__user=user))
         elif user.user_type == User.Types.ADMIN:
-            return qs
+            pass
+        else:
+            return qs.none()
 
-        return qs.none()
+        # Filtering
+        is_offline = self.request.query_params.get('is_offline')
+        if is_offline:
+            qs = qs.filter(is_offline=is_offline.lower() == 'true')
+
+        status = self.request.query_params.get('status')
+        if status:
+            is_active = status.lower() == 'active'
+            qs = qs.filter(user__is_active=is_active)
+
+        return qs
 
 class DistributorSelectionListAPIView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
@@ -531,3 +545,90 @@ class DistributorMappingAPIView(APIView):
                 count += 1
 
         return Response({'status': 'success', 'count': count})
+
+# --- New API Views for RM & Distributor Management ---
+
+class RMListCreateAPIView(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+    pagination_class = StandardResultsSetPagination
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['user__name', 'user__email', 'employee_code']
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return RMCreateSerializer
+        return RMSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.user_type == User.Types.ADMIN:
+            return RMProfile.objects.all().select_related('user', 'branch').order_by('-id')
+        return RMProfile.objects.none()
+
+class RMDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticated]
+    queryset = RMProfile.objects.all()
+
+    def get_serializer_class(self):
+        if self.request.method in ['PUT', 'PATCH']:
+            return RMCreateSerializer
+        return RMSerializer
+
+    def get_object(self):
+        obj = super().get_object()
+        user = self.request.user
+        if user.user_type != User.Types.ADMIN:
+             self.permission_denied(self.request, message="Only Admins can manage RMs.")
+        return obj
+
+class DistributorListCreateAPIView(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+    pagination_class = StandardResultsSetPagination
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['user__name', 'user__email', 'arn_number', 'broker_code']
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return DistributorCreateSerializer
+        return DistributorProfileSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.user_type == User.Types.ADMIN:
+            return DistributorProfile.objects.all().select_related('user', 'rm', 'rm__user').order_by('-id')
+        elif user.user_type == User.Types.RM:
+            # RMs can see distributors assigned to them
+            return DistributorProfile.objects.filter(rm__user=user).select_related('user', 'rm', 'rm__user').order_by('-id')
+        return DistributorProfile.objects.none()
+
+    def perform_create(self, serializer):
+        # Admin can create anywhere. RM can create but automatically assigned to them?
+        # Serializer handles creation. If RM creates, we should enforce assignment.
+        if self.request.user.user_type == User.Types.RM:
+             serializer.save(rm=self.request.user.rm_profile)
+        else:
+             serializer.save()
+
+class DistributorDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticated]
+    queryset = DistributorProfile.objects.all()
+
+    def get_serializer_class(self):
+        if self.request.method in ['PUT', 'PATCH']:
+            return DistributorCreateSerializer
+        return DistributorProfileSerializer
+
+    def get_object(self):
+        obj = super().get_object()
+        user = self.request.user
+        if user.user_type == User.Types.ADMIN:
+            return obj
+        elif user.user_type == User.Types.RM:
+            if obj.rm and obj.rm.user == user:
+                return obj
+        self.permission_denied(self.request, message="Permission denied.")
+
+class BranchListAPIView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    queryset = Branch.objects.all()
+    serializer_class = BranchSerializer

@@ -40,10 +40,17 @@ urlpatterns = [
     path('api/investors/<int:pk>/toggle-kyc/', api_views.ToggleKYCAPIView.as_view(), name='api_toggle_kyc'),
     path('api/investors/<int:pk>/fatca-upload/', api_views.FATCAUploadAPIView.as_view(), name='api_fatca_upload'),
 
+    # API: RM & Distributor Management
+    path('api/rms/', api_views.RMListCreateAPIView.as_view(), name='api_rm_list_create'),
+    path('api/rms/<int:pk>/', api_views.RMDetailAPIView.as_view(), name='api_rm_detail'),
+    path('api/distributors/', api_views.DistributorListCreateAPIView.as_view(), name='api_distributor_list_create'),
+    path('api/distributors/<int:pk>/', api_views.DistributorDetailAPIView.as_view(), name='api_distributor_detail'),
+
     # API: Bulk Operations
     path('api/distributor-mapping/', api_views.DistributorMappingAPIView.as_view(), name='api_distributor_mapping'),
     path('api/distributor-selection/', api_views.DistributorSelectionListAPIView.as_view(), name='api_distributor_selection'),
 
+    path('api/branches/', api_views.BranchListAPIView.as_view(), name='api_branch_list'),
     # User Info
     path('api/user/me/', api_views.UserMeAPIView.as_view(), name='api_user_me'),
 
