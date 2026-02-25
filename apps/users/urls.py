@@ -21,6 +21,11 @@ urlpatterns = [
     path('dashboard/investor/', views.InvestorDashboardView.as_view(), name='investor_dashboard'),
 
     # User Management
+    path('users/branch/', views.BranchListView.as_view(), name='branch_list'),
+    path('users/branch/create/', views.BranchCreateView.as_view(), name='branch_create'),
+    path('users/branch/<int:pk>/update/', views.BranchUpdateView.as_view(), name='branch_update'),
+    path('users/branch/<int:pk>/delete/', views.BranchDeleteView.as_view(), name='branch_delete'),
+
     path('users/rm/', views.RMListView.as_view(), name='rm_list'),
     path('users/rm/create/', views.RMCreateView.as_view(), name='rm_create'),
     path('users/rm/<int:pk>/update/', views.RMUpdateView.as_view(), name='rm_update'),

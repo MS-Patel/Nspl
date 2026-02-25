@@ -54,6 +54,14 @@ class UserCreationForm(forms.ModelForm):
             user.save()
         return user
 
+class BranchForm(forms.ModelForm):
+    pincode = forms.CharField(max_length=6, validators=[pincode_validator], required=False)
+    state = forms.ChoiceField(choices=STATE_CHOICES, required=False)
+
+    class Meta:
+        model = Branch
+        fields = ['name', 'code', 'address', 'city', 'state', 'pincode']
+
 class RMCreationForm(UserCreationForm):
     employee_code = forms.CharField(max_length=50)
     branch = forms.ModelChoiceField(queryset=Branch.objects.all(), required=False)
@@ -156,7 +164,7 @@ class RMChangeForm(forms.ModelForm):
             return super().save(commit=commit)
 
 class DistributorCreationForm(UserCreationForm):
-    arn_number = forms.CharField(max_length=50)
+    arn_number = forms.CharField(max_length=50, required=False)
     broker_code = forms.CharField(max_length=20, required=False, help_text="Leave blank to auto-generate (e.g. BBF0001)")
     old_broker_code = forms.CharField(max_length=20, required=False, help_text="Old Broker Code for backward compatibility")
     euin = forms.CharField(max_length=50, required=False)
@@ -256,7 +264,7 @@ class DistributorChangeForm(forms.ModelForm):
     email = forms.EmailField(required=True, label="Email Address")
 
     # Profile fields
-    arn_number = forms.CharField(max_length=50)
+    arn_number = forms.CharField(max_length=50, required=False)
     broker_code = forms.CharField(max_length=20, required=False, help_text="Sub Broker Code")
     parent = forms.ModelChoiceField(queryset=DistributorProfile.objects.all(), required=False, label="Parent Distributor")
     rm = forms.ModelChoiceField(queryset=RMProfile.objects.all(), required=False, label="Relationship Manager")

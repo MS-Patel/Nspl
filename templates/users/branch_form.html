@@ -1,0 +1,74 @@
+{% extends 'layout/base.html' %}
+{% load static %}
+{% block content %}
+<div class="flex items-center space-x-4 py-5 lg:py-6">
+  <h2 class="text-xl font-medium text-slate-800 dark:text-navy-50 lg:text-2xl">
+    {{ title }}
+  </h2>
+  <div class="hidden h-full py-1 sm:flex">
+    <div class="h-full w-px bg-slate-300 dark:bg-navy-600"></div>
+  </div>
+  <ul class="hidden flex-wrap items-center space-x-2 sm:flex">
+    <li class="flex items-center space-x-2">
+      <a class="text-primary transition-colors hover:text-primary-focus dark:text-accent-light dark:hover:text-accent" href="{% url 'users:branch_list' %}">Branches</a>
+      <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+      </svg>
+    </li>
+    <li>{{ title }}</li>
+  </ul>
+</div>
+
+<div class="card p-4 sm:p-5">
+    <form method="post">
+        {% csrf_token %}
+        {% include 'includes/form_errors.html' %}
+
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <label class="block">
+                <span>Branch Name</span>
+                <input class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
+                    name="{{ form.name.name }}" type="text" value="{{ form.name.value|default_if_none:'' }}" required />
+            </label>
+            <label class="block">
+                <span>Branch Code</span>
+                <input class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
+                    name="{{ form.code.name }}" type="text" value="{{ form.code.value|default_if_none:'' }}" required />
+            </label>
+            <label class="block">
+                <span>City</span>
+                <input class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
+                    name="{{ form.city.name }}" type="text" value="{{ form.city.value|default_if_none:'' }}" />
+            </label>
+            <label class="block">
+                <span>State</span>
+                <select class="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
+                    name="{{ form.state.name }}">
+                    {% for code, name in form.state.field.choices %}
+                        <option value="{{ code }}" {% if form.state.value == code %}selected{% endif %}>{{ name }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <label class="block">
+                <span>Pincode</span>
+                <input class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
+                    name="{{ form.pincode.name }}" type="text" value="{{ form.pincode.value|default_if_none:'' }}" />
+            </label>
+            <label class="block col-span-2">
+                <span>Address</span>
+                <textarea class="form-textarea mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent"
+                    name="{{ form.address.name }}" rows="3">{{ form.address.value|default_if_none:'' }}</textarea>
+            </label>
+        </div>
+
+        <div class="mt-6 flex justify-end space-x-2">
+            <a href="{% url 'users:branch_list' %}" class="btn border border-slate-300 font-medium text-slate-800 hover:bg-slate-150 focus:bg-slate-150 active:bg-slate-150/80 dark:border-navy-450 dark:text-navy-50 dark:hover:bg-navy-500 dark:focus:bg-navy-500 dark:active:bg-navy-500/90">
+                Cancel
+            </a>
+            <button type="submit" class="btn bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90">
+                Save Branch
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
