@@ -6,9 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Loader2, ArrowLeft, Edit2, Upload, RefreshCw, CheckCircle, XCircle, AlertTriangle, MoreVertical } from 'lucide-react';
+import { Loader2, ArrowLeft, Edit2, Upload, RefreshCw, CheckCircle, XCircle, AlertTriangle, MoreVertical, Plus } from 'lucide-react';
 import { Investor } from '@/types/investor';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,10 +28,34 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import BankForm from './components/BankForm';
+import NomineeForm from './components/NomineeForm';
+
+// Extend Investor type locally or update types/investor.ts
+// For now, casting or extending here
+interface InvestorDetailType extends Investor {
+    bank_accounts: any[];
+    nominees: any[];
+    documents: any[];
+    ucc_code?: string;
+    kyc_status: boolean;
+    kyc_type_display?: string;
+    nominee_auth_status_display?: string;
+    last_verified_at?: string;
+    dob?: string;
+    tax_status_display?: string;
+    occupation_display?: string;
+    holding_nature_display?: string;
+    address_1?: string;
+    address_2?: string;
+    city?: string;
+    state?: string;
+    pincode?: string;
+}
 
 const InvestorDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const [investor, setInvestor] = useState<Investor | null>(null);
+  const [investor, setInvestor] = useState<InvestorDetailType | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const [actionLoading, setActionLoading] = useState<string | null>(null);
@@ -40,6 +64,9 @@ const InvestorDetail = () => {
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [editFormData, setEditFormData] = useState<any>({});
 
+  const [isAddBankOpen, setIsAddBankOpen] = useState(false);
+  const [isAddNomineeOpen, setIsAddNomineeOpen] = useState(false);
+
   useEffect(() => {
     fetchInvestor();
   }, [id]);
@@ -47,7 +74,7 @@ const InvestorDetail = () => {
   const fetchInvestor = async () => {
     setLoading(true);
     try {
-      const data = await api.get<Investor>(`/api/investors/${id}/`);
+      const data = await api.get<InvestorDetailType>(`/api/investors/${id}/`);
       setInvestor(data);
       setEditFormData(data); // Initialize edit form
     } catch (error) {
@@ -281,7 +308,24 @@ const InvestorDetail = () => {
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between">
                         <CardTitle>Bank Accounts</CardTitle>
-                        <Button size="sm" variant="outline"><Upload className="h-4 w-4 mr-2"/> Add Bank</Button>
+                        <Dialog open={isAddBankOpen} onOpenChange={setIsAddBankOpen}>
+                            <DialogTrigger asChild>
+                                <Button size="sm" variant="outline"><Plus className="h-4 w-4 mr-2"/> Add Bank</Button>
+                            </DialogTrigger>
+                            <DialogContent className="sm:max-w-[500px]">
+                                <DialogHeader>
+                                    <DialogTitle>Add Bank Account</DialogTitle>
+                                    <DialogDescription>
+                                        Add a new bank account for this investor.
+                                    </DialogDescription>
+                                </DialogHeader>
+                                <BankForm
+                                    investorId={investor.id}
+                                    onSuccess={() => { setIsAddBankOpen(false); fetchInvestor(); }}
+                                    onCancel={() => setIsAddBankOpen(false)}
+                                />
+                            </DialogContent>
+                        </Dialog>
                     </CardHeader>
                     <CardContent>
                         {investor.bank_accounts && investor.bank_accounts.length > 0 ? (
@@ -307,7 +351,24 @@ const InvestorDetail = () => {
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between">
                         <CardTitle>Nominees</CardTitle>
-                        <Button size="sm" variant="outline"><Upload className="h-4 w-4 mr-2"/> Add Nominee</Button>
+                        <Dialog open={isAddNomineeOpen} onOpenChange={setIsAddNomineeOpen}>
+                            <DialogTrigger asChild>
+                                <Button size="sm" variant="outline"><Plus className="h-4 w-4 mr-2"/> Add Nominee</Button>
+                            </DialogTrigger>
+                            <DialogContent className="sm:max-w-[600px]">
+                                <DialogHeader>
+                                    <DialogTitle>Add Nominee</DialogTitle>
+                                    <DialogDescription>
+                                        Add a nominee for this investor.
+                                    </DialogDescription>
+                                </DialogHeader>
+                                <NomineeForm
+                                    investorId={investor.id}
+                                    onSuccess={() => { setIsAddNomineeOpen(false); fetchInvestor(); }}
+                                    onCancel={() => setIsAddNomineeOpen(false)}
+                                />
+                            </DialogContent>
+                        </Dialog>
                     </CardHeader>
                     <CardContent>
                          {investor.nominees && investor.nominees.length > 0 ? (

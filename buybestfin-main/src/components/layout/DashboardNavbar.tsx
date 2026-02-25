@@ -30,17 +30,24 @@ const DashboardNavbar = ({ user }: DashboardNavbarProps) => {
       },
     ];
 
-    if (user.role === 'ADMIN' || user.role === 'RM' || user.role === 'DISTRIBUTOR') {
+    if (user.role === 'ADMIN') {
         items.push({
-            title: "Investors",
-            url: "/dashboard/investors",
+            title: "RMs",
+            url: "/dashboard/rms",
         });
     }
 
     if (user.role === 'ADMIN' || user.role === 'RM') {
         items.push({
             title: "Distributors",
-            url: "/users/distributor/",
+            url: "/dashboard/distributors",
+        });
+    }
+
+    if (user.role === 'ADMIN' || user.role === 'RM' || user.role === 'DISTRIBUTOR') {
+        items.push({
+            title: "Investors",
+            url: "/dashboard/investors",
         });
     }
 
