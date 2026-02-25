@@ -232,8 +232,9 @@ def sync_pending_mandates(user=None, investor=None):
                 client_code=mandate.investor.ucc_code
             )
 
-            if resp and resp.Status == '0' and resp.MandateDetails:
-                detail = resp.MandateDetails[0]
+            if resp and resp.Status == '100' and resp.MandateDetails:
+
+                detail = resp.MandateDetails.MandateDetails[0]
                 status_text = detail.Status.upper()
 
                 if "APPROVED" in status_text:
