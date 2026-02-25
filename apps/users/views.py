@@ -15,6 +15,9 @@ from django.db.models import Count, Sum
 from django.db import models
 from django.utils.crypto import get_random_string
 from django.contrib.auth import login, authenticate
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
+from django.middleware.csrf import get_token
 from .models import RMProfile, DistributorProfile, InvestorProfile, BankAccount, Nominee, Document, OneTimePassword
 from .utils.sms import send_sms_with_template
 from .forms import (
@@ -1322,6 +1325,7 @@ class UserPasswordResetConfirmView(PasswordResetConfirmView):
 class UserPasswordResetCompleteView(PasswordResetCompleteView):
     template_name = 'users/password_reset_complete.html'
 
+@method_decorator(csrf_exempt, name='dispatch')
 class APILoginView(View):
     def post(self, request, *args, **kwargs):
         try:
@@ -1338,6 +1342,7 @@ class APILoginView(View):
 
         if user:
             login(request, user)
+            get_token(request)
 
             # Determine redirect URL
             redirect_url = reverse('users:admin_dashboard') # Default

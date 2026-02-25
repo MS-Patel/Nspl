@@ -23,7 +23,26 @@ urlpatterns = [
 
     # API: Investor Module
     path('api/investors/', api_views.InvestorListAPIView.as_view(), name='api_investor_list'),
+    path('api/investors/onboard/', api_views.InvestorCreateAPIView.as_view(), name='api_investor_create'),
     path('api/investors/<int:pk>/', api_views.InvestorDetailAPIView.as_view(), name='api_investor_detail'),
+
+    # API: Nested Resources
+    path('api/investors/<int:investor_id>/bank-accounts/', api_views.BankAccountListCreateAPIView.as_view(), name='api_investor_bank_list_create'),
+    path('api/bank-accounts/<int:pk>/', api_views.BankAccountDetailAPIView.as_view(), name='api_bank_detail'),
+    path('api/investors/<int:investor_id>/nominees/', api_views.NomineeListCreateAPIView.as_view(), name='api_investor_nominee_list_create'),
+    path('api/nominees/<int:pk>/', api_views.NomineeDetailAPIView.as_view(), name='api_nominee_detail'),
+    path('api/investors/<int:investor_id>/documents/', api_views.DocumentListCreateAPIView.as_view(), name='api_investor_document_list_create'),
+    path('api/documents/<int:pk>/', api_views.DocumentDetailAPIView.as_view(), name='api_document_detail'),
+
+    # API: BSE & Compliance Actions
+    path('api/investors/<int:pk>/push-bse/', api_views.PushToBSEAPIView.as_view(), name='api_push_to_bse'),
+    path('api/investors/<int:pk>/trigger-auth/', api_views.TriggerAuthAPIView.as_view(), name='api_trigger_auth'),
+    path('api/investors/<int:pk>/toggle-kyc/', api_views.ToggleKYCAPIView.as_view(), name='api_toggle_kyc'),
+    path('api/investors/<int:pk>/fatca-upload/', api_views.FATCAUploadAPIView.as_view(), name='api_fatca_upload'),
+
+    # API: Bulk Operations
+    path('api/distributor-mapping/', api_views.DistributorMappingAPIView.as_view(), name='api_distributor_mapping'),
+    path('api/distributor-selection/', api_views.DistributorSelectionListAPIView.as_view(), name='api_distributor_selection'),
 
     # User Info
     path('api/user/me/', api_views.UserMeAPIView.as_view(), name='api_user_me'),

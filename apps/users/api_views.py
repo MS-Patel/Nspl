@@ -1,15 +1,24 @@
 from rest_framework.views import APIView
-from rest_framework import generics, filters
+from rest_framework import generics, filters, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.pagination import PageNumberPagination
 from django.db.models import Sum, Q
-from .models import RMProfile, DistributorProfile, InvestorProfile
+from django.db import transaction
+from django.shortcuts import get_object_or_404
+from django.utils import timezone
+from .models import RMProfile, DistributorProfile, InvestorProfile, BankAccount, Nominee, Document
 from apps.reconciliation.models import Holding
 from apps.investments.models import Order, SIP
-from .serializers import OrderSerializer, InvestorSerializer
+from .serializers import (
+    OrderSerializer, InvestorSerializer, InvestorCreateSerializer,
+    BankAccountSerializer, NomineeSerializer, DocumentSerializer, DistributorSerializer
+)
 from apps.reconciliation.utils.valuation import calculate_portfolio_valuation
 from apps.integration.sync_utils import sync_pending_orders, sync_sip_child_orders, sync_pending_mandates
+from apps.users.services import validate_investor_for_bse
+from apps.integration.bse_client import BSEStarMFClient
+from apps.integration.utils import map_investor_to_bse_param_string
 from django.contrib.auth import get_user_model
 import logging
 import json
@@ -140,13 +149,9 @@ class InvestorDashboardAPIView(APIView):
             pass
 
         valuation_data = {}
-        holdings_json = []
 
         if investor_profile:
             valuation_data = calculate_portfolio_valuation(investor_profile)
-            # holdings = valuation_data.get('holdings', [])
-            # holdings_json = json.dumps(holdings, default=str) # Frontend expects JSON array
-            # Actually, let's return the object directly
 
         return Response({
             'valuation': valuation_data
@@ -192,6 +197,26 @@ class InvestorListAPIView(generics.ListAPIView):
 
         return qs.none()
 
+class DistributorSelectionListAPIView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = DistributorSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.user_type == User.Types.ADMIN:
+            return DistributorProfile.objects.all().select_related('user')
+        elif user.user_type == User.Types.RM:
+            return DistributorProfile.objects.filter(rm__user=user).select_related('user')
+        return DistributorProfile.objects.none()
+
+class InvestorCreateAPIView(generics.CreateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = InvestorCreateSerializer
+
+    def perform_create(self, serializer):
+        with transaction.atomic():
+            serializer.save()
+
 class InvestorDetailAPIView(generics.RetrieveUpdateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = InvestorSerializer
@@ -227,3 +252,282 @@ class InvestorDetailAPIView(generics.RetrieveUpdateAPIView):
                 logger.error(f"Sync failed in InvestorDetailAPIView: {e}")
 
         return obj
+
+# --- Nested Resources ---
+
+class InvestorNestedMixin:
+    """
+    Mixin to restrict access to nested resources (Bank, Nominee, Document)
+    based on the user's relationship with the parent InvestorProfile.
+    """
+    def check_investor_permission(self, investor):
+        user = self.request.user
+        has_access = False
+        if user.user_type == User.Types.ADMIN:
+            has_access = True
+        elif user.user_type == User.Types.DISTRIBUTOR:
+            if investor.distributor and investor.distributor.user == user:
+                has_access = True
+        elif user.user_type == User.Types.RM:
+             if (investor.rm and investor.rm.user == user) or \
+                (investor.distributor and investor.distributor.rm and investor.distributor.rm.user == user):
+                 has_access = True
+        elif user.user_type == User.Types.INVESTOR:
+             if investor.user == user:
+                 has_access = True
+
+        if not has_access:
+            self.permission_denied(self.request, message="You do not have permission to access this investor's resources.")
+
+class BankAccountListCreateAPIView(InvestorNestedMixin, generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = BankAccountSerializer
+
+    def get_queryset(self):
+        investor_id = self.kwargs['investor_id']
+        investor = get_object_or_404(InvestorProfile, id=investor_id)
+        self.check_investor_permission(investor)
+        return BankAccount.objects.filter(investor=investor)
+
+    def perform_create(self, serializer):
+        investor = get_object_or_404(InvestorProfile, id=self.kwargs['investor_id'])
+        self.check_investor_permission(investor)
+        serializer.save(investor=investor)
+
+class BankAccountDetailAPIView(InvestorNestedMixin, generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = BankAccountSerializer
+    queryset = BankAccount.objects.all()
+
+    def get_object(self):
+        obj = super().get_object()
+        self.check_investor_permission(obj.investor)
+        return obj
+
+class NomineeListCreateAPIView(InvestorNestedMixin, generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = NomineeSerializer
+
+    def get_queryset(self):
+        investor_id = self.kwargs['investor_id']
+        investor = get_object_or_404(InvestorProfile, id=investor_id)
+        self.check_investor_permission(investor)
+        return Nominee.objects.filter(investor=investor)
+
+    def perform_create(self, serializer):
+        investor = get_object_or_404(InvestorProfile, id=self.kwargs['investor_id'])
+        self.check_investor_permission(investor)
+        serializer.save(investor=investor)
+
+class NomineeDetailAPIView(InvestorNestedMixin, generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = NomineeSerializer
+    queryset = Nominee.objects.all()
+
+    def get_object(self):
+        obj = super().get_object()
+        self.check_investor_permission(obj.investor)
+        return obj
+
+class DocumentListCreateAPIView(InvestorNestedMixin, generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = DocumentSerializer
+
+    def get_queryset(self):
+        investor_id = self.kwargs['investor_id']
+        investor = get_object_or_404(InvestorProfile, id=investor_id)
+        self.check_investor_permission(investor)
+        return Document.objects.filter(investor=investor)
+
+    def perform_create(self, serializer):
+        investor = get_object_or_404(InvestorProfile, id=self.kwargs['investor_id'])
+        self.check_investor_permission(investor)
+        serializer.save(investor=investor)
+
+class DocumentDetailAPIView(InvestorNestedMixin, generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = DocumentSerializer
+    queryset = Document.objects.all()
+
+    def get_object(self):
+        obj = super().get_object()
+        self.check_investor_permission(obj.investor)
+        return obj
+
+# --- BSE Actions ---
+
+class PushToBSEAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, pk):
+        investor = get_object_or_404(InvestorProfile, pk=pk)
+
+        # Permission logic (can be extracted to a mixin or helper)
+        if request.user.user_type not in [User.Types.RM, User.Types.DISTRIBUTOR, User.Types.ADMIN]:
+             return Response({'error': 'Permission denied'}, status=403)
+
+        # 1. Validation
+        validation_errors = validate_investor_for_bse(investor)
+        if validation_errors:
+            return Response({'status': 'error', 'errors': validation_errors}, status=400)
+
+        # 2. Map Data
+        try:
+            param_string = map_investor_to_bse_param_string(investor)
+        except Exception as e:
+            return Response({'status': 'error', 'message': str(e)}, status=400)
+
+        # 3. Call API
+        client = BSEStarMFClient()
+        regn_type = "MOD" if investor.ucc_code else "NEW"
+
+        try:
+            response = client.register_client({'Param': param_string}, regn_type=regn_type)
+            if response['status'] == 'success':
+                if not investor.ucc_code:
+                    investor.ucc_code = investor.pan
+                    investor.save()
+
+                remarks = response.get('remarks', '').upper()
+                investor.bse_remarks = remarks
+                investor.last_verified_at = timezone.now()
+
+                if "AUTHENTICATED" in remarks or "ACTIVE" in remarks:
+                    investor.nominee_auth_status = InvestorProfile.AUTH_AUTHENTICATED
+                elif "PENDING" in remarks:
+                    investor.nominee_auth_status = InvestorProfile.AUTH_PENDING
+
+                investor.save()
+
+                # Trigger FATCA
+                client.fatca_upload(investor)
+
+                return Response({'status': 'success', 'message': f"BSE {regn_type} Successful: {remarks}"})
+            else:
+                remarks = response.get('remarks', '')
+                if "FAILED : MODIFICATION NOT FOUND" in remarks.upper():
+                     return Response({'status': 'success', 'message': "Already up to date."})
+                return Response({'status': 'error', 'message': remarks}, status=400)
+
+        except Exception as e:
+            return Response({'status': 'error', 'message': str(e)}, status=500)
+
+class TriggerAuthAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, pk):
+        investor = get_object_or_404(InvestorProfile, pk=pk)
+
+        if request.user.user_type not in [User.Types.RM, User.Types.DISTRIBUTOR, User.Types.ADMIN]:
+             return Response({'error': 'Permission denied'}, status=403)
+
+        if not investor.ucc_code:
+            return Response({'status': 'error', 'message': "Investor not registered on BSE"}, status=400)
+
+        # Validation
+        validation_errors = validate_investor_for_bse(investor)
+        if validation_errors:
+             return Response({'status': 'error', 'errors': validation_errors}, status=400)
+
+        try:
+            param_string = map_investor_to_bse_param_string(investor)
+            client = BSEStarMFClient()
+            response = client.register_client({'Param': param_string}, regn_type="MOD")
+
+            investor.bse_remarks = response.get('remarks', '')
+            investor.last_verified_at = timezone.now()
+
+            if response['status'] == 'success':
+                 remarks = response.get('remarks', '').upper()
+                 if "AUTHENTICATED" in remarks or "ACTIVE" in remarks:
+                    investor.nominee_auth_status = InvestorProfile.AUTH_AUTHENTICATED
+                 elif "PENDING" in remarks:
+                    investor.nominee_auth_status = InvestorProfile.AUTH_PENDING
+
+                 investor.save()
+                 return Response({'status': 'success', 'message': response.get('remarks')})
+            else:
+                 return Response({'status': 'error', 'message': response.get('remarks')}, status=400)
+
+        except Exception as e:
+            return Response({'status': 'error', 'message': str(e)}, status=500)
+
+class ToggleKYCAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, pk):
+        investor = get_object_or_404(InvestorProfile, pk=pk)
+        if request.user.user_type not in [User.Types.RM, User.Types.DISTRIBUTOR, User.Types.ADMIN]:
+             return Response({'error': 'Permission denied'}, status=403)
+
+        investor.kyc_status = not investor.kyc_status
+        investor.save()
+        return Response({'status': 'success', 'kyc_status': investor.kyc_status})
+
+class FATCAUploadAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, pk):
+        investor = get_object_or_404(InvestorProfile, pk=pk)
+        if request.user.user_type not in [User.Types.RM, User.Types.DISTRIBUTOR, User.Types.ADMIN]:
+             return Response({'error': 'Permission denied'}, status=403)
+
+        if not investor.ucc_code:
+             return Response({'status': 'error', 'message': "Investor not registered on BSE"}, status=400)
+
+        client = BSEStarMFClient()
+        try:
+            response = client.fatca_upload(investor)
+            if response['status'] == 'success':
+                return Response({'status': 'success', 'message': response.get('remarks')})
+            else:
+                return Response({'status': 'error', 'message': response.get('remarks')}, status=400)
+        except Exception as e:
+            return Response({'status': 'error', 'message': str(e)}, status=500)
+
+class DistributorMappingAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        if request.user.user_type not in [User.Types.ADMIN, User.Types.RM]:
+            return Response({'error': 'Permission denied'}, status=403)
+
+        investor_ids = request.data.get('investor_ids', [])
+        distributor_id = request.data.get('distributor_id')
+
+        if not investor_ids:
+            return Response({'error': 'No investors selected'}, status=400)
+
+        distributor = None
+        if distributor_id:
+            try:
+                qs = DistributorProfile.objects.all()
+                if request.user.user_type == User.Types.RM:
+                    qs = qs.filter(rm__user=request.user)
+                distributor = qs.get(pk=distributor_id)
+            except DistributorProfile.DoesNotExist:
+                 return Response({'error': 'Invalid Distributor'}, status=400)
+
+        investors = InvestorProfile.objects.filter(id__in=investor_ids)
+        if request.user.user_type == User.Types.RM:
+             investors = investors.filter(
+                Q(distributor__rm__user=request.user) | Q(rm__user=request.user)
+            )
+
+        count = 0
+        with transaction.atomic():
+            for investor in investors:
+                investor.distributor = distributor
+                if distributor:
+                    investor.rm = distributor.rm
+                    if distributor.rm:
+                        investor.branch = distributor.rm.branch
+                else:
+                    if request.user.user_type == User.Types.RM:
+                         investor.rm = request.user.rm_profile
+                         if investor.rm:
+                            investor.branch = investor.rm.branch
+                investor.save()
+                count += 1
+
+        return Response({'status': 'success', 'count': count})

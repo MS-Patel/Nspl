@@ -1,7 +1,11 @@
 from rest_framework import serializers
+from django.contrib.auth import get_user_model
+from django.db import transaction
 from apps.investments.models import Order, Mandate
 from apps.users.models import InvestorProfile, RMProfile, DistributorProfile, BankAccount, Nominee, Document
 from apps.products.models import Scheme
+
+User = get_user_model()
 
 class SchemeSerializer(serializers.ModelSerializer):
     class Meta:
@@ -143,3 +147,85 @@ class OrderSerializer(serializers.ModelSerializer):
             'id', 'unique_ref_no', 'investor_name', 'scheme_name',
             'amount', 'status', 'status_display', 'created_at'
         ]
+
+class InvestorCreateSerializer(serializers.ModelSerializer):
+    firstname = serializers.CharField(write_only=True)
+    middlename = serializers.CharField(write_only=True, required=False, allow_blank=True)
+    lastname = serializers.CharField(write_only=True)
+    email = serializers.EmailField(write_only=True)
+
+    bank_accounts = BankAccountSerializer(many=True, required=False)
+    nominees = NomineeSerializer(many=True, required=False)
+
+    class Meta:
+        model = InvestorProfile
+        fields = [
+            'firstname', 'middlename', 'lastname', 'email', 'pan', 'mobile',
+            'dob', 'gender', 'occupation', 'tax_status', 'holding_nature',
+            'bank_accounts', 'nominees'
+        ]
+
+    def create(self, validated_data):
+        bank_accounts_data = validated_data.pop('bank_accounts', [])
+        nominees_data = validated_data.pop('nominees', [])
+
+        # User Fields
+        firstname = validated_data.pop('firstname')
+        middlename = validated_data.pop('middlename', '')
+        lastname = validated_data.pop('lastname')
+        email = validated_data.pop('email')
+        pan = validated_data.get('pan')
+
+        fullname = f"{firstname} {middlename} {lastname}".replace('  ', ' ').strip()
+
+        # Create User
+        user = User.objects.create_user(
+            username=pan,
+            email=email,
+            password=pan, # Default password is PAN
+            name=fullname,
+            user_type=User.Types.INVESTOR
+        )
+
+        # Create Investor Profile
+        validated_data['user'] = user
+        validated_data['kyc_status'] = True # Mock KYC
+
+        # Determine Hierarchy (from request user context if possible, but serializer doesn't have request easily unless passed)
+        # For now, default logic or handled in View?
+        # Ideally view handles permissions and assignment.
+        # But we need to save the profile first.
+
+        investor = InvestorProfile.objects.create(**validated_data)
+
+        # Determine Hierarchy based on logged in user (Accessed via context)
+        request = self.context.get('request')
+        if request and request.user:
+            user = request.user
+            if user.user_type == User.Types.DISTRIBUTOR:
+                investor.distributor = user.distributor_profile
+                investor.rm = user.distributor_profile.rm
+                if investor.rm:
+                    investor.branch = investor.rm.branch
+            elif user.user_type == User.Types.RM:
+                investor.rm = user.rm_profile
+                if investor.rm:
+                    investor.branch = investor.rm.branch
+
+            investor.save()
+
+        # Create Nested Objects
+        for bank_data in bank_accounts_data:
+            BankAccount.objects.create(investor=investor, **bank_data)
+
+        for nominee_data in nominees_data:
+            Nominee.objects.create(investor=investor, **nominee_data)
+
+        return investor
+
+class DistributorSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(source='user.name', read_only=True)
+
+    class Meta:
+        model = DistributorProfile
+        fields = ['id', 'name', 'arn_number', 'broker_code']

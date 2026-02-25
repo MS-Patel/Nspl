@@ -21,6 +21,7 @@ import RMDashboard from "@/pages/dashboard/RMDashboard";
 import DistributorDashboard from "@/pages/dashboard/DistributorDashboard";
 import InvestorDashboard from "@/pages/dashboard/InvestorDashboard";
 import InvestorList from "@/pages/dashboard/investors/InvestorList";
+import CreateInvestor from "@/pages/dashboard/investors/CreateInvestor";
 import InvestorDetail from "@/pages/dashboard/investors/InvestorDetail";
 import RoleGuard from "@/components/auth/RoleGuard";
 
@@ -69,6 +70,11 @@ const App = () => (
             <Route path="investors" element={
               <RoleGuard allowedRoles={['ADMIN', 'RM', 'DISTRIBUTOR']}>
                 <InvestorList />
+              </RoleGuard>
+            } />
+            <Route path="investors/new" element={
+              <RoleGuard allowedRoles={['ADMIN', 'RM', 'DISTRIBUTOR']}>
+                <CreateInvestor />
               </RoleGuard>
             } />
             <Route path="investors/:id" element={
