@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
@@ -15,6 +15,24 @@ const navLinks = [
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [dashboardUrl, setDashboardUrl] = useState("/dashboard/admin/");
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const response = await fetch('/users/api/auth/status/');
+        const data = await response.json();
+        if (data.is_authenticated) {
+          setIsAuthenticated(true);
+          setDashboardUrl(data.redirect_url);
+        }
+      } catch (error) {
+        console.error("Auth check failed:", error);
+      }
+    };
+    checkAuth();
+  }, []);
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-card/80 backdrop-blur-lg border-b border-border">
@@ -35,9 +53,15 @@ const Navbar = () => {
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 gradient-primary rounded-full transition-all duration-300 group-hover:w-full" />
               </Link>
             )}
-            <Link to="/login">
-              <Button size="sm" className="gradient-primary border-0 text-white hover:opacity-90 transition-opacity">Login / Register</Button>
-            </Link>
+            {isAuthenticated ? (
+              <a href={dashboardUrl}>
+                <Button size="sm" className="gradient-primary border-0 text-white hover:opacity-90 transition-opacity">Dashboard</Button>
+              </a>
+            ) : (
+              <Link to="/login">
+                <Button size="sm" className="gradient-primary border-0 text-white hover:opacity-90 transition-opacity">Login / Register</Button>
+              </Link>
+            )}
           </div>
 
           <button className="md:hidden" onClick={() => setIsOpen(!isOpen)}>
@@ -52,9 +76,15 @@ const Navbar = () => {
                 {link.label}
               </Link>
           )}
-            <Link to="/login" onClick={() => setIsOpen(false)}>
-              <Button size="sm" className="w-full gradient-primary border-0 text-white">Login / Register</Button>
-            </Link>
+            {isAuthenticated ? (
+              <a href={dashboardUrl} onClick={() => setIsOpen(false)}>
+                <Button size="sm" className="w-full gradient-primary border-0 text-white">Dashboard</Button>
+              </a>
+            ) : (
+              <Link to="/login" onClick={() => setIsOpen(false)}>
+                <Button size="sm" className="w-full gradient-primary border-0 text-white">Login / Register</Button>
+              </Link>
+            )}
           </div>
         }
       </div>
