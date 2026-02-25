@@ -1,5 +1,5 @@
 from django.urls import path
-from . import views
+from . import views, api_views
 
 app_name = 'products'
 urlpatterns = [
@@ -15,4 +15,12 @@ urlpatterns = [
     path('amc/<int:pk>/toggle/', views.toggle_amc_status, name='amc_toggle'),
     path('amc/<int:pk>/update/', views.update_amc_name, name='amc_update'),
     path('schemes/export/master/', views.DownloadSchemeMasterReportView.as_view(), name='scheme_master_export'),
+
+    # API Endpoints
+    path('api/amc/', api_views.AMCListCreateAPIView.as_view(), name='api_amc_list'),
+    path('api/amc/<int:pk>/', api_views.AMCDetailAPIView.as_view(), name='api_amc_detail'),
+    path('api/schemes/', api_views.SchemeListAPIView.as_view(), name='api_scheme_list'),
+    path('api/categories/', api_views.SchemeCategoryListAPIView.as_view(), name='api_category_list'),
+    path('api/schemes/upload/', api_views.SchemeUploadAPIView.as_view(), name='api_scheme_upload'),
+    path('api/navs/upload/', api_views.NAVUploadAPIView.as_view(), name='api_nav_upload'),
 ]
