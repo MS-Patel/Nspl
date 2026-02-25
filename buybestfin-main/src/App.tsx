@@ -35,6 +35,11 @@ import RMForm from "@/pages/dashboard/users/rm/RMForm";
 import DistributorList from "@/pages/dashboard/users/distributor/DistributorList";
 import DistributorForm from "@/pages/dashboard/users/distributor/DistributorForm";
 
+// Product Management
+import AMCList from "@/pages/dashboard/products/AMCList";
+import SchemeExplorer from "@/pages/dashboard/products/SchemeExplorer";
+import UploadCenter from "@/pages/dashboard/products/UploadCenter";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -124,6 +129,23 @@ const App = () => (
             <Route path="distributors/:id" element={
               <RoleGuard allowedRoles={['ADMIN', 'RM']}>
                 <DistributorForm />
+              </RoleGuard>
+            } />
+
+            {/* Product Management */}
+            <Route path="products/amc" element={
+              <RoleGuard allowedRoles={['ADMIN']}>
+                <AMCList />
+              </RoleGuard>
+            } />
+            <Route path="products/schemes" element={
+              <RoleGuard allowedRoles={['ADMIN']}>
+                <SchemeExplorer />
+              </RoleGuard>
+            } />
+            <Route path="products/upload" element={
+              <RoleGuard allowedRoles={['ADMIN']}>
+                <UploadCenter />
               </RoleGuard>
             } />
 

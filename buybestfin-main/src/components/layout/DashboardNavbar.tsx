@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, LogOut, User as UserIcon } from "lucide-react";
+import { Menu, X, LogOut, User as UserIcon, ChevronDown } from "lucide-react";
 import logo from "@/assets/logo.png";
 import { User } from "@/types/auth";
 import {
@@ -18,12 +18,18 @@ interface DashboardNavbarProps {
   user: User;
 }
 
+interface MenuItem {
+    title: string;
+    url: string;
+    children?: MenuItem[];
+}
+
 const DashboardNavbar = ({ user }: DashboardNavbarProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
 
   const getMenuItems = () => {
-    const items = [
+    const items: MenuItem[] = [
       {
         title: "Dashboard",
         url: `/dashboard/${user.role.toLowerCase()}`,
@@ -51,8 +57,17 @@ const DashboardNavbar = ({ user }: DashboardNavbarProps) => {
         });
     }
 
-    // Add public links accessible from dashboard? Maybe not to clutter.
-    // Let's stick to dashboard specific links.
+    if (user.role === 'ADMIN') {
+        items.push({
+            title: "Products",
+            url: "/dashboard/products",
+            children: [
+                { title: "AMCs", url: "/dashboard/products/amc" },
+                { title: "Scheme Explorer", url: "/dashboard/products/schemes" },
+                { title: "Uploads", url: "/dashboard/products/upload" },
+            ]
+        });
+    }
 
     return items;
   };
@@ -61,6 +76,14 @@ const DashboardNavbar = ({ user }: DashboardNavbarProps) => {
 
   const handleLogout = () => {
     window.location.href = '/users/logout/';
+  };
+
+  const isLinkActive = (item: MenuItem) => {
+      if (location.pathname === item.url) return true;
+      if (item.children) {
+          return item.children.some(child => location.pathname.startsWith(child.url));
+      }
+      return location.pathname.startsWith(item.url);
   };
 
   return (
@@ -81,7 +104,27 @@ const DashboardNavbar = ({ user }: DashboardNavbarProps) => {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-6">
             {menuItems.map((item) => {
-              const isActive = location.pathname.startsWith(item.url);
+              const isActive = isLinkActive(item);
+
+              if (item.children) {
+                  return (
+                      <DropdownMenu key={item.title}>
+                          <DropdownMenuTrigger className={`flex items-center gap-1 text-sm font-medium transition-colors outline-none ${isActive ? 'text-primary' : 'text-muted-foreground hover:text-primary'}`}>
+                              {item.title} <ChevronDown className="h-4 w-4" />
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent>
+                              {item.children.map(child => (
+                                  <DropdownMenuItem key={child.url} asChild>
+                                      <Link to={child.url} className={location.pathname.startsWith(child.url) ? "bg-accent" : ""}>
+                                          {child.title}
+                                      </Link>
+                                  </DropdownMenuItem>
+                              ))}
+                          </DropdownMenuContent>
+                      </DropdownMenu>
+                  );
+              }
+
               return item.url.startsWith('/dashboard') ? (
                 <Link
                   key={item.url}
@@ -146,8 +189,26 @@ const DashboardNavbar = ({ user }: DashboardNavbarProps) => {
         {/* Mobile Navigation */}
         {isOpen && (
           <div className="md:hidden py-4 space-y-3 border-t border-border animate-fade-up bg-card">
-            {menuItems.map((item) => (
-              item.url.startsWith('/dashboard') ? (
+            {menuItems.map((item) => {
+                if (item.children) {
+                    return (
+                        <div key={item.title} className="space-y-1">
+                            <div className="px-4 py-2 text-sm font-medium text-muted-foreground">{item.title}</div>
+                            {item.children.map(child => (
+                                <Link
+                                    key={child.url}
+                                    to={child.url}
+                                    className="block px-8 py-2 text-sm font-medium text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors"
+                                    onClick={() => setIsOpen(false)}
+                                >
+                                    {child.title}
+                                </Link>
+                            ))}
+                        </div>
+                    );
+                }
+
+                return item.url.startsWith('/dashboard') ? (
                 <Link
                   key={item.url}
                   to={item.url}
@@ -165,8 +226,8 @@ const DashboardNavbar = ({ user }: DashboardNavbarProps) => {
                 >
                   {item.title}
                 </a>
-              )
-            ))}
+              );
+            })}
             <div className="border-t border-border my-2 pt-2">
                 <a href="/users/profile/" className="block px-4 py-2 text-sm font-medium text-muted-foreground hover:text-primary">
                     Profile
