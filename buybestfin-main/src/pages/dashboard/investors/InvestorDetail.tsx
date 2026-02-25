@@ -21,6 +21,10 @@ const InvestorDetail = () => {
     try {
       const result = await api.get<Investor>(`/api/investors/${id}/`);
       setInvestor(result);
+      toast({
+          title: "Success",
+          description: "Investor details refreshed.",
+      });
     } catch (error) {
       console.error('Error fetching investor details:', error);
       toast({
@@ -78,7 +82,6 @@ const InvestorDetail = () => {
             <Button variant="outline" onClick={fetchInvestor}>
                 <RefreshCw className="mr-2 h-4 w-4" /> Refresh
             </Button>
-            {/* Add BSE Actions here later */}
         </div>
       </div>
 
@@ -142,10 +145,11 @@ const InvestorDetail = () => {
         {/* Main Content Tabs */}
         <div className="md:col-span-2">
             <Tabs defaultValue="profile" className="w-full">
-                <TabsList className="grid w-full grid-cols-4">
+                <TabsList className="grid w-full grid-cols-5">
                     <TabsTrigger value="profile">Profile</TabsTrigger>
                     <TabsTrigger value="bank">Bank Accounts</TabsTrigger>
                     <TabsTrigger value="nominee">Nominees</TabsTrigger>
+                    <TabsTrigger value="mandate">Mandates</TabsTrigger>
                     <TabsTrigger value="docs">Documents</TabsTrigger>
                 </TabsList>
 
@@ -187,12 +191,27 @@ const InvestorDetail = () => {
                                     {investor.country}
                                 </div>
                             </div>
+
+                             {investor.foreign_address_1 && (
+                                <>
+                                <Separator />
+                                <div className="space-y-2">
+                                    <div className="text-sm font-medium text-muted-foreground">Foreign Address</div>
+                                    <div>
+                                        {investor.foreign_address_1}<br/>
+                                        {investor.foreign_address_2 && <>{investor.foreign_address_2}<br/></>}
+                                        {investor.foreign_city}, {investor.foreign_state} - {investor.foreign_pincode}<br/>
+                                        {investor.foreign_country}
+                                    </div>
+                                </div>
+                                </>
+                            )}
                         </CardContent>
                     </Card>
 
-                    <Card>
+                     <Card>
                         <CardHeader>
-                            <CardTitle>Tax & Occupation</CardTitle>
+                            <CardTitle>FATCA & Tax Details</CardTitle>
                         </CardHeader>
                         <CardContent className="grid grid-cols-2 gap-4">
                             <div>
@@ -207,12 +226,56 @@ const InvestorDetail = () => {
                                 <div className="text-sm font-medium text-muted-foreground">Holding Nature</div>
                                 <div>{investor.holding_nature_display}</div>
                             </div>
+                             <div>
+                                <div className="text-sm font-medium text-muted-foreground">Source of Wealth</div>
+                                <div>{investor.source_of_wealth_display || '-'}</div>
+                            </div>
                             <div>
-                                <div className="text-sm font-medium text-muted-foreground">KYC Type</div>
-                                <div>{investor.kyc_type_display}</div>
+                                <div className="text-sm font-medium text-muted-foreground">Income Slab</div>
+                                <div>{investor.income_slab_display || '-'}</div>
+                            </div>
+                            <div>
+                                <div className="text-sm font-medium text-muted-foreground">PEP Status</div>
+                                <div>{investor.pep_status_display || '-'}</div>
+                            </div>
+                            <div>
+                                <div className="text-sm font-medium text-muted-foreground">Place of Birth</div>
+                                <div>{investor.place_of_birth || '-'}</div>
+                            </div>
+                            <div>
+                                <div className="text-sm font-medium text-muted-foreground">Country of Birth</div>
+                                <div>{investor.country_of_birth || '-'}</div>
                             </div>
                         </CardContent>
                     </Card>
+
+                    {(investor.second_applicant_name || investor.third_applicant_name) && (
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Joint Holders</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                {investor.second_applicant_name && (
+                                    <div className="border-b pb-4 last:border-0 last:pb-0">
+                                        <h4 className="font-semibold text-sm mb-2">Second Applicant</h4>
+                                        <div className="grid grid-cols-2 gap-2 text-sm">
+                                            <div><span className="text-muted-foreground">Name:</span> {investor.second_applicant_name}</div>
+                                            <div><span className="text-muted-foreground">PAN:</span> {investor.second_applicant_pan}</div>
+                                        </div>
+                                    </div>
+                                )}
+                                {investor.third_applicant_name && (
+                                    <div className="border-b pb-4 last:border-0 last:pb-0">
+                                        <h4 className="font-semibold text-sm mb-2">Third Applicant</h4>
+                                        <div className="grid grid-cols-2 gap-2 text-sm">
+                                            <div><span className="text-muted-foreground">Name:</span> {investor.third_applicant_name}</div>
+                                            <div><span className="text-muted-foreground">PAN:</span> {investor.third_applicant_pan}</div>
+                                        </div>
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+                    )}
                 </TabsContent>
 
                 <TabsContent value="bank" className="mt-4">
@@ -271,6 +334,40 @@ const InvestorDetail = () => {
                                         <div className="text-right">
                                             <div className="text-2xl font-bold">{nominee.percentage}%</div>
                                             <div className="text-xs text-muted-foreground">Allocation</div>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+
+                 <TabsContent value="mandate" className="mt-4">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Mandates</CardTitle>
+                            <CardDescription>Required for automating SIP payments.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                             {investor.mandates && investor.mandates.length === 0 ? (
+                                <div className="text-center text-muted-foreground py-4">No mandates found.</div>
+                            ) : (
+                                investor.mandates?.map((mandate) => (
+                                    <div key={mandate.id} className="border p-4 rounded-lg flex justify-between items-center">
+                                        <div>
+                                            <div className="font-semibold">{mandate.mandate_id}</div>
+                                            <div className="text-sm text-muted-foreground">{mandate.mandate_type_display}</div>
+                                            <div className="text-xs text-muted-foreground mt-1">
+                                                Limit: {mandate.amount_limit} | Bank: {mandate.bank_name}
+                                            </div>
+                                        </div>
+                                        <div className="text-right">
+                                            <Badge variant={mandate.status === 'APPROVED' ? 'default' : mandate.status === 'REJECTED' ? 'destructive' : 'secondary'}>
+                                                {mandate.status_display}
+                                            </Badge>
+                                             <div className="text-xs text-muted-foreground mt-1">
+                                                {mandate.start_date} - {mandate.end_date || 'Perpetual'}
+                                             </div>
                                         </div>
                                     </div>
                                 ))

@@ -43,6 +43,24 @@ export interface Document {
     description: string;
 }
 
+export interface Mandate {
+    id: number;
+    mandate_id: string;
+    mandate_type: string;
+    mandate_type_display: string;
+    amount_limit: string;
+    start_date: string;
+    end_date: string | null;
+    status: string;
+    status_display: string;
+    bank_account: number | null;
+    bank_account_number: string;
+    bank_name: string;
+    created_at: string;
+    updated_at: string;
+    is_bse_submitted: boolean;
+}
+
 export interface Investor {
     id: number;
     name: string;
@@ -65,6 +83,36 @@ export interface Investor {
     pincode: string;
     country: string;
 
+    // Foreign Address
+    foreign_address_1?: string;
+    foreign_address_2?: string;
+    foreign_address_3?: string;
+    foreign_city?: string;
+    foreign_state?: string;
+    foreign_pincode?: string;
+    foreign_country?: string;
+    foreign_resi_phone?: string;
+    foreign_off_phone?: string;
+
+    // Joint Holders
+    second_applicant_name?: string;
+    second_applicant_pan?: string;
+    second_applicant_dob?: string;
+    third_applicant_name?: string;
+    third_applicant_pan?: string;
+    third_applicant_dob?: string;
+
+    // FATCA
+    place_of_birth?: string;
+    country_of_birth?: string;
+    source_of_wealth?: string;
+    source_of_wealth_display?: string;
+    income_slab?: string;
+    income_slab_display?: string;
+    pep_status?: string;
+    pep_status_display?: string;
+    exemption_code?: string;
+
     tax_status: string;
     tax_status_display: string;
     occupation: string;
@@ -84,4 +132,5 @@ export interface Investor {
     bank_accounts: BankAccount[];
     nominees: Nominee[];
     documents: Document[];
+    mandates: Mandate[];
 }

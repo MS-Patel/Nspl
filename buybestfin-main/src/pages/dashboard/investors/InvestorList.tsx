@@ -11,27 +11,54 @@ import {
 } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Search, Plus, Loader2 } from 'lucide-react';
+import { Search, Plus, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Investor } from '@/types/investor';
+import { useDebounce } from '@/hooks/use-debounce';
+
+interface PaginatedResponse {
+    count: number;
+    next: string | null;
+    previous: string | null;
+    results: Investor[];
+}
 
 const InvestorList = () => {
   const [investors, setInvestors] = useState<Investor[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+
+  const debouncedSearch = useDebounce(search, 500);
+
+  useEffect(() => {
+    // Reset to page 1 when search changes
+    setPage(1);
+  }, [debouncedSearch]);
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       try {
-        const result = await api.get<Investor[]>('/api/investors/');
-        // Check if result is wrapped in { results: ... } if using pagination, but ListAPIView returns array if pagination is off
-        // Or { count, next, previous, results } if pagination is on.
-        // Assuming pagination is default ON in DRF, result will be { results: [] }
-        // Let's assume pagination is OFF for now or handle both.
-        if (Array.isArray(result)) {
+        const queryParams = new URLSearchParams();
+        queryParams.append('page', page.toString());
+        if (debouncedSearch) {
+            queryParams.append('search', debouncedSearch);
+        }
+
+        const result = await api.get<PaginatedResponse | Investor[]>(`/api/investors/?${queryParams.toString()}`);
+
+        if ('results' in result) {
+            setInvestors(result.results);
+            setTotalCount(result.count);
+            setTotalPages(Math.ceil(result.count / 10)); // Assuming page size 10
+        } else if (Array.isArray(result)) {
+            // Fallback for non-paginated API
             setInvestors(result);
-        } else if (result && Array.isArray((result as any).results)) {
-            setInvestors((result as any).results);
+            setTotalCount(result.length);
+            setTotalPages(1);
         } else {
             console.error('Unexpected API response format:', result);
             setInvestors([]);
@@ -44,13 +71,15 @@ const InvestorList = () => {
     };
 
     fetchData();
-  }, []);
+  }, [page, debouncedSearch]);
 
-  const filteredInvestors = investors.filter((inv) =>
-    (inv.name || '').toLowerCase().includes(search.toLowerCase()) ||
-    (inv.pan || '').toLowerCase().includes(search.toLowerCase()) ||
-    (inv.email || '').toLowerCase().includes(search.toLowerCase())
-  );
+  const handleNextPage = () => {
+    if (page < totalPages) setPage(page + 1);
+  };
+
+  const handlePrevPage = () => {
+    if (page > 1) setPage(page - 1);
+  };
 
   return (
     <div className="flex flex-col gap-8">
@@ -67,7 +96,7 @@ const InvestorList = () => {
       <Card>
         <CardHeader>
             <div className="flex items-center justify-between">
-                <CardTitle>All Investors</CardTitle>
+                <CardTitle>All Investors ({totalCount})</CardTitle>
                 <div className="relative w-64">
                     <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -85,6 +114,7 @@ const InvestorList = () => {
                     <Loader2 className="h-8 w-8 animate-spin text-primary" />
                 </div>
             ) : (
+                <>
                 <Table>
                     <TableHeader>
                     <TableRow>
@@ -96,14 +126,14 @@ const InvestorList = () => {
                     </TableRow>
                     </TableHeader>
                     <TableBody>
-                    {filteredInvestors.length === 0 ? (
+                    {investors.length === 0 ? (
                         <TableRow>
                             <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
                                 No investors found.
                             </TableCell>
                         </TableRow>
                     ) : (
-                        filteredInvestors.map((inv) => (
+                        investors.map((inv) => (
                         <TableRow key={inv.id}>
                             <TableCell className="font-medium">
                                 <Link to={`/dashboard/investors/${inv.id}`} className="hover:underline text-primary">
@@ -130,6 +160,32 @@ const InvestorList = () => {
                     )}
                     </TableBody>
                 </Table>
+
+                {/* Pagination Controls */}
+                <div className="flex items-center justify-end space-x-2 py-4">
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handlePrevPage}
+                        disabled={page === 1}
+                    >
+                        <ChevronLeft className="h-4 w-4" />
+                        Previous
+                    </Button>
+                    <div className="text-sm font-medium">
+                        Page {page} of {totalPages}
+                    </div>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleNextPage}
+                        disabled={page >= totalPages}
+                    >
+                        Next
+                        <ChevronRight className="h-4 w-4" />
+                    </Button>
+                </div>
+                </>
             )}
         </CardContent>
       </Card>
