@@ -462,8 +462,18 @@ class BSEStarMFClient:
             else:
                 remarks = parts[1] if len(parts) > 1 else str(response)
                 # Handle Echo format where remarks are at index 6
-                if len(parts) > 6 and not parts[0].isdigit():
-                     remarks = parts[6]
+                if len(parts) > 6:
+                    # Check if it's a success response in Echo format (status 0 at the end)
+                    if parts[-1].strip() == '0':
+                        return {
+                            'status': 'success',
+                            'bse_reg_no': parts[5] if len(parts) > 5 else "",
+                            'remarks': parts[6] if len(parts) > 6 else 'SIP Registered',
+                            'bse_sip_id': parts[5] if len(parts) > 5 else ""
+                        }
+
+                    if not parts[0].isdigit():
+                        remarks = parts[6]
 
                 # Check for connection errors in remarks
                 if any(kw in remarks.lower() for kw in ['connection', 'timeout', 'rejected by peer', 'network']):
