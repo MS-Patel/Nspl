@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
+import OTPLogin from "./pages/auth/OTPLogin";
 import Calculator from "./pages/Calculator";
 import Explorer from "./pages/Explorer";
 import RiskProfile from "./pages/RiskProfile";
@@ -21,7 +22,8 @@ import RMDashboard from "@/pages/dashboard/RMDashboard";
 import DistributorDashboard from "@/pages/dashboard/DistributorDashboard";
 import InvestorDashboard from "@/pages/dashboard/InvestorDashboard";
 import InvestorList from "@/pages/dashboard/investors/InvestorList";
-import CreateInvestor from "@/pages/dashboard/investors/CreateInvestor";
+import CreateInvestor from "@/pages/dashboard/investors/CreateInvestor"; // Keeping for reference or deletion
+import OnboardingWizard from "@/pages/dashboard/investors/OnboardingWizard";
 import InvestorDetail from "@/pages/dashboard/investors/InvestorDetail";
 
 // Investment Pages
@@ -68,6 +70,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/auth/otp-login" element={<OTPLogin />} />
           <Route path="/calculator" element={<Calculator />} />
           <Route path="/goal-calculator" element={<GoalCalculator />} />
           <Route path="/explorer" element={<Explorer />} />
@@ -106,7 +109,7 @@ const App = () => (
             } />
             <Route path="investors/new" element={
               <RoleGuard allowedRoles={['ADMIN', 'RM', 'DISTRIBUTOR']}>
-                <CreateInvestor />
+                <OnboardingWizard />
               </RoleGuard>
             } />
             <Route path="investors/:id" element={
