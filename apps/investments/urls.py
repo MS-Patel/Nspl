@@ -12,7 +12,7 @@ urlpatterns = [
     path('portfolio/<int:investor_id>/', views.InvestorPortfolioView.as_view(), name='investor_portfolio'),
 
     path('folio/<path:folio_number>/', views.FolioDetailView.as_view(), name='folio_detail'),
-    path('mandate/create/', views.MandateCreateView.as_view(), name='mandate_create'),
+    # mandate/create/ Removed (Legacy)
     path('mandate/<int:pk>/retry/', views.MandateRetryView.as_view(), name='mandate_retry'),
     path('mandate/<int:pk>/auth/', views.mandate_authorize, name='mandate_auth'),
 

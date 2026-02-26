@@ -164,13 +164,16 @@ class UserMeAPIView(APIView):
 
     def get(self, request):
         user = request.user
-        return Response({
+        data = {
             'username': user.username,
             'name': user.name,
             'email': user.email,
             'role': user.user_type,
             'id': user.id
-        })
+        }
+        if hasattr(user, 'investor_profile'):
+            data['investor_id'] = user.investor_profile.id
+        return Response(data)
 
 # --- Investor Module API Views ---
 
@@ -689,15 +692,25 @@ class PortfolioAnalyticsAPIView(APIView):
             'sector_allocation': sector_data
         })
 
-class HoldingListAPIView(generics.ListAPIView):
+class HoldingListAPIView(InvestorNestedMixin, generics.ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
         user = request.user
-        try:
-            investor_profile = user.investor_profile
-        except InvestorProfile.DoesNotExist:
-             return Response({'error': 'User is not an investor'}, status=400)
+        investor_id = request.query_params.get('investor_id')
+
+        investor_profile = None
+        if investor_id:
+            try:
+                investor_profile = InvestorProfile.objects.get(id=investor_id)
+                self.check_investor_permission(investor_profile)
+            except InvestorProfile.DoesNotExist:
+                return Response({'error': 'Investor not found'}, status=404)
+        else:
+            try:
+                investor_profile = user.investor_profile
+            except InvestorProfile.DoesNotExist:
+                 return Response({'error': 'User is not an investor and no investor_id provided'}, status=400)
 
         holdings = Holding.objects.filter(investor=investor_profile).select_related('scheme', 'scheme__amc').order_by('-current_value')
 
@@ -705,6 +718,7 @@ class HoldingListAPIView(generics.ListAPIView):
         for h in holdings:
             data.append({
                 'id': h.id,
+                'scheme_id': h.scheme.id,
                 'scheme_name': h.scheme.name,
                 'amc': h.scheme.amc.name if h.scheme.amc else '',
                 'folio': h.folio_number,
@@ -712,6 +726,7 @@ class HoldingListAPIView(generics.ListAPIView):
                 'average_cost': h.average_cost,
                 'current_value': h.current_value,
                 'gain_loss': (h.current_value - (h.units * h.average_cost)) if h.current_value else 0,
+                'investor_id': investor_profile.id,
             })
 
         return Response(data)

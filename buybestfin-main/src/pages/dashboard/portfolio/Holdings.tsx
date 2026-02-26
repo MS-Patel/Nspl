@@ -10,7 +10,9 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface Holding {
   id: number;
@@ -26,6 +28,7 @@ interface Holding {
 const Holdings = () => {
   const [holdings, setHoldings] = useState<Holding[]>([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchHoldings = async () => {
@@ -74,6 +77,7 @@ const Holdings = () => {
                 <TableHead className="text-right">Avg Cost</TableHead>
                 <TableHead className="text-right">Current Value</TableHead>
                 <TableHead className="text-right">Gain/Loss</TableHead>
+                <TableHead className="text-right">Action</TableHead>
                 </TableRow>
             </TableHeader>
             <TableBody>
@@ -94,6 +98,11 @@ const Holdings = () => {
                         <TableCell className="text-right font-bold">{formatCurrency(holding.current_value)}</TableCell>
                         <TableCell className={`text-right ${holding.gain_loss >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                             {holding.gain_loss >= 0 ? '+' : ''}{formatCurrency(holding.gain_loss)}
+                        </TableCell>
+                        <TableCell className="text-right">
+                             <Button size="sm" variant="outline" onClick={() => navigate(`/dashboard/investments/redeem/${holding.id}`)}>
+                                Redeem
+                             </Button>
                         </TableCell>
                     </TableRow>
                     ))
