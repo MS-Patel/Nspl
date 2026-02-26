@@ -107,6 +107,8 @@ class Scheme(models.Model):
     lock_in_period = models.CharField(max_length=50, null=True, blank=True)
     channel_partner_code = models.CharField(max_length=50, null=True, blank=True)
 
+    is_active = models.BooleanField(default=True, help_text="Set to False to disable this scheme for new investments.")
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

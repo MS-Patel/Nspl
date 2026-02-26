@@ -76,16 +76,14 @@ def process_scheme_row(row):
     amc, _ = AMC.objects.get_or_create(code=amc_code, defaults={'name': amc_name})
 
     # 2. Get or Create Category
-    cat_code = str(row.get('scheme type', '')).strip() # Using 'scheme type' as category code usually?
-    # Wait, 'scheme type' and 'category' are different columns in headers?
-    # SCHEME_HEADERS has 'Scheme Type' and 'Category'.
-    # In original parser: category, _ = SchemeCategory.objects.get_or_create(code=cat_code) where cat_code = row.get('Scheme Type')
+    # Support 'category code' (Export) or fallback to 'scheme type' (Legacy/Import)
+    cat_code = str(row.get('category code') or row.get('category') or row.get('scheme type') or '').strip()
 
     category = None
     if cat_code:
         category, _ = SchemeCategory.objects.get_or_create(
             code=cat_code,
-            defaults={'name': cat_code}
+            defaults={'name': row.get('category') or cat_code}
         )
 
     # Helpers
@@ -146,7 +144,7 @@ def process_scheme_row(row):
     scheme_data = {
         'amc': amc,
         'category': category,
-        'name': row.get('scheme name'),
+        'name': row.get('scheme name') or row.get('name'),
         'isin': row.get('isin') or '',
         'rta_scheme_code': row.get('rta scheme code'),
         'amc_scheme_code': row.get('amc scheme code'),
@@ -188,6 +186,9 @@ def process_scheme_row(row):
         'lock_in_period': row.get('lock-in period'),
         'channel_partner_code': row.get('channel partner code'),
     }
+
+    if 'is active' in row:
+        scheme_data['is_active'] = parse_bool(row.get('is active'))
 
     # AMFI Code mapping
     if 'amfi code' in row:
