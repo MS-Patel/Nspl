@@ -632,3 +632,136 @@ class BranchListAPIView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
     queryset = Branch.objects.all()
     serializer_class = BranchSerializer
+
+class PortfolioAnalyticsAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        try:
+            investor_profile = user.investor_profile
+        except InvestorProfile.DoesNotExist:
+             return Response({'error': 'User is not an investor'}, status=400)
+
+        holdings = Holding.objects.filter(investor=investor_profile).select_related('scheme')
+
+        asset_allocation = {}
+        sector_allocation = {}
+        total_value = 0
+
+        for holding in holdings:
+            val = holding.current_value or 0
+            total_value += val
+            scheme = holding.scheme
+
+            # Asset Allocation
+            allocs = scheme.asset_allocations.all()
+            if allocs.exists():
+                for alloc in allocs:
+                    amount = val * (alloc.percentage / 100)
+                    asset_allocation[alloc.asset_type] = asset_allocation.get(alloc.asset_type, 0) + amount
+            else:
+                 # Fallback if no allocation data
+                 asset_allocation['Unclassified'] = asset_allocation.get('Unclassified', 0) + val
+
+            # Sector Allocation
+            sectors = scheme.sector_allocations.all()
+            if sectors.exists():
+                for sec in sectors:
+                    amount = val * (sec.percentage / 100)
+                    sector_allocation[sec.sector_name] = sector_allocation.get(sec.sector_name, 0) + amount
+            # else: skip sector logic if data missing
+
+        # Convert to percentages
+        asset_data = []
+        for k, v in asset_allocation.items():
+            if total_value > 0:
+                asset_data.append({'name': k, 'value': round(float(v), 2), 'percentage': round(float(v/total_value)*100, 2)})
+
+        sector_data = []
+        for k, v in sector_allocation.items():
+            if total_value > 0:
+                sector_data.append({'name': k, 'value': round(float(v), 2), 'percentage': round(float(v/total_value)*100, 2)})
+
+        return Response({
+            'total_value': round(float(total_value), 2),
+            'asset_allocation': asset_data,
+            'sector_allocation': sector_data
+        })
+
+class HoldingListAPIView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        try:
+            investor_profile = user.investor_profile
+        except InvestorProfile.DoesNotExist:
+             return Response({'error': 'User is not an investor'}, status=400)
+
+        holdings = Holding.objects.filter(investor=investor_profile).select_related('scheme', 'scheme__amc').order_by('-current_value')
+
+        data = []
+        for h in holdings:
+            data.append({
+                'id': h.id,
+                'scheme_name': h.scheme.name,
+                'amc': h.scheme.amc.name if h.scheme.amc else '',
+                'folio': h.folio_number,
+                'units': h.units,
+                'average_cost': h.average_cost,
+                'current_value': h.current_value,
+                'gain_loss': (h.current_value - (h.units * h.average_cost)) if h.current_value else 0,
+            })
+
+        return Response(data)
+
+class UserProfileAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        data = {
+            'username': user.username,
+            'name': user.name,
+            'email': user.email,
+            'role': user.user_type,
+            'mobile_number': getattr(user, 'mobile_number', ''),
+        }
+        if hasattr(user, 'investor_profile'):
+            data['investor_id'] = user.investor_profile.id
+        return Response(data)
+
+    def patch(self, request):
+        user = request.user
+        data = request.data
+
+        if 'name' in data:
+            user.name = data['name']
+        if 'email' in data:
+            user.email = data['email']
+        # if 'mobile_number' in data: user.mobile_number = data['mobile_number']
+
+        user.save()
+        return Response({'status': 'success', 'message': 'Profile updated successfully'})
+
+class PasswordChangeAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        old_password = request.data.get('old_password')
+        new_password = request.data.get('new_password')
+        confirm_password = request.data.get('confirm_password')
+
+        if not user.check_password(old_password):
+            return Response({'status': 'error', 'message': 'Incorrect old password'}, status=400)
+
+        if new_password != confirm_password:
+             return Response({'status': 'error', 'message': 'Passwords do not match'}, status=400)
+
+        # Add complexity checks here if needed
+
+        user.set_password(new_password)
+        user.save()
+        return Response({'status': 'success', 'message': 'Password changed successfully'})

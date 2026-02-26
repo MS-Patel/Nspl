@@ -36,6 +36,8 @@ class OrderCreateSerializer(serializers.ModelSerializer):
         if txn_type == Order.SWITCH:
             if not data.get('target_scheme_id'):
                 raise serializers.ValidationError("Target scheme is required for Switch orders.")
+            if not data.get('folio_number'):
+                raise serializers.ValidationError("Folio number is required for Switch orders.")
 
         if txn_type == Order.REDEMPTION:
              if not data.get('folio_number'):
