@@ -23,6 +23,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import { BulkUploadDialog } from '@/components/users/BulkUploadDialog';
 
 interface PaginatedResponse {
     count: number;
@@ -50,44 +51,44 @@ const InvestorList = () => {
     setPage(1);
   }, [debouncedSearch, statusFilter, offlineFilter]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const queryParams = new URLSearchParams();
-        queryParams.append('page', page.toString());
-        if (debouncedSearch) {
-            queryParams.append('search', debouncedSearch);
-        }
-        if (statusFilter !== 'all') {
-            queryParams.append('status', statusFilter);
-        }
-        if (offlineFilter) {
-            queryParams.append('is_offline', 'true');
-        }
-
-        const result = await api.get<PaginatedResponse | Investor[]>(`/api/investors/?${queryParams.toString()}`);
-
-        if ('results' in result) {
-            setInvestors(result.results);
-            setTotalCount(result.count);
-            setTotalPages(Math.ceil(result.count / 10)); // Assuming page size 10
-        } else if (Array.isArray(result)) {
-            // Fallback for non-paginated API
-            setInvestors(result);
-            setTotalCount(result.length);
-            setTotalPages(1);
-        } else {
-            console.error('Unexpected API response format:', result);
-            setInvestors([]);
-        }
-      } catch (error) {
-        console.error('Error fetching investors:', error);
-      } finally {
-        setLoading(false);
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const queryParams = new URLSearchParams();
+      queryParams.append('page', page.toString());
+      if (debouncedSearch) {
+          queryParams.append('search', debouncedSearch);
       }
-    };
+      if (statusFilter !== 'all') {
+          queryParams.append('status', statusFilter);
+      }
+      if (offlineFilter) {
+          queryParams.append('is_offline', 'true');
+      }
 
+      const result = await api.get<PaginatedResponse | Investor[]>(`/api/investors/?${queryParams.toString()}`);
+
+      if ('results' in result) {
+          setInvestors(result.results);
+          setTotalCount(result.count);
+          setTotalPages(Math.ceil(result.count / 10)); // Assuming page size 10
+      } else if (Array.isArray(result)) {
+          // Fallback for non-paginated API
+          setInvestors(result);
+          setTotalCount(result.length);
+          setTotalPages(1);
+      } else {
+          console.error('Unexpected API response format:', result);
+          setInvestors([]);
+      }
+    } catch (error) {
+      console.error('Error fetching investors:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchData();
   }, [page, debouncedSearch, statusFilter, offlineFilter]);
 
@@ -106,11 +107,21 @@ const InvestorList = () => {
             <h1 className="text-3xl font-bold tracking-tight">Investors</h1>
             <p className="text-muted-foreground">Manage your investor base.</p>
         </div>
-        <Link to="/dashboard/investors/new">
-            <Button>
-                <Plus className="mr-2 h-4 w-4" /> Onboard Investor
-            </Button>
-        </Link>
+        <div className="flex gap-2">
+            <BulkUploadDialog
+                triggerText="Import Investors"
+                title="Import Investors"
+                description="Upload a CSV or Excel file to bulk create Investors."
+                uploadUrl="/api/investors/upload/"
+                sampleUrl="/api/investors/upload/sample/"
+                onSuccess={fetchData}
+            />
+            <Link to="/dashboard/investors/new">
+                <Button>
+                    <Plus className="mr-2 h-4 w-4" /> Onboard Investor
+                </Button>
+            </Link>
+        </div>
       </div>
 
       <Card>

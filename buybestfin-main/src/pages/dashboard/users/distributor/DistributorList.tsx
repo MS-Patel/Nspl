@@ -15,6 +15,7 @@ import { Search, Plus, Loader2, ChevronLeft, ChevronRight, Edit, Trash2 } from '
 import { Link, useNavigate } from 'react-router-dom';
 import { Distributor } from '@/types/users';
 import { useDebounce } from '@/hooks/use-debounce';
+import { BulkUploadDialog } from '@/components/users/BulkUploadDialog';
 import { useToast } from '@/components/ui/use-toast';
 import {
   AlertDialog,
@@ -111,11 +112,21 @@ const DistributorList = () => {
             <h1 className="text-3xl font-bold tracking-tight">Distributors</h1>
             <p className="text-muted-foreground">Manage your distributor network.</p>
         </div>
-        <Link to="/dashboard/distributors/new">
-            <Button>
-                <Plus className="mr-2 h-4 w-4" /> Add New Distributor
-            </Button>
-        </Link>
+        <div className="flex gap-2">
+            <BulkUploadDialog
+                triggerText="Import Distributors"
+                title="Import Distributors"
+                description="Upload a CSV or Excel file to bulk create Distributors. The file should contain ARN, name, email, etc."
+                uploadUrl="/api/distributors/upload/"
+                sampleUrl="/api/distributors/upload/sample/"
+                onSuccess={fetchDistributors}
+            />
+            <Link to="/dashboard/distributors/new">
+                <Button>
+                    <Plus className="mr-2 h-4 w-4" /> Add New Distributor
+                </Button>
+            </Link>
+        </div>
       </div>
 
       <Card>

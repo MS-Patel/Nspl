@@ -15,6 +15,7 @@ import { Search, Plus, Loader2, ChevronLeft, ChevronRight, Edit, Trash2 } from '
 import { Link, useNavigate } from 'react-router-dom';
 import { RM } from '@/types/users';
 import { useDebounce } from '@/hooks/use-debounce';
+import { BulkUploadDialog } from '@/components/users/BulkUploadDialog';
 import { useToast } from '@/components/ui/use-toast';
 import {
   AlertDialog,
@@ -111,11 +112,21 @@ const RMList = () => {
             <h1 className="text-3xl font-bold tracking-tight">Relationship Managers</h1>
             <p className="text-muted-foreground">Manage your RM team.</p>
         </div>
-        <Link to="/dashboard/rms/new">
-            <Button>
-                <Plus className="mr-2 h-4 w-4" /> Add New RM
-            </Button>
-        </Link>
+        <div className="flex gap-2">
+            <BulkUploadDialog
+                triggerText="Import RMs"
+                title="Import Relationship Managers"
+                description="Upload a CSV or Excel file to bulk create RMs. The file should contain employee code, name, email, etc."
+                uploadUrl="/api/rms/upload/"
+                sampleUrl="/api/rms/upload/sample/"
+                onSuccess={fetchRMs}
+            />
+            <Link to="/dashboard/rms/new">
+                <Button>
+                    <Plus className="mr-2 h-4 w-4" /> Add New RM
+                </Button>
+            </Link>
+        </div>
       </div>
 
       <Card>

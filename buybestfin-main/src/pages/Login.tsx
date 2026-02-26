@@ -104,7 +104,10 @@ const Login = () => {
                 <Input id="email" type="text" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Username or Email" required />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <div className="flex items-center justify-between">
+                    <Label htmlFor="password">Password</Label>
+                    <Link to="/auth/forgot-password" className="text-xs text-primary hover:underline">Forgot password?</Link>
+                </div>
                 <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required minLength={3} />
               </div>
               <Button className="w-full gradient-primary border-0 text-white hover:opacity-90" size="lg" disabled={loading}>

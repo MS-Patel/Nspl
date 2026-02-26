@@ -6,6 +6,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import OTPLogin from "./pages/auth/OTPLogin";
+import ForgotPassword from "./pages/auth/ForgotPassword";
+import ResetPassword from "./pages/auth/ResetPassword";
 import Calculator from "./pages/Calculator";
 import Explorer from "./pages/Explorer";
 import RiskProfile from "./pages/RiskProfile";
@@ -73,6 +75,8 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/login" element={<Login />} />
           <Route path="/auth/otp-login" element={<OTPLogin />} />
+          <Route path="/auth/forgot-password" element={<ForgotPassword />} />
+          <Route path="/auth/reset-password/:uid/:token" element={<ResetPassword />} />
           <Route path="/calculator" element={<Calculator />} />
           <Route path="/goal-calculator" element={<GoalCalculator />} />
           <Route path="/explorer" element={<Explorer />} />

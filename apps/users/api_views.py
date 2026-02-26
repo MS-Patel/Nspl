@@ -22,8 +22,22 @@ from apps.users.services import validate_investor_for_bse
 from apps.integration.bse_client import BSEStarMFClient
 from apps.integration.utils import map_investor_to_bse_param_string
 from django.contrib.auth import get_user_model
+from django.http import HttpResponse
+from .utils.parsers import import_rms_from_file, import_distributors_from_file, import_investors_from_file
+from apps.core.utils.excel_generator import create_excel_sample_file
+from apps.core.utils.sample_headers import (
+    RM_HEADERS, RM_CHOICES,
+    DISTRIBUTOR_HEADERS, DISTRIBUTOR_CHOICES,
+    INVESTOR_HEADERS, INVESTOR_CHOICES
+)
 import logging
 import json
+import os
+from django.conf import settings
+from django.core.mail import send_mail
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
@@ -780,3 +794,176 @@ class PasswordChangeAPIView(APIView):
         user.set_password(new_password)
         user.save()
         return Response({'status': 'success', 'message': 'Password changed successfully'})
+
+
+# --- Bulk Upload APIs ---
+
+class RMUploadAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        if request.user.user_type != User.Types.ADMIN:
+            return Response({'error': 'Permission denied'}, status=403)
+
+        file_obj = request.FILES.get('file')
+        if not file_obj:
+            return Response({'error': 'No file provided'}, status=400)
+
+        count, errors = import_rms_from_file(file_obj)
+
+        if errors:
+            return Response({'status': 'warning', 'message': f'Processed {count} RMs with errors.', 'errors': errors}, status=200)
+
+        return Response({'status': 'success', 'message': f'Successfully imported {count} RMs.'})
+
+class DistributorUploadAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        if request.user.user_type != User.Types.ADMIN:
+            return Response({'error': 'Permission denied'}, status=403)
+
+        file_obj = request.FILES.get('file')
+        if not file_obj:
+             return Response({'error': 'No file provided'}, status=400)
+
+        count, errors = import_distributors_from_file(file_obj)
+
+        if errors:
+             return Response({'status': 'warning', 'message': f'Processed {count} distributors with errors.', 'errors': errors}, status=200)
+
+        return Response({'status': 'success', 'message': f'Successfully imported {count} distributors.'})
+
+class InvestorUploadAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        # Allow Admin and RM to upload investors? Legacy view said IsAdminMixin.
+        # But logically RMs might want to bulk upload their clients.
+        # For now, stick to Admin only to match legacy, or open to RM if needed.
+        # Let's restrict to Admin for now as per legacy code `InvestorUploadView` which uses `IsAdminMixin`.
+        if request.user.user_type != User.Types.ADMIN:
+             return Response({'error': 'Permission denied'}, status=403)
+
+        file_obj = request.FILES.get('file')
+        if not file_obj:
+             return Response({'error': 'No file provided'}, status=400)
+
+        count, errors = import_investors_from_file(file_obj)
+
+        if errors:
+             return Response({'status': 'warning', 'message': f'Processed {count} investors with errors.', 'errors': errors}, status=200)
+
+        return Response({'status': 'success', 'message': f'Successfully imported {count} investors.'})
+
+class DownloadRMSampleAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if request.user.user_type != User.Types.ADMIN:
+             return Response({'error': 'Permission denied'}, status=403)
+
+        excel_file = create_excel_sample_file(RM_HEADERS, RM_CHOICES)
+        response = HttpResponse(
+            excel_file.read(),
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = 'attachment; filename="rm_import_sample.xlsx"'
+        return response
+
+class DownloadDistributorSampleAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if request.user.user_type != User.Types.ADMIN:
+             return Response({'error': 'Permission denied'}, status=403)
+
+        excel_file = create_excel_sample_file(DISTRIBUTOR_HEADERS, DISTRIBUTOR_CHOICES)
+        response = HttpResponse(
+            excel_file.read(),
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = 'attachment; filename="distributor_import_sample.xlsx"'
+        return response
+
+class DownloadInvestorSampleAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        # Allow RM/Admin
+        if request.user.user_type not in [User.Types.ADMIN, User.Types.RM]:
+             return Response({'error': 'Permission denied'}, status=403)
+
+        excel_file = create_excel_sample_file(INVESTOR_HEADERS, INVESTOR_CHOICES)
+        response = HttpResponse(
+            excel_file.read(),
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = 'attachment; filename="investor_import_sample.xlsx"'
+        return response
+
+class RequestPasswordResetAPIView(APIView):
+    permission_classes = [] # Public
+
+    def post(self, request):
+        email = request.data.get('email')
+        if not email:
+            return Response({'error': 'Email is required'}, status=400)
+
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            # Don't reveal user existence
+            return Response({'status': 'success', 'message': 'If an account exists with this email, a reset link has been sent.'})
+
+        if not user.is_active:
+             return Response({'error': 'Account is inactive.'}, status=400)
+
+        # Generate Token
+        token = default_token_generator.make_token(user)
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+
+        # Construct Link
+        frontend_url = os.environ.get('FRONTEND_URL', 'http://localhost:5173')
+        reset_link = f"{frontend_url}/auth/reset-password/{uid}/{token}"
+
+        # Send Email
+        logger.info(f"Password Reset Link for {email}: {reset_link}")
+
+        try:
+            send_mail(
+                subject="Password Reset Request",
+                message=f"Click the link to reset your password: {reset_link}",
+                from_email=settings.DEFAULT_FROM_EMAIL if hasattr(settings, 'DEFAULT_FROM_EMAIL') else 'noreply@buybestfin.com',
+                recipient_list=[email],
+                fail_silently=False
+            )
+        except Exception as e:
+            logger.error(f"Failed to send email: {e}")
+            # Still return success to user
+
+        return Response({'status': 'success', 'message': 'If an account exists with this email, a reset link has been sent.'})
+
+class ResetPasswordConfirmAPIView(APIView):
+    permission_classes = []
+
+    def post(self, request):
+        uidb64 = request.data.get('uid')
+        token = request.data.get('token')
+        new_password = request.data.get('password')
+
+        if not uidb64 or not token or not new_password:
+             return Response({'error': 'Missing required fields'}, status=400)
+
+        try:
+            uid = force_str(urlsafe_base64_decode(uidb64))
+            user = User.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            return Response({'error': 'Invalid link'}, status=400)
+
+        if default_token_generator.check_token(user, token):
+            user.set_password(new_password)
+            user.save()
+            return Response({'status': 'success', 'message': 'Password has been reset successfully.'})
+        else:
+            return Response({'error': 'Invalid or expired token'}, status=400)

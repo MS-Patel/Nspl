@@ -9,6 +9,8 @@ urlpatterns = [
     path('legacy/login/', views.CustomLoginView.as_view(), name='login_legacy'),
     path('login/', ReactAppView.as_view(), name='login'),
     path('users/api/auth/login/', views.APILoginView.as_view(), name='api_login'),
+    path('api/auth/password-reset/request/', api_views.RequestPasswordResetAPIView.as_view(), name='api_password_reset_request'),
+    path('api/auth/password-reset/confirm/', api_views.ResetPasswordConfirmAPIView.as_view(), name='api_password_reset_confirm'),
     path('logout/', views.CustomLogoutView.as_view(), name='logout'),
 
     # OTP Login
@@ -27,6 +29,8 @@ urlpatterns = [
 
     # API: Investor Module
     path('api/investors/', api_views.InvestorListAPIView.as_view(), name='api_investor_list'),
+    path('api/investors/upload/', api_views.InvestorUploadAPIView.as_view(), name='api_investor_upload'),
+    path('api/investors/upload/sample/', api_views.DownloadInvestorSampleAPIView.as_view(), name='api_investor_upload_sample'),
     path('api/investors/onboard/', api_views.InvestorCreateAPIView.as_view(), name='api_investor_create'),
     path('api/investors/<int:pk>/', api_views.InvestorDetailAPIView.as_view(), name='api_investor_detail'),
 
@@ -46,8 +50,12 @@ urlpatterns = [
 
     # API: RM & Distributor Management
     path('api/rms/', api_views.RMListCreateAPIView.as_view(), name='api_rm_list_create'),
+    path('api/rms/upload/', api_views.RMUploadAPIView.as_view(), name='api_rm_upload'),
+    path('api/rms/upload/sample/', api_views.DownloadRMSampleAPIView.as_view(), name='api_rm_upload_sample'),
     path('api/rms/<int:pk>/', api_views.RMDetailAPIView.as_view(), name='api_rm_detail'),
     path('api/distributors/', api_views.DistributorListCreateAPIView.as_view(), name='api_distributor_list_create'),
+    path('api/distributors/upload/', api_views.DistributorUploadAPIView.as_view(), name='api_distributor_upload'),
+    path('api/distributors/upload/sample/', api_views.DownloadDistributorSampleAPIView.as_view(), name='api_distributor_upload_sample'),
     path('api/distributors/<int:pk>/', api_views.DistributorDetailAPIView.as_view(), name='api_distributor_detail'),
 
     # API: Bulk Operations
@@ -66,36 +74,4 @@ urlpatterns = [
     path('dashboard/distributor/', ReactAppView.as_view(), name='distributor_dashboard'),
     path('dashboard/investor/', ReactAppView.as_view(), name='investor_dashboard'),
 
-    # User Management
-    path('users/rm/', views.RMListView.as_view(), name='rm_list'),
-    path('users/rm/create/', views.RMCreateView.as_view(), name='rm_create'),
-    path('users/rm/<int:pk>/update/', views.RMUpdateView.as_view(), name='rm_update'),
-    path('users/rm/upload/', views.RMUploadView.as_view(), name='rm_upload'),
-    path('users/rm/upload/sample/', views.DownloadRMSampleView.as_view(), name='rm_upload_sample'),
-
-    path('users/distributor/', views.DistributorListView.as_view(), name='distributor_list'),
-    path('users/distributor/create/', views.DistributorCreateView.as_view(), name='distributor_create'),
-    path('users/distributor/<int:pk>/update/', views.DistributorUpdateView.as_view(), name='distributor_update'),
-    path('users/distributor/upload/', views.DistributorUploadView.as_view(), name='distributor_upload'),
-    path('users/distributor/upload/sample/', views.DownloadDistributorSampleView.as_view(), name='distributor_upload_sample'),
-
-    path('users/investor/', views.InvestorListView.as_view(), name='investor_list'),
-    path('users/investor/mapping/', views.DistributorMappingView.as_view(), name='distributor_mapping'),
-    path('users/investor/create/', views.InvestorCreateView.as_view(), name='investor_create'),
-    path('users/investor/onboard/', views.InvestorCreateView.as_view(), name='investor_onboard'), # New Wizard
-    path('users/investor/<int:pk>/update/', views.InvestorUpdateView.as_view(), name='investor_update'),
-    path('users/investor/<int:pk>/', views.InvestorDetailView.as_view(), name='investor_detail'),
-    path('users/investor/<int:pk>/push-bse/', views.PushToBSEView.as_view(), name='push_to_bse'),
-    path('users/investor/<int:pk>/fatca-upload/', views.FATCAUploadView.as_view(), name='fatca_upload'),
-    path('users/investor/<int:pk>/trigger-auth/', views.TriggerNomineeAuthView.as_view(), name='trigger_nominee_auth'),
-    path('users/investor/<int:pk>/opt-out-nominee/', views.OptOutNomineeView.as_view(), name='opt_out_nominee'),
-    path('users/investor/<int:pk>/toggle-kyc/', views.ToggleKYCView.as_view(), name='toggle_kyc'),
-    path('users/investor/upload/', views.InvestorUploadView.as_view(), name='investor_upload'),
-    path('users/investor/upload/sample/', views.DownloadInvestorSampleView.as_view(), name='investor_upload_sample'),
-
-    # Profile & Settings
-    path('password-reset/', views.UserPasswordResetView.as_view(), name='password_reset'),
-    path('password-reset/done/', views.UserPasswordResetDoneView.as_view(), name='password_reset_done'),
-    path('reset/<uidb64>/<token>/', views.UserPasswordResetConfirmView.as_view(), name='password_reset_confirm'),
-    path('reset/done/', views.UserPasswordResetCompleteView.as_view(), name='password_reset_complete'),
 ]
