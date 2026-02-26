@@ -46,10 +46,15 @@ const Login = () => {
       }
     } catch (error: any) {
       console.error("Login error:", error);
+      let title = "Error";
       const message = error.response?.data?.message || error.message || "An error occurred during login.";
 
+      if (error.response?.status === 403) {
+          title = "Account Locked";
+      }
+
       toast({
-        title: "Error",
+        title: title,
         description: message,
         variant: "destructive",
       });
@@ -108,12 +113,19 @@ const Login = () => {
               </Button>
             </form>
 
-            <p className="text-center text-sm text-muted-foreground mt-4">
-              {isRegister ? "Already have an account?" : "Don't have an account?"}{" "}
-              <button onClick={() => setIsRegister(!isRegister)} className="text-primary font-medium hover:underline">
-                {isRegister ? "Sign In" : "Register here"}
-              </button>
-            </p>
+            <div className="flex flex-col gap-2 mt-4 text-center">
+              <p className="text-sm text-muted-foreground">
+                {isRegister ? "Already have an account?" : "Don't have an account?"}{" "}
+                <button onClick={() => setIsRegister(!isRegister)} className="text-primary font-medium hover:underline">
+                  {isRegister ? "Sign In" : "Register here"}
+                </button>
+              </p>
+              {!isRegister && (
+                  <Link to="/auth/otp-login" className="text-sm text-primary hover:underline">
+                      Login with OTP
+                  </Link>
+              )}
+            </div>
 
             <p className="text-xs text-muted-foreground text-center mt-6">
               BuyBestFin | ARN: 147231

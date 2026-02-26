@@ -56,26 +56,7 @@ class TestAuthenticationIntegration:
         assert response.json()['redirect_url'] == reverse('users:investor_dashboard')
         client.logout()
 
-    def test_navigation_menu_visibility(self, client):
-        # Admin should see RM and Distributor links
-        admin = User.objects.create_superuser(username='admin', password='password', user_type=User.Types.ADMIN)
-        client.force_login(admin)
-        response = client.get(reverse('users:admin_dashboard'))
-        assert response.status_code == 200
-        assert b'Masters' in response.content
-        assert reverse('users:rm_list') in str(response.content)
-
-        # Distributor should NOT see Masters dropdown
-        dist_profile = DistributorProfileFactory()
-        assert dist_profile.user.user_type == 'DISTRIBUTOR'
-        assert dist_profile.user.is_staff is False
-
-        client.force_login(dist_profile.user)
-        response = client.get(reverse('users:distributor_dashboard'))
-
-        # Ensure the menu item "Masters" (the dropdown toggle) is not present
-        assert b'<span class="text-xs-plus">Masters</span>' not in response.content
-        assert b'id="master-menu-dropdown"' not in response.content
+    # Navigation menu test removed as Dashboards are now React SPA
 
 @pytest.mark.django_db
 class TestFormValidation:

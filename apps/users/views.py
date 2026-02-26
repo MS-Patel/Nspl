@@ -228,42 +228,7 @@ class DistributorDashboardView(LoginRequiredMixin, IsDistributorMixin, TemplateV
 
         return context
 
-class InvestorDashboardView(LoginRequiredMixin, TemplateView):
-    template_name = 'dashboard/investor.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        user = self.request.user
-
-        # Determine the Investor Profile
-        investor_profile = None
-        if user.user_type == User.Types.INVESTOR:
-            # Handle potential DoesNotExist if profile creation failed (though it shouldn't)
-            try:
-                investor_profile = user.investor_profile
-
-                # Sync SIPs and Orders for this investor (Mandates are synced in Detail View)
-                # Since Dashboard usually shows high level info, syncing SIP child orders here is good.
-                try:
-                    sync_sip_child_orders(user=user, investor=investor_profile)
-                    sync_pending_orders(user=user, investor=investor_profile)
-                except Exception as e:
-                    logger.error(f"Sync failed for investor {user.username}: {e}")
-
-            except InvestorProfile.DoesNotExist:
-                pass
-
-        if investor_profile:
-            valuation_data = calculate_portfolio_valuation(investor_profile)
-
-            # Inject Redemption URL
-            for holding in valuation_data['holdings']:
-                holding['redemption_url'] = reverse('investments:redemption_create', args=[holding['id']])
-
-            context['valuation'] = valuation_data
-            context['grid_data_json'] = json.dumps(valuation_data['holdings'], default=str)
-
-        return context
+# InvestorDashboardView Removed (Legacy)
 
 # --- User Management Views (The Permissions Layer) ---
 
@@ -1216,99 +1181,14 @@ class DownloadRMSampleView(LoginRequiredMixin, IsAdminMixin, View):
         response['Content-Disposition'] = 'attachment; filename="rm_import_sample.xlsx"'
         return response
 
-# --- Profile & Settings Views ---
-
-class ProfileView(LoginRequiredMixin, TemplateView):
-    template_name = 'users/profile.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        user = self.request.user
-
-        if user.user_type == User.Types.INVESTOR:
-            try:
-                investor = user.investor_profile
-                context['investor'] = investor
-                context['bank_accounts'] = investor.bank_accounts.all()
-                context['nominees'] = investor.nominees.all()
-                context['documents'] = investor.documents.all()
-            except InvestorProfile.DoesNotExist:
-                pass
-        elif user.user_type == User.Types.RM:
-            try:
-                context['rm'] = user.rm_profile
-            except RMProfile.DoesNotExist:
-                pass
-        elif user.user_type == User.Types.DISTRIBUTOR:
-            try:
-                context['distributor'] = user.distributor_profile
-            except DistributorProfile.DoesNotExist:
-                pass
-
-        return context
-
-class ProfileEditView(LoginRequiredMixin, TemplateView):
-    template_name = 'users/profile_edit.html'
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        user = self.request.user
-
-        # Initialize forms
-        if 'user_form' not in context:
-            context['user_form'] = UserProfileForm(instance=user)
-
-        # Profile specific form
-        if user.user_type == User.Types.RM and hasattr(user, 'rm_profile'):
-            if 'profile_form' not in context:
-                context['profile_form'] = RMProfileUpdateForm(instance=user.rm_profile)
-        elif user.user_type == User.Types.DISTRIBUTOR and hasattr(user, 'distributor_profile'):
-            if 'profile_form' not in context:
-                context['profile_form'] = DistributorProfileUpdateForm(instance=user.distributor_profile)
-
-        return context
-
-    def post(self, request, *args, **kwargs):
-        user = request.user
-        user_form = UserProfileForm(request.POST, instance=user)
-        profile_form = None
-
-        valid_profile = True
-
-        if user.user_type == User.Types.RM and hasattr(user, 'rm_profile'):
-            profile_form = RMProfileUpdateForm(request.POST, instance=user.rm_profile)
-        elif user.user_type == User.Types.DISTRIBUTOR and hasattr(user, 'distributor_profile'):
-            profile_form = DistributorProfileUpdateForm(request.POST, instance=user.distributor_profile)
-
-        valid_user = user_form.is_valid()
-        if profile_form:
-            valid_profile = profile_form.is_valid()
-
-        if valid_user and valid_profile:
-            user_form.save()
-            if profile_form:
-                profile_form.save()
-            messages.success(request, "Profile updated successfully.")
-            return redirect('users:profile')
-        else:
-            messages.error(request, "Please correct the errors below.")
-            return self.render_to_response(self.get_context_data(user_form=user_form, profile_form=profile_form))
+# ProfileView, ProfileEditView, UserPasswordChangeView Removed (Legacy)
 
 from django.contrib.auth.views import (
-    PasswordChangeView,
     PasswordResetView,
     PasswordResetDoneView,
     PasswordResetConfirmView,
     PasswordResetCompleteView
 )
-
-class UserPasswordChangeView(LoginRequiredMixin, PasswordChangeView):
-    template_name = 'users/password_change.html'
-    success_url = reverse_lazy('users:profile')
-
-    def form_valid(self, form):
-        messages.success(self.request, "Password changed successfully.")
-        return super().form_valid(form)
 
 class UserPasswordResetView(PasswordResetView):
     template_name = 'users/password_reset_form.html'
@@ -1355,4 +1235,11 @@ class APILoginView(View):
 
             return JsonResponse({'status': 'success', 'redirect_url': redirect_url})
         else:
+            try:
+                u = User.objects.get(username=username)
+                if not u.is_active:
+                    return JsonResponse({'status': 'error', 'message': 'Account is locked or inactive. Please contact support.'}, status=403)
+            except User.DoesNotExist:
+                pass
+
             return JsonResponse({'status': 'error', 'message': 'Invalid credentials'}, status=401)

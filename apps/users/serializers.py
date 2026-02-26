@@ -165,7 +165,7 @@ class InvestorCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = InvestorProfile
         fields = [
-            'firstname', 'middlename', 'lastname', 'email', 'pan', 'mobile',
+            'id', 'firstname', 'middlename', 'lastname', 'email', 'pan', 'mobile',
             'dob', 'gender', 'occupation', 'tax_status', 'holding_nature',
             'bank_accounts', 'nominees'
         ]
