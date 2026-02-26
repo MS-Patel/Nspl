@@ -57,6 +57,31 @@ const DashboardNavbar = ({ user }: DashboardNavbarProps) => {
         });
     }
 
+    if (['ADMIN', 'RM', 'DISTRIBUTOR', 'INVESTOR'].includes(user.role)) {
+        items.push({
+            title: "Investments",
+            url: "/dashboard/investments",
+            children: [
+                { title: "New Investment", url: "/dashboard/investments/invest" },
+                { title: "Order Book", url: "/dashboard/investments/orders" },
+                { title: "SIP Book", url: "/dashboard/investments/sips" },
+                { title: "Mandates", url: "/dashboard/investments/mandates" },
+            ]
+        });
+    }
+
+    if (user.role === 'INVESTOR') {
+        items.push({
+            title: "Portfolio",
+            url: "/dashboard/portfolio",
+            children: [
+                { title: "Overview", url: "/dashboard/investor" },
+                { title: "Holdings", url: "/dashboard/portfolio/holdings" },
+                { title: "Analytics", url: "/dashboard/portfolio/analytics" },
+            ]
+        });
+    }
+
     if (user.role === 'ADMIN') {
         items.push({
             title: "Products",
@@ -65,6 +90,15 @@ const DashboardNavbar = ({ user }: DashboardNavbarProps) => {
                 { title: "AMCs", url: "/dashboard/products/amc" },
                 { title: "Scheme Explorer", url: "/dashboard/products/schemes" },
                 { title: "Uploads", url: "/dashboard/products/upload" },
+            ]
+        });
+
+        items.push({
+            title: "Operations",
+            url: "/dashboard/admin",
+            children: [
+                { title: "Reconciliation", url: "/dashboard/admin/reconciliation" },
+                { title: "Reports", url: "/dashboard/admin/reports" },
             ]
         });
     }
@@ -166,11 +200,32 @@ const DashboardNavbar = ({ user }: DashboardNavbarProps) => {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                  <a href="/users/profile/">
+                  <Link to="/dashboard/settings/profile">
                     <UserIcon className="mr-2 h-4 w-4" />
                     <span>Profile</span>
-                  </a>
+                  </Link>
                 </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/dashboard/settings/security">
+                    <UserIcon className="mr-2 h-4 w-4" />
+                    <span>Security</span>
+                  </Link>
+                </DropdownMenuItem>
+                {user.role === 'INVESTOR' && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link to="/dashboard/settings/banks">
+                        <span>Bank Accounts</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/dashboard/settings/nominees">
+                        <span>Nominees</span>
+                      </Link>
+                    </DropdownMenuItem>
+                  </>
+                )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout}>
                   <LogOut className="mr-2 h-4 w-4" />

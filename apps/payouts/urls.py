@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from . import api_views
 
 app_name = 'payouts'
 
@@ -20,4 +21,7 @@ urlpatterns = [
     path('payouts/categories/add/', views.DistributorCategoryCreateView.as_view(), name='category_add'),
     path('payouts/categories/<int:pk>/edit/', views.DistributorCategoryUpdateView.as_view(), name='category_edit'),
     path('payouts/categories/<int:pk>/delete/', views.DistributorCategoryDeleteView.as_view(), name='category_delete'),
+
+    # API
+    path('api/reports/', api_views.BrokerageImportListAPIView.as_view(), name='api_report_list'),
 ]

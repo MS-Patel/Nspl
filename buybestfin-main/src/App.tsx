@@ -23,10 +23,27 @@ import InvestorDashboard from "@/pages/dashboard/InvestorDashboard";
 import InvestorList from "@/pages/dashboard/investors/InvestorList";
 import CreateInvestor from "@/pages/dashboard/investors/CreateInvestor";
 import InvestorDetail from "@/pages/dashboard/investors/InvestorDetail";
-import InvestPage from "@/pages/dashboard/InvestPage";
-import OrdersPage from "@/pages/dashboard/OrdersPage";
-import SIPsPage from "@/pages/dashboard/SIPsPage";
-import MandatesPage from "@/pages/dashboard/MandatesPage";
+
+// Investment Pages
+import InvestPage from "@/pages/dashboard/investments/InvestPage";
+import OrderList from "@/pages/dashboard/investments/OrderList";
+import SIPList from "@/pages/dashboard/investments/SIPList";
+import MandateList from "@/pages/dashboard/investments/MandateList";
+
+// Portfolio Pages
+import Holdings from "@/pages/dashboard/portfolio/Holdings";
+import Analytics from "@/pages/dashboard/portfolio/Analytics";
+
+// Settings Pages
+import Profile from "@/pages/dashboard/settings/Profile";
+import Security from "@/pages/dashboard/settings/Security";
+import Banks from "@/pages/dashboard/settings/Banks";
+import Nominees from "@/pages/dashboard/settings/Nominees";
+
+// Admin Pages
+import Reconciliation from "@/pages/dashboard/admin/Reconciliation";
+import Reports from "@/pages/dashboard/admin/Reports";
+
 import RoleGuard from "@/components/auth/RoleGuard";
 
 // User Management
@@ -149,24 +166,71 @@ const App = () => (
               </RoleGuard>
             } />
 
-            <Route path="invest" element={
+            {/* Investment Routes */}
+            <Route path="investments/invest" element={
               <RoleGuard allowedRoles={['ADMIN', 'RM', 'DISTRIBUTOR', 'INVESTOR']}>
                 <InvestPage />
               </RoleGuard>
             } />
-            <Route path="orders" element={
+            <Route path="investments/orders" element={
               <RoleGuard allowedRoles={['ADMIN', 'RM', 'DISTRIBUTOR', 'INVESTOR']}>
-                <OrdersPage />
+                <OrderList />
               </RoleGuard>
             } />
-            <Route path="sips" element={
+            <Route path="investments/sips" element={
               <RoleGuard allowedRoles={['ADMIN', 'RM', 'DISTRIBUTOR', 'INVESTOR']}>
-                <SIPsPage />
+                <SIPList />
               </RoleGuard>
             } />
-            <Route path="mandates" element={
+            <Route path="investments/mandates" element={
               <RoleGuard allowedRoles={['ADMIN', 'RM', 'DISTRIBUTOR', 'INVESTOR']}>
-                <MandatesPage />
+                <MandateList />
+              </RoleGuard>
+            } />
+
+            {/* Portfolio Routes */}
+            <Route path="portfolio/holdings" element={
+              <RoleGuard allowedRoles={['INVESTOR', 'ADMIN', 'RM']}>
+                <Holdings />
+              </RoleGuard>
+            } />
+            <Route path="portfolio/analytics" element={
+              <RoleGuard allowedRoles={['INVESTOR', 'ADMIN', 'RM']}>
+                <Analytics />
+              </RoleGuard>
+            } />
+
+            {/* Settings Routes */}
+            <Route path="settings/profile" element={
+              <RoleGuard allowedRoles={['ADMIN', 'RM', 'DISTRIBUTOR', 'INVESTOR']}>
+                <Profile />
+              </RoleGuard>
+            } />
+            <Route path="settings/security" element={
+              <RoleGuard allowedRoles={['ADMIN', 'RM', 'DISTRIBUTOR', 'INVESTOR']}>
+                <Security />
+              </RoleGuard>
+            } />
+            <Route path="settings/banks" element={
+              <RoleGuard allowedRoles={['INVESTOR', 'ADMIN', 'RM']}>
+                <Banks />
+              </RoleGuard>
+            } />
+            <Route path="settings/nominees" element={
+              <RoleGuard allowedRoles={['INVESTOR', 'ADMIN', 'RM']}>
+                <Nominees />
+              </RoleGuard>
+            } />
+
+            {/* Admin Operations */}
+            <Route path="admin/reconciliation" element={
+              <RoleGuard allowedRoles={['ADMIN']}>
+                <Reconciliation />
+              </RoleGuard>
+            } />
+            <Route path="admin/reports" element={
+              <RoleGuard allowedRoles={['ADMIN']}>
+                <Reports />
               </RoleGuard>
             } />
           </Route>
