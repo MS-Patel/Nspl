@@ -10,8 +10,11 @@ import logo from "@/assets/logo.png";
 
 const Login = () => {
   const [isRegister, setIsRegister] = useState(false);
+  const [isOTPLogin, setIsOTPLogin] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [otp, setOtp] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
@@ -31,6 +34,89 @@ const Login = () => {
     checkAuth();
   }, []);
 
+  const getCookie = (name: string) => {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+
+  const handleSendOTP = async () => {
+    setLoading(true);
+    try {
+      const csrftoken = getCookie('csrftoken');
+      const response = await fetch('/users/otp/send/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-CSRFToken': csrftoken || '',
+        },
+        body: new URLSearchParams({ username: email }).toString(),
+      });
+
+      const data = await response.json();
+      if (response.ok && data.status === 'success') {
+        toast({
+          title: "OTP Sent",
+          description: data.message,
+        });
+        setOtpSent(true);
+      } else {
+        throw new Error(data.message || 'Failed to send OTP');
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyOTP = async () => {
+    setLoading(true);
+    try {
+      const csrftoken = getCookie('csrftoken');
+      const response = await fetch('/users/otp/login/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-CSRFToken': csrftoken || '',
+        },
+        body: new URLSearchParams({ username: email, otp: otp }).toString(),
+      });
+      const data = await response.json();
+
+      if (response.ok && data.status === 'success') {
+        toast({
+          title: "Login successful!",
+          description: "Redirecting...",
+        });
+        window.location.href = data.redirect_url || '/dashboard/admin/';
+      } else {
+        throw new Error(data.message || 'Invalid OTP');
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -42,24 +128,16 @@ const Login = () => {
           description: "Please contact support to create an account.",
           variant: "destructive",
         });
-      } else {
-        // CSRF Token
-        const getCookie = (name: string) => {
-          let cookieValue = null;
-          if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-              const cookie = cookies[i].trim();
-              if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-              }
-            }
-          }
-          return cookieValue;
+        setLoading(false);
+      } else if (isOTPLogin) {
+        if (!otpSent) {
+          await handleSendOTP();
+        } else {
+          await handleVerifyOTP();
         }
+      } else {
+        // Password Login
         const csrftoken = getCookie('csrftoken');
-
         const response = await fetch('/users/api/auth/login/', {
           method: 'POST',
           headers: {
@@ -80,6 +158,7 @@ const Login = () => {
         } else {
           throw new Error(data.message || 'Login failed');
         }
+        setLoading(false);
       }
     } catch (error: any) {
       toast({
@@ -87,9 +166,15 @@ const Login = () => {
         description: error.message,
         variant: "destructive",
       });
-    } finally {
       setLoading(false);
     }
+  };
+
+  const toggleMode = () => {
+    setIsOTPLogin(!isOTPLogin);
+    setOtpSent(false);
+    setOtp("");
+    setPassword("");
   };
 
   return (
@@ -111,12 +196,12 @@ const Login = () => {
             </div>
             <div>
               <CardTitle className="text-2xl">
-                {isRegister ? "Create Account" : "Welcome Back"}
+                {isRegister ? "Create Account" : (isOTPLogin ? "Login with OTP" : "Welcome Back")}
               </CardTitle>
               <CardDescription className="mt-1">
                 {isRegister
                   ? "Sign up to start your investment journey"
-                  : "Sign in to access your portal"}
+                  : (isOTPLogin ? "Enter your username to receive an OTP" : "Sign in to access your portal")}
               </CardDescription>
             </div>
           </CardHeader>
@@ -128,23 +213,65 @@ const Login = () => {
                   <Input id="fullName" value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Your full name" required />
                 </div>
               )}
+
               <div className="space-y-2">
                 <Label htmlFor="email">Username / Email</Label>
-                <Input id="email" type="text" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Username or Email" required />
+                <Input
+                  id="email"
+                  type="text"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Username or Email"
+                  required
+                  disabled={isOTPLogin && otpSent} // Disable email input after OTP is sent
+                />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required minLength={3} />
-              </div>
+
+              {(!isOTPLogin || isRegister) && (
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
+                  <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required minLength={3} />
+                </div>
+              )}
+
+              {isOTPLogin && otpSent && (
+                <div className="space-y-2">
+                  <Label htmlFor="otp">Enter OTP</Label>
+                  <Input
+                    id="otp"
+                    type="text"
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value)}
+                    placeholder="Enter 6-digit OTP"
+                    required
+                    maxLength={6}
+                    pattern="\d*"
+                  />
+                  <div className="flex justify-end">
+                    <button type="button" onClick={() => setOtpSent(false)} className="text-xs text-primary hover:underline">
+                        Change Username / Resend
+                    </button>
+                  </div>
+                </div>
+              )}
+
               <Button className="w-full gradient-primary border-0 text-white hover:opacity-90" size="lg" disabled={loading}>
                 {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-                {isRegister ? "Create Account" : "Sign In"}
+                {isRegister ? "Create Account" : (isOTPLogin ? (otpSent ? "Verify & Login" : "Send OTP") : "Sign In")}
               </Button>
             </form>
 
+            <div className="mt-4 text-center">
+              {!isRegister && (
+                <button type="button" onClick={toggleMode} className="text-sm text-primary hover:underline font-medium">
+                  {isOTPLogin ? "Login with Password" : "Login with OTP"}
+                </button>
+              )}
+            </div>
+
             <p className="text-center text-sm text-muted-foreground mt-4">
               {isRegister ? "Already have an account?" : "Don't have an account?"}{" "}
-              <button onClick={() => setIsRegister(!isRegister)} className="text-primary font-medium hover:underline">
+              <button onClick={() => { setIsRegister(!isRegister); setIsOTPLogin(false); }} className="text-primary font-medium hover:underline">
                 {isRegister ? "Sign In" : "Register here"}
               </button>
             </p>
