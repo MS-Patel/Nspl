@@ -53,6 +53,7 @@ class SchemeListView(LoginRequiredMixin, TemplateView):
                 'scheme_type': s.scheme_type or '',
                 'nav': 'N/A', # Placeholder for now, or fetch from NAVHistory
                 'min_purchase': round(float(s.min_purchase_amount), 2),
+                'is_active': s.is_active,
             })
 
         context['grid_data_json'] = json.dumps(data, cls=DjangoJSONEncoder)
@@ -65,7 +66,7 @@ class SchemeExplorerView(LoginRequiredMixin, ListView):
     paginate_by = 12
 
     def get_queryset(self):
-        queryset = super().get_queryset().select_related('amc', 'category')
+        queryset = super().get_queryset().select_related('amc', 'category').filter(is_active=True)
 
         # Filtering
         search_query = self.request.GET.get('search')
@@ -496,6 +497,7 @@ class DownloadSchemeMasterReportView(LoginRequiredMixin, UserPassesTestMixin, Vi
                 'Lock-in Period Flag': scheme.lock_in_period_flag,
                 'Lock-in Period': scheme.lock_in_period,
                 'Channel Partner Code': scheme.channel_partner_code,
+                'Is Active': scheme.is_active,
                 'Created At': scheme.created_at.replace(tzinfo=None) if scheme.created_at else None,
                 'Updated At': scheme.updated_at.replace(tzinfo=None) if scheme.updated_at else None,
             }

@@ -25,7 +25,7 @@ class SchemeForm(forms.ModelForm):
             'category', 'scheme_type', 'scheme_plan',
             'start_date', 'end_date', 'reopening_date',
             'aum', 'expense_ratio', 'benchmark_index', 'riskometer', 'about_fund',
-            'min_purchase_amount', 'purchase_allowed', 'redemption_allowed'
+            'min_purchase_amount', 'purchase_allowed', 'redemption_allowed', 'is_active'
         ]
         widgets = {
             'about_fund': forms.Textarea(attrs={'rows': 4}),
