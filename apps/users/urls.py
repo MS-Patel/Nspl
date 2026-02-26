@@ -12,8 +12,8 @@ urlpatterns = [
     path('logout/', views.CustomLogoutView.as_view(), name='logout'),
 
     # OTP Login
-    path('otp/send/', views.SendOTPView.as_view(), name='send_otp'),
-    path('otp/login/', views.VerifyOTPLoginView.as_view(), name='verify_otp_login'),
+    path('users/otp/send/', views.SendOTPView.as_view(), name='send_otp'),
+    path('users/otp/login/', views.VerifyOTPLoginView.as_view(), name='verify_otp_login'),
 
     # Dashboards
     path('dashboard/admin/', views.AdminDashboardView.as_view(), name='admin_dashboard'),
