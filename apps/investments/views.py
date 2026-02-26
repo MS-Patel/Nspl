@@ -48,78 +48,7 @@ def has_access_to_investor(user, investor_id):
     return False
 
 # RedemptionCreateView Removed (Legacy)
-
-
-@method_decorator(login_required, name='dispatch')
-class MandateCreateView(CreateView):
-    model = Mandate
-    form_class = MandateForm
-    template_name = 'investments/mandate_form.html'
-
-    def get_initial(self):
-        initial = super().get_initial()
-        investor_id = self.request.GET.get('investor_id')
-        if investor_id:
-            try:
-                investor = InvestorProfile.objects.get(id=investor_id)
-                if has_access_to_investor(self.request.user, investor_id):
-                    initial['investor'] = investor
-            except InvestorProfile.DoesNotExist:
-                pass
-        return initial
-
-    def get_form_kwargs(self):
-        kwargs = super().get_form_kwargs()
-        kwargs['user'] = self.request.user
-        return kwargs
-
-    def form_valid(self, form):
-        mandate = form.save(commit=False)
-        # Verify access
-        if not has_access_to_investor(self.request.user, mandate.investor.id):
-             return HttpResponseForbidden("You do not have access to this investor.")
-
-        # Default Mandate ID (Will be updated by BSE)
-        import uuid
-        mandate.mandate_id = f"TEMP-{uuid.uuid4().hex[:8].upper()}"
-        mandate.save()
-
-        # Push to BSE
-        try:
-            client = BSEStarMFClient()
-            result = client.register_mandate(mandate)
-
-            if result['status'] == 'success':
-                mandate.mandate_id = result['mandate_id']
-                mandate.status = Mandate.PENDING # Set to PENDING initially for E-Mandate
-                mandate.save()
-
-                messages.success(self.request, f"Mandate Registered. Please authorize it via the link below.")
-
-                # Check if we should redirect to auth or list
-                # For now, redirect to investor detail where they can click "Authorize"
-            elif result['status'] == 'exception':
-                mandate.status = Mandate.PENDING
-                mandate.save()
-                messages.error(self.request, f"System Error (Mandate saved): {result['remarks']}")
-            else:
-                mandate.status = Mandate.REJECTED
-                mandate.save()
-                messages.error(self.request, f"BSE Mandate Error: {result['remarks']}")
-
-        except Exception as e:
-            logger.exception("Mandate Registration Failed")
-            mandate.status = Mandate.PENDING
-            mandate.save()
-            messages.error(self.request, f"System Error (Mandate saved as Pending): {str(e)}")
-
-        # self.object might not be set if we are not calling super().form_valid(form)
-        self.object = mandate
-        return redirect(self.get_success_url())
-
-    def get_success_url(self):
-        investor = self.object.investor
-        return reverse('users:investor_detail', kwargs={'pk': investor.pk})
+# MandateCreateView Removed (Legacy)
 
 class MandateRetryView(LoginRequiredMixin, View):
     def post(self, request, pk):
@@ -236,9 +165,12 @@ def get_order_metadata(request):
     response_data = {}
 
     # 1. Fetch Investors (Filtered by Distributor)
-    # Only Admin/RM should typically need this if they select Distributor first.
-    # For now, we rely on the Distributor ID passed.
     distributor_id = request.GET.get('distributor_id')
+
+    # Auto-detect distributor for Distributor users
+    if not distributor_id and request.user.user_type == 'DISTRIBUTOR':
+        distributor_id = request.user.distributor_profile.id
+
     if distributor_id:
         # Permission Check: Can this user view this distributor's investors?
         if request.user.user_type == 'ADMIN' or \
@@ -247,6 +179,13 @@ def get_order_metadata(request):
 
             investors = InvestorProfile.objects.filter(distributor_id=distributor_id).values('id', 'user__username', 'pan')
             response_data['investors'] = list(investors)
+
+    # Handle RM case (Fetch all investors linked to RM if no distributor selected)
+    elif request.user.user_type == 'RM':
+        investors = InvestorProfile.objects.filter(
+            Q(distributor__rm__user=request.user) | Q(rm__user=request.user)
+        ).values('id', 'user__username', 'pan')
+        response_data['investors'] = list(investors)
 
     # 2. Fetch Schemes (Filtered) - Public Read (Authenticated)
     amc_id = request.GET.get('amc_id')

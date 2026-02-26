@@ -93,13 +93,18 @@ interface Folio {
     units: number;
 }
 
-const OrderPlacementWizard = () => {
+interface OrderPlacementWizardProps {
+  initialTab?: string;
+  initialValues?: Partial<FormValues>;
+}
+
+const OrderPlacementWizard = ({ initialTab = "lumpsum", initialValues }: OrderPlacementWizardProps) => {
   const [investors, setInvestors] = useState<Investor[]>([]);
   const [schemes, setSchemes] = useState<Scheme[]>([]);
   const [mandates, setMandates] = useState<Mandate[]>([]);
   const [folios, setFolios] = useState<Folio[]>([]);
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState("lumpsum");
+  const [activeTab, setActiveTab] = useState(initialTab);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -114,6 +119,27 @@ const OrderPlacementWizard = () => {
   });
 
   const { watch, setValue, reset, control } = form;
+
+  useEffect(() => {
+    if (initialValues) {
+        // Merge defaults with initial values
+        const defaults = {
+            transaction_type: 'P',
+            amount: '',
+            units: '',
+            sip_frequency: 'MONTHLY',
+            sip_installments: '12',
+            all_redeem: false,
+        };
+        reset({ ...defaults, ...initialValues });
+
+        // Set Tab based on transaction_type
+        if (initialValues.transaction_type === 'R') setActiveTab('redeem');
+        else if (initialValues.transaction_type === 'SIP') setActiveTab('sip');
+        else if (initialValues.transaction_type === 'S') setActiveTab('switch');
+        else if (initialValues.transaction_type === 'P') setActiveTab('lumpsum');
+    }
+  }, [initialValues, reset]);
   const selectedInvestor = watch('investor_id');
   const selectedScheme = watch('scheme_id');
 
@@ -139,7 +165,20 @@ const OrderPlacementWizard = () => {
         try {
           const data: any = await api.get(`/api/metadata/?investor_id=${selectedInvestor}`);
           if (data.mandates) setMandates(data.mandates);
-          if (data.folios) setFolios(data.folios); // Assuming API returns folios too
+
+          try {
+              const holdings: any = await api.get(`/api/holdings/?investor_id=${selectedInvestor}`);
+              setFolios(holdings.map((h: any) => ({
+                  folio_number: h.folio,
+                  scheme__id: h.scheme_id,
+                  scheme__name: h.scheme_name,
+                  units: h.units,
+                  current_value: h.current_value
+              })));
+          } catch(e) {
+              console.error("Failed to fetch holdings", e);
+          }
+
         } catch (e) {
           console.error(e);
         }

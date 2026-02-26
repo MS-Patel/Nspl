@@ -31,6 +31,8 @@ import InvestPage from "@/pages/dashboard/investments/InvestPage";
 import OrderList from "@/pages/dashboard/investments/OrderList";
 import SIPList from "@/pages/dashboard/investments/SIPList";
 import MandateList from "@/pages/dashboard/investments/MandateList";
+import Redeem from "@/pages/dashboard/investments/Redeem";
+import CreateMandate from "@/pages/dashboard/investments/CreateMandate";
 
 // Portfolio Pages
 import Holdings from "@/pages/dashboard/portfolio/Holdings";
@@ -66,7 +68,7 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter basename="/static">
+      <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/login" element={<Login />} />
@@ -188,6 +190,16 @@ const App = () => (
             <Route path="investments/mandates" element={
               <RoleGuard allowedRoles={['ADMIN', 'RM', 'DISTRIBUTOR', 'INVESTOR']}>
                 <MandateList />
+              </RoleGuard>
+            } />
+            <Route path="investments/mandates/new" element={
+              <RoleGuard allowedRoles={['ADMIN', 'RM', 'DISTRIBUTOR', 'INVESTOR']}>
+                <CreateMandate />
+              </RoleGuard>
+            } />
+            <Route path="investments/redeem/:holdingId" element={
+              <RoleGuard allowedRoles={['ADMIN', 'RM', 'DISTRIBUTOR', 'INVESTOR']}>
+                <Redeem />
               </RoleGuard>
             } />
 
