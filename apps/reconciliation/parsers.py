@@ -384,239 +384,6 @@ class BaseParser:
             except Exception as e:
                 logger.error(f"Error recalculating holding for {folio_number}: {e}")
 
-class KarvyParser(BaseParser):
-    """
-    Parses Karvy/KFintech MFD Mailback Format.
-    """
-
-    def parse(self):
-        try:
-            with open(self.file_path, 'r', encoding='utf-8', errors='ignore') as f:
-                reader = csv.reader(f, delimiter='|')
-
-                for row in reader:
-                    try:
-                        with transaction.atomic():
-                            # Skip short rows
-                            if not row or len(row) < 10:
-                                continue
-
-                            # Heuristic to detect Header or Data
-                            if "Header" in row[0] or "Product" in row[0]:
-                                continue
-
-                            # Assuming Standard Karvy/MFD Layout (Pipe):
-                            # 0: AMC, 1: Scheme Code, 3: Folio, 4: Name?, 5: Type, 6: Trxn No, 7: Units, 8: Amount, 9: Date
-
-                            pan = None
-                            # Try to find PAN in likely columns (often 14, 15, 18, 19)
-                            for idx in [14, 15, 18, 19, 20]:
-                                if idx < len(row) and len(row[idx]) == 10 and row[idx].isalnum():
-                                    pan = row[idx].strip()
-                                    break
-
-                            if not pan:
-                                continue
-
-                            inv_name = row[4].strip() if len(row) > 4 else None
-
-                            investor = self.get_or_create_provisional_investor(pan, inv_name, is_offline=True)
-
-                            scheme_code = row[1].strip()
-                            isin = None
-                            # Try to find ISIN (often col 21 or 22)
-                            if len(row) > 21 and row[21].startswith('IN'):
-                                isin = row[21].strip()
-
-                            scheme = self.get_scheme(scheme_code, isin)
-                            if not scheme:
-                                logger.warning(f"Scheme not found: Code={scheme_code}, ISIN={isin}")
-                                self.failed_rows.append({
-                                    'row_data': str(row),
-                                    'error': f"Scheme not found: Code={scheme_code}, ISIN={isin}"
-                                })
-                                continue
-
-                            folio_number = row[3].strip()
-                            txn_number = row[6].strip()
-
-                            txn_date = self.parse_date(row[9])
-                            amount = self.clean_decimal(row[8])
-                            units = self.clean_decimal(row[7])
-                            txn_type = row[5].strip().upper()
-
-                            # Calculate NAV if missing
-                            nav = None
-                            # Sometimes col 10 or 11 has price
-                            if units != 0:
-                                nav = abs(amount) / abs(units)
-
-                            # Extract extra fields (Karvy MFD Standard Best Effort)
-                            broker_code = row[12].strip() if len(row) > 12 else None
-                            sub_broker_code = row[13].strip() if len(row) > 13 else None
-                            euin = row[17].strip() if len(row) > 17 else None
-
-                            # Delegate to helper
-                            self.match_or_create_transaction(
-                                investor, scheme, folio_number, txn_number, txn_date if txn_date else timezone.now().date(),
-                                amount, units, txn_type, 'KARVY', original_txn_number=txn_number, nav=nav,
-                                raw_data={'row': row},
-                                broker_code=broker_code,
-                                sub_broker_code=sub_broker_code,
-                                euin=euin
-                            )
-                    except Exception as e:
-                        logger.error(f"Error processing Karvy row: {e}")
-                        self.failed_rows.append({
-                            'row_data': str(row),
-                            'error': str(e)
-                        })
-
-            self.process_impacted_holdings()
-
-            if self.rta_file:
-                if self.failed_rows:
-                     self.save_error_file()
-
-                self.rta_file.status = RTAFile.STATUS_PROCESSED
-                self.rta_file.processed_at = timezone.now()
-                self.rta_file.save()
-
-        except Exception as e:
-            if self.rta_file:
-                self.rta_file.status = RTAFile.STATUS_FAILED
-                self.rta_file.error_log = str(e)
-                self.rta_file.save()
-            logger.error(f"Karvy Parsing failed: {e}")
-            if not self.rta_file:
-                raise e
-
-class KarvyXLSParser(BaseParser):
-    """
-    Parses Karvy MFSD201 Excel Format.
-    """
-    def parse(self):
-        try:
-            # Skip first row (TRANSACTION REPORT) if exists, check header=1
-            # Based on inspection, header is at index 1
-            df = pd.read_excel(self.file_path, header=1)
-            # Normalize columns to lowercase
-            df.columns = df.columns.str.lower()
-
-            for _, row in df.iterrows():
-                try:
-                    with transaction.atomic():
-                        # Use lowercase 'pan1'
-                        pan = str(row.get('pan1', '')).strip()
-                        if not pan or pan.lower() == 'nan': continue
-
-                        inv_name = str(row.get('invname', '')).strip()
-                        investor = self.get_or_create_provisional_investor(pan, inv_name, is_offline=True)
-
-                        scheme_code = str(row.get('fmcode', '')).strip()
-                        scheme = self.get_scheme(scheme_code)
-                        if not scheme:
-                            logger.warning(f"Scheme not found for Karvy XLS: {scheme_code}")
-                            row_dict = row.to_dict()
-                            row_dict['error'] = f"Scheme not found: {scheme_code}"
-                            self.failed_rows.append(row_dict)
-                            continue
-
-                        folio_number = str(row.get('td_acno', '')).strip()
-                        original_txn_number = str(row.get('td_trno', '')).strip()
-
-                        # Try NAVDATE, fallback to TD_PRDT
-                        # keys are lowercase now
-                        date_val = row.get('navdate')
-                        if pd.isna(date_val): date_val = row.get('td_prdt')
-                        txn_date = self.parse_date(date_val)
-                        if not txn_date: continue
-
-                        amount = self.clean_decimal(row.get('td_amt'))
-                        units = self.clean_decimal(row.get('td_units'))
-                        txn_type = str(row.get('td_trtype', '')).strip()
-
-                        # Determine NAV
-                        nav = None
-                        # Try explicit columns: td_pop (Price of Purchase) or td_nav?
-                        raw_price = row.get('td_pop') or row.get('td_nav') or row.get('nav')
-                        if not pd.isna(raw_price):
-                            nav = self.clean_decimal(raw_price)
-
-                        # Fallback to calculation
-                        if (nav is None or nav == 0) and units != 0:
-                            nav = abs(amount) / abs(units)
-
-                        # For Fingerprint
-                        fund_desc = str(row.get('td_fund', '')).strip() # TD_FUND
-                        prdt_date = str(row.get('td_prdt', '')).strip() # TD_PRDT
-                        trn_stat = str(row.get('trnstat', '')).strip() # TRNSTAT
-                        nav_date_raw = str(row.get('navdate', '')).strip() # NAVDATE
-
-                        # Generate Row Fingerprint
-                        # Fields: FMCODE, TD_ACNO, TD_FUND, TD_TRNO, TD_PRDT, TD_UNITS, TD_AMT, TD_TRTYPE, TRNSTAT, NAVDATE
-                        fingerprint = self.generate_fingerprint([
-                            scheme_code, folio_number, fund_desc, original_txn_number, prdt_date,
-                            units, amount, txn_type, trn_stat, nav_date_raw
-                        ])
-
-                        unique_txn_number = f"{original_txn_number}-{fingerprint}"
-
-                        # New fields for Fuzzy Logic
-                        description = str(row.get('trdesc', '')).strip()
-                        tr_flag = str(row.get('trflag', '')).strip()
-                        # If not found, try alternative names
-                        if not tr_flag:
-                             tr_flag = str(row.get('trxn_type_flag', '')).strip()
-
-                        # Extract structured extra fields
-                        broker_code = str(row.get('agent_code', '')).strip() or str(row.get('arn_code', '')).strip() or None
-                        sub_broker_code = str(row.get('sub_agent_code', '')).strip() or None
-                        euin = str(row.get('euin', '')).strip() or None
-
-                        stt = self.clean_decimal(row.get('stt'))
-                        stamp_duty = self.clean_decimal(row.get('stamp_duty'))
-
-                        # Try finding other cols
-                        ihno = str(row.get('ihno', '')).strip() or None
-                        ih_dt_val = row.get('ih_dt')
-                        ih_dt = self.parse_date(ih_dt_val) if ih_dt_val else None
-
-                        bank_name = str(row.get('bank_name', '')).strip() or None
-                        load_amount = self.clean_decimal(row.get('load'))
-                        tax_amount = self.clean_decimal(row.get('tax'))
-                        remarks = str(row.get('remarks', '')).strip() or None
-                        location = str(row.get('td_branch', '')).strip() or None
-
-                        # Handle NaN values to prevent JSON serialization errors (Postgres rejects NaN)
-                        raw_row_data = {k: str(v) if pd.notna(v) else None for k, v in row.items()}
-
-                        self.match_or_create_transaction(
-                            investor, scheme, folio_number, unique_txn_number, txn_date, amount, units, txn_type, 'KARVY',
-                            description=description, tr_flag=tr_flag, original_txn_number=original_txn_number, nav=nav,
-                            raw_data=raw_row_data,
-                            broker_code=broker_code, sub_broker_code=sub_broker_code, euin=euin,
-                            stt=stt, stamp_duty=stamp_duty,
-                            instrument_no=ihno, instrument_date=ih_dt, bank_name=bank_name,
-                            load_amount=load_amount, tax_amount=tax_amount,
-                            remarks=remarks, location=location
-                        )
-                except Exception as e:
-                    logger.error(f"Error processing Karvy XLS row: {e}")
-                    row_dict = row.to_dict()
-                    row_dict['error'] = str(e)
-                    self.failed_rows.append(row_dict)
-
-        except Exception as e:
-            if self.rta_file:
-                self.rta_file.status = RTAFile.STATUS_FAILED
-                self.rta_file.error_log = str(e)
-                self.rta_file.save()
-            logger.error(f"Karvy XLS Parsing failed: {e}")
-            if not self.rta_file:
-                raise e
-
-
 class FranklinParser(BaseParser):
     """
     Parses Franklin Templeton Mailback Format.
@@ -723,11 +490,8 @@ class DBFParser(BaseParser):
             if 'prodcode' in df.columns and 'trxnno' in df.columns:
                 logger.info("Detected CAMS DBF Format")
                 self.parse_cams(df)
-            elif 'fmcode' in df.columns and 'td_trno' in df.columns:
-                logger.info("Detected Karvy DBF Format")
-                self.parse_karvy(df)
             else:
-                logger.warning(f"Unknown DBF Format. Columns: {list(df.columns)}")
+                logger.warning(f"Unknown DBF Format or Legacy Karvy detected (not supported). Columns: {list(df.columns)}")
                 # Save error file with unknown format info
                 if self.rta_file:
                      self.rta_file.status = RTAFile.STATUS_FAILED
@@ -898,115 +662,9 @@ class DBFParser(BaseParser):
                     row_dict['error'] = str(e)
                     self.failed_rows.append(row_dict)
 
-    def parse_karvy(self, df):
-        # Karvy Logic (similar to KarvyXLSParser)
-        for _, row in df.iterrows():
-                try:
-                    with transaction.atomic():
-                        # Use lowercase 'pan1'
-                        pan = str(row.get('pan1', '')).strip()
-                        if not pan or pan.lower() == 'nan': continue
-
-                        inv_name = str(row.get('invname', '')).strip()
-                        investor = self.get_or_create_provisional_investor(pan, inv_name, is_offline=True)
-
-                        scheme_code = str(row.get('fmcode', '')).strip()
-                        scheme = self.get_scheme(scheme_code)
-                        if not scheme:
-                            logger.warning(f"Scheme not found for Karvy DBF: {scheme_code}")
-                            row_dict = row.to_dict()
-                            row_dict['error'] = f"Scheme not found: {scheme_code}"
-                            self.failed_rows.append(row_dict)
-                            continue
-
-                        folio_number = str(row.get('td_acno', '')).strip()
-                        original_txn_number = str(row.get('td_trno', '')).strip()
-
-                        # Try NAVDATE, fallback to TD_PRDT
-                        # keys are lowercase now
-                        date_val = row.get('navdate')
-                        if pd.isna(date_val): date_val = row.get('td_prdt')
-                        txn_date = self.parse_date(date_val)
-                        if not txn_date: continue
-
-                        amount = self.clean_decimal(row.get('td_amt'))
-                        units = self.clean_decimal(row.get('td_units'))
-                        txn_type = str(row.get('td_trtype', '')).strip()
-
-                        # Determine NAV
-                        nav = None
-                        # Try explicit columns: td_pop (Price of Purchase) or td_nav?
-                        raw_price = row.get('td_pop') or row.get('td_nav') or row.get('nav')
-                        if not pd.isna(raw_price):
-                            nav = self.clean_decimal(raw_price)
-
-                        # Fallback to calculation
-                        if (nav is None or nav == 0) and units != 0:
-                            nav = abs(amount) / abs(units)
-
-                        # For Fingerprint
-                        fund_desc = str(row.get('td_fund', '')).strip() # TD_FUND
-                        prdt_date = str(row.get('td_prdt', '')).strip() # TD_PRDT
-                        trn_stat = str(row.get('trnstat', '')).strip() # TRNSTAT
-                        nav_date_raw = str(row.get('navdate', '')).strip() # NAVDATE
-
-                        # Generate Row Fingerprint
-                        # Fields: FMCODE, TD_ACNO, TD_FUND, TD_TRNO, TD_PRDT, TD_UNITS, TD_AMT, TD_TRTYPE, TRNSTAT, NAVDATE
-                        fingerprint = self.generate_fingerprint([
-                            scheme_code, folio_number, fund_desc, original_txn_number, prdt_date,
-                            units, amount, txn_type, trn_stat, nav_date_raw
-                        ])
-
-                        unique_txn_number = f"{original_txn_number}-{fingerprint}"
-
-                        # New fields for Fuzzy Logic
-                        description = str(row.get('trdesc', '')).strip()
-                        tr_flag = str(row.get('trflag', '')).strip()
-                        # If not found, try alternative names
-                        if not tr_flag:
-                             tr_flag = str(row.get('trxn_type_flag', '')).strip()
-
-                        # Extract structured extra fields
-                        broker_code = str(row.get('agent_code', '')).strip() or str(row.get('arn_code', '')).strip() or None
-                        sub_broker_code = str(row.get('sub_agent_code', '')).strip() or None
-                        euin = str(row.get('euin', '')).strip() or None
-
-                        stt = self.clean_decimal(row.get('stt'))
-                        stamp_duty = self.clean_decimal(row.get('stamp_duty'))
-
-                        # Try finding other cols
-                        ihno = str(row.get('ihno', '')).strip() or None
-                        ih_dt_val = row.get('ih_dt')
-                        ih_dt = self.parse_date(ih_dt_val) if ih_dt_val else None
-
-                        bank_name = str(row.get('bank_name', '')).strip() or None
-                        load_amount = self.clean_decimal(row.get('load'))
-                        tax_amount = self.clean_decimal(row.get('tax'))
-                        remarks = str(row.get('remarks', '')).strip() or None
-                        location = str(row.get('td_branch', '')).strip() or None
-
-                        # Handle NaN values to prevent JSON serialization errors (Postgres rejects NaN)
-                        raw_row_data = {k: str(v) if pd.notna(v) else None for k, v in row.items()}
-
-                        self.match_or_create_transaction(
-                            investor, scheme, folio_number, unique_txn_number, txn_date, amount, units, txn_type, 'KARVY',
-                            description=description, tr_flag=tr_flag, original_txn_number=original_txn_number, nav=nav,
-                            raw_data=raw_row_data,
-                            broker_code=broker_code, sub_broker_code=sub_broker_code, euin=euin,
-                            stt=stt, stamp_duty=stamp_duty,
-                            instrument_no=ihno, instrument_date=ih_dt, bank_name=bank_name,
-                            load_amount=load_amount, tax_amount=tax_amount,
-                            remarks=remarks, location=location
-                        )
-                except Exception as e:
-                    logger.error(f"Error processing Karvy DBF row: {e}")
-                    row_dict = row.to_dict()
-                    row_dict['error'] = str(e)
-                    self.failed_rows.append(row_dict)
-
-class KarvyMFSD307Parser(BaseParser):
+class KarvyCSVParser(BaseParser):
     """
-    Parses Karvy MFSD307 CSV Format.
+    Parses Karvy CSV Format (e.g. MFSD307 and other CSV exports).
     """
     def parse(self):
         try:
@@ -1036,7 +694,7 @@ class KarvyMFSD307Parser(BaseParser):
 
                         scheme = self.get_scheme(scheme_code, isin)
                         if not scheme:
-                            logger.warning(f"Scheme not found for Karvy MFSD307: {scheme_code}")
+                            logger.warning(f"Scheme not found for Karvy CSV: {scheme_code}")
                             row_dict = row.to_dict()
                             row_dict['error'] = f"Scheme not found: {scheme_code}"
                             self.failed_rows.append(row_dict)
@@ -1113,7 +771,7 @@ class KarvyMFSD307Parser(BaseParser):
                         )
 
                 except Exception as e:
-                    logger.error(f"Error processing Karvy MFSD307 row: {e}")
+                    logger.error(f"Error processing Karvy CSV row: {e}")
                     row_dict = row.to_dict()
                     row_dict['error'] = str(e)
                     self.failed_rows.append(row_dict)
@@ -1132,6 +790,6 @@ class KarvyMFSD307Parser(BaseParser):
                 self.rta_file.status = RTAFile.STATUS_FAILED
                 self.rta_file.error_log = str(e)
                 self.rta_file.save()
-            logger.error(f"Karvy MFSD307 Parsing failed: {e}")
+            logger.error(f"Karvy CSV Parsing failed: {e}")
             if not self.rta_file:
                 raise e

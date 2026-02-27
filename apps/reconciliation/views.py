@@ -1,12 +1,14 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django import forms
-from .models import RTAFile, Transaction
-from .parsers import KarvyParser, FranklinParser, KarvyXLSParser, DBFParser
+from .models import RTAFile
+from .parsers import FranklinParser, DBFParser, KarvyCSVParser
 import threading
+import logging
 from django.db import connections
-from django.http import HttpResponseForbidden
+
+logger = logging.getLogger(__name__)
 
 class RTAUploadForm(forms.ModelForm):
     class Meta:
@@ -27,6 +29,7 @@ def upload_rta_file(request):
             rta_file = form.save(commit=False)
             rta_file.file_name = request.FILES['file'].name
             rta_file.save()
+            rta_file.refresh_from_db() # Get ID
 
             # Trigger Parser Sync
             parser = None
@@ -37,9 +40,6 @@ def upload_rta_file(request):
                 if filename.endswith('.dbf'):
                     parser = DBFParser(rta_file_obj=rta_file)
                 else:
-                    # Fallback or Error? 
-                    # User said "use the dbf parser only".
-                    # If they upload .txt or .xls, we fail.
                     rta_file.status = RTAFile.STATUS_FAILED
                     rta_file.error_log = "Only DBF format is supported for CAMS."
                     rta_file.save()
@@ -47,12 +47,15 @@ def upload_rta_file(request):
                     return redirect('reconciliation:rta_upload')
 
             elif rta_file.rta_type == RTAFile.RTA_KARVY:
-                if filename.endswith('.dbf'):
-                     parser = DBFParser(rta_file_obj=rta_file)
-                elif filename.endswith('.xls') or filename.endswith('.xlsx'):
-                     parser = KarvyXLSParser(rta_file_obj=rta_file)
+                # Karvy is now strictly CSV (removed DBF/XLS/TXT support for Karvy as per request "use only csv format")
+                if filename.endswith('.csv'):
+                     parser = KarvyCSVParser(rta_file_obj=rta_file)
                 else:
-                    parser = KarvyParser(rta_file_obj=rta_file)
+                    rta_file.status = RTAFile.STATUS_FAILED
+                    rta_file.error_log = "Only CSV format is supported for Karvy."
+                    rta_file.save()
+                    messages.error(request, "Only CSV format is supported for Karvy.")
+                    return redirect('reconciliation:rta_upload')
             
             elif rta_file.rta_type == RTAFile.RTA_FRANKLIN:
                 parser = FranklinParser(rta_file_obj=rta_file)
@@ -61,6 +64,8 @@ def upload_rta_file(request):
                 def run_parser():
                     try:
                         parser.parse()
+                    except Exception as e:
+                        logger.error(f"Parsing Error: {e}")
                     finally:
                         connections.close_all()
 
