@@ -11,7 +11,7 @@ class RTAFileAdmin(admin.ModelAdmin):
 class TransactionAdmin(admin.ModelAdmin):
     list_display = ('id', 'investor', 'scheme', 'folio_number', 'txn_type_code', 'nav','units','amount', 'date', 'txn_number')
     search_fields = ('investor__user__username', 'folio_number', 'txn_number', 'scheme__name')
-    list_filter = ('source_file__rta_type', 'date', 'txn_type_code')
+    list_filter = ('rta_code', 'date', 'txn_type_code')
 
 @admin.register(Holding)
 class HoldingAdmin(admin.ModelAdmin):

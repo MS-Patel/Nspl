@@ -173,10 +173,10 @@ class BaseParser:
         scheme = None
         if scheme_code:
             scheme_code = str(scheme_code).strip()
-            scheme = Scheme.objects.filter(scheme_code=scheme_code).first()
+            scheme = Scheme.objects.filter(channel_partner_code=scheme_code).first()
             if not scheme:
                 # Try RTA Scheme Code match if we had such field populated
-                scheme = Scheme.objects.filter(channel_partner_code=scheme_code).first()
+                scheme = Scheme.objects.filter(rta_scheme_code=scheme_code).first()
 
         if not scheme and isin:
             scheme = Scheme.objects.filter(isin=isin).first()
@@ -571,7 +571,7 @@ class DBFParser(BaseParser):
 
                         # New Fields Extraction
                         amc_code = str(row.get('amc_code', '')).strip()
-                        product_code = str(row.get('product_code', '')).strip() # Note: DBF might just have 'prodcode' which we mapped to scheme_code. Check list: "Product Code" (Field 3) vs "AMC Code" (Field 1). prodcode is Field 3. 
+                        product_code = str(row.get('prodcode', '')).strip() # Note: DBF might just have 'prodcode' which we mapped to scheme_code. Check list: "Product Code" (Field 3) vs "AMC Code" (Field 1). prodcode is Field 3. 
                         
                         # Corrected mapping from code review feedback
                         txn_nature = str(row.get('trxn_natur', '')).strip()
@@ -685,10 +685,10 @@ class KarvyCSVParser(BaseParser):
                         investor = self.get_or_create_provisional_investor(pan, inv_name, is_offline=True)
 
                         # 'scheme code'
-                        scheme_code = str(row.get('scheme code', '')).strip()
+                        scheme_code = str(row.get('product code', '')).strip()
                         if not scheme_code or scheme_code.lower() == 'nan':
                              # Fallback to Product Code if needed
-                             scheme_code = str(row.get('product code', '')).strip()
+                             scheme_code = str(row.get('scheme code', '')).strip()
 
                         isin = str(row.get('isin', '')).strip()
 

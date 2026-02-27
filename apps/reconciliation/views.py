@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django import forms
-from .models import RTAFile
+from .models import RTAFile, Transaction
 from .parsers import FranklinParser, DBFParser, KarvyCSVParser
 import threading
 import logging
@@ -19,6 +19,8 @@ class RTAUploadForm(forms.ModelForm):
 def upload_rta_file(request):
     # Only Admin or Operations (assuming Admin for now)
     # Note: User model custom user_type check
+    # Transaction.objects.all().delete()
+
     if not request.user.is_authenticated or getattr(request.user, 'user_type', None) != 'ADMIN':
          messages.error(request, "Access Denied")
          return redirect('users:login')
