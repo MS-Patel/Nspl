@@ -1,6 +1,6 @@
 import os
 import logging
-from apps.reconciliation.parsers import CAMSXLSParser, KarvyXLSParser, CAMSParser, KarvyParser, DBFParser, KarvyMFSD307Parser
+from apps.reconciliation.parsers import KarvyXLSParser, KarvyParser, DBFParser, KarvyMFSD307Parser
 
 logger = logging.getLogger(__name__)
 
@@ -19,10 +19,7 @@ def get_parser_for_file(file_path):
 
     # CSV Files
     elif filename.lower().endswith('.csv'):
-        if 'WBR2' in filename:
-            logger.info(f"Detected CAMS WBR2: {filename}")
-            parser = CAMSXLSParser(file_path=file_path)
-        elif 'MFSD307' in filename:
+        if 'MFSD307' in filename:
             logger.info(f"Detected Karvy MFSD307: {filename}")
             parser = KarvyMFSD307Parser(file_path=file_path)
 
@@ -35,10 +32,8 @@ def get_parser_for_file(file_path):
             try:
                 with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
                     header = f.readline()
-                    if 'HED' in header or 'TRL' in header:
-                        logger.info(f"Detected CAMS Text: {filename}")
-                        parser = CAMSParser(file_path=file_path)
-                    elif '|' in header and len(header.split('|')) > 5:
+                    # Removed CAMS text detection
+                    if '|' in header and len(header.split('|')) > 5:
                         # Default to Karvy for pipe delimited as per original logic
                         logger.info(f"Detected Karvy/Franklin Text: {filename}")
                         parser = KarvyParser(file_path=file_path)
@@ -50,10 +45,8 @@ def get_parser_for_file(file_path):
         try:
             with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
                 header = f.readline()
-                if 'HED' in header or 'TRL' in header:
-                    logger.info(f"Detected CAMS Text: {filename}")
-                    parser = CAMSParser(file_path=file_path)
-                elif '|' in header and len(header.split('|')) > 5:
+                # Removed CAMS text detection
+                if '|' in header and len(header.split('|')) > 5:
                     logger.info(f"Detected Karvy/Franklin Text: {filename}")
                     parser = KarvyParser(file_path=file_path)
         except Exception as e:

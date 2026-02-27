@@ -333,10 +333,10 @@ def import_distributors_from_file(file_obj):
 
     try:
         rows = read_file_to_dicts(file_obj, DISTRIBUTOR_COLUMN_MAP)
-        print(rows[0] if rows else "No rows found")
+
         # Validate Required Columns
         if rows and 'arn' not in rows[0]:
-             return 0, ["Critical Error: 'ARN' column not found in file. Supported headers: ARN, ARN Number, Distributor ARN, ARN Code."]
+            return 0, ["Critical Error: 'ARN' column not found in file. Supported headers: ARN, ARN Number, Distributor ARN, ARN Code."]
 
         for row_idx, row in enumerate(rows, start=1):
             try:
