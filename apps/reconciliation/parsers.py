@@ -15,6 +15,7 @@ from apps.products.models import Scheme
 from apps.users.models import InvestorProfile
 from apps.investments.models import Folio
 from apps.reconciliation.utils.reconcile import recalculate_holding
+from apps.reconciliation.utils.fingerprint import generate_cams_fingerprint, generate_karvy_fingerprint
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
@@ -93,7 +94,7 @@ class BaseParser:
         except:
             return Decimal(0)
 
-    def generate_fingerprint(self, values):
+    def _legacy_generate_fingerprint(self, values):
         """
         Generates a unique hash based on a list of row values.
         Used to uniquely identify rows even if they share the same Transaction No.
@@ -562,11 +563,21 @@ class DBFParser(BaseParser):
                             nav = abs(amount) / abs(units)
 
                         # Fingerprint
-                        # Using sequence of key fields to ensure uniqueness
-                        fingerprint = self.generate_fingerprint([
-                            scheme_code, folio_number, original_txn_number, str(txn_date),
-                            units, amount, txn_type, txn_stat
-                        ])
+                        # Use deterministic, source-aware fingerprint-based deduplication
+                        row_dict = {
+                            'amc_code': str(row.get('amc_code', '')).strip(),
+                            'folio_no': str(row.get('folio_no', '')).strip(),
+                            'prodcode': str(row.get('prodcode', '')).strip(),
+                            'trxnno': str(row.get('trxnno', '')).strip(),
+                            'traddate': date_val, # Use unparsed date so normalize() can handle it, or we can use txn_date if it's already parsed
+                            'units': units,
+                            'amount': amount,
+                            'trxn_type_': str(row.get('trxn_type_', '')).strip(),
+                            'reversal_c': str(row.get('reversal_c', '')).strip(),
+                        }
+                        # We use txn_date to ensure consistent ISO format parsing via the fingerprint util
+                        row_dict['traddate'] = txn_date
+                        fingerprint = generate_cams_fingerprint(row_dict)
                         unique_txn_number = f"{original_txn_number}-{fingerprint}"
 
                         # New Fields Extraction
@@ -726,13 +737,18 @@ class KarvyCSVParser(BaseParser):
                             nav = abs(amount) / abs(units)
 
                         # Fingerprint
-                        txn_status = str(row.get('transaction status', '')).strip()
-                        nav_date_raw = str(row.get('nav date', '')).strip()
-
-                        fingerprint = self.generate_fingerprint([
-                            scheme_code, folio_number, original_txn_number, str(txn_date),
-                            units, amount, txn_type, txn_status, nav_date_raw
-                        ])
+                        # Use deterministic, source-aware fingerprint-based deduplication
+                        row_dict = {
+                            'product code': str(row.get('product code', '')).strip() if pd.notna(row.get('product code')) else None,
+                            'folio number': str(row.get('folio number', '')).strip(),
+                            'scheme code': scheme_code, # Use the scheme_code variable since we have fallback logic there
+                            'transaction number': str(row.get('transaction number', '')).strip(),
+                            'transaction date': txn_date, # Use parsed date to ensure consistent isoformat
+                            'units': units,
+                            'amount': amount,
+                            'transaction type': txn_type, # Use the txn_type variable since we have subtrantype fallback logic
+                        }
+                        fingerprint = generate_karvy_fingerprint(row_dict)
 
                         unique_txn_number = f"{original_txn_number}-{fingerprint}"
 
