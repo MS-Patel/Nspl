@@ -207,4 +207,13 @@ def _get_legacy_action(t_code, t_flag, desc, txn):
              if fuzz.partial_ratio("PURCHASE", desc) > 80: action = 'ADD'
              elif fuzz.partial_ratio("REDEMPTION", desc) > 80: action = 'SUB'
 
+    if hasattr(txn, 'reversal_code') and txn.reversal_code:
+        rev_code = str(txn.reversal_code).strip().upper()
+        # Only swap if it wasn't already caught by the REVERSAL_CODES dictionaries
+        if rev_code in ['R', 'Y', 'REV', 'REVERSAL'] and t_code not in PURCHASE_REVERSAL_CODES and t_code not in REDEMPTION_REVERSAL_CODES and t_code not in GENERIC_REVERSAL_CODES:
+            if action == 'ADD':
+                action = 'SUB'
+            elif action == 'SUB':
+                action = 'ADD'
+
     return action
