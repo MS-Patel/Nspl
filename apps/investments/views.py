@@ -1239,9 +1239,21 @@ class ExportTransactionStatementView(LoginRequiredMixin, View):
         if not has_access_to_investor(request.user, investor_id):
             raise Http404("Access Denied")
 
-        transactions = Transaction.objects.filter(investor=investor).order_by('date')
+        start_date = request.GET.get('start_date', '2024-04-01')
+        end_date = request.GET.get('end_date', '2025-03-31')
 
-        buffer = generate_transaction_statement_pdf(investor, transactions)
+        transactions = Transaction.objects.filter(
+            investor=investor,
+            date__gte=start_date,
+            date__lte=end_date
+        ).order_by('date')
+
+        buffer = generate_transaction_statement_pdf(
+            investor,
+            transactions,
+            fy_start=start_date,
+            fy_end=end_date
+        )
 
         response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
         response['Content-Disposition'] = f'attachment; filename="Transaction_Statement_{investor.pan}.pdf"'

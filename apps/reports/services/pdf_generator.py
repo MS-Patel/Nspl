@@ -528,7 +528,7 @@ def generate_transaction_statement_pdf(investor, transactions, fy_start="2024-04
                 scheme=scheme,
                 folio_number=folio,
                 date__lt=start_date
-            )
+            ).order_by('date')
             for pt in past_txns:
                 action = pt.txn_type_code.upper() if pt.txn_type_code else pt.tr_flag.upper() if pt.tr_flag else 'P'
                 units = pt.units if pt.units else Decimal('0.0000')
