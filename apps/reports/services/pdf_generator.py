@@ -9,6 +9,8 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.pdfgen import canvas
 from django.conf import settings
 
+from apps.investments.templatetags.investment_extras import readable_txn_type
+
 # We need the logo.png from assets/images
 LOGO_PATH = os.path.join(settings.BASE_DIR, 'assets', 'images', 'logo.png')
 COMPANY_NAME = "NAVINCHANDRA SECURITIES PRIVATE LIMITED"
@@ -117,7 +119,7 @@ class BaseReportGenerator:
         # Logo
         img = None
         if os.path.exists(LOGO_PATH):
-            img = Image(LOGO_PATH, width=1.5*inch, height=0.5*inch)
+            img = Image(LOGO_PATH, width=1.5*inch, height=0.9*inch)
             img.hAlign = 'RIGHT'
 
         # Add the logo image directly to elements if it exists, or via table
@@ -573,9 +575,9 @@ def generate_transaction_statement_pdf(investor, transactions, fy_start="2024-04
 
             txn_data.append([
                 str(idx),
-                t.get_txn_type_code_display() if hasattr(t, 'get_txn_type_code_display') else t.txn_type_code,
+                readable_txn_type(t.txn_type_code) if hasattr(t, 'txn_type_code') else t.txn_type_code,
                 t.date.strftime('%Y-%m-%d') if t.date else '',
-                t.txn_number if t.txn_number else "-",
+                t.original_txn_number if t.original_txn_number else "-",
                 f"{t.amount:,.2f}" if t.amount else "0.00",
                 f"{t.nav:,.4f}" if t.nav else "0.0000",
                 f"{t.units:,.4f}" if t.units else "0.0000",
@@ -601,10 +603,11 @@ def generate_transaction_statement_pdf(investor, transactions, fy_start="2024-04
             ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#34495e')), # Darker grey/blue header
             ('TEXTCOLOR', (0,0), (-1,0), colors.white),
             ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+            ('ALIGN', (4,0), (-1,-1), 'RIGHT'),
             ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
             ('FONTSIZE', (0,0), (-1,-1), 8),
-            ('BOTTOMPADDING', (0,0), (-1,-1), 6),
-            ('TOPPADDING', (0,0), (-1,-1), 6),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 0),
+            ('TOPPADDING', (0,0), (-1,-1), 0),
             ('BACKGROUND', (0,1), (-1,-1), colors.white),
             # Opening Row Background
             ('BACKGROUND', (0,1), (-1,1), colors.HexColor('#fef9e7')), # Light yellow
