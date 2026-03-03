@@ -35,8 +35,48 @@ class BaseParser:
 
         self.failed_rows = []
 
+        # Caches to avoid DB hits in loops
+        self._scheme_cache = {}
+        self._investor_cache = {}
+        self._folio_cache = set()
+
     def parse(self):
         raise NotImplementedError
+
+    def preload_cache(self, df, pan_col='pan', scheme_col='prodcode', folio_col='folio_no'):
+        """
+        Preloads Investors, Schemes, and Folios into cache using IN queries to speed up parsing.
+        """
+        if df is None or df.empty: return
+
+        # 1. Preload Investors
+        if pan_col in df.columns:
+            pans = df[pan_col].dropna().astype(str).str.upper().str.strip().unique()
+            investors = InvestorProfile.objects.filter(pan__in=pans)
+            for inv in investors:
+                self._investor_cache[inv.pan] = inv
+
+        # 2. Preload Schemes
+        if scheme_col in df.columns:
+            scheme_codes = df[scheme_col].dropna().astype(str).str.strip().unique()
+            schemes = Scheme.objects.filter(channel_partner_code__in=scheme_codes)
+            for scheme in schemes:
+                if scheme.channel_partner_code:
+                    self._scheme_cache[f"{scheme.channel_partner_code}_None"] = scheme
+
+            # Fallback
+            schemes_rta = Scheme.objects.filter(rta_scheme_code__in=scheme_codes)
+            for scheme in schemes_rta:
+                if scheme.rta_scheme_code:
+                    self._scheme_cache[f"{scheme.rta_scheme_code}_None"] = scheme
+
+        # 3. Preload Folios
+        if folio_col in df.columns:
+            folios = df[folio_col].dropna().astype(str).str.strip().unique()
+            existing_folios = Folio.objects.filter(folio_number__in=folios).select_related('investor', 'amc')
+            for f in existing_folios:
+                cache_key = f"{f.investor.id}_{f.amc.id}_{f.folio_number}"
+                self._folio_cache.add(cache_key)
 
     def save_error_file(self):
         """
@@ -104,21 +144,30 @@ class BaseParser:
 
     def get_or_create_folio(self, investor, scheme, folio_number):
         if investor and scheme and folio_number:
-            Folio.objects.get_or_create(
-                investor=investor,
-                amc=scheme.amc,
-                folio_number=folio_number
-            )
+            cache_key = f"{investor.id}_{scheme.amc.id}_{folio_number}"
+            if cache_key not in self._folio_cache:
+                Folio.objects.get_or_create(
+                    investor=investor,
+                    amc=scheme.amc,
+                    folio_number=folio_number
+                )
+                self._folio_cache.add(cache_key)
 
     def get_or_create_provisional_investor(self, pan, name=None, is_offline=True):
         """
-        Finds an investor by PAN or creates a provisional one.
+        Finds an investor by PAN or creates a provisional one. Uses cache.
         """
         if not pan:
             return None
         pan = pan.upper().strip()
+
+        if pan in self._investor_cache:
+            return self._investor_cache[pan]
+
         try:
-            return InvestorProfile.objects.get(pan=pan)
+            profile = InvestorProfile.objects.get(pan=pan)
+            self._investor_cache[pan] = profile
+            return profile
         except InvestorProfile.DoesNotExist:
 
             # Split Name Logic
@@ -165,12 +214,17 @@ class BaseParser:
                 )
                 logger.info(f"Created provisional investor for PAN {pan}")
 
+            self._investor_cache[pan] = profile
             return profile
 
     def get_scheme(self, scheme_code, isin=None):
         """
-        Tries to find scheme by Code (BSE/RTA) or ISIN.
+        Tries to find scheme by Code (BSE/RTA) or ISIN. Uses cache.
         """
+        cache_key = f"{scheme_code}_{isin}"
+        if cache_key in self._scheme_cache:
+            return self._scheme_cache[cache_key]
+
         scheme = None
         if scheme_code:
             scheme_code = str(scheme_code).strip()
@@ -182,6 +236,7 @@ class BaseParser:
         if not scheme and isin:
             scheme = Scheme.objects.filter(isin=isin).first()
 
+        self._scheme_cache[cache_key] = scheme
         return scheme
 
     def match_or_create_transaction(self, investor, scheme, folio_number, txn_number, date, amount, units, txn_type, rta_code,
@@ -318,10 +373,18 @@ class BaseParser:
             is_provisional=True,
             amount=amount, # Exact amount match
             date__range=[date_min, date_max]
-        )
+        ).order_by('date') # FIFO Matching
 
-        # Prioritize match
-        matched_txn = candidates.first()
+        matched_txn = None
+
+        # If we have a specific BSE order ID embedded in RTA remarks or reference (uncommon but possible)
+        # we could check it here. For now, rely on FIFO exact amount + folio + scheme matching.
+        # But we must ensure we don't match a provisional transaction that was ALREADY matched to another RTA row in this run.
+        # `is_provisional` is set to False upon match, so the DB query filters it out if we already matched it and saved.
+        # So FIFO via `.order_by('date').first()` is the safest industry standard without explicit Order IDs.
+
+        if candidates.exists():
+            matched_txn = candidates.first()
 
         if matched_txn:
             # Update Existing Provisional Transaction to Confirmed RTA Transaction
@@ -519,8 +582,50 @@ class DBFParser(BaseParser):
             if not self.rta_file:
                 raise e
 
+    def aggregate_cams_dataframe(self, df):
+        """
+        Aggregates CAMS rows based on original_txn_number, date, folio, and scheme to merge split rows (e.g. stamp duty).
+        """
+        if df.empty: return df
+
+        # Ensure trxnno exists and is clean
+        if 'trxnno' not in df.columns:
+            return df
+
+        # We group by the core identifying columns that make a transaction unique in reality
+        # 'reversal_c' is included so reversals aren't merged with original purchases if they happen on the same day.
+        # However, usually reversals have a different date or are processed separately.
+        group_cols = ['trxnno', 'traddate', 'folio_no', 'prodcode', 'reversal_c']
+
+        # Make sure columns exist to avoid KeyError
+        group_cols = [c for c in group_cols if c in df.columns]
+
+        # Numeric columns to sum
+        sum_cols = ['units', 'amount', 'stt', 'stamp_duty', 'load', 'total_tax', 'tax', 'igst_amoun', 'cgst_amoun', 'sgst_amoun', 'trxn_charg']
+        sum_cols = [c for c in sum_cols if c in df.columns]
+
+        # For non-numeric columns, we take the first non-null value
+        agg_dict = {c: 'sum' for c in sum_cols}
+
+        for c in df.columns:
+            if c not in sum_cols and c not in group_cols:
+                agg_dict[c] = 'first'
+
+        # Convert numeric columns to float, coercion handles empty strings
+        for c in sum_cols:
+            df[c] = pd.to_numeric(df[c], errors='coerce').fillna(0)
+
+        # Fill NA temporarily for grouping only on group_cols to avoid TypeError on other columns
+        df[group_cols] = df[group_cols].fillna('__NA__')
+        df_grouped = df.groupby(group_cols, as_index=False).agg(agg_dict)
+        df_grouped[group_cols] = df_grouped[group_cols].replace('__NA__', None)
+
+        return df_grouped
+
     def parse_cams(self, df):
         # CAMS Logic with New Mapping
+        df = self.aggregate_cams_dataframe(df)
+        self.preload_cache(df, pan_col='pan', scheme_col='prodcode', folio_col='folio_no')
         for _, row in df.iterrows():
                 try:
                     with transaction.atomic():
@@ -677,12 +782,46 @@ class KarvyCSVParser(BaseParser):
     """
     Parses Karvy CSV Format (e.g. MFSD307 and other CSV exports).
     """
+    def aggregate_karvy_dataframe(self, df):
+        """
+        Aggregates Karvy rows based on transaction number, date, folio, and scheme.
+        """
+        if df.empty: return df
+
+        if 'transaction number' not in df.columns:
+            return df
+
+        group_cols = ['transaction number', 'transaction date', 'folio number', 'product code']
+        group_cols = [c for c in group_cols if c in df.columns]
+
+        sum_cols = ['units', 'amount', 'stt', 'stamp duty charges', 'load amount', 'tdsamount']
+        sum_cols = [c for c in sum_cols if c in df.columns]
+
+        agg_dict = {c: 'sum' for c in sum_cols}
+
+        for c in df.columns:
+            if c not in sum_cols and c not in group_cols:
+                agg_dict[c] = 'first'
+
+        # Convert numeric columns to float
+        for c in sum_cols:
+            df[c] = pd.to_numeric(df[c], errors='coerce').fillna(0)
+
+        df[group_cols] = df[group_cols].fillna('__NA__')
+        df_grouped = df.groupby(group_cols, as_index=False).agg(agg_dict)
+        df_grouped[group_cols] = df_grouped[group_cols].replace('__NA__', None)
+
+        return df_grouped
+
     def parse(self):
         try:
             # Read CSV
             df = pd.read_csv(self.file_path)
             # Normalize columns to lowercase and strip whitespace
             df.columns = df.columns.str.lower().str.strip()
+
+            df = self.aggregate_karvy_dataframe(df)
+            self.preload_cache(df, pan_col='pan1', scheme_col='product code', folio_col='folio number')
 
             for _, row in df.iterrows():
                 try:
