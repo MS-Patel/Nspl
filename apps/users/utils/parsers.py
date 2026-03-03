@@ -199,7 +199,7 @@ def import_investors_from_file(file_obj):
                         if email: user.email = email
                         user.save()
                     except User.DoesNotExist:
-                        user = User.objects.create_user(username=pan, email=email, password=pan)
+                        user = User.objects.create_user(username=pan, email=email, password=pan, force_password_change=True)
                         user.name = full_name
                         user.user_type = User.Types.INVESTOR
                         user.save()
@@ -362,7 +362,7 @@ def import_distributors_from_file(file_obj):
                         if email: user.email = email
                         user.save()
                     except User.DoesNotExist:
-                        user = User.objects.create_user(username=broker_code, email=email, password=pan)
+                        user = User.objects.create_user(username=broker_code, email=email, password=pan, force_password_change=True)
                         user.name = name
                         user.user_type = User.Types.DISTRIBUTOR
                         user.save()
@@ -473,7 +473,7 @@ def import_rms_from_file(file_obj):
                         if email: user.email = email
                         user.save()
                     except User.DoesNotExist:
-                        user = User.objects.create_user(username=emp_code, email=email, password=emp_code)
+                        user = User.objects.create_user(username=emp_code, email=email, password=emp_code, force_password_change=True)
                         user.name = name
                         user.user_type = User.Types.RM
                         user.save()
