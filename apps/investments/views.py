@@ -1058,6 +1058,9 @@ class ExportWealthReportView(LoginRequiredMixin, View):
         if not has_access_to_investor(request.user, investor_id):
             raise Http404("Access Denied")
 
+        start_date = request.GET.get('start_date')
+        end_date = request.GET.get('end_date')
+
         holdings = Holding.objects.filter(investor=investor).select_related('scheme', 'scheme__amc')
         total_current_value = 0.0
         total_invested_value = 0.0
@@ -1136,7 +1139,7 @@ class ExportWealthReportView(LoginRequiredMixin, View):
         else:
             summary['gain_loss_percent'] = 0.0
 
-        buffer = generate_wealth_report_pdf(investor, summary, folio_list)
+        buffer = generate_wealth_report_pdf(investor, summary, folio_list, start_date=start_date, end_date=end_date)
 
         response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
         response['Content-Disposition'] = f'attachment; filename="Wealth_Report_{investor.pan}.pdf"'
@@ -1152,6 +1155,9 @@ class ExportPLReportView(LoginRequiredMixin, View):
 
         if not has_access_to_investor(request.user, investor_id):
             raise Http404("Access Denied")
+
+        start_date = request.GET.get('start_date')
+        end_date = request.GET.get('end_date')
 
         holdings = Holding.objects.filter(investor=investor).select_related('scheme', 'scheme__amc')
         total_current_value = 0.0
@@ -1203,7 +1209,7 @@ class ExportPLReportView(LoginRequiredMixin, View):
             'portfolio_xirr': portfolio_xirr_percent,
         }
 
-        buffer = generate_pl_report_pdf(investor, summary, folio_list)
+        buffer = generate_pl_report_pdf(investor, summary, folio_list, start_date=start_date, end_date=end_date)
 
         response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
         response['Content-Disposition'] = f'attachment; filename="PL_Report_{investor.pan}.pdf"'
@@ -1220,9 +1226,17 @@ class ExportCapitalGainReportView(LoginRequiredMixin, View):
         if not has_access_to_investor(request.user, investor_id):
             raise Http404("Access Denied")
 
+        start_date = request.GET.get('start_date')
+        end_date = request.GET.get('end_date')
+
         transactions = Transaction.objects.filter(investor=investor).order_by('-date')
 
-        buffer = generate_capital_gain_pdf(investor, transactions)
+        if start_date:
+            transactions = transactions.filter(date__gte=start_date)
+        if end_date:
+            transactions = transactions.filter(date__lte=end_date)
+
+        buffer = generate_capital_gain_pdf(investor, transactions, fy_start=start_date, fy_end=end_date)
 
         response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
         response['Content-Disposition'] = f'attachment; filename="Capital_Gain_Report_{investor.pan}.pdf"'
@@ -1239,9 +1253,17 @@ class ExportTransactionStatementView(LoginRequiredMixin, View):
         if not has_access_to_investor(request.user, investor_id):
             raise Http404("Access Denied")
 
+        start_date = request.GET.get('start_date')
+        end_date = request.GET.get('end_date')
+
         transactions = Transaction.objects.filter(investor=investor).order_by('date')
 
-        buffer = generate_transaction_statement_pdf(investor, transactions)
+        # Note: Do not filter transactions here if generate_transaction_statement_pdf handles opening balance via `date__lt`
+        # But if generate_transaction_statement_pdf takes transactions as input and filters within, let's look at it.
+        # However, looking at standard implementation, generate_transaction_statement_pdf accepts the full list or a filtered list.
+        # Based on instructions, we will pass dates to the generator.
+
+        buffer = generate_transaction_statement_pdf(investor, transactions, fy_start=start_date, fy_end=end_date)
 
         response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
         response['Content-Disposition'] = f'attachment; filename="Transaction_Statement_{investor.pan}.pdf"'
