@@ -175,7 +175,7 @@ class Command(BaseCommand):
                 except Exception as e:
                     count_errors += 1
                     client_code = row.get('Client Code', 'Unknown')
-                    # self.stdout.write(self.style.ERROR(f"Error processing client {client_code}: {str(e)}"))
+                    self.stdout.write(self.style.ERROR(f"Error processing client {client_code}: {str(e)}"))
 
         self.stdout.write(self.style.SUCCESS(f"Clients Processed. Success: {count_created}, Errors: {count_errors}"))
 
@@ -326,7 +326,7 @@ class Command(BaseCommand):
                     count_created += 1
                 except Exception as e:
                     count_errors += 1
-                    # self.stdout.write(self.style.ERROR(f"Error processing mandate: {str(e)}"))
+                    self.stdout.write(self.style.ERROR(f"Error processing mandate: {str(e)}"))
 
         self.stdout.write(self.style.SUCCESS(f"Mandates Processed. Success: {count_created}, Errors: {count_errors}"))
 
