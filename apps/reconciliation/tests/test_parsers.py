@@ -18,6 +18,8 @@ class ParserTestBase(TestCase):
         self.scheme = Scheme.objects.create(
             name="HDFC Top 100",
             scheme_code="HDFC100",
+            channel_partner_code="HDFC100",
+            rta_scheme_code="KARVY001",
             amc=self.amc,
             category=self.category,
             purchase_allowed=True
@@ -158,7 +160,8 @@ class KarvyCSVParserTest(ParserTestBase):
         parser.parse()
 
         self.assertEqual(rta_file.status, RTAFile.STATUS_PROCESSED)
-        txn = Transaction.objects.get(txn_number__startswith="KTXN01") # Using startswith as fingerprint is appended
+        txn = Transaction.objects.filter(txn_number__startswith="KTXN01").first() # Using startswith as fingerprint is appended
+        self.assertIsNotNone(txn)
         self.assertEqual(txn.units, Decimal("50.0"))
         self.assertEqual(txn.scheme, self.scheme)
         self.assertEqual(txn.description, "Purchase")
