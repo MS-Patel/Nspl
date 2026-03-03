@@ -975,6 +975,12 @@ class InvestorPortfolioView(LoginRequiredMixin, TemplateView):
         # Group by Folio Number
         folios_map = {}
 
+        # Get all transactions to compute Purchase, Redemption, Switch IN/OUT for each folio
+        transactions = Transaction.objects.filter(investor=investor)
+
+        # Aggregate transactions by folio
+        from django.db.models import Sum
+
         for h in holdings:
             cv = float(h.current_value) if h.current_value else 0.0
             iv = float(h.units * h.average_cost)
@@ -1032,3 +1038,211 @@ class InvestorPortfolioView(LoginRequiredMixin, TemplateView):
         context['folio_list_json'] = json.dumps(folio_list)
 
         return context
+
+from django.http import HttpResponse
+from apps.reports.services.pdf_generator import (
+    generate_wealth_report_pdf,
+    generate_pl_report_pdf,
+    generate_capital_gain_pdf,
+    generate_transaction_statement_pdf
+)
+
+class ExportWealthReportView(LoginRequiredMixin, View):
+    def get(self, request, investor_id):
+        # Fetch data similar to InvestorPortfolioView
+        try:
+            investor = InvestorProfile.objects.get(id=investor_id)
+        except InvestorProfile.DoesNotExist:
+            raise Http404("Investor not found")
+
+        if not has_access_to_investor(request.user, investor_id):
+            raise Http404("Access Denied")
+
+        holdings = Holding.objects.filter(investor=investor).select_related('scheme', 'scheme__amc')
+        total_current_value = 0.0
+        total_invested_value = 0.0
+        folios_map = {}
+        all_cash_flows = []
+
+        # Get all transactions to compute Purchase, Redemption, Switch IN/OUT for each folio
+        transactions = Transaction.objects.filter(investor=investor)
+        from django.db.models import Sum
+
+        for h in holdings:
+            cv = float(h.current_value) if h.current_value else 0.0
+            iv = float(h.units * h.average_cost)
+            total_current_value += cv
+            total_invested_value += iv
+
+            scheme_flows = get_cash_flows(h)
+            all_cash_flows.extend(scheme_flows)
+
+            f_num = h.folio_number
+            if f_num not in folios_map:
+                amc_name = h.scheme.amc.name if h.scheme and h.scheme.amc else "Unknown AMC"
+
+                # Fetch aggregated transactions for this holding
+                folio_txns = transactions.filter(folio_number=f_num, scheme=h.scheme)
+                purchase = folio_txns.filter(txn_type_code='P').aggregate(Sum('amount'))['amount__sum'] or 0.0
+                switch_in = folio_txns.filter(txn_type_code='SI').aggregate(Sum('amount'))['amount__sum'] or 0.0
+                redemption = folio_txns.filter(txn_type_code='R').aggregate(Sum('amount'))['amount__sum'] or 0.0
+                switch_out = folio_txns.filter(txn_type_code='SO').aggregate(Sum('amount'))['amount__sum'] or 0.0
+
+                folios_map[f_num] = {
+                    'folio_number': f_num,
+                    'amc_name': amc_name,
+                    'current_value': 0.0,
+                    'invested_value': 0.0,
+                    'gain_loss': 0.0,
+                    'gain_loss_percent': 0.0,
+                    'purchase': purchase,
+                    'switch_in': switch_in,
+                    'redemption': redemption,
+                    'switch_out': switch_out,
+                }
+            else:
+                folio_txns = transactions.filter(folio_number=f_num, scheme=h.scheme)
+                folios_map[f_num]['purchase'] += folio_txns.filter(txn_type_code='P').aggregate(Sum('amount'))['amount__sum'] or 0.0
+                folios_map[f_num]['switch_in'] += folio_txns.filter(txn_type_code='SI').aggregate(Sum('amount'))['amount__sum'] or 0.0
+                folios_map[f_num]['redemption'] += folio_txns.filter(txn_type_code='R').aggregate(Sum('amount'))['amount__sum'] or 0.0
+                folios_map[f_num]['switch_out'] += folio_txns.filter(txn_type_code='SO').aggregate(Sum('amount'))['amount__sum'] or 0.0
+
+            folios_map[f_num]['current_value'] += cv
+            folios_map[f_num]['invested_value'] += iv
+
+        folio_list = []
+        for f_num, data in folios_map.items():
+            current = data['current_value']
+            invested = data['invested_value']
+            gain_loss = current - invested
+            percent = (gain_loss / invested * 100) if invested > 0 else 0.0
+            data['gain_loss'] = round(gain_loss, 2)
+            data['gain_loss_percent'] = round(percent, 2)
+            data['current_value'] = round(current, 2)
+            data['invested_value'] = round(invested, 2)
+            folio_list.append(data)
+
+        portfolio_xirr_val = calculate_xirr(all_cash_flows)
+        portfolio_xirr_percent = round(portfolio_xirr_val * 100, 2) if portfolio_xirr_val is not None else None
+
+        summary = {
+            'total_current_value': round(total_current_value, 2),
+            'total_invested_value': round(total_invested_value, 2),
+            'total_gain_loss': round(total_current_value - total_invested_value, 2),
+            'portfolio_xirr': portfolio_xirr_percent,
+        }
+        if total_invested_value > 0:
+            summary['gain_loss_percent'] = round(((total_current_value - total_invested_value) / total_invested_value) * 100, 2)
+        else:
+            summary['gain_loss_percent'] = 0.0
+
+        buffer = generate_wealth_report_pdf(investor, summary, folio_list)
+
+        response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="Wealth_Report_{investor.pan}.pdf"'
+        return response
+
+
+class ExportPLReportView(LoginRequiredMixin, View):
+    def get(self, request, investor_id):
+        try:
+            investor = InvestorProfile.objects.get(id=investor_id)
+        except InvestorProfile.DoesNotExist:
+            raise Http404("Investor not found")
+
+        if not has_access_to_investor(request.user, investor_id):
+            raise Http404("Access Denied")
+
+        holdings = Holding.objects.filter(investor=investor).select_related('scheme', 'scheme__amc')
+        total_current_value = 0.0
+        total_invested_value = 0.0
+        folios_map = {}
+        all_cash_flows = []
+
+        for h in holdings:
+            cv = float(h.current_value) if h.current_value else 0.0
+            iv = float(h.units * h.average_cost)
+            total_current_value += cv
+            total_invested_value += iv
+            scheme_flows = get_cash_flows(h)
+            all_cash_flows.extend(scheme_flows)
+
+            f_num = h.folio_number
+            if f_num not in folios_map:
+                amc_name = h.scheme.amc.name if h.scheme and h.scheme.amc else "Unknown AMC"
+                folios_map[f_num] = {
+                    'folio_number': f_num,
+                    'amc_name': amc_name,
+                    'current_value': 0.0,
+                    'invested_value': 0.0,
+                    'gain_loss': 0.0,
+                    'gain_loss_percent': 0.0,
+                }
+            folios_map[f_num]['current_value'] += cv
+            folios_map[f_num]['invested_value'] += iv
+
+        folio_list = []
+        for f_num, data in folios_map.items():
+            current = data['current_value']
+            invested = data['invested_value']
+            gain_loss = current - invested
+            percent = (gain_loss / invested * 100) if invested > 0 else 0.0
+            data['gain_loss'] = round(gain_loss, 2)
+            data['gain_loss_percent'] = round(percent, 2)
+            data['current_value'] = round(current, 2)
+            data['invested_value'] = round(invested, 2)
+            folio_list.append(data)
+
+        portfolio_xirr_val = calculate_xirr(all_cash_flows)
+        portfolio_xirr_percent = round(portfolio_xirr_val * 100, 2) if portfolio_xirr_val is not None else None
+
+        summary = {
+            'total_current_value': round(total_current_value, 2),
+            'total_invested_value': round(total_invested_value, 2),
+            'total_gain_loss': round(total_current_value - total_invested_value, 2),
+            'portfolio_xirr': portfolio_xirr_percent,
+        }
+
+        buffer = generate_pl_report_pdf(investor, summary, folio_list)
+
+        response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="PL_Report_{investor.pan}.pdf"'
+        return response
+
+
+class ExportCapitalGainReportView(LoginRequiredMixin, View):
+    def get(self, request, investor_id):
+        try:
+            investor = InvestorProfile.objects.get(id=investor_id)
+        except InvestorProfile.DoesNotExist:
+            raise Http404("Investor not found")
+
+        if not has_access_to_investor(request.user, investor_id):
+            raise Http404("Access Denied")
+
+        transactions = Transaction.objects.filter(investor=investor).order_by('-date')
+
+        buffer = generate_capital_gain_pdf(investor, transactions)
+
+        response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="Capital_Gain_Report_{investor.pan}.pdf"'
+        return response
+
+
+class ExportTransactionStatementView(LoginRequiredMixin, View):
+    def get(self, request, investor_id):
+        try:
+            investor = InvestorProfile.objects.get(id=investor_id)
+        except InvestorProfile.DoesNotExist:
+            raise Http404("Investor not found")
+
+        if not has_access_to_investor(request.user, investor_id):
+            raise Http404("Access Denied")
+
+        transactions = Transaction.objects.filter(investor=investor).order_by('date')
+
+        buffer = generate_transaction_statement_pdf(investor, transactions)
+
+        response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="Transaction_Statement_{investor.pan}.pdf"'
+        return response

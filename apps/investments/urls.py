@@ -13,6 +13,12 @@ urlpatterns = [
     # New: Investor Portfolio Dashboard
     path('portfolio/<int:investor_id>/', views.InvestorPortfolioView.as_view(), name='investor_portfolio'),
 
+    # Reports
+    path('portfolio/<int:investor_id>/export/wealth-report/', views.ExportWealthReportView.as_view(), name='export_wealth_report'),
+    path('portfolio/<int:investor_id>/export/pl-report/', views.ExportPLReportView.as_view(), name='export_pl_report'),
+    path('portfolio/<int:investor_id>/export/capital-gain/', views.ExportCapitalGainReportView.as_view(), name='export_capital_gain'),
+    path('portfolio/<int:investor_id>/export/transaction-statement/', views.ExportTransactionStatementView.as_view(), name='export_transaction_statement'),
+
     path('folio/<path:folio_number>/', views.FolioDetailView.as_view(), name='folio_detail'),
     path('redemption/create/<int:holding_id>/', views.RedemptionCreateView.as_view(), name='redemption_create'),
     path('mandate/create/', views.MandateCreateView.as_view(), name='mandate_create'),
