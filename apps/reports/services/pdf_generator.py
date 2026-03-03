@@ -516,7 +516,7 @@ def generate_transaction_statement_pdf(investor, transactions, fy_start="2024-04
     from decimal import Decimal
 
     # Ensure dates are parsed
-    from datetime import datetime
+
     try:
         if isinstance(fy_start, str):
             start_date = datetime.strptime(fy_start, '%Y-%m-%d').date()
