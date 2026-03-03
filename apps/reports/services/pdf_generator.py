@@ -561,7 +561,7 @@ def generate_transaction_statement_pdf(investor, transactions, fy_start="2024-04
                 str(idx),
                 t.get_txn_type_code_display() if hasattr(t, 'get_txn_type_code_display') else t.txn_type_code,
                 t.date.strftime('%Y-%m-%d') if t.date else '',
-                t.txn_number if t.txn_number else "-",
+                t.original_txn_number if t.original_txn_number else "-",
                 f"{t.amount:,.2f}" if t.amount else "0.00",
                 f"{t.nav:,.4f}" if t.nav else "0.0000",
                 f"{t.units:,.4f}" if t.units else "0.0000",
