@@ -453,6 +453,11 @@ def generate_transaction_statement_pdf(investor, transactions, fy_start="2024-04
     t_cd.setStyle(TableStyle([
         ('VALIGN', (0,0), (-1,-1), 'TOP'),
         ('BOTTOMPADDING', (0,0), (-1,-1), 10),
+        ('TOPPADDING', (0,0), (-1,-1), 10),
+        ('LEFTPADDING', (0,0), (-1,-1), 10),
+        ('RIGHTPADDING', (0,0), (-1,-1), 10),
+        ('BACKGROUND', (0,0), (-1,-1), colors.HexColor('#f5f7fa')), # Very light blue-grey
+        ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor('#dcdde1')),
     ]))
     generator.elements.append(t_cd)
     generator.elements.append(Spacer(1, 0.1*inch))
@@ -494,7 +499,16 @@ def generate_transaction_statement_pdf(investor, transactions, fy_start="2024-04
         scheme, folio = key
 
         scheme_name = scheme.name if scheme else "Unknown Scheme"
-        generator.elements.append(Paragraph(f"<b>{scheme_name} [{folio}]</b>", styles['Normal']))
+        # Create a nice block for the title
+        title_data = [[Paragraph(f"<font color='white'><b>{scheme_name} [{folio}]</b></font>", styles['Normal'])]]
+        t_title = Table(title_data, colWidths=[page_width])
+        t_title.setStyle(TableStyle([
+            ('BACKGROUND', (0,0), (0,0), colors.HexColor('#2c3e50')), # Dark blue
+            ('TOPPADDING', (0,0), (0,0), 6),
+            ('BOTTOMPADDING', (0,0), (0,0), 6),
+            ('LEFTPADDING', (0,0), (0,0), 10),
+        ]))
+        generator.elements.append(t_title)
         generator.elements.append(Spacer(1, 0.05*inch))
 
         txn_headers = [
@@ -515,14 +529,14 @@ def generate_transaction_statement_pdf(investor, transactions, fy_start="2024-04
             )
             for pt in past_txns:
                 action = pt.txn_type_code.upper() if pt.txn_type_code else pt.tr_flag.upper() if pt.tr_flag else 'P'
-            units = pt.units if pt.units else Decimal('0.0000')
-            amount = pt.amount if pt.amount else Decimal('0.00')
-            if action in ['P', 'SI', 'SIP'] or 'PUR' in action or 'IN' in action:
-                opening_units += units
-                opening_cost += amount
-            elif action in ['R', 'SO', 'SWO'] or 'RED' in action or 'OUT' in action:
-                opening_units -= units
-                opening_cost -= amount
+                units = pt.units if pt.units else Decimal('0.0000')
+                amount = pt.amount if pt.amount else Decimal('0.00')
+                if action in ['P', 'SI', 'SIP'] or 'PUR' in action or 'IN' in action:
+                    opening_units += units
+                    opening_cost += amount
+                elif action in ['R', 'SO', 'SWO'] or 'RED' in action or 'OUT' in action:
+                    opening_units -= units
+                    opening_cost -= amount
 
         # Get latest NAV for "Current Value" calculation
         latest_nav = Decimal('0.0000')
@@ -561,7 +575,7 @@ def generate_transaction_statement_pdf(investor, transactions, fy_start="2024-04
                 str(idx),
                 t.get_txn_type_code_display() if hasattr(t, 'get_txn_type_code_display') else t.txn_type_code,
                 t.date.strftime('%Y-%m-%d') if t.date else '',
-                t.original_txn_number if t.original_txn_number else "-",
+                t.txn_number if t.txn_number else "-",
                 f"{t.amount:,.2f}" if t.amount else "0.00",
                 f"{t.nav:,.4f}" if t.nav else "0.0000",
                 f"{t.units:,.4f}" if t.units else "0.0000",
@@ -576,17 +590,27 @@ def generate_transaction_statement_pdf(investor, transactions, fy_start="2024-04
         ])
 
         # Table styling
-        col_widths = [0.6*inch, 1.2*inch, 0.8*inch, 1.5*inch, 1.0*inch, 0.8*inch, 0.8*inch, 1.0*inch, 1.0*inch]
+        col_widths = [0.6*inch, 1.5*inch, 0.9*inch, 2.0*inch, 1.2*inch, 0.9*inch, 1.0*inch, 1.4*inch, 1.19*inch]
         t_txns = generator._create_table(txn_data, col_widths=col_widths)
+
+        # We need to style the Opening and Closing rows distinctly
+        # Row 0: Headers
+        # Row 1: Opening
+        # Row -1: Closing
         t_txns.setStyle(TableStyle([
-            ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#e0e0e0')),
-            ('TEXTCOLOR', (0,0), (-1,0), colors.black),
+            ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#34495e')), # Darker grey/blue header
+            ('TEXTCOLOR', (0,0), (-1,0), colors.white),
             ('ALIGN', (0,0), (-1,-1), 'CENTER'),
             ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
             ('FONTSIZE', (0,0), (-1,-1), 8),
-            ('BOTTOMPADDING', (0,0), (-1,-1), 4),
-            ('TOPPADDING', (0,0), (-1,-1), 4),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 6),
+            ('TOPPADDING', (0,0), (-1,-1), 6),
             ('BACKGROUND', (0,1), (-1,-1), colors.white),
+            # Opening Row Background
+            ('BACKGROUND', (0,1), (-1,1), colors.HexColor('#fef9e7')), # Light yellow
+            # Closing Row Background
+            ('BACKGROUND', (0,-1), (-1,-1), colors.HexColor('#e8f8f5')), # Light mint
+            ('FONTNAME', (0,-1), (-1,-1), 'Helvetica-Bold'), # Bold the closing row
             ('GRID', (0,0), (-1,-1), 0.5, colors.lightgrey),
         ]))
         generator.elements.append(t_txns)
@@ -616,14 +640,18 @@ def generate_transaction_statement_pdf(investor, transactions, fy_start="2024-04
                 Paragraph(f"<b>PAN :</b><br/>N.A.", styles['Normal'])
             ]
         ]
-        bd_col_widths = [2.5*inch, 2.0*inch, 1.2*inch, 2.0*inch, 1.0*inch]
+        bd_col_widths = [2.5*inch, 2.5*inch, 1.5*inch, 2.5*inch, 1.69*inch]
         t_bank = Table(bank_data, colWidths=bd_col_widths)
         t_bank.setStyle(TableStyle([
             ('VALIGN', (0,0), (-1,-1), 'TOP'),
             ('BOTTOMPADDING', (0,0), (-1,-1), 10),
+            ('TOPPADDING', (0,0), (-1,-1), 10),
+            ('LEFTPADDING', (0,0), (-1,-1), 10),
+            ('BACKGROUND', (0,0), (-1,-1), colors.HexColor('#fafafa')), # Very light grey
+            ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor('#eeeeee')),
         ]))
         generator.elements.append(t_bank)
-        generator.elements.append(Spacer(1, 0.2*inch))
+        generator.elements.append(Spacer(1, 0.4*inch))
 
     if not grouped_txns:
         txn_headers = ["Date", "Transaction Type", "Folio Number", "Amount", "NAV", "Units"]
