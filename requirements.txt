@@ -1,5 +1,6 @@
 asgiref==3.11.0
 attrs==25.4.0
+beautifulsoup4==4.14.3
 certifi==2026.1.4
 cffi==2.0.0
 charset-normalizer==3.4.4
@@ -30,6 +31,7 @@ playwright==1.55.0
 pluggy==1.6.0
 psycopg2-binary==2.9.11
 pycparser==2.23
+pycryptodomex==3.23.0
 pyee==13.0.0
 Pygments==2.19.2
 pypdfium2==5.3.0
@@ -39,13 +41,16 @@ python-dateutil==2.9.0.post0
 python-dotenv==1.0.1
 python-Levenshtein==0.27.3
 pytz==2025.2
+pyzipper==0.3.6
 RapidFuzz==3.14.3
+reportlab==4.4.10
 requests==2.32.5
 requests-file==3.0.1
 requests-toolbelt==1.0.0
 scipy==1.17.0
 simpledbf==0.2.6
 six==1.17.0
+soupsieve==2.8.3
 sqlparse==0.5.5
 thefuzz==0.22.1
 typing_extensions==4.15.0
@@ -54,7 +59,3 @@ urllib3==2.6.3
 whitenoise==6.6.0
 xlrd==2.0.1
 zeep==4.3.2
-beautifulsoup4==4.14.3
-pyzipper==0.3.6
-pycryptodomex==3.23.0
-reportlab==4.1.0
