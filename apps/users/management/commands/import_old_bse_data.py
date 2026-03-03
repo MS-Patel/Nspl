@@ -198,6 +198,7 @@ class Command(BaseCommand):
         user, created = User.objects.get_or_create(username=pan)
         if created:
             user.set_password(pan)
+            user.force_password_change = True
             user.email = email
             user.first_name = first_name
             user.last_name = last_name

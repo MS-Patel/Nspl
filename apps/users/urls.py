@@ -8,6 +8,7 @@ urlpatterns = [
     path('legacy/login/', views.CustomLoginView.as_view(), name='login_legacy'),
     path('login/', ReactAppView.as_view(), name='login'),
     path('users/api/auth/login/', views.APILoginView.as_view(), name='api_login'),
+    path('users/api/auth/change-password/', views.APIPasswordChangeView.as_view(), name='api_change_password'),
     path('users/api/auth/status/', views.APIAuthStatusView.as_view(), name='api_auth_status'),
     path('logout/', views.CustomLogoutView.as_view(), name='logout'),
 

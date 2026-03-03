@@ -16,6 +16,7 @@ class User(AbstractUser):
     )
 
     name = models.CharField(_("Name of User"), blank=True, max_length=255)
+    force_password_change = models.BooleanField(default=False, help_text="Forces user to change password on next login.")
 
     def save(self, *args, **kwargs):
         if not self.id:

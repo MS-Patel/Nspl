@@ -150,7 +150,7 @@ class VerifyOTPLoginView(View):
             elif user.user_type == User.Types.INVESTOR:
                 success_url = reverse('users:investor_dashboard')
 
-            return JsonResponse({'status': 'success', 'redirect_url': success_url})
+            return JsonResponse({'status': 'success', 'redirect_url': success_url, 'force_password_change': getattr(user, 'force_password_change', False)})
         else:
             return JsonResponse({'status': 'error', 'message': 'Invalid or expired OTP.'}, status=400)
 
@@ -528,6 +528,7 @@ class InvestorCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
                     username=pan,
                     email=email,
                     password=pan,
+                    force_password_change=True,
                     name=full_name,
                     user_type=User.Types.INVESTOR
                 )
@@ -1398,7 +1399,7 @@ class APILoginView(View):
             elif user.user_type == User.Types.INVESTOR:
                 redirect_url = reverse('users:investor_dashboard')
 
-            return JsonResponse({'status': 'success', 'redirect_url': redirect_url})
+            return JsonResponse({'status': 'success', 'redirect_url': redirect_url, 'force_password_change': getattr(user, 'force_password_change', False)})
         else:
             return JsonResponse({'status': 'error', 'message': 'Invalid credentials'}, status=401)
 
@@ -1418,9 +1419,37 @@ class APIAuthStatusView(View):
                 'is_authenticated': True,
                 'redirect_url': redirect_url,
                 'username': user.username,
-                'name': user.name or user.username
+                'name': user.name or user.username,
+                'force_password_change': getattr(user, 'force_password_change', False)
             })
         else:
             return JsonResponse({
                 'is_authenticated': False
             })
+
+class APIPasswordChangeView(LoginRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        try:
+            data = json.loads(request.body)
+            new_password = data.get('new_password')
+        except json.JSONDecodeError:
+            return JsonResponse({'status': 'error', 'message': 'Invalid JSON'}, status=400)
+
+        if not new_password:
+            return JsonResponse({'status': 'error', 'message': 'New password is required'}, status=400)
+
+        import re
+        if len(new_password) < 8 or not re.search(r"[a-z]", new_password) or \
+           not re.search(r"[A-Z]", new_password) or not re.search(r"[!@#$%^&*(),.?\":{}|<>]", new_password):
+            return JsonResponse({'status': 'error', 'message': 'Password must be at least 8 characters long, include at least one uppercase letter, one lowercase letter, and one special character.'}, status=400)
+
+        user = request.user
+        user.set_password(new_password)
+        user.force_password_change = False
+        user.save()
+
+        # Keep user logged in after password change
+        from django.contrib.auth import update_session_auth_hash
+        update_session_auth_hash(request, user)
+
+        return JsonResponse({'status': 'success', 'message': 'Password changed successfully.'})

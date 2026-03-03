@@ -25,7 +25,11 @@ const Login = () => {
         const response = await fetch('/users/api/auth/status/');
         const data = await response.json();
         if (data.is_authenticated) {
-          window.location.href = data.redirect_url;
+          if (data.force_password_change) {
+            window.location.href = '/dashboard/change-password';
+          } else {
+            window.location.href = data.redirect_url;
+          }
         }
       } catch (error) {
         console.error("Auth check failed:", error);
@@ -102,7 +106,11 @@ const Login = () => {
           title: "Login successful!",
           description: "Redirecting...",
         });
-        window.location.href = data.redirect_url || '/dashboard/admin/';
+        if (data.force_password_change) {
+          window.location.href = '/dashboard/change-password';
+        } else {
+          window.location.href = data.redirect_url || '/dashboard/admin/';
+        }
       } else {
         throw new Error(data.message || 'Invalid OTP');
       }
@@ -154,7 +162,11 @@ const Login = () => {
             title: "Login successful!",
             description: "Redirecting...",
           });
+          if (data.force_password_change) {
+          window.location.href = '/dashboard/change-password';
+        } else {
           window.location.href = data.redirect_url || '/dashboard/admin/';
+        }
         } else {
           throw new Error(data.message || 'Login failed');
         }

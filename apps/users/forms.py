@@ -112,6 +112,7 @@ class RMCreationForm(forms.ModelForm):
             # Set Username and Password
             user.username = self.cleaned_data['employee_code']
             user.set_password(self.cleaned_data['pan'])
+            user.force_password_change = True
 
             if commit:
                 user.save()
@@ -260,6 +261,7 @@ class DistributorCreationForm(forms.ModelForm):
             # Set Username and Password
             user.username = broker_code
             user.set_password(self.cleaned_data['pan'])
+            user.force_password_change = True
 
             if commit:
                 user.save()
