@@ -31,9 +31,11 @@ def recalculate_holding(investor, scheme, folio_number):
         desc = (txn.description or "").upper().strip()
         rta_code = (txn.rta_code or "").upper().strip()
 
-        # Use Standard/Legacy Logic for ALL transactions
-        # This covers standard codes like P, R, SI, SO, DR, B, etc.
-        action = _get_legacy_action(t_code, t_flag, desc, txn)
+        # Use computed action from DB if available, otherwise calculate fallback
+        if txn.txn_action:
+            action = txn.txn_action
+        else:
+            action = _get_legacy_action(t_code, t_flag, desc, txn)
 
         # --- APPLY LOGIC ---
 
@@ -117,22 +119,26 @@ def recalculate_holding(investor, scheme, folio_number):
     holding.last_updated = timezone.now()
     holding.save()
 
-def _get_legacy_action(t_code, t_flag, desc, txn):
+def get_transaction_type_and_action(t_code, t_flag, desc, txn_units=0, reversal_code=None):
     """
-    Helper for Karvy/Legacy logic
+    Returns a tuple of (human_readable_type, action) based on the transaction codes.
     """
     # PURCHASE / INFLOWS
     PURCHASE_CODES = {
         'P', 'PURCHASE', 'FRESH PURCHASE', 'ADDITIONAL PURCHASE',
-        'ADD', 'NEW', 'SIN', 'IPO', 'LTIA', 'LTIN', 'STPA', 'STPI', 'STPN',
-        'STRA', 'STRI', 'SWIA', 'SWIN', 'TRFI', 'TRMI', 'CNI', 'DSPA', 'DSPI', 'DSPN'
+        'ADD', 'NEW', 'IPO', 'LTIA', 'LTIN', 'TRFI', 'TRMI', 'CNI', 'DSPA', 'DSPI', 'DSPN'
+    }
+    SIP_CODES = {
+        'SIN', 'STPA', 'STPI', 'STPN', 'STRA', 'STRI', 'SWIA', 'SWIN'
     }
 
     # REDEMPTION / OUTFLOWS
     REDEMPTION_CODES = {
         'R', 'REDEMPTION', 'SWITCH OUT', 'TRANSFER OUT',
-        'FUL', 'RED', 'SWD', 'LTOF', 'LTOP', 'STPO', 'STRO', 'SWOF', 'SWOP',
-        'TRFO', 'TRMO', 'CNO', 'DSPO'
+        'FUL', 'RED', 'LTOF', 'LTOP', 'TRFO', 'TRMO', 'CNO', 'DSPO'
+    }
+    SWP_CODES = {
+        'SWD', 'STPO', 'STRO', 'SWOF', 'SWOP'
     }
 
     # DIVIDEND REINVESTMENT
@@ -147,73 +153,138 @@ def _get_legacy_action(t_code, t_flag, desc, txn):
 
     # REVERSALS
     PURCHASE_REVERSAL_CODES = {
-        'ADDR', 'ADDRR', 'NEWR', 'NEWRR', 'SINR', 'SINRR', 'IPOR', 'IPORR',
-        'LTIAR', 'LTIARR', 'LTINR', 'LTINRR', 'STPAR', 'STPARR', 'STPIR',
-        'STRAR', 'STRIR', 'SWIAR', 'SWINR', 'TRFIR', 'DSPIR', 'CNIR'
+        'ADDR', 'ADDRR', 'NEWR', 'NEWRR', 'IPOR', 'IPORR',
+        'LTIAR', 'LTIARR', 'LTINR', 'LTINRR', 'TRFIR', 'DSPIR', 'CNIR'
     }
+    SIP_REVERSAL_CODES = {
+        'SINR', 'SINRR', 'STPAR', 'STPARR', 'STPIR', 'STRAR', 'STRIR', 'SWIAR', 'SWINR'
+    }
+
     REDEMPTION_REVERSAL_CODES = {
-        'REDR', 'REDRR', 'FULR', 'FULRR', 'SWDR', 'SWDRR', 'LTOFR', 'LTOFRR',
-        'LTOPR', 'LTOPRR', 'STPOR', 'STPORR', 'STROR', 'SWOFR', 'SWOPR',
-        'TRFOR', 'DSPOR', 'CNOR'
+        'REDR', 'REDRR', 'FULR', 'FULRR', 'LTOFR', 'LTOFRR',
+        'LTOPR', 'LTOPRR', 'TRFOR', 'DSPOR', 'CNOR'
     }
+    SWP_REVERSAL_CODES = {
+        'SWDR', 'SWDRR', 'STPOR', 'STPORR', 'STROR', 'SWOFR', 'SWOPR'
+    }
+
     GENERIC_REVERSAL_CODES = {'J', 'REV', 'REVERSAL'}
 
     action = None
+    txn_type = None
+
     if t_code in PURCHASE_CODES:
         action = 'ADD'
+        txn_type = 'Purchase'
+    elif t_code in SIP_CODES:
+        action = 'ADD'
+        txn_type = 'SIP'
     elif t_code in REDEMPTION_CODES:
         action = 'SUB'
+        txn_type = 'Redemption'
+    elif t_code in SWP_CODES:
+        action = 'SUB'
+        txn_type = 'SWP'
     elif t_code in DIVIDEND_REINVEST_CODES:
         action = 'DIV_REINV'
+        txn_type = 'Dividend Reinvestment'
     elif t_code in BONUS_CODES:
         action = 'BONUS'
+        txn_type = 'Bonus'
     elif t_code in PURCHASE_REVERSAL_CODES:
-        action = 'SUB' 
+        action = 'SUB'
+        txn_type = 'Purchase Reversal'
+    elif t_code in SIP_REVERSAL_CODES:
+        action = 'SUB'
+        txn_type = 'SIP Reversal'
     elif t_code in REDEMPTION_REVERSAL_CODES:
-        action = 'ADD' 
+        action = 'ADD'
+        txn_type = 'Redemption Reversal'
+    elif t_code in SWP_REVERSAL_CODES:
+        action = 'ADD'
+        txn_type = 'SWP Reversal'
     elif t_code in PLEDGE_CODES:
         action = 'PLEDGE_ADD'
+        txn_type = 'Pledge'
     elif t_code in UNPLEDGE_CODES:
         action = 'PLEDGE_SUB'
+        txn_type = 'Unpledge'
     elif t_code in GENERIC_REVERSAL_CODES:
-        if txn.units < 0:
+        if txn_units < 0:
             action = 'SUB'
-        elif txn.units > 0:
+            txn_type = 'Reversal'
+        elif txn_units > 0:
             if "REDEMPTION" in desc or "WITHDRAWAL" in desc:
                 action = 'ADD'
+                txn_type = 'Redemption Reversal'
             else:
                 action = 'SUB'
+                txn_type = 'Purchase Reversal'
 
     if not action and t_flag:
-        if t_flag == 'P': action = 'ADD'
-        elif t_flag == 'R': action = 'SUB'
+        if t_flag == 'P':
+            action = 'ADD'
+            txn_type = 'Purchase'
+        elif t_flag == 'R':
+            action = 'SUB'
+            txn_type = 'Redemption'
 
     if not action and desc:
         if "REVERSAL" in desc or "REJECTION" in desc:
             if "REDEMPTION" in desc or "WITHDRAWAL" in desc:
                 action = 'ADD'
+                txn_type = 'Redemption Reversal'
             else:
                 action = 'SUB'
-        elif any(x in desc for x in ["PURCHASE", "SIP", "SYSTEMATIC INVESTMENT", "SWITCH IN", "TRANSFER IN", "NFO"]):
+                txn_type = 'Purchase Reversal'
+        elif any(x in desc for x in ["SIP", "SYSTEMATIC INVESTMENT", "STP IN"]):
             action = 'ADD'
-        elif any(x in desc for x in ["REDEMPTION", "SWITCH OUT", "TRANSFER OUT", "SWP", "SYSTEMATIC WITHDRAWAL"]):
+            txn_type = 'SIP'
+        elif any(x in desc for x in ["PURCHASE", "SWITCH IN", "TRANSFER IN", "NFO"]):
+            action = 'ADD'
+            txn_type = 'Purchase'
+        elif any(x in desc for x in ["SWP", "SYSTEMATIC WITHDRAWAL", "STP OUT"]):
             action = 'SUB'
+            txn_type = 'SWP'
+        elif any(x in desc for x in ["REDEMPTION", "SWITCH OUT", "TRANSFER OUT"]):
+            action = 'SUB'
+            txn_type = 'Redemption'
         elif "DIVIDEND REINVEST" in desc:
             action = 'DIV_REINV'
+            txn_type = 'Dividend Reinvestment'
         elif "BONUS" in desc:
             action = 'BONUS'
+            txn_type = 'Bonus'
         
         if not action:
-             if fuzz.partial_ratio("PURCHASE", desc) > 80: action = 'ADD'
-             elif fuzz.partial_ratio("REDEMPTION", desc) > 80: action = 'SUB'
+             if fuzz.partial_ratio("PURCHASE", desc) > 80:
+                 action = 'ADD'
+                 txn_type = 'Purchase'
+             elif fuzz.partial_ratio("REDEMPTION", desc) > 80:
+                 action = 'SUB'
+                 txn_type = 'Redemption'
 
-    if hasattr(txn, 'reversal_code') and txn.reversal_code:
-        rev_code = str(txn.reversal_code).strip().upper()
+    if reversal_code:
+        rev_code = str(reversal_code).strip().upper()
         # Only swap if it wasn't already caught by the REVERSAL_CODES dictionaries
-        if rev_code in ['R', 'Y', 'REV', 'REVERSAL'] and t_code not in PURCHASE_REVERSAL_CODES and t_code not in REDEMPTION_REVERSAL_CODES and t_code not in GENERIC_REVERSAL_CODES:
+        if rev_code in ['R', 'Y', 'REV', 'REVERSAL'] and t_code not in PURCHASE_REVERSAL_CODES and t_code not in REDEMPTION_REVERSAL_CODES and t_code not in GENERIC_REVERSAL_CODES and t_code not in SIP_REVERSAL_CODES and t_code not in SWP_REVERSAL_CODES:
             if action == 'ADD':
                 action = 'SUB'
+                if txn_type == 'Purchase': txn_type = 'Purchase Reversal'
+                elif txn_type == 'SIP': txn_type = 'SIP Reversal'
             elif action == 'SUB':
                 action = 'ADD'
+                if txn_type == 'Redemption': txn_type = 'Redemption Reversal'
+                elif txn_type == 'SWP': txn_type = 'SWP Reversal'
 
+    if not txn_type:
+        txn_type = 'Other'
+
+    return txn_type, action
+
+def _get_legacy_action(t_code, t_flag, desc, txn):
+    """
+    Helper for Karvy/Legacy logic
+    """
+    _, action = get_transaction_type_and_action(t_code, t_flag, desc, txn.units, getattr(txn, 'reversal_code', None))
     return action

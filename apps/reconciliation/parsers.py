@@ -14,7 +14,7 @@ from .models import RTAFile, Transaction, Holding
 from apps.products.models import Scheme
 from apps.users.models import InvestorProfile
 from apps.investments.models import Folio
-from apps.reconciliation.utils.reconcile import recalculate_holding
+from apps.reconciliation.utils.reconcile import recalculate_holding, get_transaction_type_and_action
 from apps.reconciliation.utils.fingerprint import generate_cams_fingerprint, generate_karvy_fingerprint
 
 User = get_user_model()
@@ -242,6 +242,8 @@ class BaseParser:
     def match_or_create_transaction(self, investor, scheme, folio_number, txn_number, date, amount, units, txn_type, rta_code,
                                     description="", tr_flag="", original_txn_number=None, nav=None,
                                     raw_data=None,
+                                    parsed_txn_type=None,
+                                    parsed_txn_action=None,
                                     broker_code=None, sub_broker_code=None, euin=None,
                                     bank_account_no=None, bank_name=None, payment_mode=None, instrument_no=None, instrument_date=None,
                                     load_amount=None, tax_amount=None, stt=None, stamp_duty=None,
@@ -334,6 +336,10 @@ class BaseParser:
             existing_txn.tr_flag = tr_flag
             existing_txn.source = Transaction.SOURCE_RTA
             existing_txn.is_provisional = False
+            if parsed_txn_type:
+                existing_txn.txn_type = parsed_txn_type
+            if parsed_txn_action:
+                existing_txn.txn_action = parsed_txn_action
             if nav is not None:
                 existing_txn.nav = nav
             if original_txn_number:
@@ -397,6 +403,10 @@ class BaseParser:
             matched_txn.units = units
             matched_txn.source = Transaction.SOURCE_RTA
             matched_txn.is_provisional = False
+            if parsed_txn_type:
+                matched_txn.txn_type = parsed_txn_type
+            if parsed_txn_action:
+                matched_txn.txn_action = parsed_txn_action
             if nav is not None:
                 matched_txn.nav = nav
             if original_txn_number:
@@ -419,6 +429,8 @@ class BaseParser:
                 folio_number=folio_number,
                 rta_code=rta_code,
                 txn_type_code=txn_type,
+                txn_type=parsed_txn_type,
+                txn_action=parsed_txn_action,
                 txn_number=txn_number,
                 original_txn_number=original_txn_number,
                 date=date,
@@ -501,10 +513,14 @@ class FranklinParser(BaseParser):
                             broker_code = row[12].strip() if len(row) > 12 else None
                             euin = row[25].strip() if len(row) > 25 else None
 
+                            parsed_type, parsed_action = get_transaction_type_and_action(txn_type, "", "", units)
+
                             self.match_or_create_transaction(
                                 investor, scheme, folio_number, txn_number, txn_date if txn_date else timezone.now().date(),
                                 amount, units, txn_type, 'FRANKLIN', original_txn_number=txn_number, nav=nav,
                                 raw_data={'row': row},
+                                parsed_txn_type=parsed_type,
+                                parsed_txn_action=parsed_action,
                                 broker_code=broker_code,
                                 euin=euin
                             )
@@ -751,10 +767,14 @@ class DBFParser(BaseParser):
                         # Handle NaN values to prevent JSON serialization errors (Postgres rejects NaN)
                         raw_row_data = {k: str(v) if pd.notna(v) else None for k, v in row.items()}
 
+                        parsed_type, parsed_action = get_transaction_type_and_action(txn_type, tr_flag, description, units, reversal_code)
+
                         self.match_or_create_transaction(
                             investor, scheme, folio_number, unique_txn_number, txn_date, amount, units, txn_type, 'CAMS',
                             description=description, tr_flag=tr_flag, original_txn_number=original_txn_number, nav=nav,
                             raw_data=raw_row_data,
+                            parsed_txn_type=parsed_type,
+                            parsed_txn_action=parsed_action,
                             broker_code=broker_code, sub_broker_code=sub_broker_code, euin=euin,
                             bank_name=bank_name,
                             stt=stt, stamp_duty=stamp_duty, load_amount=load_amount, tax_amount=tax_amount,
@@ -914,10 +934,14 @@ class KarvyCSVParser(BaseParser):
 
                         raw_row_data = {k: str(v) if pd.notna(v) else None for k, v in row.items()}
 
+                        parsed_type, parsed_action = get_transaction_type_and_action(txn_type, tr_flag, description, units)
+
                         self.match_or_create_transaction(
                             investor, scheme, folio_number, unique_txn_number, txn_date, amount, units, txn_type, 'KARVY',
                             description=description, tr_flag=tr_flag, original_txn_number=original_txn_number, nav=nav,
                             raw_data=raw_row_data,
+                            parsed_txn_type=parsed_type,
+                            parsed_txn_action=parsed_action,
                             broker_code=broker_code, sub_broker_code=sub_broker_code, euin=euin,
                             stt=stt, stamp_duty=stamp_duty,
                             instrument_no=ihno, instrument_date=ih_dt, bank_name=bank_name,

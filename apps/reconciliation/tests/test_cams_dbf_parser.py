@@ -15,7 +15,7 @@ class TestCAMSDBFParser(TestCase):
         self.investor = InvestorProfile.objects.create(user=self.user, pan='TESTPAN123', firstname='John', lastname='Doe')
         
         self.amc = AMC.objects.create(name='Test AMC', code='101')
-        self.scheme = Scheme.objects.create(amc=self.amc, name='Test Scheme', scheme_code='PROD001', isin='INF123456789')
+        self.scheme = Scheme.objects.create(amc=self.amc, name='Test Scheme', scheme_code='PROD001', channel_partner_code='PROD001', isin='INF123456789')
         
         self.rta_file = RTAFile.objects.create(rta_type=RTAFile.RTA_CAMS, file_name='test.dbf')
         self.parser = DBFParser(rta_file_obj=self.rta_file, file_path='dummy_path.dbf')

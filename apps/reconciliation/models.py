@@ -145,6 +145,10 @@ class Transaction(models.Model):
     description = models.CharField(max_length=255, blank=True)
     tr_flag = models.CharField(max_length=100, blank=True, null=True, help_text="Transaction Flag from RTA (e.g., P, R)")
 
+    # Processed Type / Action Fields
+    txn_type = models.CharField(max_length=100, blank=True, null=True, help_text="Human-readable transaction type (e.g. Purchase, SIP, Redemption)")
+    txn_action = models.CharField(max_length=50, blank=True, null=True, help_text="Internal calculated action (e.g. ADD, SUB, DIV_REINV)")
+
     # Future Proofing
     raw_data = models.JSONField(default=dict, blank=True, help_text="Full raw row data from source file")
 
