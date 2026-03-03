@@ -220,13 +220,23 @@ class BaseReportGenerator:
     def build(self):
         self.doc.build(self.elements)
 
-def generate_wealth_report_pdf(investor, data_summary, data_folios):
+def generate_wealth_report_pdf(investor, data_summary, data_folios, start_date=None, end_date=None):
     buffer = io.BytesIO()
     # Wealth Report usually requires a bit of width
     generator = BaseReportGenerator(buffer, landscape(A4))
 
-    date_str = datetime.now().strftime('%d %b, %Y')
-    title = f"Wealth Report As On Date - {date_str}"
+    if start_date and end_date:
+        try:
+            start_date_str = datetime.strptime(start_date, '%Y-%m-%d').strftime('%d %b, %Y')
+            end_date_str = datetime.strptime(end_date, '%Y-%m-%d').strftime('%d %b, %Y')
+            title = f"Wealth Report ({start_date_str} to {end_date_str})"
+        except ValueError:
+            date_str = datetime.now().strftime('%d %b, %Y')
+            title = f"Wealth Report As On Date - {date_str}"
+    else:
+        date_str = datetime.now().strftime('%d %b, %Y')
+        title = f"Wealth Report As On Date - {date_str}"
+
     generator.add_header(title, investor)
 
     styles = getSampleStyleSheet()
@@ -280,12 +290,22 @@ def generate_wealth_report_pdf(investor, data_summary, data_folios):
     buffer.seek(0)
     return buffer
 
-def generate_pl_report_pdf(investor, data_summary, data_folios):
+def generate_pl_report_pdf(investor, data_summary, data_folios, start_date=None, end_date=None):
     buffer = io.BytesIO()
     generator = BaseReportGenerator(buffer, landscape(A4))
 
-    date_str = datetime.now().strftime('%d %b, %Y')
-    title = f"P&L Valuation Report as on Date - {date_str}"
+    if start_date and end_date:
+        try:
+            start_date_str = datetime.strptime(start_date, '%Y-%m-%d').strftime('%d %b, %Y')
+            end_date_str = datetime.strptime(end_date, '%Y-%m-%d').strftime('%d %b, %Y')
+            title = f"P&L Valuation Report ({start_date_str} to {end_date_str})"
+        except ValueError:
+            date_str = datetime.now().strftime('%d %b, %Y')
+            title = f"P&L Valuation Report as on Date - {date_str}"
+    else:
+        date_str = datetime.now().strftime('%d %b, %Y')
+        title = f"P&L Valuation Report as on Date - {date_str}"
+
     generator.add_header(title, investor)
 
     styles = getSampleStyleSheet()
@@ -348,11 +368,20 @@ def generate_pl_report_pdf(investor, data_summary, data_folios):
     buffer.seek(0)
     return buffer
 
-def generate_capital_gain_pdf(investor, transactions, fy_year="2024-2025"):
+def generate_capital_gain_pdf(investor, transactions, fy_start=None, fy_end=None):
     buffer = io.BytesIO()
     generator = BaseReportGenerator(buffer, landscape(A4))
 
-    title = f"Capital Gain Statement For Financial Year - {fy_year}"
+    if fy_start and fy_end:
+        try:
+            start_date_str = datetime.strptime(fy_start, '%Y-%m-%d').strftime('%d %b, %Y')
+            end_date_str = datetime.strptime(fy_end, '%Y-%m-%d').strftime('%d %b, %Y')
+            title = f"Capital Gain Statement For Financial Year - {start_date_str} To {end_date_str}"
+        except ValueError:
+            title = f"Capital Gain Statement For Financial Year - 2024-2025"
+    else:
+        title = f"Capital Gain Statement For Financial Year - 2024-2025"
+
     generator.add_header(title, investor)
 
     styles = getSampleStyleSheet()
@@ -419,7 +448,16 @@ def generate_transaction_statement_pdf(investor, transactions, fy_start="2024-04
     buffer = io.BytesIO()
     generator = BaseReportGenerator(buffer, landscape(A4))
 
-    title = f"Transaction Statement For Financial Year - {fy_start} To {fy_end}"
+    if fy_start and fy_end:
+        try:
+            start_date_str = datetime.strptime(fy_start, '%Y-%m-%d').strftime('%d %b, %Y')
+            end_date_str = datetime.strptime(fy_end, '%Y-%m-%d').strftime('%d %b, %Y')
+            title = f"Transaction Statement For Financial Year - {start_date_str} To {end_date_str}"
+        except ValueError:
+            title = f"Transaction Statement For Financial Year - {fy_start} To {fy_end}"
+    else:
+        title = f"Transaction Statement For Financial Year - {fy_start} To {fy_end}"
+
     generator.add_header(title, investor)
 
     styles = getSampleStyleSheet()
