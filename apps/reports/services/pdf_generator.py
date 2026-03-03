@@ -422,26 +422,241 @@ def generate_transaction_statement_pdf(investor, transactions, fy_start="2024-04
 
     styles = getSampleStyleSheet()
 
-    generator.elements.append(Paragraph("<b>Transactions</b>", styles['Heading3']))
+    # 1. Client Details Section
+    client_name = investor.user.name or investor.user.username if investor and investor.user else "N.A."
+    pan = investor.pan if hasattr(investor, 'pan') and investor.pan else "N.A."
 
-    txn_headers = ["Date", "Transaction Type", "Folio Number", "Amount", "NAV", "Units"]
-    txn_data = [txn_headers]
+    address_parts = []
+    if investor:
+        if getattr(investor, 'address_1', None): address_parts.append(investor.address_1)
+        if getattr(investor, 'address_2', None): address_parts.append(investor.address_2)
+        if getattr(investor, 'city', None): address_parts.append(investor.city)
+        if getattr(investor, 'state', None): address_parts.append(investor.state)
+        if getattr(investor, 'pincode', None): address_parts.append(investor.pincode)
+    address = ", ".join(address_parts) if address_parts else "N.A."
+
+    mobile = investor.mobile if hasattr(investor, 'mobile') and investor.mobile else "N.A."
+
+    client_details_data = [
+        [
+            Paragraph(f"<b>Client Name :</b><br/>{client_name}<br/>[PAN : {pan}]", styles['Normal']),
+            Paragraph(f"<b>Address :</b><br/>{address}", styles['Normal']),
+            Paragraph(f"<b>Mobile :</b><br/>{mobile}", styles['Normal']),
+            Paragraph(f"<b>Current Sensex :</b><br/>-", styles['Normal']) # Dummy sensex
+        ]
+    ]
+
+    page_width = generator.pagesize[0] - generator.doc.leftMargin - generator.doc.rightMargin
+    cd_col_width = page_width / 4.0
+
+    t_cd = Table(client_details_data, colWidths=[cd_col_width]*4)
+    t_cd.setStyle(TableStyle([
+        ('VALIGN', (0,0), (-1,-1), 'TOP'),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 10),
+        ('TOPPADDING', (0,0), (-1,-1), 10),
+        ('LEFTPADDING', (0,0), (-1,-1), 10),
+        ('RIGHTPADDING', (0,0), (-1,-1), 10),
+        ('BACKGROUND', (0,0), (-1,-1), colors.HexColor('#f5f7fa')), # Very light blue-grey
+        ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor('#dcdde1')),
+    ]))
+    generator.elements.append(t_cd)
+    generator.elements.append(Spacer(1, 0.1*inch))
+
+    # Import needed models locally to avoid circular imports if any, but better to import at top.
+    from apps.reconciliation.models import Transaction, Holding
+    from apps.users.models import BankAccount
+
+    # 2. Group transactions by Scheme + Folio
+    from collections import defaultdict
+    grouped_txns = defaultdict(list)
+
+    # Calculate opening balance: we need all transactions BEFORE fy_start for this investor.
+    from django.db.models import Sum
+    from django.db.models.functions import Coalesce
+    from decimal import Decimal
+
+    # Ensure dates are parsed
+    from datetime import datetime
+    try:
+        if isinstance(fy_start, str):
+            start_date = datetime.strptime(fy_start, '%Y-%m-%d').date()
+        else:
+            start_date = fy_start
+
+        if isinstance(fy_end, str):
+            end_date = datetime.strptime(fy_end, '%Y-%m-%d').date()
+        else:
+            end_date = fy_end
+    except:
+        # Fallback if it's already a date or different format
+        start_date = None
 
     for t in transactions:
+        key = (t.scheme, t.folio_number)
+        grouped_txns[key].append(t)
+
+    for key, txns_in_period in grouped_txns.items():
+        scheme, folio = key
+
+        scheme_name = scheme.name if scheme else "Unknown Scheme"
+        # Create a nice block for the title
+        title_data = [[Paragraph(f"<font color='white'><b>{scheme_name} [{folio}]</b></font>", styles['Normal'])]]
+        t_title = Table(title_data, colWidths=[page_width])
+        t_title.setStyle(TableStyle([
+            ('BACKGROUND', (0,0), (0,0), colors.HexColor('#2c3e50')), # Dark blue
+            ('TOPPADDING', (0,0), (0,0), 6),
+            ('BOTTOMPADDING', (0,0), (0,0), 6),
+            ('LEFTPADDING', (0,0), (0,0), 10),
+        ]))
+        generator.elements.append(t_title)
+        generator.elements.append(Spacer(1, 0.05*inch))
+
+        txn_headers = [
+            "Sr. No.", "Transaction Type", "Date", "Transaction Number",
+            "Investment Cost", "Nav", "Units", f"Current Value\n(As On {fy_end})", "Balance Units"
+        ]
+
+        # Calculate Opening Balance BEFORE fy_start
+        opening_units = Decimal('0.0000')
+        opening_cost = Decimal('0.00')
+
+        if start_date:
+            past_txns = Transaction.objects.filter(
+                investor=investor,
+                scheme=scheme,
+                folio_number=folio,
+                date__lt=start_date
+            )
+            for pt in past_txns:
+                action = pt.txn_type_code.upper() if pt.txn_type_code else pt.tr_flag.upper() if pt.tr_flag else 'P'
+                units = pt.units if pt.units else Decimal('0.0000')
+                amount = pt.amount if pt.amount else Decimal('0.00')
+                if action in ['P', 'SI', 'SIP'] or 'PUR' in action or 'IN' in action:
+                    opening_units += units
+                    opening_cost += amount
+                elif action in ['R', 'SO', 'SWO'] or 'RED' in action or 'OUT' in action:
+                    opening_units -= units
+                    opening_cost -= amount
+
+        # Get latest NAV for "Current Value" calculation
+        latest_nav = Decimal('0.0000')
+        holding = Holding.objects.filter(investor=investor, scheme=scheme, folio_number=folio).first()
+        if holding and holding.current_nav:
+            latest_nav = holding.current_nav
+
+        txn_data = [txn_headers]
+
+        # Opening Balance Row
         txn_data.append([
-            t.date.strftime('%Y-%m-%d') if t.date else '',
-            t.get_txn_type_code_display() if hasattr(t, 'get_txn_type_code_display') else t.txn_type_code,
-            t.folio_number,
-            f"{t.amount:,.2f}" if t.amount else "0.00",
-            f"{t.nav:,.4f}" if t.nav else "0.0000",
-            f"{t.units:,.4f}" if t.units else "0.0000"
+            "", "Opening Balance", fy_start, "-", f"{opening_cost:,.2f}", "-", "-", "-", f"{opening_units:,.4f}"
         ])
 
-    if len(txn_data) == 1:
-        txn_data.append(["No transactions found for this period.", "", "", "", "", ""])
+        running_units = opening_units
+        total_invested_cost = opening_cost
 
-    t_txns = generator._create_table(txn_data)
-    generator.elements.append(t_txns)
+        # Transaction Rows
+        for idx, t in enumerate(txns_in_period, 1):
+            action = t.txn_type_code.upper() if t.txn_type_code else t.tr_flag.upper() if t.tr_flag else 'P'
+
+            # Determine if it adds or subtracts units
+            # Usually: Purchase (+), Switch In (+), Redemption (-), Switch Out (-)
+            units = t.units if t.units else Decimal('0.0000')
+            amount = t.amount if t.amount else Decimal('0.00')
+            if action in ['P', 'SI', 'SIP'] or 'PUR' in action or 'IN' in action:
+                running_units += units
+                total_invested_cost += amount
+            elif action in ['R', 'SO', 'SWO'] or 'RED' in action or 'OUT' in action:
+                running_units -= units
+                total_invested_cost -= amount
+
+            current_value_txn = t.units * latest_nav if t.units else Decimal('0.00')
+
+            txn_data.append([
+                str(idx),
+                t.get_txn_type_code_display() if hasattr(t, 'get_txn_type_code_display') else t.txn_type_code,
+                t.date.strftime('%Y-%m-%d') if t.date else '',
+                t.txn_number if t.txn_number else "-",
+                f"{t.amount:,.2f}" if t.amount else "0.00",
+                f"{t.nav:,.4f}" if t.nav else "0.0000",
+                f"{t.units:,.4f}" if t.units else "0.0000",
+                f"{current_value_txn:,.2f}",
+                f"{running_units:,.4f}"
+            ])
+
+        # Closing Balance Row
+        closing_value = running_units * latest_nav
+        txn_data.append([
+            "", "Closing Balance", fy_end, "-", f"{total_invested_cost:,.2f}", f"{latest_nav:,.4f}", f"{running_units:,.4f}", f"{closing_value:,.2f}", f"{running_units:,.4f}"
+        ])
+
+        # Table styling
+        col_widths = [0.6*inch, 1.5*inch, 0.9*inch, 2.0*inch, 1.2*inch, 0.9*inch, 1.0*inch, 1.4*inch, 1.19*inch]
+        t_txns = generator._create_table(txn_data, col_widths=col_widths)
+
+        # We need to style the Opening and Closing rows distinctly
+        # Row 0: Headers
+        # Row 1: Opening
+        # Row -1: Closing
+        t_txns.setStyle(TableStyle([
+            ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#34495e')), # Darker grey/blue header
+            ('TEXTCOLOR', (0,0), (-1,0), colors.white),
+            ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+            ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0,0), (-1,-1), 8),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 6),
+            ('TOPPADDING', (0,0), (-1,-1), 6),
+            ('BACKGROUND', (0,1), (-1,-1), colors.white),
+            # Opening Row Background
+            ('BACKGROUND', (0,1), (-1,1), colors.HexColor('#fef9e7')), # Light yellow
+            # Closing Row Background
+            ('BACKGROUND', (0,-1), (-1,-1), colors.HexColor('#e8f8f5')), # Light mint
+            ('FONTNAME', (0,-1), (-1,-1), 'Helvetica-Bold'), # Bold the closing row
+            ('GRID', (0,0), (-1,-1), 0.5, colors.lightgrey),
+        ]))
+        generator.elements.append(t_txns)
+
+        # Bank Details
+        bank_details = None
+        # Try to get bank details from any transaction in this folio
+        for t in txns_in_period:
+            if t.bank_account_no:
+                bank_name = f"{t.bank_name or 'Bank'} - {t.bank_account_no}"
+                bank_details = True
+                break
+
+        if not bank_details:
+            bank_acc = BankAccount.objects.filter(investor=investor).order_by('-is_default').first()
+            bank_name = f"{bank_acc.bank_name} - {bank_acc.account_number}" if bank_acc else "N.A."
+
+        first_holder = investor.user.name or investor.user.username if investor and investor.user else "N.A."
+        second_holder = "N.A." # Can be extended if Joint Holders are modeled
+
+        bank_data = [
+            [
+                Paragraph(f"<b>Bank Details :</b><br/>{bank_name}", styles['Normal']),
+                Paragraph(f"<b>First Joint Holder :</b><br/>{first_holder}", styles['Normal']),
+                Paragraph(f"<b>PAN :</b><br/>{pan}", styles['Normal']),
+                Paragraph(f"<b>Second Joint Holder :</b><br/>{second_holder}", styles['Normal']),
+                Paragraph(f"<b>PAN :</b><br/>N.A.", styles['Normal'])
+            ]
+        ]
+        bd_col_widths = [2.5*inch, 2.5*inch, 1.5*inch, 2.5*inch, 1.69*inch]
+        t_bank = Table(bank_data, colWidths=bd_col_widths)
+        t_bank.setStyle(TableStyle([
+            ('VALIGN', (0,0), (-1,-1), 'TOP'),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 10),
+            ('TOPPADDING', (0,0), (-1,-1), 10),
+            ('LEFTPADDING', (0,0), (-1,-1), 10),
+            ('BACKGROUND', (0,0), (-1,-1), colors.HexColor('#fafafa')), # Very light grey
+            ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor('#eeeeee')),
+        ]))
+        generator.elements.append(t_bank)
+        generator.elements.append(Spacer(1, 0.4*inch))
+
+    if not grouped_txns:
+        txn_headers = ["Date", "Transaction Type", "Folio Number", "Amount", "NAV", "Units"]
+        t_txns = generator._create_table([txn_headers, ["No transactions found for this period.", "", "", "", "", ""]])
+        generator.elements.append(t_txns)
 
     generator.build()
     buffer.seek(0)
