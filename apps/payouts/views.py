@@ -409,25 +409,39 @@ class ExportPayoutReportView(LoginRequiredMixin, UserPassesTestMixin, View):
 
         return response
 
-class FolioMappingListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
-    model = FolioDistributorMapping
+class FolioMappingListView(LoginRequiredMixin, UserPassesTestMixin, View):
     template_name = 'payouts/folio_mapping_list.html'
-    context_object_name = 'object_list'
-    paginate_by = 50
 
     def test_func(self):
         return self.request.user.user_type == User.Types.ADMIN
 
-    def get_queryset(self):
-        qs = super().get_queryset().select_related('distributor', 'distributor__user')
-        search = self.request.GET.get('search')
-        if search:
-            qs = qs.filter(
-                Q(folio_number__icontains=search) |
-                Q(distributor__user__username__icontains=search) |
-                Q(distributor__broker_code__icontains=search)
-            )
-        return qs.order_by('-updated_at')
+    def get(self, request, *args, **kwargs):
+        is_ajax = (
+            request.headers.get('x-requested-with') == 'XMLHttpRequest' or
+            request.GET.get('format') == 'json'
+        )
+
+        if is_ajax:
+            qs = FolioDistributorMapping.objects.select_related('distributor', 'distributor__user').all()
+            qs = qs.order_by('-updated_at')
+
+            data = []
+            for mapping in qs:
+                # Format the updated_at date for JSON serialization
+                updated_at_str = mapping.updated_at.strftime("%b %d, %Y %H:%M") if mapping.updated_at else ""
+
+                distributor_name = mapping.distributor.user.get_full_name() or mapping.distributor.user.username
+
+                data.append({
+                    'folio': mapping.folio_number,
+                    'distributor': distributor_name,
+                    'broker_code': mapping.distributor.broker_code,
+                    'updated_at': updated_at_str,
+                })
+
+            return JsonResponse({'data': data})
+
+        return render(request, self.template_name)
 
 class FolioMappingImportView(LoginRequiredMixin, UserPassesTestMixin, View):
     template_name = 'payouts/folio_mapping_import.html'
