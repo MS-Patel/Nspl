@@ -146,13 +146,18 @@ def parse_date(value):
     """
     Parses date with priority for DD-MM-YYYY format.
     """
+    if pd.isna(value) or str(value).lower() in ['nat', 'nan', 'none', 'null', '']:
+        return None
     if not value:
         return None
     try:
         if isinstance(value, datetime):
             return value.date()
         # pandas to_datetime with dayfirst=True handles dd-mm-yyyy well
-        return pd.to_datetime(value, dayfirst=True).date()
+        dt = pd.to_datetime(value, dayfirst=True)
+        if pd.isna(dt):
+            return None
+        return dt.date()
     except Exception:
         return None
 
@@ -370,32 +375,48 @@ def import_distributors_from_file(file_obj):
                     # Check/Create Profile
                     profile, created = DistributorProfile.objects.get_or_create(user=user,broker_code=broker_code, defaults={'pan': pan, 'mobile': mobile, 'euin': euin, 'arn_number': arn})
 
-                    if pan: profile.pan = pan
-                    if mobile: profile.mobile = mobile
-                    if euin: profile.euin = euin
+                    if pan: profile.pan = pan[:10]
+                    if mobile:
+                        mobile_str = str(mobile).strip()
+                        if mobile_str.endswith(".0"):
+                            mobile_str = mobile_str[:-2]
+                        profile.mobile = mobile_str[:15]
+                    if euin: profile.euin = euin[:50]
 
                     # Address Details
-                    if row.get('address'): profile.address = row.get('address')
-                    if row.get('city'): profile.city = row.get('city')
-                    if row.get('state'): profile.state = row.get('state') # Assuming state value matches or we might need normalization if it's strict choices
-                    if row.get('pincode'): profile.pincode = row.get('pincode')
-                    if row.get('country'): profile.country = row.get('country')
+                    if row.get('address'): profile.address = str(row.get('address'))
+                    if row.get('city'): profile.city = str(row.get('city'))[:50]
+                    if row.get('state'): profile.state = str(row.get('state'))[:50] # Assuming state value matches or we might need normalization if it's strict choices
+                    if row.get('pincode'):
+                        pincode_str = str(row.get('pincode')).strip()
+                        if pincode_str.endswith(".0"):
+                            pincode_str = pincode_str[:-2]
+                        profile.pincode = pincode_str[:6]
+                    if row.get('country'): profile.country = str(row.get('country'))[:50]
 
                     # Contact Details
-                    if row.get('alternate mobile'): profile.alternate_mobile = row.get('alternate mobile')
-                    if row.get('alternate email'): profile.alternate_email = row.get('alternate email')
+                    if row.get('alternate mobile'):
+                        alt_mobile_str = str(row.get('alternate mobile')).strip()
+                        if alt_mobile_str.endswith(".0"):
+                            alt_mobile_str = alt_mobile_str[:-2]
+                        profile.alternate_mobile = alt_mobile_str[:15]
+                    if row.get('alternate email'): profile.alternate_email = str(row.get('alternate email'))[:254]
 
                     # Personal/Business Details
                     dob = parse_date(row.get('date of birth') or row.get('dob'))
                     if dob: profile.dob = dob
-                    if row.get('gstin'): profile.gstin = row.get('gstin')
+                    if row.get('gstin'): profile.gstin = str(row.get('gstin'))[:15]
 
                     # Bank Details
-                    if row.get('bank name'): profile.bank_name = row.get('bank name')
-                    if row.get('account number'): profile.account_number = row.get('account number')
-                    if row.get('ifsc code'): profile.ifsc_code = row.get('ifsc code')
+                    if row.get('bank name'): profile.bank_name = str(row.get('bank name'))[:100]
+                    if row.get('account number'):
+                        acc_no_str = str(row.get('account number')).strip()
+                        if acc_no_str.endswith(".0"):
+                            acc_no_str = acc_no_str[:-2]
+                        profile.account_number = acc_no_str[:20]
+                    if row.get('ifsc code'): profile.ifsc_code = str(row.get('ifsc code'))[:11]
                     if row.get('account type'): profile.account_type = get_choice_key(row.get('account type'), DistributorProfile.ACCOUNT_TYPES)
-                    if row.get('branch name'): profile.branch_name = row.get('branch name')
+                    if row.get('branch name'): profile.branch_name = str(row.get('branch name'))[:100]
 
                     # Hierarchy Linking
                     if parent_arn:
@@ -485,27 +506,39 @@ def import_rms_from_file(file_obj):
                         profile.branch = branch
 
                     # Address Details
-                    if row.get('address'): profile.address = row.get('address')
-                    if row.get('city'): profile.city = row.get('city')
-                    if row.get('state'): profile.state = row.get('state')
-                    if row.get('pincode'): profile.pincode = row.get('pincode')
-                    if row.get('country'): profile.country = row.get('country')
+                    if row.get('address'): profile.address = str(row.get('address'))
+                    if row.get('city'): profile.city = str(row.get('city'))[:50]
+                    if row.get('state'): profile.state = str(row.get('state'))[:50]
+                    if row.get('pincode'):
+                        pincode_str = str(row.get('pincode')).strip()
+                        if pincode_str.endswith(".0"):
+                            pincode_str = pincode_str[:-2]
+                        profile.pincode = pincode_str[:6]
+                    if row.get('country'): profile.country = str(row.get('country'))[:50]
 
                     # Contact Details
-                    if row.get('alternate mobile'): profile.alternate_mobile = row.get('alternate mobile')
-                    if row.get('alternate email'): profile.alternate_email = row.get('alternate email')
+                    if row.get('alternate mobile'):
+                        alt_mobile_str = str(row.get('alternate mobile')).strip()
+                        if alt_mobile_str.endswith(".0"):
+                            alt_mobile_str = alt_mobile_str[:-2]
+                        profile.alternate_mobile = alt_mobile_str[:15]
+                    if row.get('alternate email'): profile.alternate_email = str(row.get('alternate email'))[:254]
 
                     # Personal/Business
                     dob = parse_date(row.get('date of birth') or row.get('dob'))
                     if dob: profile.dob = dob
-                    if row.get('gstin'): profile.gstin = row.get('gstin')
+                    if row.get('gstin'): profile.gstin = str(row.get('gstin'))[:15]
 
                     # Bank Details
-                    if row.get('bank name'): profile.bank_name = row.get('bank name')
-                    if row.get('account number'): profile.account_number = row.get('account number')
-                    if row.get('ifsc code'): profile.ifsc_code = row.get('ifsc code')
+                    if row.get('bank name'): profile.bank_name = str(row.get('bank name'))[:100]
+                    if row.get('account number'):
+                        acc_no_str = str(row.get('account number')).strip()
+                        if acc_no_str.endswith(".0"):
+                            acc_no_str = acc_no_str[:-2]
+                        profile.account_number = acc_no_str[:20]
+                    if row.get('ifsc code'): profile.ifsc_code = str(row.get('ifsc code'))[:11]
                     if row.get('account type'): profile.account_type = get_choice_key(row.get('account type'), RMProfile.ACCOUNT_TYPES)
-                    if row.get('branch name'): profile.branch_name = row.get('branch name')
+                    if row.get('branch name'): profile.branch_name = str(row.get('branch name'))[:100]
 
                     if 'active status (y/n)' in row:
                         profile.is_active = parse_bool(row.get('active status (y/n)'))
