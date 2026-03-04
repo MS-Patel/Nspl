@@ -15,69 +15,65 @@
     </div>
 
     <div class="card p-4">
-        <div class="flex flex-col sm:flex-row items-center justify-between mb-4 space-y-2 sm:space-y-0">
-            <form method="get" class="relative flex w-full sm:w-64">
-                <input name="search" value="{{ request.GET.search|default:'' }}" class="form-input peer h-9 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 pl-9 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" placeholder="Search..." type="text" />
-                <span class="pointer-events-none absolute flex h-full w-10 items-center justify-center text-slate-400 peer-focus:text-primary dark:text-navy-300 dark:peer-focus:text-accent">
-                    <i class="fas fa-search"></i>
-                </span>
-            </form>
-        </div>
-
-        <div class="is-scrollbar-hidden min-w-full overflow-x-auto">
-            <table class="w-full text-left is-hoverable">
-                <thead>
-                    <tr class="border-y border-transparent border-b-slate-200 dark:border-b-navy-500">
-                        <th class="whitespace-nowrap px-4 py-3 font-semibold uppercase text-slate-800 dark:text-navy-100 lg:px-5">Folio Number</th>
-                        <th class="whitespace-nowrap px-4 py-3 font-semibold uppercase text-slate-800 dark:text-navy-100 lg:px-5">Distributor</th>
-                        <th class="whitespace-nowrap px-4 py-3 font-semibold uppercase text-slate-800 dark:text-navy-100 lg:px-5">Broker Code</th>
-                        <th class="whitespace-nowrap px-4 py-3 font-semibold uppercase text-slate-800 dark:text-navy-100 lg:px-5">Updated At</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for obj in object_list %}
-                    <tr class="border-y border-transparent border-b-slate-200 dark:border-b-navy-500 hover:bg-slate-50 dark:hover:bg-navy-900">
-                        <td class="whitespace-nowrap px-4 py-3 sm:px-5">{{ obj.folio_number }}</td>
-                        <td class="whitespace-nowrap px-4 py-3 sm:px-5">
-                            {{ obj.distributor.user.get_full_name|default:obj.distributor.user.username }}
-                        </td>
-                        <td class="whitespace-nowrap px-4 py-3 sm:px-5">
-                            <span class="badge rounded-full bg-info/10 text-info dark:bg-info/15">
-                                {{ obj.distributor.broker_code }}
-                            </span>
-                        </td>
-                        <td class="whitespace-nowrap px-4 py-3 sm:px-5 text-slate-400 text-xs">
-                            {{ obj.updated_at|date:"M d, Y H:i" }}
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="4" class="px-4 py-3 text-center text-slate-400">No mappings found.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-
-        {% if is_paginated %}
-        <div class="flex flex-col sm:flex-row items-center justify-between space-y-2 sm:space-y-0 p-4">
-            <span class="text-xs text-slate-500">
-                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
-            </span>
-            <div class="flex space-x-2">
-                {% if page_obj.has_previous %}
-                <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" class="btn h-8 w-8 rounded-lg p-0 hover:bg-slate-100 focus:bg-slate-100 active:bg-slate-150/80 dark:hover:bg-navy-500 dark:focus:bg-navy-500 dark:active:bg-navy-500/90">
-                    <i class="fas fa-chevron-left"></i>
-                </a>
-                {% endif %}
-                {% if page_obj.has_next %}
-                <a href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" class="btn h-8 w-8 rounded-lg p-0 hover:bg-slate-100 focus:bg-slate-100 active:bg-slate-150/80 dark:hover:bg-navy-500 dark:focus:bg-navy-500 dark:active:bg-navy-500/90">
-                    <i class="fas fa-chevron-right"></i>
-                </a>
-                {% endif %}
-            </div>
-        </div>
-        {% endif %}
+        <div id="folio-mapping-grid" class="w-full"></div>
     </div>
 </div>
+{% endblock %}
+
+{% block javascript %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const grid = new window.Gridjs.Grid({
+            columns: [
+                { name: 'Folio Number', id: 'folio' },
+                { name: 'Distributor', id: 'distributor' },
+                {
+                    name: 'Broker Code',
+                    id: 'broker_code',
+                    formatter: (cell) => {
+                        return window.Gridjs.html(
+                            `<span class="badge rounded-full bg-info/10 text-info dark:bg-info/15">${cell}</span>`
+                        );
+                    }
+                },
+                {
+                    name: 'Updated At',
+                    id: 'updated_at',
+                    formatter: (cell) => {
+                        return window.Gridjs.html(
+                            `<span class="text-slate-400 text-xs">${cell}</span>`
+                        );
+                    }
+                }
+            ],
+            server: {
+                url: window.location.origin + window.location.pathname + '?format=json',
+                then: data => data.data
+            },
+            search: {
+                enabled: true
+            },
+            sort: true,
+            pagination: {
+                enabled: true,
+                limit: 50
+            },
+            fixedHeader: true,
+            className: {
+                table: 'w-full text-left border-collapse',
+                th: 'bg-slate-50 dark:bg-navy-800 font-semibold text-slate-700 dark:text-navy-100 p-3 border-b border-slate-200 dark:border-navy-500 whitespace-nowrap',
+                td: 'p-3 border-b border-slate-100 dark:border-navy-600 text-slate-600 dark:text-navy-200',
+                pagination: 'flex items-center justify-between p-4',
+                paginationSummary: 'text-sm text-slate-500 dark:text-navy-300',
+                paginationButton: 'btn h-8 px-3 rounded-lg p-0 hover:bg-slate-100 focus:bg-slate-100 active:bg-slate-150/80 dark:hover:bg-navy-500 dark:focus:bg-navy-500 dark:active:bg-navy-500/90 mx-1',
+                paginationButtonCurrent: 'bg-primary text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90',
+            },
+            language: {
+                'search': {
+                    'placeholder': 'Search Folio or Distributor...'
+                }
+            }
+        }).render(document.getElementById("folio-mapping-grid"));
+    });
+</script>
 {% endblock %}
