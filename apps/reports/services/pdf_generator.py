@@ -401,7 +401,7 @@ def generate_capital_gain_pdf(investor, transactions, fy_start=None, fy_end=None
     # If the app lacks a full FIFO engine, this approximation uses overall average cost for the gain calculation
     has_data = False
 
-    for t in transactions.filter(txn_type_code__in=['R', 'SO']):
+    for t in transactions.filter(txn_action='SUB'):
         # If we have redemptions, let's look at average cost
         # The true Capital Gain report needs to match each unit's age > 1 year
         # For this template we will calculate an estimated Total Gain/Loss and put it in Short Term as a fallback
@@ -568,13 +568,15 @@ def generate_transaction_statement_pdf(investor, transactions, fy_start="2024-04
                 date__lt=start_date
             )
             for pt in past_txns:
-                action = pt.txn_type_code.upper() if pt.txn_type_code else pt.tr_flag.upper() if pt.tr_flag else 'P'
+                action = pt.txn_action
                 units = pt.units if pt.units else Decimal('0.0000')
                 amount = pt.amount if pt.amount else Decimal('0.00')
-                if action in ['P', 'SI', 'SIP'] or 'PUR' in action or 'IN' in action:
+                if action == 'ADD' or action == 'DIV_REINV' or action == 'BONUS':
                     opening_units += units
-                    opening_cost += amount
-                elif action in ['R', 'SO', 'SWO'] or 'RED' in action or 'OUT' in action:
+                    # Cost is only increased for actual monetary inflows
+                    if action in ['ADD', 'DIV_REINV']:
+                        opening_cost += amount
+                elif action == 'SUB':
                     opening_units -= units
                     opening_cost -= amount
 
@@ -596,24 +598,27 @@ def generate_transaction_statement_pdf(investor, transactions, fy_start="2024-04
 
         # Transaction Rows
         for idx, t in enumerate(txns_in_period, 1):
-            action = t.txn_type_code.upper() if t.txn_type_code else t.tr_flag.upper() if t.tr_flag else 'P'
+            action = t.txn_action
 
             # Determine if it adds or subtracts units
             # Usually: Purchase (+), Switch In (+), Redemption (-), Switch Out (-)
             units = t.units if t.units else Decimal('0.0000')
             amount = t.amount if t.amount else Decimal('0.00')
-            if action in ['P', 'SI', 'SIP'] or 'PUR' in action or 'IN' in action:
+            if action == 'ADD' or action == 'DIV_REINV' or action == 'BONUS':
                 running_units += units
-                total_invested_cost += amount
-            elif action in ['R', 'SO', 'SWO'] or 'RED' in action or 'OUT' in action:
+                if action in ['ADD', 'DIV_REINV']:
+                    total_invested_cost += amount
+            elif action == 'SUB':
                 running_units -= units
                 total_invested_cost -= amount
 
             current_value_txn = t.units * latest_nav if t.units else Decimal('0.00')
 
+            txn_type_display = t.txn_type if hasattr(t, 'txn_type') and t.txn_type else readable_txn_type(t.txn_type_code)
+
             txn_data.append([
                 str(idx),
-                readable_txn_type(t.txn_type_code) if hasattr(t, 'txn_type_code') else t.txn_type_code,
+                txn_type_display,
                 t.date.strftime('%Y-%m-%d') if t.date else '',
                 t.original_txn_number if t.original_txn_number else "-",
                 f"{t.amount:,.2f}" if t.amount else "0.00",
