@@ -150,18 +150,15 @@ def txn_badge_class(txn):
     if not txn:
         return 'bg-slate-150 text-slate-800'
 
-    code = str(txn.txn_type_code).strip().upper()
+    action = txn.txn_action
     units = float(txn.units) if txn.units else 0
 
     # Inflow Colors (Green)
-    if code in PURCHASE_CODES or code in SWITCH_IN_CODES or code in SIP_CODES or \
-       code in DIVIDEND_REINVEST_CODES or code in BONUS_CODES or \
-       code in REDEMPTION_REVERSAL_CODES:
+    if action in ['ADD', 'DIV_REINV', 'BONUS']:
         return 'bg-success/10 text-success'
 
     # Outflow Colors (Red)
-    if code in REDEMPTION_CODES or code in SWITCH_OUT_CODES or \
-       code in PURCHASE_REVERSAL_CODES:
+    if action in ['SUB']:
         return 'bg-error/10 text-error'
 
     # Fallback based on Units
