@@ -430,7 +430,7 @@ class FolioMappingListView(LoginRequiredMixin, UserPassesTestMixin, View):
                 # Format the updated_at date for JSON serialization
                 updated_at_str = mapping.updated_at.strftime("%b %d, %Y %H:%M") if mapping.updated_at else ""
 
-                distributor_name = mapping.distributor.user.get_full_name() or mapping.distributor.user.username
+                distributor_name = mapping.distributor.user.name
 
                 data.append({
                     'folio': mapping.folio_number,
