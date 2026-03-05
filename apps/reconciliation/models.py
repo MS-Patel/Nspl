@@ -111,7 +111,7 @@ class Transaction(models.Model):
     trxn_charges = models.DecimalField(max_digits=15, decimal_places=4, default=0)
     eligib_amt = models.DecimalField(max_digits=20, decimal_places=4, default=0)
     src_of_txn = models.CharField(max_length=50, blank=True, null=True)
-    trxn_suffix = models.CharField(max_length=50, blank=True, null=True)
+    trxn_suffix = models.CharField(max_length=255, blank=True, null=True)
     siptrxnno = models.CharField(max_length=50, blank=True, null=True)
     ter_location = models.CharField(max_length=50, blank=True, null=True)
     euin_valid = models.CharField(max_length=10, blank=True, null=True)
