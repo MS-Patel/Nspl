@@ -598,49 +598,8 @@ class DBFParser(BaseParser):
             if not self.rta_file:
                 raise e
 
-    def aggregate_cams_dataframe(self, df):
-        """
-        Aggregates CAMS rows based on original_txn_number, date, folio, and scheme to merge split rows (e.g. stamp duty).
-        """
-        if df.empty: return df
-
-        # Ensure trxnno exists and is clean
-        if 'trxnno' not in df.columns:
-            return df
-
-        # We group by the core identifying columns that make a transaction unique in reality
-        # 'reversal_c' is included so reversals aren't merged with original purchases if they happen on the same day.
-        # However, usually reversals have a different date or are processed separately.
-        group_cols = ['trxnno', 'traddate', 'folio_no', 'prodcode', 'reversal_c']
-
-        # Make sure columns exist to avoid KeyError
-        group_cols = [c for c in group_cols if c in df.columns]
-
-        # Numeric columns to sum
-        sum_cols = ['units', 'amount', 'stt', 'stamp_duty', 'load', 'total_tax', 'tax', 'igst_amoun', 'cgst_amoun', 'sgst_amoun', 'trxn_charg']
-        sum_cols = [c for c in sum_cols if c in df.columns]
-
-        # For non-numeric columns, we take the first non-null value
-        agg_dict = {c: 'sum' for c in sum_cols}
-
-        for c in df.columns:
-            if c not in sum_cols and c not in group_cols:
-                agg_dict[c] = 'first'
-
-        # Convert numeric columns to float, coercion handles empty strings
-        for c in sum_cols:
-            df[c] = pd.to_numeric(df[c], errors='coerce').fillna(0)
-
-        # Fill NA temporarily for grouping only on group_cols to avoid TypeError on other columns
-        df[group_cols] = df[group_cols].fillna('__NA__')
-        df_grouped = df.groupby(group_cols, as_index=False).agg(agg_dict)
-        df_grouped[group_cols] = df_grouped[group_cols].replace('__NA__', None)
-
-        return df_grouped
-
     def parse_cams(self, df):
         # CAMS Logic with New Mapping
-        df = self.aggregate_cams_dataframe(df)
         self.preload_cache(df, pan_col='pan', scheme_col='prodcode', folio_col='folio_no')
         for _, row in df.iterrows():
                 try:
@@ -699,7 +658,7 @@ class DBFParser(BaseParser):
                         # We use txn_date to ensure consistent ISO format parsing via the fingerprint util
                         row_dict['traddate'] = txn_date
                         fingerprint = generate_cams_fingerprint(row_dict)
-                        unique_txn_number = f"{original_txn_number}-{fingerprint}"
+                        unique_txn_number = fingerprint
 
                         # New Fields Extraction
                         amc_code = str(row.get('amc_code', '')).strip()
@@ -802,37 +761,6 @@ class KarvyCSVParser(BaseParser):
     """
     Parses Karvy CSV Format (e.g. MFSD307 and other CSV exports).
     """
-    def aggregate_karvy_dataframe(self, df):
-        """
-        Aggregates Karvy rows based on transaction number, date, folio, and scheme.
-        """
-        if df.empty: return df
-
-        if 'transaction number' not in df.columns:
-            return df
-
-        group_cols = ['transaction number', 'transaction date', 'folio number', 'product code']
-        group_cols = [c for c in group_cols if c in df.columns]
-
-        sum_cols = ['units', 'amount', 'stt', 'stamp duty charges', 'load amount', 'tdsamount']
-        sum_cols = [c for c in sum_cols if c in df.columns]
-
-        agg_dict = {c: 'sum' for c in sum_cols}
-
-        for c in df.columns:
-            if c not in sum_cols and c not in group_cols:
-                agg_dict[c] = 'first'
-
-        # Convert numeric columns to float
-        for c in sum_cols:
-            df[c] = pd.to_numeric(df[c], errors='coerce').fillna(0)
-
-        df[group_cols] = df[group_cols].fillna('__NA__')
-        df_grouped = df.groupby(group_cols, as_index=False).agg(agg_dict)
-        df_grouped[group_cols] = df_grouped[group_cols].replace('__NA__', None)
-
-        return df_grouped
-
     def parse(self):
         try:
             # Read CSV
@@ -840,7 +768,6 @@ class KarvyCSVParser(BaseParser):
             # Normalize columns to lowercase and strip whitespace
             df.columns = df.columns.str.lower().str.strip()
 
-            df = self.aggregate_karvy_dataframe(df)
             self.preload_cache(df, pan_col='pan1', scheme_col='product code', folio_col='folio number')
 
             for _, row in df.iterrows():
@@ -909,7 +836,7 @@ class KarvyCSVParser(BaseParser):
                         }
                         fingerprint = generate_karvy_fingerprint(row_dict)
 
-                        unique_txn_number = f"{original_txn_number}-{fingerprint}"
+                        unique_txn_number = fingerprint
 
                         description = str(row.get('transaction description', '')).strip()
                         tr_flag = str(row.get('transaction flag', '')).strip()
