@@ -42,7 +42,7 @@ def recalculate_holding(investor, scheme, folio_number):
         if action == 'ADD':
             if txn.units != 0:
                 # WAC Calculation
-                units_added = txn.units
+                units_added = abs(txn.units)
                 # If units are negative but action is ADD (rare error case), take absolute?
                 # Usually ADD implies positive inflow.
                 

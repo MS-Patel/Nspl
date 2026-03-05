@@ -506,7 +506,8 @@ def generate_transaction_statement_pdf(investor, transactions, fy_start="2024-04
     generator.add_client_details(investor)
 
     styles = getSampleStyleSheet()
-
+    page_width = generator.pagesize[0] - generator.doc.leftMargin - generator.doc.rightMargin
+    cd_col_width = page_width / 4.0
     # Import needed models locally to avoid circular imports if any, but better to import at top.
     from apps.reconciliation.models import Transaction, Holding
     from apps.users.models import BankAccount
