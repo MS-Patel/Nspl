@@ -136,8 +136,67 @@ class SIP(models.Model):
     euin = models.CharField(max_length=50, blank=True, help_text="EUIN used for this transaction")
 
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING)
+    last_alert_sent_date = models.DateField(null=True, blank=True, help_text="Last date an SMS alert was sent for an upcoming installment")
+    next_installment_date = models.DateField(null=True, blank=True, help_text="Calculated date for the next SIP installment")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def calculate_next_installment_date(self, save=True):
+        """Calculates the next installment date that is strictly in the future or today."""
+        import datetime
+        from dateutil.relativedelta import relativedelta
+        if self.status != self.STATUS_ACTIVE:
+            self.next_installment_date = None
+            if save:
+                self.save(update_fields=['next_installment_date'])
+            return None
+
+        today = datetime.date.today()
+        # If the start_date is in the future, the next date is the start_date
+        if self.start_date >= today:
+            self.next_installment_date = self.start_date
+            if save:
+                self.save(update_fields=['next_installment_date'])
+            return self.start_date
+
+        # Calculate next date based on frequency
+        current_date = self.start_date
+
+        # Max loop limit to prevent infinite loops (e.g. daily for 100 years)
+        max_installments = self.installments if self.installments > 0 else 1200
+        count = 0
+
+        while current_date < today and count < max_installments:
+            if self.frequency == self.MONTHLY:
+                current_date += relativedelta(months=1)
+            elif self.frequency == self.WEEKLY:
+                current_date += relativedelta(weeks=1)
+            elif self.frequency == self.DAILY:
+                current_date += relativedelta(days=1)
+            elif self.frequency == self.QUARTERLY:
+                current_date += relativedelta(months=3)
+            else:
+                break
+            count += 1
+
+        # If current_date is beyond end_date, it means SIP is completed/should be completed
+        if self.end_date and current_date > self.end_date:
+            self.next_installment_date = None
+            if save:
+                self.save(update_fields=['next_installment_date'])
+            return None
+
+        # Check if calculated date goes over number of installments
+        if self.installments and self.installments > 0 and count >= self.installments:
+            self.next_installment_date = None
+            if save:
+                self.save(update_fields=['next_installment_date'])
+            return None
+
+        self.next_installment_date = current_date
+        if save:
+            self.save(update_fields=['next_installment_date'])
+        return current_date
 
     def __str__(self):
         return f"SIP - {self.investor.user.username} - {self.scheme.name} - {self.amount}"
@@ -161,6 +220,10 @@ class SIP(models.Model):
                 self.euin = self.investor.distributor.euin
             else:
                 self.euin = COMPANY_DEFAULT_EUIN
+
+        # Calculate next_installment_date automatically when saved and missing
+        if not self.next_installment_date and self.status == self.STATUS_ACTIVE:
+            self.calculate_next_installment_date(save=False)
 
         super().save(*args, **kwargs)
 

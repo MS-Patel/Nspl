@@ -196,10 +196,50 @@ class AdminDashboardView(LoginRequiredMixin, IsAdminMixin, TemplateView):
         recent_orders = Order.objects.select_related('investor__user', 'scheme').order_by('-created_at')[:10]
         context['recent_orders'] = recent_orders
 
+        # 4. Upcoming SIPs (Next 7 days)
+        from django.utils import timezone
+        import datetime
+        today = timezone.now().date()
+        target_date = today + datetime.timedelta(days=7)
+
+        upcoming_sips = list(SIP.objects.filter(
+            status='ACTIVE',
+            next_installment_date__gte=today,
+            next_installment_date__lte=target_date
+        ).select_related('investor__user', 'scheme').order_by('next_installment_date'))
+        context['upcoming_sips'] = upcoming_sips
+
         return context
 
 class RMDashboardView(LoginRequiredMixin, IsRMMixin, TemplateView):
     template_name = 'dashboard/rm.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+
+        try:
+            rm_profile = user.rm_profile
+            investors = InvestorProfile.objects.filter(rm=rm_profile)
+
+            # 1. Upcoming SIPs (Next 7 days)
+            from django.utils import timezone
+            import datetime
+            today = timezone.now().date()
+            target_date = today + datetime.timedelta(days=7)
+
+            upcoming_sips = list(SIP.objects.filter(
+                investor__in=investors,
+                status='ACTIVE',
+                next_installment_date__gte=today,
+                next_installment_date__lte=target_date
+            ).select_related('investor__user', 'scheme').order_by('next_installment_date'))
+            context['upcoming_sips'] = upcoming_sips
+
+        except RMProfile.DoesNotExist:
+            context['upcoming_sips'] = []
+
+        return context
 
 class DistributorDashboardView(LoginRequiredMixin, IsDistributorMixin, TemplateView):
     template_name = 'dashboard/distributor.html'
@@ -222,6 +262,20 @@ class DistributorDashboardView(LoginRequiredMixin, IsDistributorMixin, TemplateV
         # 4. Recent Orders (Limit 5)
         recent_orders = Order.objects.filter(investor__in=investors).select_related('investor__user', 'scheme').order_by('-created_at')[:5]
         context['recent_orders'] = recent_orders
+
+        # 5. Upcoming SIPs (Next 7 days)
+        from django.utils import timezone
+        import datetime
+        today = timezone.now().date()
+        target_date = today + datetime.timedelta(days=7)
+
+        upcoming_sips = list(SIP.objects.filter(
+            investor__in=investors,
+            status='ACTIVE',
+            next_installment_date__gte=today,
+            next_installment_date__lte=target_date
+        ).select_related('investor__user', 'scheme').order_by('next_installment_date'))
+        context['upcoming_sips'] = upcoming_sips
 
         return context
 
@@ -259,6 +313,20 @@ class InvestorDashboardView(LoginRequiredMixin, TemplateView):
 
             context['valuation'] = valuation_data
             context['grid_data_json'] = json.dumps(valuation_data['holdings'], default=str)
+
+            # Upcoming SIPs (Next 7 days)
+            from django.utils import timezone
+            import datetime
+            today = timezone.now().date()
+            target_date = today + datetime.timedelta(days=7)
+
+            upcoming_sips = list(SIP.objects.filter(
+                investor=investor_profile,
+                status='ACTIVE',
+                next_installment_date__gte=today,
+                next_installment_date__lte=target_date
+            ).select_related('scheme').order_by('next_installment_date'))
+            context['upcoming_sips'] = upcoming_sips
 
         return context
 

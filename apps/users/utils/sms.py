@@ -9,6 +9,7 @@ SMS_TEMPLATES = {
     "otp":"Hi , Your OTP Verification Code is {{ otp }}.This code is valid for next 10 minutes.For security reason do not share this OTP with anyone. Team Buybestfin.com",
     "otp2": "Hi, Your OTP Verification Code is {{ otp }}. This code is valid for the next {{ validity_period }} minutes. For security reasons, do not share this OTP with anyone.",
     "welcome": "Welcome {{ user_name }}! Thank you for registering with us. Your account ID is {{ account_id }}.",
+    "sip_alert": "Dear {{ user_name }}, your SIP installment of Rs. {{ amount }} for {{ scheme_name }} is due on {{ due_date }}. Please ensure sufficient bank balance. Team Buybestfin.com",
 }
 
 def render_sms_template(template_name, context):

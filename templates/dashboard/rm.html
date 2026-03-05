@@ -1,4 +1,5 @@
 {% extends 'layout/base.html' %}
+{% load humanize core_extras %}
 
 {% block content %}
 <div class="flex items-center space-x-4 py-5 lg:py-6">
@@ -10,6 +11,47 @@
     <div class="card p-4">
         <h3 class="font-medium text-slate-700 dark:text-navy-100">Welcome RM</h3>
         <p class="mt-2 text-slate-500">Manage your distributors here.</p>
+    </div>
+</div>
+
+<!-- Upcoming SIPs -->
+<div class="card mt-4 col-span-12">
+    <div class="border-b border-slate-200 p-4 dark:border-navy-500">
+        <h3 class="text-base font-medium text-slate-700 dark:text-navy-100">
+            Upcoming SIPs (Next 7 Days)
+        </h3>
+    </div>
+    <div class="is-scrollbar-hidden min-w-full overflow-x-auto">
+        <table class="w-full text-left">
+            <thead>
+                <tr class="border-y border-transparent border-b-slate-200 dark:border-b-navy-500">
+                    <th class="whitespace-nowrap px-4 py-3 font-semibold text-slate-800 dark:text-navy-100">Investor</th>
+                    <th class="whitespace-nowrap px-4 py-3 font-semibold text-slate-800 dark:text-navy-100">Scheme</th>
+                    <th class="whitespace-nowrap px-4 py-3 font-semibold text-slate-800 dark:text-navy-100 text-right">Amount</th>
+                    <th class="whitespace-nowrap px-4 py-3 font-semibold text-slate-800 dark:text-navy-100 text-right">Next Installment</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sip in upcoming_sips %}
+                <tr class="border-y border-transparent border-b-slate-200 dark:border-b-navy-500 hover:bg-slate-100 dark:hover:bg-navy-600">
+                    <td class="whitespace-nowrap px-4 py-3 text-slate-700 dark:text-navy-100">{{ sip.investor.user.name }}</td>
+                    <td class="whitespace-nowrap px-4 py-3 text-slate-700 dark:text-navy-100">
+                        {{ sip.scheme.name }}
+                    </td>
+                    <td class="whitespace-nowrap px-4 py-3 font-medium text-right text-slate-700 dark:text-navy-100">
+                        ₹ {{ sip.amount|intcomma }}
+                    </td>
+                    <td class="whitespace-nowrap px-4 py-3 text-right">
+                        <span class="badge rounded-full bg-info/10 text-info">
+                            {{ sip.next_installment_date|date:"d M Y" }}
+                        </span>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" class="p-4 text-center text-slate-500">No upcoming SIPs in the next 7 days.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 </div>
 {% endblock %}
