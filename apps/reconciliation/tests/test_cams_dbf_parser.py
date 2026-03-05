@@ -116,7 +116,10 @@ class TestCAMSDBFParser(TestCase):
         self.parser.parse()
 
         # Check Transaction Created
-        txn = Transaction.objects.get(txn_number__startswith='TXN001')
+        # The new logic uses only the fingerprint as the txn_number.
+        # Since there is only one transaction created in this test, we can just get it.
+        txn = Transaction.objects.first()
+        self.assertIsNotNone(txn, "Transaction was not created")
         self.assertEqual(txn.investor, self.investor)
         self.assertEqual(txn.scheme, self.scheme)
         self.assertEqual(txn.folio_number, 'FOLIO123')

@@ -160,7 +160,7 @@ class KarvyCSVParserTest(ParserTestBase):
         parser.parse()
 
         self.assertEqual(rta_file.status, RTAFile.STATUS_PROCESSED)
-        txn = Transaction.objects.filter(txn_number__startswith="KTXN01").first() # Using startswith as fingerprint is appended
+        txn = Transaction.objects.first() # Using first() as fingerprint is the sole unique txn_number now
         self.assertIsNotNone(txn)
         self.assertEqual(txn.units, Decimal("50.0"))
         self.assertEqual(txn.scheme, self.scheme)
