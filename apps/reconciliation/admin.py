@@ -9,8 +9,8 @@ class RTAFileAdmin(admin.ModelAdmin):
 
 @admin.register(Transaction)
 class TransactionAdmin(admin.ModelAdmin):
-    list_display = ('id', 'investor', 'scheme', 'folio_number', 'txn_type_code', 'nav','units','amount', 'date', 'txn_number')
-    search_fields = ('investor__user__username', 'folio_number', 'txn_number', 'scheme__name')
+    list_display = ('id', 'investor', 'folio_number', 'original_txn_number', 'txn_type_code', 'txn_type', 'txn_action', 'description','nav','units','amount', 'date')
+    search_fields = ('investor__user__username', 'folio_number', 'original_txn_number', 'scheme__name')
     list_filter = ('rta_code', 'date', 'txn_type_code')
 
 @admin.register(Holding)
