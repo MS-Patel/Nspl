@@ -14,7 +14,7 @@ from .models import RTAFile, Transaction, Holding
 from apps.products.models import Scheme
 from apps.users.models import InvestorProfile
 from apps.investments.models import Folio
-from apps.reconciliation.utils.reconcile import recalculate_holding, get_transaction_type_and_action
+from apps.reconciliation.utils.reconcile import recalculate_holding, get_cams_transaction_type_and_action, get_karvy_transaction_type_and_action
 from apps.reconciliation.utils.fingerprint import generate_cams_fingerprint, generate_karvy_fingerprint
 
 User = get_user_model()
@@ -101,13 +101,16 @@ class BaseParser:
 
     def parse_date(self, date_str):
         """Attempts to parse date from common formats."""
-        if not date_str:
+        if date_str is None or pd.isna(date_str):
             return None
         # Handle Pandas timestamp
         if isinstance(date_str, (pd.Timestamp, datetime)):
             return date_str.date()
 
         date_str = str(date_str).strip()
+        if date_str == '' or date_str.lower() in ('nat', 'nan'):
+            return None
+
         formats = ["%d-%b-%Y", "%d/%m/%Y", "%d-%m-%Y", "%Y-%m-%d", "%Y-%m-%d %H:%M:%S", "%m/%d/%Y"]
         for fmt in formats:
             try:
@@ -513,7 +516,7 @@ class FranklinParser(BaseParser):
                             broker_code = row[12].strip() if len(row) > 12 else None
                             euin = row[25].strip() if len(row) > 25 else None
 
-                            parsed_type, parsed_action = get_transaction_type_and_action(txn_type, "", "", units)
+                            parsed_type, parsed_action = get_karvy_transaction_type_and_action(txn_type, "")
 
                             self.match_or_create_transaction(
                                 investor, scheme, folio_number, txn_number, txn_date if txn_date else timezone.now().date(),
@@ -726,7 +729,14 @@ class DBFParser(BaseParser):
                         # Handle NaN values to prevent JSON serialization errors (Postgres rejects NaN)
                         raw_row_data = {k: str(v) if pd.notna(v) else None for k, v in row.items()}
 
-                        parsed_type, parsed_action = get_transaction_type_and_action(txn_type, tr_flag, description, units, reversal_code)
+                        # Use trxn_type_ for mapping as requested by user. The 'trxn_type_' field corresponds to the transaction code prefix we map on.
+                        # Wait, the prompt says "TXN type can be get from TRXN_TYPE_ in cams". `txn_type` is assigned to `row.get('trxntype', '')`. Wait, earlier I did:
+                        # `txn_type = str(row.get('trxntype', '')).strip()`
+                        # But user explicitly said "TXN type can be get from TRXN_TYPE_ in cams".
+                        # Let's map `txn_type` to `trxn_type_` from the start and map it correctly.
+                        txn_type = str(row.get('trxn_type_', '')).strip()
+
+                        parsed_type, parsed_action = get_cams_transaction_type_and_action(txn_type)
 
                         self.match_or_create_transaction(
                             investor, scheme, folio_number, unique_txn_number, txn_date, amount, units, txn_type, 'CAMS',
@@ -861,7 +871,7 @@ class KarvyCSVParser(BaseParser):
 
                         raw_row_data = {k: str(v) if pd.notna(v) else None for k, v in row.items()}
 
-                        parsed_type, parsed_action = get_transaction_type_and_action(txn_type, tr_flag, description, units)
+                        parsed_type, parsed_action = get_karvy_transaction_type_and_action(txn_type, description)
 
                         self.match_or_create_transaction(
                             investor, scheme, folio_number, unique_txn_number, txn_date, amount, units, txn_type, 'KARVY',

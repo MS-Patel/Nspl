@@ -118,19 +118,18 @@ class TestRecalculateHoldingExtended:
         )
 
         # Reversal (J): -10 units
-        # Logic: Subtract units and proportional cost?
-        # Logic implemented: Subtract units and amount if provided.
+        # J now correctly mapped to no effect. Let's make it an actual ADD with negative units (like a Purchase Rejection).
         Transaction.objects.create(
             investor=investor, scheme=scheme, folio_number=folio,
-            txn_type_code="J", txn_number="TXN2", date=timezone.now().date(),
-            amount=Decimal("100"), units=Decimal("10"), rta_code="CAMS"
+            txn_type_code="ADDR", txn_number="TXN2", date=timezone.now().date(),
+            amount=Decimal("-100"), units=Decimal("-10"), rta_code="CAMS",
+            txn_action="ADD"
         )
 
         recalculate_holding(investor, scheme, folio)
 
         h = Holding.objects.get(folio_number=folio)
         assert h.units == Decimal("90")
-        # Cost: (1000 - 100) / 90 = 900 / 90 = 10.
         assert h.average_cost == Decimal("10.00")
 
     def test_regression_redemption_matches_p(self):
@@ -152,8 +151,9 @@ class TestRecalculateHoldingExtended:
         # Redemption: 10 units (Stored as positive in DB but type is REDEMPTION)
         Transaction.objects.create(
             investor=investor, scheme=scheme, folio_number=folio,
-            txn_type_code="REDEMPTION", txn_number="TXN2", date=timezone.now().date(),
-            amount=Decimal("100"), units=Decimal("10"), rta_code="CAMS"
+            txn_type_code="R", txn_number="TXN2", date=timezone.now().date(),
+            amount=Decimal("100"), units=Decimal("10"), rta_code="CAMS",
+            txn_action="SUB"
         )
 
         recalculate_holding(investor, scheme, folio)

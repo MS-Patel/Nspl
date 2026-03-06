@@ -211,7 +211,8 @@ class TestCAMSDBFParser(TestCase):
         
         # 4. Rejection (J) -> Reversal (SUB)
         # Using Legacy Logic: 'J' is in GENERIC_REVERSAL_CODES
-        # Positive units + no specific description -> Defaults to Purchase Reversal (SUB)
+        # BUT with new logic 'J' is No Effect. We must set it to 'SUB' manually if we want to test SUB behavior,
+        # or test that it indeed has no effect. Let's test No Effect since it's the new logic.
         Transaction.objects.create(
             investor=self.investor,
             scheme=self.scheme,
@@ -227,5 +228,5 @@ class TestCAMSDBFParser(TestCase):
         
         recalculate_holding(self.investor, self.scheme, 'FOLIO_TEST')
         holding.refresh_from_db()
-        # Expect 50 (60 - 10)
-        self.assertEqual(holding.units, Decimal('50')) 
+        # Expect 60 (J has no effect)
+        self.assertEqual(holding.units, Decimal('60'))
