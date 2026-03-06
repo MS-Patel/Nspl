@@ -722,7 +722,7 @@ class DBFParser(BaseParser):
                         tax_amount = self.clean_decimal(row.get('total_tax')) or self.clean_decimal(row.get('tax'))
                         
                         remarks = str(row.get('remarks', '')).strip()
-                        tr_flag = str(row.get('trxn_type_', '')).strip() # TRXN_TYPE_ mapped to trxn_type_flag in previous code, likely same
+                        tr_flag = str(row.get('trxntype', '')).strip() # TRXN_TYPE_ mapped to trxn_type_flag in previous code, likely same
                         
                         description = txn_nature # Mapping Transaction Nature to description as primary descriptive field
 
@@ -736,7 +736,7 @@ class DBFParser(BaseParser):
                         # Let's map `txn_type` to `trxn_type_` from the start and map it correctly.
                         txn_type = str(row.get('trxn_type_', '')).strip()
 
-                        parsed_type, parsed_action = get_cams_transaction_type_and_action(txn_type)
+                        parsed_type, parsed_action = get_cams_transaction_type_and_action(tr_flag)
 
                         self.match_or_create_transaction(
                             investor, scheme, folio_number, unique_txn_number, txn_date, amount, units, txn_type, 'CAMS',
@@ -749,7 +749,7 @@ class DBFParser(BaseParser):
                             stt=stt, stamp_duty=stamp_duty, load_amount=load_amount, tax_amount=tax_amount,
                             status_desc=txn_stat, remarks=remarks, location=location,
                             # New Fields
-                            amc_code=amc_code, product_code=product_code, txn_nature=txn_nature, tax_status=tax_status,
+                            amc_code=amc_code, product_code=product_code, txn_nature=txn_type, tax_status=tax_status,
                             micr_no=micr_no, old_folio=old_folio, reinvest_flag=reinvest_flag, mult_brok=mult_brok,
                             scan_ref_no=scan_ref_no, pan=pan, min_no=min_no, targ_src_scheme=targ_src_scheme,
                             ticob_trtype=ticob_trtype, ticob_trno=ticob_trno, ticob_posted_date=ticob_posted_date,
@@ -818,7 +818,7 @@ class KarvyCSVParser(BaseParser):
                         units = self.clean_decimal(row.get('units'))
 
                         # Type: Use SubTranType (e.g. RED, SIN) or Transaction Type (Redemption)
-                        txn_type = str(row.get('subtrantype', '')).strip()
+                        txn_type = str(row.get('transaction type', '')).strip()
                         if not txn_type or txn_type.lower() == 'nan':
                              txn_type = str(row.get('transaction type', '')).strip()
 
