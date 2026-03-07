@@ -164,5 +164,5 @@ class KarvyCSVParserTest(ParserTestBase):
         self.assertIsNotNone(txn)
         self.assertEqual(txn.units, Decimal("50.0"))
         self.assertEqual(txn.scheme, self.scheme)
-        self.assertEqual(txn.description, "Purchase")
+        self.assertEqual(txn.description, "Test Txn")
         self.assertEqual(txn.stamp_duty, Decimal("0.005"))

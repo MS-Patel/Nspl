@@ -1,0 +1,72 @@
+--- apps/reconciliation/parsers.py
++++ apps/reconciliation/parsers.py
+@@ -375,13 +375,16 @@
+
+                         amount = self.clean_decimal(row.get('amount'))
+                         units = self.clean_decimal(row.get('units'))
+-                        txn_type = str(row.get('trxntype', '')).strip()
+                         txn_stat = str(row.get('trxnstat', '')).strip()
+                         # trxnstat is Transaction Status from list
+
++                        # Map txn_type_code, txn_type, tr_flag
++                        txn_type_code = str(row.get('trxntype', '')).strip()
++                        txn_type = str(row.get('trxn_type_', '')).strip()
++                        tr_flag = str(row.get('trxnmode', '')).strip()
++
+                         # NAV Calculation
+                         nav = None
+                         raw_price = row.get('purprice') or row.get('price')
+                         if not pd.isna(raw_price):
+                             nav = self.clean_decimal(raw_price)
+@@ -406,8 +409,8 @@
+                         # New Fields Extraction
+                         amc_code = str(row.get('amc_code', '')).strip()
+                         product_code = str(row.get('prodcode', '')).strip() # Note: DBF might just have 'prodcode' which we mapped to scheme_code. Check list: "Product Code" (Field 3) vs "AMC Code" (Field 1). prodcode is Field 3.
+
+-                        # Corrected mapping from code review feedback
+-                        txn_nature = str(row.get('trxn_natur', '')).strip()
++                        # Corrected mapping per prompt
++                        txn_nature = str(row.get('trxn_natur', '')).strip()
+
+                         tax_status = str(row.get('tax_status', '')).strip()
+                         micr_no = str(row.get('micr_no', '')).strip()
+@@ -441,20 +444,13 @@
+                         tax_amount = self.clean_decimal(row.get('total_tax')) or self.clean_decimal(row.get('tax'))
+
+                         remarks = str(row.get('remarks', '')).strip()
+-                        tr_flag = str(row.get('trxntype', '')).strip() # TRXN_TYPE_ mapped to trxn_type_flag in previous code, likely same
+-
+-                        description = txn_nature # Mapping Transaction Nature to description as primary descriptive field
++                        description = str(row.get('remarks', '')).strip()
+
+                         # Handle NaN values to prevent JSON serialization errors (Postgres rejects NaN)
+                         raw_row_data = {k: str(v) if pd.notna(v) else None for k, v in row.items()}
+
+-                        # Use trxn_type_ for mapping as requested by user. The 'trxn_type_' field corresponds to the transaction code prefix we map on.
+-                        # Wait, the prompt says "TXN type can be get from TRXN_TYPE_ in cams". `txn_type` is assigned to `row.get('trxntype', '')`. Wait, earlier I did:
+-                        # `txn_type = str(row.get('trxntype', '')).strip()`
+-                        # But user explicitly said "TXN type can be get from TRXN_TYPE_ in cams".
+-                        # Let's map `txn_type` to `trxn_type_` from the start and map it correctly.
+-                        txn_type = str(row.get('trxn_type_', '')).strip()
+-
+-                        parsed_type, parsed_action = get_cams_transaction_type_and_action(tr_flag)
++                        # We only need parsed_action
++                        _, parsed_action = get_cams_transaction_type_and_action(txn_type_code)
+
+                         self.match_or_create_transaction(
+-                            investor, scheme, folio_number, unique_txn_number, txn_date, amount, units, txn_type, 'CAMS',
++                            investor, scheme, folio_number, unique_txn_number, txn_date, amount, units, txn_type_code, 'CAMS',
+                             description=description, tr_flag=tr_flag, original_txn_number=original_txn_number, nav=nav,
+                             raw_data=raw_row_data,
+-                            parsed_txn_type=parsed_type,
++                            parsed_txn_type=txn_type,
+                             parsed_txn_action=parsed_action,
+                             broker_code=broker_code, sub_broker_code=sub_broker_code, euin=euin,
+                             bank_name=bank_name,
+                             stt=stt, stamp_duty=stamp_duty, load_amount=load_amount, tax_amount=tax_amount,
+                             status_desc=txn_stat, remarks=remarks, location=location,
+                             # New Fields
+-                            amc_code=amc_code, product_code=product_code, txn_nature=txn_type, tax_status=tax_status,
++                            amc_code=amc_code, product_code=product_code, txn_nature=txn_nature, tax_status=tax_status,
+                             micr_no=micr_no, old_folio=old_folio, reinvest_flag=reinvest_flag, mult_brok=mult_brok,
+                             scan_ref_no=scan_ref_no, pan=pan, min_no=min_no, targ_src_scheme=targ_src_scheme,

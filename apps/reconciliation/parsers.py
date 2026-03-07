@@ -633,8 +633,11 @@ class DBFParser(BaseParser):
 
                         amount = self.clean_decimal(row.get('amount'))
                         units = self.clean_decimal(row.get('units'))
-                        txn_type = str(row.get('trxntype', '')).strip()
                         txn_stat = str(row.get('trxnstat', '')).strip()
+
+                        txn_type_code = str(row.get('trxntype', '')).strip()
+                        txn_type = str(row.get('trxn_type_', '')).strip()
+                        tr_flag = str(row.get('trxnmode', '')).strip()
                         # trxnstat is Transaction Status from list
                         
                         # NAV Calculation
@@ -722,34 +725,25 @@ class DBFParser(BaseParser):
                         tax_amount = self.clean_decimal(row.get('total_tax')) or self.clean_decimal(row.get('tax'))
                         
                         remarks = str(row.get('remarks', '')).strip()
-                        tr_flag = str(row.get('trxntype', '')).strip() # TRXN_TYPE_ mapped to trxn_type_flag in previous code, likely same
-                        
-                        description = txn_nature # Mapping Transaction Nature to description as primary descriptive field
+                        description = remarks
 
                         # Handle NaN values to prevent JSON serialization errors (Postgres rejects NaN)
                         raw_row_data = {k: str(v) if pd.notna(v) else None for k, v in row.items()}
 
-                        # Use trxn_type_ for mapping as requested by user. The 'trxn_type_' field corresponds to the transaction code prefix we map on.
-                        # Wait, the prompt says "TXN type can be get from TRXN_TYPE_ in cams". `txn_type` is assigned to `row.get('trxntype', '')`. Wait, earlier I did:
-                        # `txn_type = str(row.get('trxntype', '')).strip()`
-                        # But user explicitly said "TXN type can be get from TRXN_TYPE_ in cams".
-                        # Let's map `txn_type` to `trxn_type_` from the start and map it correctly.
-                        txn_type = str(row.get('trxn_type_', '')).strip()
-
-                        parsed_type, parsed_action = get_cams_transaction_type_and_action(tr_flag)
+                        _, parsed_action = get_cams_transaction_type_and_action(txn_type_code)
 
                         self.match_or_create_transaction(
-                            investor, scheme, folio_number, unique_txn_number, txn_date, amount, units, txn_type, 'CAMS',
+                            investor, scheme, folio_number, unique_txn_number, txn_date, amount, units, txn_type_code, 'CAMS',
                             description=description, tr_flag=tr_flag, original_txn_number=original_txn_number, nav=nav,
                             raw_data=raw_row_data,
-                            parsed_txn_type=parsed_type,
+                            parsed_txn_type=txn_type,
                             parsed_txn_action=parsed_action,
                             broker_code=broker_code, sub_broker_code=sub_broker_code, euin=euin,
                             bank_name=bank_name,
                             stt=stt, stamp_duty=stamp_duty, load_amount=load_amount, tax_amount=tax_amount,
                             status_desc=txn_stat, remarks=remarks, location=location,
                             # New Fields
-                            amc_code=amc_code, product_code=product_code, txn_nature=txn_type, tax_status=tax_status,
+                            amc_code=amc_code, product_code=product_code, txn_nature=txn_nature, tax_status=tax_status,
                             micr_no=micr_no, old_folio=old_folio, reinvest_flag=reinvest_flag, mult_brok=mult_brok,
                             scan_ref_no=scan_ref_no, pan=pan, min_no=min_no, targ_src_scheme=targ_src_scheme,
                             ticob_trtype=ticob_trtype, ticob_trno=ticob_trno, ticob_posted_date=ticob_posted_date,
@@ -818,9 +812,8 @@ class KarvyCSVParser(BaseParser):
                         units = self.clean_decimal(row.get('units'))
 
                         # Type: Use SubTranType (e.g. RED, SIN) or Transaction Type (Redemption)
-                        txn_type = str(row.get('transaction type', '')).strip()
-                        if not txn_type or txn_type.lower() == 'nan':
-                             txn_type = str(row.get('transaction type', '')).strip()
+                        txn_type_code = str(row.get('transaction type', '')).strip()
+                        txn_type = str(row.get('transaction description', '')).strip()
 
                         # Determine NAV
                         nav = None
@@ -848,7 +841,8 @@ class KarvyCSVParser(BaseParser):
 
                         unique_txn_number = fingerprint
 
-                        description = str(row.get('transaction description', '')).strip()
+                        txn_nature = str(row.get('transaction description', '')).strip()
+                        description = str(row.get('remarks', '')).strip()
                         tr_flag = str(row.get('transaction flag', '')).strip()
 
                         broker_code = str(row.get('agent code', '')).strip() or None
@@ -871,19 +865,19 @@ class KarvyCSVParser(BaseParser):
 
                         raw_row_data = {k: str(v) if pd.notna(v) else None for k, v in row.items()}
 
-                        parsed_type, parsed_action = get_karvy_transaction_type_and_action(txn_type, description)
+                        parsed_type, parsed_action = get_karvy_transaction_type_and_action(txn_type_code, description)
 
                         self.match_or_create_transaction(
-                            investor, scheme, folio_number, unique_txn_number, txn_date, amount, units, txn_type, 'KARVY',
+                            investor, scheme, folio_number, unique_txn_number, txn_date, amount, units, txn_type_code, 'KARVY',
                             description=description, tr_flag=tr_flag, original_txn_number=original_txn_number, nav=nav,
                             raw_data=raw_row_data,
-                            parsed_txn_type=parsed_type,
+                            parsed_txn_type=txn_type if txn_type else parsed_type,
                             parsed_txn_action=parsed_action,
                             broker_code=broker_code, sub_broker_code=sub_broker_code, euin=euin,
                             stt=stt, stamp_duty=stamp_duty,
                             instrument_no=ihno, instrument_date=ih_dt, bank_name=bank_name,
                             load_amount=load_amount, tax_amount=tax_amount,
-                            remarks=remarks, location=location
+                            remarks=remarks, location=location, txn_nature=txn_nature
                         )
 
                 except Exception as e:
