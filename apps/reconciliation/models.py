@@ -74,9 +74,9 @@ class Transaction(models.Model):
     txn_action = models.CharField(max_length=50, blank=True, null=True, help_text="Internal calculated action (e.g. ADD, SUB, DIV_REINV)")
     txn_type_code = models.CharField(max_length=100, help_text="Raw transaction type from RTA")
     txn_nature = models.CharField(max_length=100, blank=True, null=True, help_text="Transaction Nature from RTA")
-    tax_status = models.CharField(max_length=50, blank=True, null=True)
     description = models.CharField(max_length=255, blank=True)
     tr_flag = models.CharField(max_length=100, blank=True, null=True, help_text="Transaction Flag from RTA (e.g., P, R)")
+    tax_status = models.CharField(max_length=50, blank=True, null=True)
 
     # Matching / Provisional Fields
     source = models.CharField(max_length=10, choices=SOURCE_CHOICES, default=SOURCE_RTA)
