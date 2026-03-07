@@ -66,9 +66,17 @@ class Transaction(models.Model):
 
     # RTA Fields
     rta_code = models.CharField(max_length=20, help_text="CAMS/Karvy")
-    txn_type_code = models.CharField(max_length=100, help_text="Raw transaction type from RTA")
     txn_number = models.CharField(max_length=100, unique=True, help_text="Unique Reference No from RTA")
     original_txn_number = models.CharField(max_length=100, null=True, blank=True, help_text="Original RTA Transaction No for display")
+
+    # Processed Type / Action Fields
+    txn_type = models.CharField(max_length=100, blank=True, null=True, help_text="Human-readable transaction type (e.g. Purchase, SIP, Redemption)")
+    txn_action = models.CharField(max_length=50, blank=True, null=True, help_text="Internal calculated action (e.g. ADD, SUB, DIV_REINV)")
+    txn_type_code = models.CharField(max_length=100, help_text="Raw transaction type from RTA")
+    txn_nature = models.CharField(max_length=100, blank=True, null=True, help_text="Transaction Nature from RTA")
+    tax_status = models.CharField(max_length=50, blank=True, null=True)
+    description = models.CharField(max_length=255, blank=True)
+    tr_flag = models.CharField(max_length=100, blank=True, null=True, help_text="Transaction Flag from RTA (e.g., P, R)")
 
     # Matching / Provisional Fields
     source = models.CharField(max_length=10, choices=SOURCE_CHOICES, default=SOURCE_RTA)
@@ -94,8 +102,6 @@ class Transaction(models.Model):
     # New Fields for Reporting
     amc_code = models.CharField(max_length=20, blank=True, null=True)
     product_code = models.CharField(max_length=20, blank=True, null=True)
-    txn_nature = models.CharField(max_length=100, blank=True, null=True, help_text="Transaction Nature from RTA")
-    tax_status = models.CharField(max_length=50, blank=True, null=True)
     micr_no = models.CharField(max_length=50, blank=True, null=True)
     old_folio = models.CharField(max_length=50, blank=True, null=True)
     reinvest_flag = models.CharField(max_length=10, blank=True, null=True)
@@ -141,13 +147,6 @@ class Transaction(models.Model):
     status_desc = models.CharField(max_length=100, blank=True, null=True, help_text="Raw Status from RTA")
     remarks = models.TextField(blank=True, null=True)
     location = models.CharField(max_length=100, blank=True, null=True)
-
-    description = models.CharField(max_length=255, blank=True)
-    tr_flag = models.CharField(max_length=100, blank=True, null=True, help_text="Transaction Flag from RTA (e.g., P, R)")
-
-    # Processed Type / Action Fields
-    txn_type = models.CharField(max_length=100, blank=True, null=True, help_text="Human-readable transaction type (e.g. Purchase, SIP, Redemption)")
-    txn_action = models.CharField(max_length=50, blank=True, null=True, help_text="Internal calculated action (e.g. ADD, SUB, DIV_REINV)")
 
     # Future Proofing
     raw_data = models.JSONField(default=dict, blank=True, help_text="Full raw row data from source file")
