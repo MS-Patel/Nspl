@@ -195,3 +195,37 @@ class Holding(models.Model):
 
     def __str__(self):
         return f"{self.folio_number} - {self.scheme} - Units: {self.units}"
+
+class FailedRTARecord(models.Model):
+    """
+    Stores RTA transaction records that failed to import (e.g. scheme missing, validation error).
+    """
+    STATUS_FAILED = 'FAILED'
+    STATUS_RESOLVED = 'RESOLVED'
+
+    STATUS_CHOICES = [
+        (STATUS_FAILED, 'Failed'),
+        (STATUS_RESOLVED, 'Resolved'),
+    ]
+
+    source_file = models.ForeignKey(RTAFile, on_delete=models.SET_NULL, related_name='failed_records', null=True, blank=True)
+    rta_type = models.CharField(max_length=20, choices=RTAFile.RTA_CHOICES)
+
+    # Optional metadata for easy filtering
+    original_txn_number = models.CharField(max_length=100, blank=True, null=True)
+    folio_number = models.CharField(max_length=50, blank=True, null=True)
+
+    # Store the entire row as JSON for later retry
+    row_data = models.JSONField(help_text="Raw row data dictionary that failed")
+    error_reason = models.TextField(help_text="Reason for failure (e.g. 'Scheme not found')")
+
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_FAILED)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    resolved_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.rta_type} Failed: {self.error_reason[:50]}"
