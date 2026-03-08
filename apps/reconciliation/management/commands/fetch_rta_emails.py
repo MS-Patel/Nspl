@@ -1,8 +1,11 @@
 import logging
 import os
 from django.core.management.base import BaseCommand
+from django.core.files import File
 from apps.reconciliation.utils.email_fetcher import RTAEmailFetcher
 from apps.reconciliation.utils.parser_registry import get_parser_for_file
+from apps.reconciliation.models import RTAFile
+from apps.reconciliation.parsers import DBFParser, KarvyCSVParser, FranklinParser
 from django.conf import settings
 
 logger = logging.getLogger(__name__)
@@ -56,10 +59,42 @@ class Command(BaseCommand):
 
                                 continue
 
-                            self.stdout.write(f"Processing file: {file_path} from {source}")
-                            parser.parse()
-                            self.stdout.write(self.style.SUCCESS(f"Successfully processed {file_path}"))
-                            processed_count += 1
+                            rta_type = None
+                            if isinstance(parser, DBFParser):
+                                rta_type = RTAFile.RTA_CAMS
+                            elif isinstance(parser, KarvyCSVParser):
+                                rta_type = RTAFile.RTA_KARVY
+                            elif isinstance(parser, FranklinParser):
+                                rta_type = RTAFile.RTA_FRANKLIN
+
+                            if not rta_type:
+                                self.stdout.write(f"Skipping file with unknown RTA type: {file_path}")
+                                continue
+
+                            filename = os.path.basename(file_path)
+                            rta_file_obj = None
+
+                            try:
+                                with open(file_path, 'rb') as f:
+                                    rta_file_obj = RTAFile.objects.create(
+                                        rta_type=rta_type,
+                                        file_name=filename,
+                                        status=RTAFile.STATUS_PENDING
+                                    )
+                                    rta_file_obj.file.save(filename, File(f))
+
+                                parser.rta_file = rta_file_obj
+
+                                self.stdout.write(f"Processing file: {file_path} from {source}")
+                                parser.parse()
+                                self.stdout.write(self.style.SUCCESS(f"Successfully processed {file_path}"))
+                                processed_count += 1
+                            except Exception as e:
+                                if rta_file_obj:
+                                    rta_file_obj.status = RTAFile.STATUS_FAILED
+                                    rta_file_obj.error_log = str(e)
+                                    rta_file_obj.save()
+                                raise e
 
                         except Exception as e:
                             logger.exception(f"Failed to process file {file_path}: {e}")
