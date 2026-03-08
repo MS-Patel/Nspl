@@ -184,6 +184,7 @@ class RetryFailedRTARecordView(View):
                     try:
                         single_parser.parse_cams(single_df)
                         if not single_parser.failed_rows:
+                            single_parser.process_impacted_holdings()
                             record.status = FailedRTARecord.STATUS_RESOLVED
                             record.save()
                             success_count += 1
