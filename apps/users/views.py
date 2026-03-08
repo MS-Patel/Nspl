@@ -187,6 +187,10 @@ class AdminDashboardView(LoginRequiredMixin, IsAdminMixin, TemplateView):
         context['rm_count'] = RMProfile.objects.count()
         context['distributor_count'] = DistributorProfile.objects.count()
         context['investor_count'] = InvestorProfile.objects.count()
+        context['non_bse_investor_count'] = InvestorProfile.objects.filter(is_offline=True).count()
+
+        from apps.reconciliation.models import FailedRTARecord
+        context['failed_rta_count'] = FailedRTARecord.objects.filter(status=FailedRTARecord.STATUS_FAILED).count()
 
         # 2. Total AUM
         aum_agg = Holding.objects.aggregate(total_aum=Sum('current_value'))

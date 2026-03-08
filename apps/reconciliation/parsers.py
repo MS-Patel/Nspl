@@ -10,7 +10,7 @@ from django.utils import timezone
 from django.db import transaction
 from django.contrib.auth import get_user_model
 from django.core.files.base import ContentFile
-from .models import RTAFile, Transaction, Holding
+from .models import RTAFile, Transaction, Holding, FailedRTARecord
 from apps.products.models import Scheme
 from apps.users.models import InvestorProfile
 from apps.investments.models import Folio
@@ -39,6 +39,11 @@ class BaseParser:
         self._scheme_cache = {}
         self._investor_cache = {}
         self._folio_cache = set()
+
+        # Flag to indicate if this is a retry of a failed record.
+        # If True, we skip file-level completion logic (like updating RTAFile status)
+        # and skip creating duplicate FailedRTARecord entries.
+        self.is_retry = False
 
     def parse(self):
         raise NotImplementedError
@@ -85,7 +90,33 @@ class BaseParser:
         if not self.failed_rows or not self.rta_file:
             return
 
+        if self.is_retry:
+            return
+
         try:
+            # Also save errors to FailedRTARecord
+            for row_dict in self.failed_rows:
+                # Need to handle NaN properly for JSON parsing
+                clean_row = {}
+                for k, v in row_dict.items():
+                    if k == 'error':
+                        continue
+                    if pd.isna(v):
+                        clean_row[k] = None
+                    elif isinstance(v, (datetime, pd.Timestamp)):
+                        clean_row[k] = v.isoformat()
+                    else:
+                        clean_row[k] = str(v)
+
+                FailedRTARecord.objects.create(
+                    source_file=self.rta_file,
+                    rta_type=self.rta_file.rta_type if self.rta_file else 'UNKNOWN',
+                    original_txn_number=clean_row.get('trxnno') or clean_row.get('transaction number') or clean_row.get(6),
+                    folio_number=clean_row.get('folio_no') or clean_row.get('folio number') or clean_row.get(3),
+                    row_data=clean_row,
+                    error_reason=str(row_dict.get('error', 'Unknown Error'))
+                )
+
             df = pd.DataFrame(self.failed_rows)
             output = io.BytesIO()
             with pd.ExcelWriter(output, engine='openpyxl') as writer:
@@ -529,14 +560,14 @@ class FranklinParser(BaseParser):
                             )
                     except Exception as e:
                         logger.error(f"Error processing Franklin row: {e}")
-                        self.failed_rows.append({
-                            'row_data': str(row),
-                            'error': str(e)
-                        })
+                        # Convert list row to dict for consistent handling
+                        row_dict = {i: val for i, val in enumerate(row)}
+                        row_dict['error'] = str(e)
+                        self.failed_rows.append(row_dict)
 
             self.process_impacted_holdings()
 
-            if self.rta_file:
+            if self.rta_file and not self.is_retry:
                 if self.failed_rows:
                      self.save_error_file()
 
@@ -545,12 +576,12 @@ class FranklinParser(BaseParser):
                 self.rta_file.save()
 
         except Exception as e:
-            if self.rta_file:
+            if self.rta_file and not self.is_retry:
                 self.rta_file.status = RTAFile.STATUS_FAILED
                 self.rta_file.error_log = str(e)
                 self.rta_file.save()
             logger.error(f"Franklin Parsing failed: {e}")
-            if not self.rta_file:
+            if not getattr(self, 'is_retry', False) and not self.rta_file:
                 raise e
 
 
@@ -584,7 +615,7 @@ class DBFParser(BaseParser):
 
             self.process_impacted_holdings()
 
-            if self.rta_file:
+            if self.rta_file and not self.is_retry:
                 if self.failed_rows:
                      self.save_error_file()
 
@@ -593,12 +624,12 @@ class DBFParser(BaseParser):
                 self.rta_file.save()
 
         except Exception as e:
-            if self.rta_file:
+            if self.rta_file and not self.is_retry:
                 self.rta_file.status = RTAFile.STATUS_FAILED
                 self.rta_file.error_log = str(e)
                 self.rta_file.save()
             logger.error(f"DBF Parsing failed: {e}")
-            if not self.rta_file:
+            if not getattr(self, 'is_retry', False) and not self.rta_file:
                 raise e
 
     def parse_cams(self, df):
@@ -888,7 +919,7 @@ class KarvyCSVParser(BaseParser):
 
             self.process_impacted_holdings()
 
-            if self.rta_file:
+            if self.rta_file and not self.is_retry:
                 if self.failed_rows:
                      self.save_error_file()
 
@@ -896,10 +927,10 @@ class KarvyCSVParser(BaseParser):
                 self.rta_file.processed_at = timezone.now()
                 self.rta_file.save()
         except Exception as e:
-            if self.rta_file:
+            if self.rta_file and not self.is_retry:
                 self.rta_file.status = RTAFile.STATUS_FAILED
                 self.rta_file.error_log = str(e)
                 self.rta_file.save()
             logger.error(f"Karvy CSV Parsing failed: {e}")
-            if not self.rta_file:
+            if not getattr(self, 'is_retry', False) and not self.rta_file:
                 raise e
