@@ -131,6 +131,22 @@
                                     <span>Mobile</span>
                                     {% render_field form.mobile id="mobile" class="form-input mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" %}
                                 </label>
+
+                                {% if request.user.user_type == 'ADMIN' %}
+                                <label class="block">
+                                    <span>Relationship Manager (Optional)</span>
+                                    {% render_field form.rm id="rm" class="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" %}
+                                </label>
+                                <label class="block">
+                                    <span>Distributor (Optional)</span>
+                                    {% render_field form.distributor id="distributor" class="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" %}
+                                </label>
+                                {% elif request.user.user_type == 'RM' %}
+                                <label class="block">
+                                    <span>Distributor (Optional)</span>
+                                    {% render_field form.distributor id="distributor" class="form-select mt-1.5 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2" %}
+                                </label>
+                                {% endif %}
                             </div>
                             <div class="flex justify-end pt-4">
                                 <button type="button" class="btn btn-next bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90"
@@ -562,6 +578,52 @@
 
         // Initial state
         showStep(1);
+
+        // --- Dependency Logic for Admin ---
+        const rmDropdown = document.getElementById('rm');
+        const distDropdown = document.getElementById('distributor');
+
+        if (rmDropdown && distDropdown && "{{ request.user.user_type }}" === "ADMIN") {
+            const allDistOptions = Array.from(distDropdown.options);
+
+            const rmDistMap = {{ rm_distributor_map|default:"{}"|safe }};
+
+            function filterDistributors() {
+                const selectedRm = rmDropdown.value;
+                const currentDistVal = distDropdown.value;
+
+                distDropdown.innerHTML = '';
+                // Always keep empty option
+                distDropdown.appendChild(allDistOptions[0]);
+
+                let selectedFound = false;
+
+                if (selectedRm && rmDistMap[selectedRm]) {
+                    const validIds = rmDistMap[selectedRm].map(String);
+                    allDistOptions.forEach(opt => {
+                        if (opt.value && validIds.includes(opt.value)) {
+                            distDropdown.appendChild(opt);
+                            if (opt.value === currentDistVal) selectedFound = true;
+                        }
+                    });
+                } else if (!selectedRm) {
+                    // Show all if no RM selected (optional, or show none)
+                    allDistOptions.forEach(opt => {
+                        if(opt.value) distDropdown.appendChild(opt);
+                    });
+                    // check if dist val is still valid
+                    selectedFound = true;
+                }
+
+                if (!selectedFound) distDropdown.value = '';
+                else distDropdown.value = currentDistVal;
+            }
+
+            rmDropdown.addEventListener('change', filterDistributors);
+            // Run once on load
+            filterDistributors();
+        }
+
 
         // --- 2. Validation Configuration ---
         const stepFields = {

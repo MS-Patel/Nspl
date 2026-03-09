@@ -579,6 +579,17 @@ class InvestorCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
         else:
             context['bank_accounts'] = BankAccountFormSet()
             context['nominees'] = NomineeFormSet()
+
+        # Generate RM -> Distributor Map for frontend filtering
+        if self.request.user.user_type == User.Types.ADMIN:
+            import json
+            from collections import defaultdict
+            rm_map = defaultdict(list)
+            for dist in DistributorProfile.objects.select_related('rm').all():
+                if dist.rm_id:
+                    rm_map[dist.rm_id].append(dist.id)
+            context['rm_distributor_map'] = json.dumps(rm_map)
+
         return context
 
     def form_valid(self, form):
@@ -709,6 +720,17 @@ class InvestorUpdateView(LoginRequiredMixin, InvestorAccessMixin, UpdateView):
         else:
             context['bank_accounts'] = BankAccountFormSet(instance=self.object)
             context['nominees'] = NomineeFormSet(instance=self.object)
+
+        # Generate RM -> Distributor Map for frontend filtering
+        if self.request.user.user_type == User.Types.ADMIN:
+            import json
+            from collections import defaultdict
+            rm_map = defaultdict(list)
+            for dist in DistributorProfile.objects.select_related('rm').all():
+                if dist.rm_id:
+                    rm_map[dist.rm_id].append(dist.id)
+            context['rm_distributor_map'] = json.dumps(rm_map)
+
         return context
 
     def form_valid(self, form):
