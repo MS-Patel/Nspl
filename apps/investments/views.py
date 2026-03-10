@@ -650,7 +650,7 @@ def get_order_metadata(request):
 
     # Optimizing query: return only needed fields
     schemes_data = schemes_qs.values(
-        'id', 'name', 'scheme_code', 'min_purchase_amount', 'max_purchase_amount',
+        'id', 'name', 'scheme_code', 'isin', 'min_purchase_amount', 'max_purchase_amount',
         'purchase_amount_multiplier', 'is_sip_allowed', 'is_switch_allowed', 'amc_id'
     )
 
