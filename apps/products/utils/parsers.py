@@ -28,7 +28,7 @@ def read_file_to_dicts(file_obj):
             decoded_file = file_obj.read().decode('utf-8').splitlines()
             # Try sniffing
             try:
-                dialect = csv.Sniffer().sniff(decoded_file[0])
+                dialect = csv.Sniffer().sniff(decoded_file[0], delimiters=',|;\t')
                 delimiter = dialect.delimiter
             except:
                 delimiter = '|' # Default fallback
