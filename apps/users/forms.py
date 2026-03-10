@@ -514,10 +514,13 @@ class InvestorProfileForm(forms.ModelForm):
         self.fields['nomination_auth_mode'].initial = InvestorProfile.ONLINE_OTP
 
         # Populate initial user data if instance exists
-        if self.instance and self.instance.pk and self.instance.user:
-            self.fields['email'].initial = self.instance.user.email
+        if self.instance and self.instance.pk:
+            if self.instance.user:
+                self.fields['email'].initial = self.instance.user.email
 
-        # Ensure firstname/middle/last are populated from instance (ModelForm does this automatically for model fields)
+            self.fields['firstname'].initial = self.instance.firstname
+            self.fields['middlename'].initial = self.instance.middlename
+            self.fields['lastname'].initial = self.instance.lastname
 
         # Permissions Logic for Hierarchy Fields
         if self.request_user:
