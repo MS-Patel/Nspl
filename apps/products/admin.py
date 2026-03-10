@@ -38,8 +38,8 @@ class SchemeAssetAllocationInline(admin.TabularInline):
 
 @admin.register(Scheme)
 class SchemeAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'amc', 'scheme_code', 'isin', 'scheme_type', 'scheme_plan', 'riskometer')
-    search_fields = ('name', 'scheme_code', 'isin', 'rta_scheme_code')
+    list_display = ('id', 'name', 'amc', 'scheme_code', 'isin', 'scheme_type', 'scheme_plan', 'channel_partner_code')
+    search_fields = ('name', 'scheme_code', 'isin', 'rta_scheme_code','channel_partner_code')
     list_filter = ('amc', 'category', 'scheme_type', 'scheme_plan', 'riskometer', 'purchase_allowed', 'redemption_allowed', 'is_sip_allowed')
     inlines = [SchemeManagerInline, SchemeHoldingInline, SchemeSectorAllocationInline, SchemeAssetAllocationInline]
 
