@@ -341,13 +341,15 @@
             ...config,
             valueField: 'id',
             labelField: 'name',
-            searchField: ['name', 'scheme_code'],
+            searchField: ['name', 'scheme_code', 'isin'],
             placeholder: 'Search for a scheme...',
+            maxOptions: null,
              render: {
                 option: function(data, escape) {
+                    const isin = data.isin ? data.isin : 'N/A';
                     return `<div>
                         <div class="font-medium">${escape(data.name)}</div>
-                        <div class="text-xs text-slate-500">Code: ${escape(data.scheme_code)}</div>
+                        <div class="text-xs text-slate-500">Code: ${escape(data.scheme_code)} | ISIN: ${escape(isin)}</div>
                     </div>`;
                 },
                 item: function(data, escape) {
@@ -361,6 +363,22 @@
         targetSchemeEl._tom = new TomConstructor(targetSchemeEl, {
              ...config,
              placeholder: 'Select Target Scheme...',
+             valueField: 'id',
+             labelField: 'name',
+             searchField: ['name', 'scheme_code', 'isin'],
+             maxOptions: null,
+             render: {
+                 option: function(data, escape) {
+                     const isin = data.isin ? data.isin : 'N/A';
+                     return `<div>
+                         <div class="font-medium">${escape(data.name)}</div>
+                         <div class="text-xs text-slate-500">Code: ${escape(data.scheme_code)} | ISIN: ${escape(isin)}</div>
+                     </div>`;
+                 },
+                 item: function(data, escape) {
+                     return `<div>${escape(data.name)}</div>`;
+                 }
+             }
         });
         const targetSchemeSelect = targetSchemeEl._tom;
 
