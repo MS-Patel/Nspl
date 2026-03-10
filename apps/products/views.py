@@ -26,6 +26,12 @@ from apps.core.utils.sample_headers import (
 from .utils.calculations import get_scheme_returns, get_peer_comparison
 import json
 from django.core.serializers.json import DjangoJSONEncoder
+import threading
+from django.core.files.storage import FileSystemStorage
+from django.db import connections
+import logging
+
+logger = logging.getLogger(__name__)
 from django.db.models import Q, Case, When, Value, IntegerField
 
 User = get_user_model()
@@ -343,12 +349,28 @@ class SchemeUploadView(LoginRequiredMixin, UserPassesTestMixin, FormView):
 
     def form_valid(self, form):
         file_obj = self.request.FILES['file']
-        count, errors = import_schemes_from_file(file_obj)
+        fs = FileSystemStorage()
+        filename = fs.save(file_obj.name, file_obj)
+        file_path = fs.path(filename)
 
-        if errors:
-            messages.warning(self.request, f"Processed {count} schemes with errors: {errors[:5]}...") # Limit errors
-        else:
-            messages.success(self.request, f"Successfully imported/updated {count} schemes.")
+        def run_import():
+            try:
+                with open(file_path, 'rb') as f:
+                    count, errors = import_schemes_from_file(f)
+                if errors:
+                    logger.warning(f"Processed {count} schemes with errors: {errors[:5]}...")
+                else:
+                    logger.info(f"Successfully imported/updated {count} schemes.")
+            except Exception as e:
+                logger.error(f"Error importing schemes: {e}")
+            finally:
+                fs.delete(filename)
+                connections.close_all()
+
+        thread = threading.Thread(target=run_import)
+        thread.start()
+
+        messages.success(self.request, "File uploaded. Scheme import processing started in background.")
 
         return super().form_valid(form)
 
