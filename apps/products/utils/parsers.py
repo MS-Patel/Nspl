@@ -44,7 +44,7 @@ def read_file_to_dicts(file_obj):
 
 def import_schemes_from_file(file_obj):
     """
-    Parses a scheme master file (CSV/Pipe/Excel) and updates/creates schemes.
+    Parses a scheme master file (CSV/Pipe/Excel) and updates/creates schemes using bulk operations and caching to avoid timeout on large files.
     """
     count = 0
     errors = []
@@ -52,28 +52,74 @@ def import_schemes_from_file(file_obj):
     try:
         rows = read_file_to_dicts(file_obj)
 
-        for row_idx, row in enumerate(rows, start=1):
-            try:
-                process_scheme_row(row)
-                count += 1
-            except Exception as e:
-                errors.append(f"Row {row_idx}: {str(e)}")
+        # Pre-cache AMCs and Categories
+        amc_cache = {amc.code: amc for amc in AMC.objects.all()}
+        category_cache = {cat.code: cat for cat in SchemeCategory.objects.all()}
+
+        # We will collect objects to update and create
+        schemes_to_create = []
+        schemes_to_update = []
+        # Pre-fetch existing schemes
+        existing_schemes_by_unique_no = {}
+        existing_schemes_by_code = {}
+
+        # For memory safety, we shouldn't preload *all* schemes if the DB is huge,
+        # but for a scheme master, 15k is ~ a few MB.
+        # Still, we can just fetch the ones that are in our file.
+        unique_nos_in_file = [int(float(str(r.get('unique no')))) for r in rows if r.get('unique no') and str(r.get('unique no')).replace('.','',1).isdigit()]
+        scheme_codes_in_file = [str(r.get('scheme code', '')).strip() for r in rows if str(r.get('scheme code', '')).strip()]
+
+        existing_qs_unique = Scheme.objects.filter(unique_no__in=unique_nos_in_file)
+        for s in existing_qs_unique:
+            existing_schemes_by_unique_no[s.unique_no] = s
+
+        existing_qs_code = Scheme.objects.filter(scheme_code__in=scheme_codes_in_file)
+        for s in existing_qs_code:
+            existing_schemes_by_code[s.scheme_code] = s
+
+        # Process rows
+        with transaction.atomic():
+            for row_idx, row in enumerate(rows, start=1):
+                try:
+                    obj, is_new = process_scheme_row(row, amc_cache, category_cache, existing_schemes_by_unique_no, existing_schemes_by_code)
+                    if obj:
+                        if is_new:
+                            schemes_to_create.append(obj)
+                        else:
+                            schemes_to_update.append(obj)
+                        count += 1
+                except Exception as e:
+                    errors.append(f"Row {row_idx}: {str(e)}")
+
+            # Bulk operations
+            if schemes_to_create:
+                Scheme.objects.bulk_create(schemes_to_create, batch_size=1000)
+
+            if schemes_to_update:
+                # Get fields to update (everything except id and scheme_code if we don't change it)
+                update_fields = [f.name for f in Scheme._meta.fields if f.name not in ['id']]
+                Scheme.objects.bulk_update(schemes_to_update, update_fields, batch_size=1000)
 
     except Exception as e:
         errors.append(f"File Error: {str(e)}")
 
     return count, errors
 
-def process_scheme_row(row):
+def process_scheme_row(row, amc_cache=None, category_cache=None, existing_schemes_by_unique_no=None, existing_schemes_by_code=None):
     # Keys are lowercase now
 
     # 1. Get or Create AMC
     amc_code = str(row.get('amc code', '')).strip()
     if not amc_code:
-        return
+        return None, False
 
     amc_name = amc_code.replace('_MF', '').replace('_', ' ')
-    amc, _ = AMC.objects.get_or_create(code=amc_code, defaults={'name': amc_name})
+    amc = None
+    if amc_cache is not None and amc_code in amc_cache:
+        amc = amc_cache[amc_code]
+    else:
+        amc, _ = AMC.objects.get_or_create(code=amc_code, defaults={'name': amc_name})
+        if amc_cache is not None: amc_cache[amc_code] = amc
 
     # 2. Get or Create Category
     # Support 'category code' (Export) or fallback to 'scheme type' (Legacy/Import)
@@ -81,10 +127,14 @@ def process_scheme_row(row):
 
     category = None
     if cat_code:
-        category, _ = SchemeCategory.objects.get_or_create(
-            code=cat_code,
-            defaults={'name': row.get('category') or cat_code}
-        )
+        if category_cache is not None and cat_code in category_cache:
+            category = category_cache[cat_code]
+        else:
+            category, _ = SchemeCategory.objects.get_or_create(
+                code=cat_code,
+                defaults={'name': row.get('category') or cat_code}
+            )
+            if category_cache is not None: category_cache[cat_code] = category
 
     # Helpers
     def parse_bool(val):
@@ -93,6 +143,8 @@ def process_scheme_row(row):
         return val in ['y', 'yes', '1', 'true']
 
     def parse_dt(val):
+        if pd.isna(val) or str(val).strip().lower() in ['nat', 'nan', 'none', 'null', '']:
+            return None
         if not val: return None
         # Handle pandas timestamp
         if isinstance(val, (datetime, pd.Timestamp)):
@@ -139,12 +191,12 @@ def process_scheme_row(row):
     scheme_code = str(row.get('scheme code', '')).strip()
 
     if not scheme_code:
-        return
+        return None, False
 
     scheme_data = {
         'amc': amc,
         'category': category,
-        'name': row.get('scheme name') or row.get('name'),
+        'name': row.get('scheme name') or row.get('name') or '',
         'isin': row.get('isin') or '',
         'rta_scheme_code': row.get('rta scheme code'),
         'amc_scheme_code': row.get('amc scheme code'),
@@ -195,17 +247,35 @@ def process_scheme_row(row):
         scheme_data['amfi_code'] = row.get('amfi code')
 
     scheme = None
-    if unique_no:
-        scheme = Scheme.objects.filter(unique_no=unique_no).first()
-    if not scheme and scheme_code:
-        scheme = Scheme.objects.filter(scheme_code=scheme_code).first()
+    if existing_schemes_by_unique_no is not None and existing_schemes_by_code is not None:
+        if unique_no and unique_no in existing_schemes_by_unique_no:
+            scheme = existing_schemes_by_unique_no[unique_no]
+        if not scheme and scheme_code in existing_schemes_by_code:
+            scheme = existing_schemes_by_code[scheme_code]
+    else:
+        if unique_no:
+            scheme = Scheme.objects.filter(unique_no=unique_no).first()
+        if not scheme and scheme_code:
+            scheme = Scheme.objects.filter(scheme_code=scheme_code).first()
 
+    is_new = False
     if scheme:
         for key, value in scheme_data.items():
             setattr(scheme, key, value)
-        scheme.save()
+        if existing_schemes_by_unique_no is None: # Only save if we aren't doing bulk
+            scheme.save()
     else:
-        Scheme.objects.create(scheme_code=scheme_code, **scheme_data)
+        is_new = True
+        scheme = Scheme(scheme_code=scheme_code, **scheme_data)
+        if existing_schemes_by_unique_no is None:
+            scheme.save()
+        else:
+            # Add to local cache so subsequent duplicates in the same file update it instead of inserting again
+            if unique_no:
+                existing_schemes_by_unique_no[unique_no] = scheme
+            existing_schemes_by_code[scheme_code] = scheme
+
+    return scheme, is_new
 
 
 def import_navs_from_file(file_obj):
@@ -254,7 +324,9 @@ def import_navs_from_file(file_obj):
 
                 # Parse Date
                 parsed_date = None
-                if isinstance(date_val, (datetime, pd.Timestamp)):
+                if pd.isna(date_val) or str(date_val).strip().lower() in ['nat', 'nan', 'none', 'null', '']:
+                    pass # Leave as None
+                elif isinstance(date_val, (datetime, pd.Timestamp)):
                     parsed_date = date_val.date()
                 else:
                     date_str = str(date_val).strip()
