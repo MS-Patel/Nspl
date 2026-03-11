@@ -1,1 +1,1 @@
-COMPANY_DEFAULT_EUIN = 'E123456'
+# Constants for Investments
