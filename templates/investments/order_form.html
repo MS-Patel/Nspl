@@ -410,8 +410,8 @@
         let currentSchemeDetails = null;
         let cachedSchemes = []; // Store fetched schemes to filter locally
 
-        // --- Filter Schemes by Transaction Type ---
-        function filterSchemesByType() {
+        // --- Render Fetched Schemes ---
+        function renderFetchedSchemes() {
             schemeSelect.clearOptions();
 
             if (!cachedSchemes.length) {
@@ -419,21 +419,12 @@
                 return;
             }
 
-            const selectedType = document.querySelector('input[name="transaction_type"]:checked')?.value;
             const currentSchemeId = schemeSelect.getValue();
 
-            let filteredSchemes = cachedSchemes;
-
-            if (selectedType === 'SIP') {
-                filteredSchemes = cachedSchemes.filter(s => s.is_sip_allowed);
-            } else if (selectedType === 'S') { // Switch
-                filteredSchemes = cachedSchemes.filter(s => s.is_switch_allowed);
-            }
-
-            schemeSelect.addOption(filteredSchemes);
+            schemeSelect.addOption(cachedSchemes);
 
             // Restore selection if valid
-            const stillValid = filteredSchemes.some(s => s.id == currentSchemeId);
+            const stillValid = cachedSchemes.some(s => s.id == currentSchemeId);
             if (currentSchemeId && stillValid) {
                  schemeSelect.setValue(currentSchemeId, true);
             }
@@ -449,8 +440,8 @@
             }
             console.log("Transaction Type Changed:", selectedType);
 
-            // Filter Schemes based on type
-            filterSchemesByType();
+            // Fetch Schemes based on type
+            fetchSchemes();
 
             // Hide all special sections first
             sipSection.style.display = 'none';
@@ -523,13 +514,15 @@
             const catId = categorySelect.getValue();
             const typeVal = typeSelect.getValue();
             const schemePlanVal = schemePlanSelect.getValue();
+            const transactionType = document.querySelector('input[name="transaction_type"]:checked')?.value || 'P';
 
             const params = new URLSearchParams({
                 fetch_schemes: 'true',
                 amc_id: amcId,
                 category_id: catId,
                 scheme_type: typeVal,
-                scheme_plan: schemePlanVal
+                scheme_plan: schemePlanVal,
+                transaction_type: transactionType
             });
 
             schemeSelect.lock(); // Prevent interaction while loading
@@ -538,7 +531,7 @@
                 .then(response => response.json())
                 .then(data => {
                     cachedSchemes = data.schemes || [];
-                    filterSchemesByType();
+                    renderFetchedSchemes();
                     schemeSelect.unlock();
                 })
                 .catch(err => {

@@ -637,8 +637,23 @@ def get_order_metadata(request):
     category_id = request.GET.get('category_id')
     scheme_type = request.GET.get('scheme_type')
     scheme_plan = request.GET.get('scheme_plan')
+    transaction_type = request.GET.get('transaction_type')
 
-    schemes_qs = Scheme.objects.filter(purchase_allowed=True, amc_active_flag=True)
+    schemes_qs = Scheme.objects.filter(amc_active_flag=True)
+
+    # Filter based on transaction type if provided
+    if transaction_type == 'P':
+        schemes_qs = schemes_qs.filter(purchase_allowed=True)
+    elif transaction_type == 'R':
+        schemes_qs = schemes_qs.filter(redemption_allowed=True)
+    elif transaction_type == 'SIP':
+        schemes_qs = schemes_qs.filter(is_sip_allowed=True)
+    elif transaction_type == 'S':
+        schemes_qs = schemes_qs.filter(is_switch_allowed=True)
+    else:
+        # Fallback to general purchase-allowed schemes if no type specified
+        schemes_qs = schemes_qs.filter(purchase_allowed=True)
+
     if amc_id:
         schemes_qs = schemes_qs.filter(amc_id=amc_id)
     if category_id:
