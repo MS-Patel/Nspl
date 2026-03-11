@@ -2,7 +2,7 @@ import pytest
 from apps.investments.models import Order, SIP
 from apps.users.models import DistributorProfile, InvestorProfile, User
 from apps.products.models import Scheme, AMC
-from apps.investments.constants import COMPANY_DEFAULT_EUIN
+from apps.administration.models import SystemConfiguration
 from apps.investments.utils import generate_distributor_based_ref
 from django.utils import timezone
 import time
@@ -11,6 +11,11 @@ from decimal import Decimal
 @pytest.mark.django_db
 class TestRefAndEUIN:
     def setup_method(self):
+        # Set up default EUIN in SystemConfiguration
+        config = SystemConfiguration.get_solo()
+        config.default_euin = "SYS-EUIN123"
+        config.save()
+
         # Create common dependencies
         self.user = User.objects.create(username="testinv", user_type="INVESTOR")
         self.dist_user = User.objects.create(username="testdist", user_type="DISTRIBUTOR")
@@ -80,8 +85,8 @@ class TestRefAndEUIN:
         expected_prefix = f"{self.distributor_no_euin.id:06d}"
         assert order.unique_ref_no.startswith(expected_prefix)
 
-        # Verify EUIN Fallback
-        assert order.euin == COMPANY_DEFAULT_EUIN
+        # Verify EUIN Fallback uses SystemConfiguration
+        assert order.euin == "SYS-EUIN123"
 
     def test_order_direct_no_distributor(self):
         order = Order.objects.create(
@@ -94,8 +99,8 @@ class TestRefAndEUIN:
         # Verify Ref No (Dist ID 0)
         assert order.unique_ref_no.startswith("000000")
 
-        # Verify EUIN Fallback
-        assert order.euin == COMPANY_DEFAULT_EUIN
+        # Verify EUIN Fallback uses SystemConfiguration
+        assert order.euin == "SYS-EUIN123"
 
     def test_sip_ref_and_euin(self):
         # Investor has distributor with EUIN
@@ -135,4 +140,4 @@ class TestRefAndEUIN:
         assert sip.unique_ref_no.startswith(expected_prefix)
 
         # Verify EUIN
-        assert sip.euin == COMPANY_DEFAULT_EUIN
+        assert sip.euin == "SYS-EUIN123"

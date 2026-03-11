@@ -2,10 +2,10 @@
 
 from django.db import migrations
 from apps.investments.utils import generate_distributor_based_ref
-from apps.investments.constants import COMPANY_DEFAULT_EUIN
 
 def populate_sip_ref_and_euin(apps, schema_editor):
     SIP = apps.get_model('investments', 'SIP')
+    SystemConfiguration = apps.get_model('administration', 'SystemConfiguration')
     for sip in SIP.objects.all():
         # Generate Ref No
         dist_id = 0
@@ -19,7 +19,12 @@ def populate_sip_ref_and_euin(apps, schema_editor):
         if sip.investor.distributor and sip.investor.distributor.euin:
             sip.euin = sip.investor.distributor.euin
         else:
-            sip.euin = COMPANY_DEFAULT_EUIN
+            # We use .first() because this is a migration and we might not have get_solo
+            config = SystemConfiguration.objects.first()
+            if config and config.default_euin:
+                sip.euin = config.default_euin
+            else:
+                sip.euin = ""
 
         sip.save()
 

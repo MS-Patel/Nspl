@@ -2,7 +2,7 @@ from django.db import models
 from django.conf import settings
 from apps.users.models import InvestorProfile, DistributorProfile, BankAccount
 from apps.products.models import Scheme, AMC
-from apps.investments.constants import COMPANY_DEFAULT_EUIN
+from apps.administration.models import SystemConfiguration
 from apps.investments.utils import generate_distributor_based_ref
 import uuid
 import time
@@ -219,7 +219,8 @@ class SIP(models.Model):
             if self.investor.distributor and self.investor.distributor.euin:
                 self.euin = self.investor.distributor.euin
             else:
-                self.euin = COMPANY_DEFAULT_EUIN
+                config = SystemConfiguration.get_solo()
+                self.euin = config.default_euin or ""
 
         # Calculate next_installment_date automatically when saved and missing
         if not self.next_installment_date and self.status == self.STATUS_ACTIVE:
@@ -328,6 +329,7 @@ class Order(models.Model):
             if self.distributor and self.distributor.euin:
                 self.euin = self.distributor.euin
             else:
-                self.euin = COMPANY_DEFAULT_EUIN
+                config = SystemConfiguration.get_solo()
+                self.euin = config.default_euin or ""
 
         super().save(*args, **kwargs)
