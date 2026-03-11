@@ -245,8 +245,11 @@
                             {
                                 id: 'date',
                                 name: 'Date',
-                                formatter: (cell) => {
-                                    const date = new Date(cell);
+                                formatter: (_, row) => {
+                                    const cellData = row.cells[0].data;
+                                    if (!cellData) return '-';
+                                    const date = new Date(cellData);
+                                    if (isNaN(date.getTime())) return '-';
                                     return date.toLocaleDateString('en-GB', {day: 'numeric', month: 'short', year: 'numeric'});
                                 }
                             },
@@ -254,25 +257,25 @@
                             {
                                 id: 'sip_amount',
                                 name: 'SIP Amount',
-                                formatter: (cell) => `₹ ${parseFloat(cell).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`,
+                                formatter: (_, row) => `₹ ${parseFloat(row.cells[2].data).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`,
                                 attributes: {'class': 'text-right'}
                             },
                             {
                                 id: 'amount',
                                 name: 'Invested Amount',
-                                formatter: (cell) => `₹ ${parseFloat(cell).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`,
+                                formatter: (_, row) => `₹ ${parseFloat(row.cells[3].data).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`,
                                 attributes: {'class': 'text-right'}
                             },
                             {
                                 id: 'units',
                                 name: 'Units',
-                                formatter: (cell) => parseFloat(cell).toFixed(3),
+                                formatter: (_, row) => parseFloat(row.cells[4].data).toFixed(3),
                                 attributes: {'class': 'text-right'}
                             },
                             {
                                 id: 'nav',
                                 name: 'NAV',
-                                formatter: (cell) => cell ? `₹ ${parseFloat(cell).toFixed(4)}` : '-',
+                                formatter: (_, row) => row.cells[5].data ? `₹ ${parseFloat(row.cells[5].data).toFixed(4)}` : '-',
                                 attributes: {'class': 'text-right'}
                             }
                         ],
