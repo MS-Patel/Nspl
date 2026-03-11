@@ -73,7 +73,7 @@ class SchemeExplorerView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         queryset = super().get_queryset().select_related('amc', 'category').filter(is_active=True)
-
+        
         # Filtering
         search_query = self.request.GET.get('search')
         if search_query:
