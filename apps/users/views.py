@@ -53,6 +53,9 @@ class CustomLoginView(LoginView):
 
     def get_success_url(self):
         user = self.request.user
+        if getattr(user, 'force_password_change', False):
+            return reverse_lazy('users:password_change')
+
         if user.user_type == User.Types.RM:
             return reverse_lazy('users:rm_dashboard')
         elif user.user_type == User.Types.DISTRIBUTOR:
