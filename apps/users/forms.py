@@ -108,6 +108,7 @@ class RMCreationForm(forms.ModelForm):
             user = super().save(commit=False)
             user.user_type = User.Types.RM
             user.is_active = self.cleaned_data['is_active']
+            user.force_password_change = True
 
             # Set Username and Password
             user.username = self.cleaned_data['employee_code']
@@ -257,6 +258,8 @@ class DistributorCreationForm(forms.ModelForm):
             broker_code = self.cleaned_data.get('broker_code')
             if not broker_code:
                 broker_code = DistributorProfile.generate_broker_code()
+
+            user.force_password_change = True
 
             # Set Username and Password
             user.username = broker_code
