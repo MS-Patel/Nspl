@@ -1244,7 +1244,7 @@ class ExportCapitalGainReportView(LoginRequiredMixin, View):
         start_date = request.GET.get('start_date')
         end_date = request.GET.get('end_date')
 
-        transactions = Transaction.objects.filter(investor=investor).order_by('-date')
+        transactions = Transaction.objects.filter(investor=investor).order_by('-date', '-units')
 
         if start_date:
             transactions = transactions.filter(date__gte=start_date)
@@ -1271,7 +1271,7 @@ class ExportTransactionStatementView(LoginRequiredMixin, View):
         start_date = request.GET.get('start_date')
         end_date = request.GET.get('end_date')
 
-        transactions = Transaction.objects.filter(investor=investor,date__gte=start_date,date__lte=end_date).order_by('date')
+        transactions = Transaction.objects.filter(investor=investor,date__gte=start_date,date__lte=end_date).order_by('date', '-units')
 
         # Note: Do not filter transactions here if generate_transaction_statement_pdf handles opening balance via `date__lt`
         # But if generate_transaction_statement_pdf takes transactions as input and filters within, let's look at it.
