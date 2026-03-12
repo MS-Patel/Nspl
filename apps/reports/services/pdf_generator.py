@@ -288,11 +288,18 @@ def generate_wealth_report_pdf(investor, data_summary, data_folios, start_date=N
 
     summary_headers = ["Investment Amount", "Units", "Current Amount", "Dividend Reinvestment", "Dividend Payout", "Gain/Loss", "Absolute Return", "XIRR"]
 
-    inv_amt = f"{data_summary.get('total_invested_value', 0):,.2f}"
-    curr_amt = f"{data_summary.get('total_current_value', 0):,.2f}"
-    gain_loss = f"{data_summary.get('total_gain_loss', 0):,.2f}"
-    abs_return = f"{data_summary.get('gain_loss_percent', 0)}%"
-    xirr = f"{data_summary.get('portfolio_xirr') or 0}%"
+    from decimal import Decimal
+    inv_amt_val = Decimal(str(data_summary.get('total_invested_value', 0) or 0))
+    curr_amt_val = Decimal(str(data_summary.get('total_current_value', 0) or 0))
+    gain_loss_val = Decimal(str(data_summary.get('total_gain_loss', 0) or 0))
+    abs_return_val = Decimal(str(data_summary.get('gain_loss_percent', 0) or 0))
+    xirr_val = Decimal(str(data_summary.get('portfolio_xirr', 0) or 0))
+
+    inv_amt = f"{inv_amt_val:,.2f}"
+    curr_amt = f"{curr_amt_val:,.2f}"
+    gain_loss = f"{gain_loss_val:,.2f}"
+    abs_return = f"{abs_return_val}%"
+    xirr = f"{xirr_val}%"
 
     summary_row = [inv_amt, "0.00", curr_amt, "0.00", "0.00", gain_loss, abs_return, xirr]
 
@@ -319,13 +326,18 @@ def generate_wealth_report_pdf(investor, data_summary, data_folios, start_date=N
     folio_data = [folio_headers]
 
     for f in data_folios:
+        f_inv = Decimal(str(f.get('invested_value', 0) or 0))
+        f_curr = Decimal(str(f.get('current_value', 0) or 0))
+        f_gl = Decimal(str(f.get('gain_loss', 0) or 0))
+        f_gl_perc = Decimal(str(f.get('gain_loss_percent', 0) or 0))
+
         folio_data.append([
             Paragraph(f.get('amc_name', ''), styles['Normal']),
             f.get('folio_number', ''),
-            f"{f.get('invested_value', 0):,.2f}",
-            f"{f.get('current_value', 0):,.2f}",
-            f"{f.get('gain_loss', 0):,.2f}",
-            f"{f.get('gain_loss_percent', 0)}%"
+            f"{f_inv:,.2f}",
+            f"{f_curr:,.2f}",
+            f"{f_gl:,.2f}",
+            f"{f_gl_perc}%"
         ])
 
     if len(folio_data) > 1:
@@ -376,16 +388,17 @@ def generate_pl_report_pdf(investor, data_summary, data_folios, start_date=None,
         "F = (A+B)-(C+D+E)\nNET INVESTMENT", "G\nCURRENT VALUE", "G-F\nGAIN/LOSS", "XIRR"
     ]
 
-    total_purchase = sum(f.get('purchase', 0) for f in data_folios)
-    total_switch_in = sum(f.get('switch_in', 0) for f in data_folios)
-    total_redemption = sum(f.get('redemption', 0) for f in data_folios)
-    total_switch_out = sum(f.get('switch_out', 0) for f in data_folios)
-    total_div_payout = 0.0 # Standard DIV is aggregated if present
+    from decimal import Decimal
+    total_purchase = sum(Decimal(str(f.get('purchase', 0) or 0)) for f in data_folios)
+    total_switch_in = sum(Decimal(str(f.get('switch_in', 0) or 0)) for f in data_folios)
+    total_redemption = sum(Decimal(str(f.get('redemption', 0) or 0)) for f in data_folios)
+    total_switch_out = sum(Decimal(str(f.get('switch_out', 0) or 0)) for f in data_folios)
+    total_div_payout = Decimal('0.00') # Standard DIV is aggregated if present
 
-    net_inv = data_summary.get('total_invested_value', 0)
-    curr_val = data_summary.get('total_current_value', 0)
-    gain_loss = data_summary.get('total_gain_loss', 0)
-    xirr = data_summary.get('portfolio_xirr', 0)
+    net_inv = Decimal(str(data_summary.get('total_invested_value', 0) or 0))
+    curr_val = Decimal(str(data_summary.get('total_current_value', 0) or 0))
+    gain_loss = Decimal(str(data_summary.get('total_gain_loss', 0) or 0))
+    xirr = Decimal(str(data_summary.get('portfolio_xirr', 0) or 0))
 
     pl_row = [
         f"{total_purchase:,.2f}", f"{total_switch_in:,.2f}", f"{total_redemption:,.2f}", f"{total_switch_out:,.2f}", f"{total_div_payout:,.2f}",
@@ -406,14 +419,14 @@ def generate_pl_report_pdf(investor, data_summary, data_folios, start_date=None,
     ]
     scheme_data = [scheme_headers]
     for f in data_folios:
-        f_net = f.get('invested_value', 0)
-        f_curr = f.get('current_value', 0)
-        f_gl = f.get('gain_loss', 0)
-        f_rtn = f.get('gain_loss_percent', 0)
-        f_pur = f.get('purchase', 0)
-        f_si = f.get('switch_in', 0)
-        f_red = f.get('redemption', 0)
-        f_so = f.get('switch_out', 0)
+        f_net = Decimal(str(f.get('invested_value', 0) or 0))
+        f_curr = Decimal(str(f.get('current_value', 0) or 0))
+        f_gl = Decimal(str(f.get('gain_loss', 0) or 0))
+        f_rtn = Decimal(str(f.get('gain_loss_percent', 0) or 0))
+        f_pur = Decimal(str(f.get('purchase', 0) or 0))
+        f_si = Decimal(str(f.get('switch_in', 0) or 0))
+        f_red = Decimal(str(f.get('redemption', 0) or 0))
+        f_so = Decimal(str(f.get('switch_out', 0) or 0))
 
         scheme_data.append([
             Paragraph(f.get('amc_name', ''), styles['Normal']),
@@ -462,9 +475,10 @@ def generate_capital_gain_pdf(investor, transactions, fy_start=None, fy_end=None
     cg_headers = ["Scheme Name", "Folio Number", "Short Term Gain", "Short Term Loss", "Long Term Gain", "Long Term Loss", "Total Gain/Loss"]
     cg_data = [cg_headers]
 
+    from decimal import Decimal
     # We aggregate a simple FIFO or placeholder calculated value
     from collections import defaultdict
-    folio_summary = defaultdict(lambda: {"st_gain": 0, "st_loss": 0, "lt_gain": 0, "lt_loss": 0, "amc": ""})
+    folio_summary = defaultdict(lambda: {"st_gain": Decimal('0.00'), "st_loss": Decimal('0.00'), "lt_gain": Decimal('0.00'), "lt_loss": Decimal('0.00'), "amc": ""})
 
     # Simulate a basic iteration (for a robust FIFO we'd need more complex holding models)
     # We will map whatever redemption transactions exist and try to estimate based on average cost
@@ -485,11 +499,11 @@ def generate_capital_gain_pdf(investor, transactions, fy_start=None, fy_end=None
         # We assume recent transactions for ST.
         # gain = Redemption Amount - (Redeemed Units * Average Cost)
         # Note: True FIFO is complex to do on the fly without a dedicated service.
-        amount = float(t.amount)
+        amount = t.amount if t.amount else Decimal('0.00')
         # We just place a placeholder logic for gain using the transaction amount for demonstration
         # Real logic would fetch the matched Purchase units
         # Let's just group them to ensure the table populates with real transaction references
-        folio_summary[folio]['st_gain'] += float(t.amount) * 0.1 # Mocked 10% gain for redemptions
+        folio_summary[folio]['st_gain'] += amount * Decimal('0.1') # Mocked 10% gain for redemptions
 
     for folio, data in folio_summary.items():
         st_gain = data['st_gain']
