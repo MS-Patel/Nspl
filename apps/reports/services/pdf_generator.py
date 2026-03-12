@@ -251,8 +251,8 @@ class BaseReportGenerator:
             ('ALIGN', (0,0), (-1,-1), 'CENTER'),
             ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
             ('FONTSIZE', (0,0), (-1,-1), 8),
-            ('BOTTOMPADDING', (0,0), (-1,-1), 6),
-            ('TOPPADDING', (0,0), (-1,-1), 6),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 0),
+            ('TOPPADDING', (0,0), (-1,-1), 0),
             ('BACKGROUND', (0,1), (-1,-1), colors.white),
             ('GRID', (0,0), (-1,-1), 0.5, colors.lightgrey),
         ]))
@@ -296,7 +296,10 @@ def generate_wealth_report_pdf(investor, data_summary, data_folios, start_date=N
 
     summary_row = [inv_amt, "0.00", curr_amt, "0.00", "0.00", gain_loss, abs_return, xirr]
 
-    t_summary = generator._create_table([summary_headers, summary_row])
+    page_width = generator.pagesize[0] - generator.doc.leftMargin - generator.doc.rightMargin
+    col_width = page_width / len(summary_headers)
+
+    t_summary = generator._create_table([summary_headers, summary_row], col_widths=[col_width]*len(summary_headers))
     generator.elements.append(t_summary)
     generator.elements.append(Spacer(1, 0.2*inch))
 
@@ -304,7 +307,9 @@ def generate_wealth_report_pdf(investor, data_summary, data_folios, start_date=N
     generator.elements.append(Paragraph("<b>Individual Portfolio Short Summary</b>", styles['Heading3']))
     port_headers = ["Mutual Fund", "Equity", "Post Office", "FD/Bonds", "FD/Fixerra", "Commodity", "Real Estate", "PMS and Alt Inv.", "General Insurance", "Life Insurance", "LAMF"]
     port_row = [curr_amt, "0.00", "0.00", "0.00", "0.00", "0.00", "0.00", "0.00", "0.00", "0.00", "0.00"]
-    t_port = generator._create_table([port_headers, port_row])
+
+    col_width_port = page_width / len(port_headers)
+    t_port = generator._create_table([port_headers, port_row], col_widths=[col_width_port]*len(port_headers))
     generator.elements.append(t_port)
     generator.elements.append(Spacer(1, 0.2*inch))
 
@@ -325,7 +330,17 @@ def generate_wealth_report_pdf(investor, data_summary, data_folios, start_date=N
 
     if len(folio_data) > 1:
         generator.elements.append(Paragraph("<b>Folio Wise Summary</b>", styles['Heading3']))
-        t_folios = generator._create_table(folio_data)
+
+        # Give Scheme Name more width
+        scheme_w = 2.5 * inch
+        rem_w = page_width - scheme_w
+        folio_col_w = rem_w / (len(folio_headers) - 1)
+
+        t_folios = generator._create_table(folio_data, col_widths=[scheme_w] + [folio_col_w]*(len(folio_headers)-1))
+        t_folios.setStyle(TableStyle([
+            ('ALIGN', (2,0), (-1,-1), 'RIGHT'), # Align numerical columns to right
+            ('ALIGN', (0,0), (1,-1), 'LEFT'), # Scheme and folio to left
+        ]))
         generator.elements.append(t_folios)
 
     generator.build()
@@ -377,7 +392,10 @@ def generate_pl_report_pdf(investor, data_summary, data_folios, start_date=None,
         f"{net_inv:,.2f}", f"{curr_val:,.2f}", f"{gain_loss:,.2f}", f"{xirr}%"
     ]
 
-    t_pl = generator._create_table([pl_headers, pl_row])
+    page_width = generator.pagesize[0] - generator.doc.leftMargin - generator.doc.rightMargin
+    col_width_pl = page_width / len(pl_headers)
+
+    t_pl = generator._create_table([pl_headers, pl_row], col_widths=[col_width_pl]*len(pl_headers))
     generator.elements.append(t_pl)
     generator.elements.append(Spacer(1, 0.2*inch))
 
@@ -404,7 +422,15 @@ def generate_pl_report_pdf(investor, data_summary, data_folios, start_date=None,
         ])
 
     if len(scheme_data) > 1:
-        t_schemes = generator._create_table(scheme_data)
+        scheme_w = 2.5 * inch
+        rem_w = page_width - scheme_w
+        folio_col_w = rem_w / (len(scheme_headers) - 1)
+
+        t_schemes = generator._create_table(scheme_data, col_widths=[scheme_w] + [folio_col_w]*(len(scheme_headers)-1))
+        t_schemes.setStyle(TableStyle([
+            ('ALIGN', (1,0), (-1,-1), 'RIGHT'), # right align numbers
+            ('ALIGN', (0,0), (0,-1), 'LEFT'),   # left align name
+        ]))
         generator.elements.append(t_schemes)
 
     generator.build()
@@ -481,7 +507,16 @@ def generate_capital_gain_pdf(investor, transactions, fy_start=None, fy_end=None
     if not has_data:
         cg_data.append(["No capital gain data available for this FY", "", "", "", "", "", ""])
 
-    t_cg = generator._create_table(cg_data)
+    page_width = generator.pagesize[0] - generator.doc.leftMargin - generator.doc.rightMargin
+    scheme_w = 2.5 * inch
+    rem_w = page_width - scheme_w
+    folio_col_w = rem_w / (len(cg_headers) - 1)
+
+    t_cg = generator._create_table(cg_data, col_widths=[scheme_w] + [folio_col_w]*(len(cg_headers)-1))
+    t_cg.setStyle(TableStyle([
+        ('ALIGN', (2,0), (-1,-1), 'RIGHT'), # right align numbers
+        ('ALIGN', (0,0), (1,-1), 'LEFT'),   # left align name and folio
+    ]))
     generator.elements.append(t_cg)
 
     generator.build()
