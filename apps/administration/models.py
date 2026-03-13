@@ -19,6 +19,9 @@ class SystemConfiguration(models.Model):
     # Order Settings
     default_euin = models.CharField(max_length=50, blank=True, null=True, help_text="Default EUIN used if order has none")
 
+    # Maintenance Mode
+    is_maintenance_mode = models.BooleanField(default=False, help_text="Enable to put the system in maintenance mode and lock out non-admin users.")
+
     # Email Settings
     email_host = models.CharField(max_length=255, default="smtp.gmail.com")
     email_port = models.IntegerField(default=587)
