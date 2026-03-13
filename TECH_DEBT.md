@@ -11,9 +11,9 @@ This document outlines the technical debt identified in the project as of the cu
 *   **Risk:** This disables SSL certificate verification, making the application vulnerable to Man-in-the-Middle (MITM) attacks. Sensitive data (PAN, Bank Details) could be intercepted.
 *   **Recommendation:** Enable SSL verification (`verify=True`) and ensure the server has the correct CA bundle installed.
 
-### 1.2 Hardcoded/Logged Sensitive Data
+### 1.2 Logged Sensitive Data (PII)
 *   **File:** `apps/integration/bse_client.py`
-*   **Issue:** While password masking exists in `BSELoggingPlugin`, `register_client` logs the request body. Although it attempts to mask the password, `bulk_update_nominee_flags` logs the entire payload which might contain PII.
+*   **Issue:** Password masking is implemented for `register_client` and `bulk_update_nominee_flags`. However, `bulk_update_nominee_flags` and other functions still log the entire payload array which contains PII (e.g., PAN, client codes).
 *   **Risk:** Leakage of sensitive investor data in application logs.
 *   **Recommendation:** Implement a robust `SensitiveDataFilter` for all logging, or use a dedicated `IntegrationLog` model with encrypted storage for payloads.
 
@@ -43,12 +43,6 @@ This document outlines the technical debt identified in the project as of the cu
 *   **Issue:** Methods `_get_soap_client`, `_get_upload_soap_client`, and `_get_query_soap_client` share 90% of their logic (initialization, logging plugin, error handling).
 *   **Recommendation:** Refactor into a single private method `_get_client(wsdl, service_name, port_name)` to reduce duplication and maintenance overhead.
 
-### 3.2 Hardcoded Values
-*   **File:** `apps/integration/utils.py`
-*   **Issue:** `get_bse_order_params` uses a default `FolioNo` of `"12523421"`.
-*   **Risk:** If a folio is missing, this hardcoded value will be sent to BSE, leading to order rejection or incorrect mapping.
-*   **Recommendation:** Remove the default value and raise a `ValidationError` if the folio is missing.
-
 ## 4. Missing Features (HIGH)
 
 ### 4.1 Risk Controls & Limits
@@ -67,10 +61,4 @@ This document outlines the technical debt identified in the project as of the cu
 
 ## 5. Testing & Environment (MEDIUM)
 
-### 5.1 Broken Test Environment
-*   **Issue:** `pytest` fails due to missing dependencies (`rest_framework`) or configuration issues in the current environment.
-*   **Recommendation:** Fix `requirements.txt` and ensure the CI/CD pipeline correctly installs all dependencies before running tests.
-
-### 5.2 Lack of Unit Tests
-*   **Issue:** No unit tests found for `BSEStarMFClient` mocking.
-*   **Recommendation:** Add tests using `unittest.mock` to simulate BSE responses (Success, Failure, Timeout) and verify client behavior.
+*   **Status:** Test environment (`pytest`) dependencies and mock unit tests for `BSEStarMFClient` have been implemented.
