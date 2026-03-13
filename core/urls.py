@@ -31,6 +31,7 @@ urlpatterns = [
     path('integration/', include('apps.integration.urls'), name="integration"),
     path('reports/', include('apps.reports.urls'), name="reports"),
     path('', include('apps.website.urls'), name="website"),
+    path('', include('apps.core.urls')),
 ]
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

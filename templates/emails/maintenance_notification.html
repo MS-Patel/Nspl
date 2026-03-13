@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scheduled Maintenance Notification</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f7f6;
+            color: #333333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 40px auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+        .header {
+            background-color: #0056b3;
+            color: #ffffff;
+            text-align: center;
+            padding: 30px 20px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        .content {
+            padding: 30px;
+            line-height: 1.6;
+        }
+        .content p {
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+        .details-box {
+            background-color: #f8f9fa;
+            border-left: 4px solid #0056b3;
+            padding: 20px;
+            margin-bottom: 25px;
+            border-radius: 4px;
+        }
+        .details-box h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: #0056b3;
+            font-size: 18px;
+        }
+        .details-box ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+        .details-box li {
+            margin-bottom: 10px;
+            font-size: 15px;
+        }
+        .details-box li strong {
+            color: #555555;
+            display: inline-block;
+            width: 120px;
+        }
+        .footer {
+            background-color: #f4f7f6;
+            text-align: center;
+            padding: 20px;
+            font-size: 13px;
+            color: #888888;
+            border-top: 1px solid #eeeeee;
+        }
+        .footer p {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>Scheduled Maintenance Notification</h1>
+    </div>
+
+    <div class="content">
+        <p>Dear Valued User,</p>
+
+        <p>We are writing to inform you that our system will be undergoing scheduled maintenance. During this time, our services may be temporarily unavailable.</p>
+
+        <div class="details-box">
+            <h3>Maintenance Details</h3>
+            <ul>
+                <li><strong>Scheduled Date:</strong> {{ date }}</li>
+                <li><strong>Expected Downtime:</strong> {{ downtime }}</li>
+                <li><strong>Reason:</strong> {{ reason }}</li>
+            </ul>
+        </div>
+
+        <p>We perform routine maintenance to ensure our systems are secure, stable, and performing at their best for you. We apologize for any inconvenience this may cause and appreciate your patience while we work to improve our services.</p>
+
+        <p>If you have any urgent concerns, please feel free to reach out to our support team.</p>
+
+        <p>Best Regards,<br>
+        The Buybestfin Team</p>
+    </div>
+
+    <div class="footer">
+        <p>&copy; {% now "Y" %} Buybestfin. All rights reserved.</p>
+        <p>Please do not reply directly to this automated email.</p>
+    </div>
+</div>
+
+</body>
+</html>
