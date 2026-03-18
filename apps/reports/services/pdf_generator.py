@@ -10,15 +10,10 @@ from reportlab.pdfgen import canvas
 from django.conf import settings
 
 from apps.investments.templatetags.investment_extras import readable_txn_type
+from apps.administration.models import SystemConfiguration
 
 # We need the logo.png from assets/images
 LOGO_PATH = os.path.join(settings.BASE_DIR, 'assets', 'images', 'logo.png')
-COMPANY_NAME = "NAVINCHANDRA SECURITIES PRIVATE LIMITED"
-COMPANY_SUBTITLE = "AMFI-Registered Mutual Fund Distributor"
-COMPANY_ADDRESS = "Corporate Office : 130-131, SAMANVAY SAPTARSHI, NEAR MONALISA, MANJALPUR VADODARA - 390011"
-COMPANY_PHONE = "Mob. No. : +917265098822"
-COMPANY_EMAIL = "Email : mihir.navinchandra@gmail.com"
-COMPANY_WEBSITE = "Website : www.nsplmoney.com"
 
 def get_header_data(report_title, investor, rm_name=None):
     """
@@ -54,14 +49,25 @@ def get_header_data(report_title, investor, rm_name=None):
 
     # We will build a table for the header to align the Left (Investor) and Right (Company)
 
+    system_config = SystemConfiguration.get_solo()
+
+    # Build company address string
+    address_parts = [
+        system_config.company_address,
+        system_config.company_city,
+        system_config.company_state,
+        system_config.company_pincode,
+        system_config.company_country
+    ]
+    address_str = ", ".join(filter(bool, address_parts))
+
     # Right Side (Company Details)
     company_info = f"""
-    <b>{COMPANY_NAME}</b><br/>
-    {COMPANY_SUBTITLE}<br/>
-    <font size="8">{COMPANY_ADDRESS}</font><br/>
-    <font size="8">{COMPANY_PHONE}</font><br/>
-    <font size="8">{COMPANY_EMAIL}</font><br/>
-    <font size="8">{COMPANY_WEBSITE}</font>
+    <b>{system_config.company_name}</b><br/>
+    <font size="8">{address_str}</font><br/>
+    <font size="8">Mob. No. : {system_config.company_phone or 'N/A'}</font><br/>
+    <font size="8">Email : {system_config.company_email or 'N/A'}</font><br/>
+    <font size="8">Website : {system_config.company_website or 'N/A'}</font>
     """
 
     # Left Side (Investor Details)
@@ -158,13 +164,24 @@ class BaseReportGenerator:
         elif investor and hasattr(investor, 'distributor') and investor.distributor and hasattr(investor.distributor, 'rm') and investor.distributor.rm:
             rm = investor.distributor.rm.user.name or investor.distributor.rm.user.username
 
+        system_config = SystemConfiguration.get_solo()
+
+        # Build company address string
+        address_parts = [
+            system_config.company_address,
+            system_config.company_city,
+            system_config.company_state,
+            system_config.company_pincode,
+            system_config.company_country
+        ]
+        address_str = ", ".join(filter(bool, address_parts))
+
         company_info = f"""
-        <b>{COMPANY_NAME}</b><br/>
-        {COMPANY_SUBTITLE}<br/>
-        <font size="8">{COMPANY_ADDRESS}</font><br/>
-        <font size="8">{COMPANY_PHONE}</font><br/>
-        <font size="8">{COMPANY_EMAIL}</font><br/>
-        <font size="8">{COMPANY_WEBSITE}</font>
+        <b>{system_config.company_name}</b><br/>
+        <font size="8">{address_str}</font><br/>
+        <font size="8">Mob. No. : {system_config.company_phone or 'N/A'}</font><br/>
+        <font size="8">Email : {system_config.company_email or 'N/A'}</font><br/>
+        <font size="8">Website : {system_config.company_website or 'N/A'}</font>
         """
 
         investor_info = f"""
@@ -259,7 +276,21 @@ class BaseReportGenerator:
         return t
 
     def build(self):
-        self.doc.build(self.elements)
+        system_config = SystemConfiguration.get_solo()
+        disclaimer = system_config.report_disclaimer or "Disclaimer: All values shown in this report are based on internal calculations and provided for informational purposes only. Please verify with official AMC statements."
+
+        def footer(canvas, doc):
+            canvas.saveState()
+
+            # Draw disclaimer text
+            canvas.setFont('Helvetica-Oblique', 7)
+            canvas.setFillColor(colors.HexColor('#666666'))
+            page_width = self.pagesize[0]
+            # Use drawString at bottom left margin instead of drawCentredString to allow long text to wrap if we used a Paragraph, but for simplicity we draw it centered
+            canvas.drawCentredString(page_width / 2.0, 0.3 * inch, disclaimer)
+            canvas.restoreState()
+
+        self.doc.build(self.elements, onFirstPage=footer, onLaterPages=footer)
 
 def generate_wealth_report_pdf(investor, data_summary, data_folios, start_date=None, end_date=None):
     buffer = io.BytesIO()

@@ -16,6 +16,9 @@ class SystemConfiguration(models.Model):
     gstin = models.CharField(max_length=20, blank=True, null=True)
     arn_code = models.CharField(max_length=50, blank=True, null=True, help_text="ARN Code for placing orders")
 
+    # Report Settings
+    report_disclaimer = models.TextField(blank=True, null=True, default="Disclaimer: All values shown in this report are based on internal calculations and provided for informational purposes only. Please verify with official AMC statements.")
+
     # Order Settings
     default_euin = models.CharField(max_length=50, blank=True, null=True, help_text="Default EUIN used if order has none")
 
