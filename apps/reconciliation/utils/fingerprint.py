@@ -45,61 +45,46 @@ def generate_fingerprint(values: list) -> str:
 
 def generate_karvy_fingerprint(row_dict: dict) -> str:
     """
-    Generates a fingerprint for a KARVY transaction.
-    Exact order:
-    - "KARVY" (constant)
-    - Product Code
-    - Folio Number
-    - Scheme Code
-    - Transaction Number
-    - Transaction Date
-    - Units
-    - Amount
-    - Transaction Type
+    Generates a fingerprint for a KARVY transaction using the unified deduplication fields:
+    folio_number, scheme_code, txn_type_code, txn_nature, amount, units, date,
+    trxnno, siptrxnno, trxn_suffix, scan_ref_no, reversal_code.
     """
     values = [
         "KARVY",
-        row_dict.get('product code'),
-        row_dict.get('folio number'),
-        row_dict.get('scheme code'),
-        row_dict.get('transaction number'),
-        row_dict.get('transaction date'),
-        row_dict.get('units'),
-        row_dict.get('amount'),
-        row_dict.get('transaction type')
+        row_dict.get('folio number'),           # folio_number
+        row_dict.get('scheme code'),            # scheme_code
+        row_dict.get('transaction type'),       # txn_type_code
+        row_dict.get('transaction description'),# txn_nature
+        row_dict.get('amount'),                 # amount
+        row_dict.get('units'),                  # units
+        row_dict.get('transaction date'),       # date
+        row_dict.get('transaction number'),     # trxnno
+        row_dict.get('siptrxnno'),              # siptrxnno (may be None for Karvy but include for consistency)
+        row_dict.get('trxn_suffix'),            # trxn_suffix
+        row_dict.get('scan_ref_no'),            # scan_ref_no
+        row_dict.get('reversal_code')           # reversal_code
     ]
     return generate_fingerprint(values)
 
 def generate_cams_fingerprint(row_dict: dict) -> str:
     """
-    Generates a fingerprint for a CAMS transaction.
-    Exact order:
-    - "CAMS" (constant)
-    - AMC_CODE
-    - FOLIO_NO
-    - PRODCODE
-    - TRXNNO
-    - TRADDATE
-    - UNITS
-    - AMOUNT
-    - TRXN_TYPE_
-    - REVERSAL_C (if present)
+    Generates a fingerprint for a CAMS transaction using the unified deduplication fields:
+    folio_number, scheme_code, txn_type_code, txn_nature, amount, units, date,
+    trxnno, siptrxnno, trxn_suffix, scan_ref_no, reversal_code.
     """
     values = [
         "CAMS",
-        row_dict.get('amc_code'),
-        row_dict.get('folio_no'),
-        row_dict.get('prodcode'),
-        row_dict.get('trxnno'),
-        row_dict.get('traddate'),
-        row_dict.get('units'),
-        row_dict.get('amount'),
-        row_dict.get('trxn_type_')
+        row_dict.get('folio_no'),               # folio_number
+        row_dict.get('prodcode'),               # scheme_code (CAMS prodcode)
+        row_dict.get('trxn_type_'),             # txn_type_code (CAMS trxntype)
+        row_dict.get('trxn_natur'),             # txn_nature
+        row_dict.get('amount'),                 # amount
+        row_dict.get('units'),                  # units
+        row_dict.get('traddate'),               # date
+        row_dict.get('trxnno'),                 # trxnno
+        row_dict.get('siptrxnno'),              # siptrxnno
+        row_dict.get('trxn_suffi'),             # trxn_suffix
+        row_dict.get('scanrefno'),              # scan_ref_no
+        row_dict.get('reversal_c')              # reversal_code
     ]
-    
-    # Only append reversal_c if it is present and not an empty string or null.
-    reversal_c = row_dict.get('reversal_c')
-    if pd.notna(reversal_c) and str(reversal_c).strip() != '':
-        values.append(reversal_c)
-        
     return generate_fingerprint(values)

@@ -66,8 +66,8 @@ class Transaction(models.Model):
 
     # RTA Fields
     rta_code = models.CharField(max_length=20, help_text="CAMS/Karvy")
-    txn_number = models.CharField(max_length=100, unique=True, help_text="Unique Reference No from RTA")
-    original_txn_number = models.CharField(max_length=100, null=True, blank=True, help_text="Original RTA Transaction No for display")
+    fingerprint = models.CharField(max_length=255, db_index=True, help_text="SHA256 fingerprint for deduplication", default="")
+    txn_number = models.CharField(max_length=100, db_index=True, null=True, blank=True, help_text="Original RTA Transaction No")
 
     # Processed Type / Action Fields
     txn_type = models.CharField(max_length=100, blank=True, null=True, help_text="Human-readable transaction type (e.g. Purchase, SIP, Redemption)")
@@ -79,9 +79,21 @@ class Transaction(models.Model):
     tax_status = models.CharField(max_length=50, blank=True, null=True)
 
     # Matching / Provisional Fields
+    ORIGIN_BSE = 'BSE'
+    ORIGIN_AMC = 'AMC'
+    ORIGIN_UNKNOWN = 'UNKNOWN'
+    ORIGIN_CHOICES = [
+        (ORIGIN_BSE, 'BSE Star MF'),
+        (ORIGIN_AMC, 'AMC Direct'),
+        (ORIGIN_UNKNOWN, 'Unknown'),
+    ]
+
     source = models.CharField(max_length=10, choices=SOURCE_CHOICES, default=SOURCE_RTA)
+    origin = models.CharField(max_length=20, choices=ORIGIN_CHOICES, default=ORIGIN_UNKNOWN, help_text="Identified source of the transaction")
     is_provisional = models.BooleanField(default=False, help_text="True if sourced from BSE allotment but not yet confirmed by RTA")
     bse_order_id = models.CharField(max_length=50, null=True, blank=True, help_text="BSE Order ID for matching")
+    matched_at = models.DateTimeField(null=True, blank=True)
+    match_confidence = models.FloatField(default=0.0)
 
     date = models.DateField()
     amount = models.DecimalField(max_digits=20, decimal_places=4)
@@ -159,8 +171,11 @@ class Transaction(models.Model):
         ordering = ['-date']
         indexes = [
             models.Index(fields=['folio_number', 'scheme']),
+            models.Index(fields=['scheme', 'date']),
             models.Index(fields=['txn_number']),
+            models.Index(fields=['fingerprint']),
             models.Index(fields=['bse_order_id']),
+            models.Index(fields=['amount']),
         ]
 
     def __str__(self):
@@ -212,7 +227,7 @@ class FailedRTARecord(models.Model):
     rta_type = models.CharField(max_length=20, choices=RTAFile.RTA_CHOICES)
 
     # Optional metadata for easy filtering
-    original_txn_number = models.CharField(max_length=100, blank=True, null=True)
+    txn_number = models.CharField(max_length=100, blank=True, null=True)
     folio_number = models.CharField(max_length=50, blank=True, null=True)
 
     # Store the entire row as JSON for later retry
@@ -229,3 +244,41 @@ class FailedRTARecord(models.Model):
 
     def __str__(self):
         return f"{self.rta_type} Failed: {self.error_reason[:50]}"
+
+
+class OrderReconciliation(models.Model):
+    """
+    Reconciliation layer between BSE Orders and RTA Transactions.
+    """
+    STATUS_PENDING = 'PENDING'
+    STATUS_MATCHED = 'MATCHED'
+    STATUS_PARTIAL = 'PARTIAL'
+    STATUS_MISMATCH = 'MISMATCH'
+    STATUS_FAILED = 'FAILED'
+
+    STATUS_CHOICES = [
+        (STATUS_PENDING, 'Pending'),
+        (STATUS_MATCHED, 'Matched'),
+        (STATUS_PARTIAL, 'Partial Match'),
+        (STATUS_MISMATCH, 'Mismatch'),
+        (STATUS_FAILED, 'Failed'),
+    ]
+
+    order_id = models.CharField(max_length=100, db_index=True)
+    transaction = models.ForeignKey(Transaction, on_delete=models.SET_NULL, null=True, blank=True, related_name='reconciliations')
+    investor = models.ForeignKey(InvestorProfile, on_delete=models.CASCADE, related_name='reconciliations')
+    scheme = models.ForeignKey(Scheme, on_delete=models.CASCADE, related_name='reconciliations')
+    folio_number = models.CharField(max_length=50, blank=True, null=True)
+
+    confidence_score = models.FloatField(default=0.0)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING)
+    match_details = models.JSONField(default=dict, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Recon {self.order_id} - {self.status}"

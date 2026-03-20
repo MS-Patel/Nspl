@@ -273,8 +273,8 @@ class BaseParser:
         self._scheme_cache[cache_key] = scheme
         return scheme
 
-    def match_or_create_transaction(self, investor, scheme, folio_number, txn_number, date, amount, units, txn_type, rta_code,
-                                    description="", tr_flag="", original_txn_number=None, nav=None,
+    def match_or_create_transaction(self, investor, scheme, folio_number, fingerprint, date, amount, units, txn_type, rta_code,
+                                    description="", tr_flag="", txn_number=None, nav=None,
                                     raw_data=None,
                                     parsed_txn_type=None,
                                     parsed_txn_action=None,
@@ -357,107 +357,74 @@ class BaseParser:
         if stamp_duty is not None:
             extra_fields['stamp_duty'] = stamp_duty
 
-        # 1. Check strict duplicate (already processed RTA txn in previous run) or Update
-        existing_txn = Transaction.objects.filter(txn_number=txn_number).first()
-        if existing_txn:
+        # 1. Deduplication and Collision Handling
+        existing_txns = Transaction.objects.filter(
+            fingerprint=fingerprint,
+            folio_number=folio_number,
+            scheme=scheme
+        )
+
+        txn_to_update = None
+        for existing_txn in existing_txns:
+            # If the parser provides a txn_number (like CAMS/Karvy native ID),
+            # use it to disambiguate identical same-day transactions.
+            # Otherwise, since fingerprint already hashes amount, units, and date,
+            # any matching fingerprint without a differing txn_number is an update to the SAME transaction.
+            if txn_number and existing_txn.txn_number and existing_txn.txn_number != txn_number:
+                continue # This is a separate identical transaction (same-day same-amount)
+
+            txn_to_update = existing_txn
+            break
+
+        if txn_to_update:
             # Update fields
-            existing_txn.date = date
-            existing_txn.amount = amount
-            existing_txn.units = units
-            existing_txn.txn_type_code = txn_type
-            existing_txn.rta_code = rta_code
-            existing_txn.description = description
-            existing_txn.tr_flag = tr_flag
-            existing_txn.source = Transaction.SOURCE_RTA
-            existing_txn.is_provisional = False
+            txn_to_update.date = date
+            txn_to_update.amount = amount
+            txn_to_update.units = units
+            txn_to_update.txn_type_code = txn_type
+            txn_to_update.rta_code = rta_code
+            txn_to_update.description = description
+            txn_to_update.tr_flag = tr_flag
+            txn_to_update.source = Transaction.SOURCE_RTA
+            txn_to_update.is_provisional = False
             if parsed_txn_type:
-                existing_txn.txn_type = parsed_txn_type
+                txn_to_update.txn_type = parsed_txn_type
             if parsed_txn_action:
-                existing_txn.txn_action = parsed_txn_action
+                txn_to_update.txn_action = parsed_txn_action
             if nav is not None:
-                existing_txn.nav = nav
-            if original_txn_number:
-                existing_txn.original_txn_number = original_txn_number
+                txn_to_update.nav = nav
+            if txn_number:
+                txn_to_update.txn_number = txn_number
             if self.rta_file:
-                existing_txn.source_file = self.rta_file
+                txn_to_update.source_file = self.rta_file
 
             # Update extra fields
             for key, value in extra_fields.items():
-                setattr(existing_txn, key, value)
+                setattr(txn_to_update, key, value)
 
             # Optionally update relation if missing
-            if not existing_txn.investor and investor:
-                existing_txn.investor = investor
-            if not existing_txn.scheme and scheme:
-                existing_txn.scheme = scheme
+            if not txn_to_update.investor and investor:
+                txn_to_update.investor = investor
+            if not txn_to_update.scheme and scheme:
+                txn_to_update.scheme = scheme
 
-            existing_txn.save()
-            logger.info(f"Updated existing transaction {txn_number}")
+            txn_to_update.save()
+            logger.info(f"Updated existing transaction with fingerprint {fingerprint}")
 
-            # Recalculate Holding
+            # Recalculate Holding immediately for updates to mirror legacy behavior
             recalculate_holding(investor, scheme, folio_number)
             return
 
-        # 2. Try to find a Provisional Match
-        # Strategy: Match on Investor + Scheme + Folio + Approx Date + Amount
-        # (Since we don't have BSE Order ID reliably in RTA file without specific column knowledge)
+        # 2. Check for collision and create new Transaction
+        if existing_txns.exists():
+            # A record with the exact same fingerprint exists, but it wasn't chosen for update
+            # (e.g. because txn_number differed). It is a valid secondary transaction.
+            import uuid
+            fingerprint = f"{fingerprint}-{uuid.uuid4().hex[:6]}"
+            logger.info(f"Fingerprint collision detected (same-day identical txn). Modified fingerprint to {fingerprint}")
 
-        # Date window: +/- 5 days
-        date_min = date - timedelta(days=5)
-        date_max = date + timedelta(days=5)
-
-        candidates = Transaction.objects.filter(
-            investor=investor,
-            scheme=scheme,
-            folio_number=folio_number,
-            is_provisional=True,
-            amount=amount, # Exact amount match
-            date__range=[date_min, date_max]
-        ).order_by('date') # FIFO Matching
-
-        matched_txn = None
-
-        # If we have a specific BSE order ID embedded in RTA remarks or reference (uncommon but possible)
-        # we could check it here. For now, rely on FIFO exact amount + folio + scheme matching.
-        # But we must ensure we don't match a provisional transaction that was ALREADY matched to another RTA row in this run.
-        # `is_provisional` is set to False upon match, so the DB query filters it out if we already matched it and saved.
-        # So FIFO via `.order_by('date').first()` is the safest industry standard without explicit Order IDs.
-
-        if candidates.exists():
-            matched_txn = candidates.first()
-
-        if matched_txn:
-            # Update Existing Provisional Transaction to Confirmed RTA Transaction
-            matched_txn.txn_number = txn_number # Update to authoritative RTA ID
-            matched_txn.rta_code = rta_code
-            matched_txn.txn_type_code = txn_type
-            matched_txn.description = description
-            matched_txn.tr_flag = tr_flag
-            matched_txn.date = date
-            matched_txn.units = units
-            matched_txn.source = Transaction.SOURCE_RTA
-            matched_txn.is_provisional = False
-            if parsed_txn_type:
-                matched_txn.txn_type = parsed_txn_type
-            if parsed_txn_action:
-                matched_txn.txn_action = parsed_txn_action
-            if nav is not None:
-                matched_txn.nav = nav
-            if original_txn_number:
-                matched_txn.original_txn_number = original_txn_number
-            if self.rta_file:
-                matched_txn.source_file = self.rta_file
-
-            # Update extra fields
-            for key, value in extra_fields.items():
-                setattr(matched_txn, key, value)
-
-            matched_txn.save()
-            logger.info(f"Matched and confirmed provisional transaction {matched_txn.id} with RTA ID {txn_number}")
-
-        else:
-            # Create New Transaction
-            Transaction.objects.create(
+        # Create New Transaction
+        Transaction.objects.create(
                 investor=investor,
                 scheme=scheme,
                 folio_number=folio_number,
@@ -465,8 +432,8 @@ class BaseParser:
                 txn_type_code=txn_type,
                 txn_type=parsed_txn_type,
                 txn_action=parsed_txn_action,
+                fingerprint=fingerprint,
                 txn_number=txn_number,
-                original_txn_number=original_txn_number,
                 date=date,
                 amount=amount,
                 units=units,
@@ -549,9 +516,14 @@ class FranklinParser(BaseParser):
 
                             parsed_type, parsed_action = get_karvy_transaction_type_and_action(txn_type, "")
 
+                            # Franklin lacks a specialized fingerprint logic, fallback to hash
+                            import hashlib
+                            raw_str = f"FRANKLIN|{folio_number}|{scheme_code}|{txn_number}|{txn_date}|{amount}|{units}|{txn_type}"
+                            fingerprint = hashlib.sha256(raw_str.encode('utf-8')).hexdigest()
+
                             self.match_or_create_transaction(
-                                investor, scheme, folio_number, txn_number, txn_date if txn_date else timezone.now().date(),
-                                amount, units, txn_type, 'FRANKLIN', original_txn_number=txn_number, nav=nav,
+                                investor, scheme, folio_number, fingerprint, txn_date if txn_date else timezone.now().date(),
+                                amount, units, txn_type, 'FRANKLIN', txn_number=txn_number, nav=nav,
                                 raw_data={'row': row},
                                 parsed_txn_type=parsed_type,
                                 parsed_txn_action=parsed_action,
@@ -656,7 +628,7 @@ class DBFParser(BaseParser):
                             continue
 
                         folio_number = str(row.get('folio_no', '')).strip()
-                        original_txn_number = str(row.get('trxnno', '')).strip()
+                        txn_number = str(row.get('trxnno', '')).strip()
 
                         date_val = row.get('traddate')
                         txn_date = self.parse_date(date_val)
@@ -682,20 +654,20 @@ class DBFParser(BaseParser):
                         # Fingerprint
                         # Use deterministic, source-aware fingerprint-based deduplication
                         row_dict = {
-                            'amc_code': str(row.get('amc_code', '')).strip(),
                             'folio_no': str(row.get('folio_no', '')).strip(),
                             'prodcode': str(row.get('prodcode', '')).strip(),
-                            'trxnno': str(row.get('trxnno', '')).strip(),
-                            'traddate': date_val, # Use unparsed date so normalize() can handle it, or we can use txn_date if it's already parsed
-                            'units': units,
-                            'amount': amount,
                             'trxn_type_': str(row.get('trxn_type_', '')).strip(),
+                            'trxn_natur': str(row.get('trxn_natur', '')).strip(),
+                            'amount': amount,
+                            'units': units,
+                            'traddate': txn_date,
+                            'trxnno': str(row.get('trxnno', '')).strip(),
+                            'siptrxnno': str(row.get('siptrxnno', '')).strip(),
+                            'trxn_suffi': str(row.get('trxn_suffi', '')).strip(),
+                            'scanrefno': str(row.get('scanrefno', '')).strip(),
                             'reversal_c': str(row.get('reversal_c', '')).strip(),
                         }
-                        # We use txn_date to ensure consistent ISO format parsing via the fingerprint util
-                        row_dict['traddate'] = txn_date
                         fingerprint = generate_cams_fingerprint(row_dict)
-                        unique_txn_number = fingerprint
 
                         # New Fields Extraction
                         amc_code = str(row.get('amc_code', '')).strip()
@@ -764,8 +736,8 @@ class DBFParser(BaseParser):
                         _, parsed_action = get_cams_transaction_type_and_action(txn_type_code)
 
                         self.match_or_create_transaction(
-                            investor, scheme, folio_number, unique_txn_number, txn_date, amount, units, txn_type_code, 'CAMS',
-                            description=description, tr_flag=tr_flag, original_txn_number=original_txn_number, nav=nav,
+                            investor, scheme, folio_number, fingerprint, txn_date, amount, units, txn_type_code, 'CAMS',
+                            description=description, tr_flag=tr_flag, txn_number=txn_number, nav=nav,
                             raw_data=raw_row_data,
                             parsed_txn_type=txn_type,
                             parsed_txn_action=parsed_action,
@@ -833,7 +805,7 @@ class KarvyCSVParser(BaseParser):
                             continue
 
                         folio_number = str(row.get('folio number', '')).strip()
-                        original_txn_number = str(row.get('transaction number', '')).strip()
+                        txn_number = str(row.get('transaction number', '')).strip()
 
                         date_val = row.get('transaction date')
                         txn_date = self.parse_date(date_val)
@@ -859,18 +831,20 @@ class KarvyCSVParser(BaseParser):
                         # Fingerprint
                         # Use deterministic, source-aware fingerprint-based deduplication
                         row_dict = {
-                            'product code': str(row.get('product code', '')).strip() if pd.notna(row.get('product code')) else None,
                             'folio number': str(row.get('folio number', '')).strip(),
-                            'scheme code': scheme_code, # Use the scheme_code variable since we have fallback logic there
-                            'transaction number': str(row.get('transaction number', '')).strip(),
-                            'transaction date': txn_date, # Use parsed date to ensure consistent isoformat
-                            'units': units,
+                            'scheme code': scheme_code,
+                            'transaction type': str(row.get('transaction type', '')).strip(),
+                            'transaction description': str(row.get('transaction description', '')).strip(),
                             'amount': amount,
-                            'transaction type': txn_type, # Use the txn_type variable since we have subtrantype fallback logic
+                            'units': units,
+                            'transaction date': txn_date,
+                            'transaction number': str(row.get('transaction number', '')).strip(),
+                            'siptrxnno': str(row.get('siptrxnno', '')).strip() if pd.notna(row.get('siptrxnno')) else None,
+                            'trxn_suffix': str(row.get('trxn_suffix', '')).strip() if pd.notna(row.get('trxn_suffix')) else None,
+                            'scan_ref_no': str(row.get('scan_ref_no', '')).strip() if pd.notna(row.get('scan_ref_no')) else None,
+                            'reversal_code': str(row.get('reversal_code', '')).strip() if pd.notna(row.get('reversal_code')) else None,
                         }
                         fingerprint = generate_karvy_fingerprint(row_dict)
-
-                        unique_txn_number = fingerprint
 
                         txn_nature = str(row.get('transaction description', '')).strip()
                         description = str(row.get('remarks', '')).strip()
@@ -899,8 +873,8 @@ class KarvyCSVParser(BaseParser):
                         parsed_type, parsed_action = get_karvy_transaction_type_and_action(txn_type_code, description)
 
                         self.match_or_create_transaction(
-                            investor, scheme, folio_number, unique_txn_number, txn_date, amount, units, txn_type_code, 'KARVY',
-                            description=description, tr_flag=tr_flag, original_txn_number=original_txn_number, nav=nav,
+                            investor, scheme, folio_number, fingerprint, txn_date, amount, units, txn_type_code, 'KARVY',
+                            description=description, tr_flag=tr_flag, txn_number=txn_number, nav=nav,
                             raw_data=raw_row_data,
                             parsed_txn_type=txn_type if txn_type else parsed_type,
                             parsed_txn_action=parsed_action,
