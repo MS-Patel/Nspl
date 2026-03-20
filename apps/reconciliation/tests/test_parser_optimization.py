@@ -46,20 +46,20 @@ class TestParserOptimization:
 
         # 1. Transaction 1
         self.parser.match_or_create_transaction(
-            self.investor, self.scheme, folio_number, 'TXN001', date,
-            Decimal('1000.00'), Decimal('10.00'), 'P', 'CAMS'
+            self.investor, self.scheme, folio_number, 'FING_001', date,
+            Decimal('1000.00'), Decimal('10.00'), 'P', 'CAMS', txn_number='TXN001'
         )
 
         # 2. Transaction 2
         self.parser.match_or_create_transaction(
-            self.investor, self.scheme, folio_number, 'TXN002', date,
-            Decimal('2000.00'), Decimal('20.00'), 'P', 'CAMS'
+            self.investor, self.scheme, folio_number, 'FING_002', date,
+            Decimal('2000.00'), Decimal('20.00'), 'P', 'CAMS', txn_number='TXN002'
         )
 
         # 3. Transaction 3
         self.parser.match_or_create_transaction(
-            self.investor, self.scheme, folio_number, 'TXN003', date,
-            Decimal('500.00'), Decimal('5.00'), 'P', 'CAMS'
+            self.investor, self.scheme, folio_number, 'FING_003', date,
+            Decimal('500.00'), Decimal('5.00'), 'P', 'CAMS', txn_number='TXN003'
         )
 
         # Verify initial behavior (before optimization, this would be 3 calls)
