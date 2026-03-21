@@ -27,6 +27,9 @@ def reconcile_rta_file(file_id):
         # for order in pending_orders:
         #    engine.match_bse_order(order.id, order.investor, order.scheme, order.amount, order.created_at.date(), order.folio_number)
 
+        from django.core.management import call_command
+        call_command('reconcile_sip_transactions')
+
         logger.info(f"Reconciliation task for RTA File {file_id} completed successfully.")
 
     except RTAFile.DoesNotExist:

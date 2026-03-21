@@ -108,6 +108,7 @@ class SIP(models.Model):
     STATUS_CANCELLED = 'CANCELLED'
     STATUS_COMPLETED = 'COMPLETED'
     STATUS_PENDING = 'PENDING'
+    STATUS_FAILED = 'FAILED'
 
     STATUS_CHOICES = [
         (STATUS_ACTIVE, 'Active'),
@@ -115,6 +116,7 @@ class SIP(models.Model):
         (STATUS_CANCELLED, 'Cancelled'),
         (STATUS_COMPLETED, 'Completed'),
         (STATUS_PENDING, 'Pending'),
+        (STATUS_FAILED, 'Failed'),
     ]
 
     investor = models.ForeignKey(InvestorProfile, on_delete=models.CASCADE, related_name='sips')
@@ -126,7 +128,8 @@ class SIP(models.Model):
     frequency = models.CharField(max_length=20, choices=FREQUENCY_CHOICES, default=MONTHLY)
     start_date = models.DateField()
     end_date = models.DateField(null=True, blank=True)
-    installments = models.IntegerField(help_text="Number of installments")
+    installment_day = models.IntegerField(null=True, blank=True, help_text="Day of the month (e.g., 5 for 5th of every month)")
+    installments = models.IntegerField(null=True, blank=True, help_text="Total number of installments")
 
     bse_sip_id = models.CharField(max_length=50, blank=True, null=True, help_text="BSE SIP Registration ID")
     bse_reg_no = models.CharField(max_length=50, blank=True, null=True, help_text="BSE XSIP Registration Number")
@@ -333,3 +336,45 @@ class Order(models.Model):
                 self.euin = config.default_euin or ""
 
         super().save(*args, **kwargs)
+
+class SIPInstallment(models.Model):
+    STATUS_PENDING = 'PENDING'
+    STATUS_TRIGGERED = 'TRIGGERED'
+    STATUS_SUCCESS = 'SUCCESS'
+    STATUS_FAILED = 'FAILED'
+    STATUS_SKIPPED = 'SKIPPED'
+
+    STATUS_CHOICES = [
+        (STATUS_PENDING, 'Pending'),
+        (STATUS_TRIGGERED, 'Triggered'),
+        (STATUS_SUCCESS, 'Success'),
+        (STATUS_FAILED, 'Failed'),
+        (STATUS_SKIPPED, 'Skipped'),
+    ]
+
+    sip_master = models.ForeignKey(SIP, on_delete=models.CASCADE, related_name='sip_installments')
+    due_date = models.DateField()
+    expected_amount = models.DecimalField(max_digits=15, decimal_places=2)
+
+    order_id = models.CharField(max_length=50, blank=True, null=True, help_text="BSE Order ID or Reg No")
+    transaction = models.ForeignKey('reconciliation.Transaction', on_delete=models.SET_NULL, null=True, blank=True, related_name='sip_installments')
+
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING)
+    failure_reason = models.TextField(blank=True, null=True)
+    retry_count = models.IntegerField(default=0)
+    matched_at = models.DateTimeField(null=True, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['due_date']
+        indexes = [
+            models.Index(fields=['sip_master', 'due_date']),
+            models.Index(fields=['status']),
+            models.Index(fields=['order_id']),
+            models.Index(fields=['transaction']),
+        ]
+
+    def __str__(self):
+        return f"Installment {self.id} for SIP {self.sip_master_id} on {self.due_date}"

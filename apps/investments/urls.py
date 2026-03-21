@@ -19,6 +19,9 @@ urlpatterns = [
     path('portfolio/<int:investor_id>/export/capital-gain/', views.ExportCapitalGainReportView.as_view(), name='export_capital_gain'),
     path('portfolio/<int:investor_id>/export/transaction-statement/', views.ExportTransactionStatementView.as_view(), name='export_transaction_statement'),
 
+    path('sip/<int:sip_id>/insights/', views.SIPInsightsView.as_view(), name='sip_insights'),
+    path('sip/upcoming/', views.UpcomingSIPInstallmentsView.as_view(), name='upcoming_sip_installments'),
+
     path('folio/<path:folio_number>/', views.FolioDetailView.as_view(), name='folio_detail'),
     path('redemption/create/<int:holding_id>/', views.RedemptionCreateView.as_view(), name='redemption_create'),
     path('mandate/create/', views.MandateCreateView.as_view(), name='mandate_create'),
