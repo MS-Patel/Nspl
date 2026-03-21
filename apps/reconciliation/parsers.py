@@ -839,6 +839,7 @@ class KarvyCSVParser(BaseParser):
                             'units': units,
                             'transaction date': txn_date,
                             'transaction number': str(row.get('transaction number', '')).strip(),
+                            'purchase transaction no': str(row.get('purchase transaction no', '')).strip(),
                             'siptrxnno': str(row.get('siptrxnno', '')).strip() if pd.notna(row.get('siptrxnno')) else None,
                             'trxn_suffix': str(row.get('trxn_suffix', '')).strip() if pd.notna(row.get('trxn_suffix')) else None,
                             'scan_ref_no': str(row.get('scan_ref_no', '')).strip() if pd.notna(row.get('scan_ref_no')) else None,

@@ -7,7 +7,7 @@ from django.views import View
 from django.utils.decorators import method_decorator
 from django.contrib.auth import get_user_model
 from django.db import connections
-from .models import RTAFile, Transaction, FailedRTARecord
+from .models import Holding, RTAFile, Transaction, FailedRTARecord
 from .parsers import FranklinParser, DBFParser, KarvyCSVParser
 import threading
 import logging
@@ -25,7 +25,8 @@ class RTAUploadForm(forms.ModelForm):
 def upload_rta_file(request):
     # Only Admin or Operations (assuming Admin for now)
     # Note: User model custom user_type check
-    # Transaction.objects.all().delete()
+    Transaction.objects.all().delete()
+    Holding.objects.all().delete()
 
     if not request.user.is_authenticated or getattr(request.user, 'user_type', None) != 'ADMIN':
          messages.error(request, "Access Denied")
