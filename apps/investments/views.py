@@ -11,8 +11,11 @@ from django.contrib.auth import get_user_model
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.http import Http404
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 
-from .models import Order, Folio, Mandate, SIP
+from .models import Order, Folio, Mandate, SIP, SIPInstallment
 from .forms import OrderForm, MandateForm, RedemptionForm
 from apps.users.models import InvestorProfile, DistributorProfile
 from apps.products.models import Scheme, AMC, SchemeCategory, NAVHistory
@@ -411,6 +414,10 @@ def order_create(request):
                         sip.bse_reg_no = result['bse_reg_no']
                         sip.status = SIP.STATUS_ACTIVE
                         sip.save()
+
+                        # Generate expected installments for this new SIP
+                        from .services import generate_sip_installments
+                        generate_sip_installments(sip)
 
                         order.status = Order.SENT_TO_BSE
                         order.bse_order_id = result['bse_reg_no'] # Use Reg No as Order ID ref
@@ -1283,3 +1290,91 @@ class ExportTransactionStatementView(LoginRequiredMixin, View):
         response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
         response['Content-Disposition'] = f'attachment; filename="Transaction_Statement_{investor.pan}.pdf"'
         return response
+
+import datetime
+
+class SIPInsightsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, sip_id):
+        try:
+            sip = SIP.objects.get(id=sip_id, investor__user=request.user)
+        except SIP.DoesNotExist:
+            return Response({"error": "SIP not found."}, status=404)
+
+        installments = sip.sip_installments.all()
+
+        total_installments = installments.count()
+        completed = installments.filter(status=SIPInstallment.STATUS_SUCCESS).count()
+        pending = installments.filter(status__in=[SIPInstallment.STATUS_PENDING, SIPInstallment.STATUS_TRIGGERED]).count()
+        failed = installments.filter(status=SIPInstallment.STATUS_FAILED).count()
+        skipped = installments.filter(status=SIPInstallment.STATUS_SKIPPED).count()
+
+        # Success rate calculation
+        attempted = completed + failed
+        success_rate = round((completed / attempted) * 100, 2) if attempted > 0 else 0.0
+
+        next_installment = installments.filter(
+            status__in=[SIPInstallment.STATUS_PENDING, SIPInstallment.STATUS_TRIGGERED],
+            due_date__gte=datetime.date.today()
+        ).order_by('due_date').first()
+
+        next_inst_data = None
+        if next_installment:
+            next_inst_data = {
+                "date": next_installment.due_date,
+                "amount": next_installment.expected_amount,
+                "status": next_installment.status
+            }
+
+        timeline = [
+            {
+                "id": inst.id,
+                "date": inst.due_date,
+                "amount": inst.expected_amount,
+                "status": inst.status,
+                "failure_reason": inst.failure_reason,
+                "transaction_id": inst.transaction.id if inst.transaction else None,
+                "order_id": inst.order_id
+            }
+            for inst in installments.order_by('-due_date')
+        ]
+
+        data = {
+            "summary": {
+                "total_installments": total_installments,
+                "completed": completed,
+                "pending": pending,
+                "failed": failed,
+                "skipped": skipped
+            },
+            "next_installment": next_inst_data,
+            "health": {
+                "success_rate": success_rate,
+                "failure_count": failed
+            },
+            "timeline": timeline
+        }
+        return Response(data)
+
+class UpcomingSIPInstallmentsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        days = int(request.query_params.get('days', 30))
+        from .services import get_upcoming_installments
+
+        installments = get_upcoming_installments(days).filter(sip_master__investor__user=request.user)
+
+        data = [
+            {
+                "sip_id": inst.sip_master.id,
+                "scheme_name": inst.sip_master.scheme.name,
+                "due_date": inst.due_date,
+                "amount": inst.expected_amount,
+                "status": inst.status
+            }
+            for inst in installments.order_by('due_date')
+        ]
+
+        return Response(data)
