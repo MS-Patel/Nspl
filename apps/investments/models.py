@@ -122,7 +122,7 @@ class SIP(models.Model):
     investor = models.ForeignKey(InvestorProfile, on_delete=models.CASCADE, related_name='sips')
     scheme = models.ForeignKey(Scheme, on_delete=models.CASCADE, related_name='sips')
     folio = models.ForeignKey(Folio, on_delete=models.SET_NULL, null=True, blank=True, related_name='sips')
-    mandate = models.ForeignKey(Mandate, on_delete=models.PROTECT, related_name='sips')
+    mandate = models.ForeignKey(Mandate, on_delete=models.PROTECT, related_name='sips', null=True, blank=True)
 
     amount = models.DecimalField(max_digits=15, decimal_places=2)
     frequency = models.CharField(max_length=20, choices=FREQUENCY_CHOICES, default=MONTHLY)
@@ -139,6 +139,7 @@ class SIP(models.Model):
     euin = models.CharField(max_length=50, blank=True, help_text="EUIN used for this transaction")
 
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING)
+    failure_reason = models.TextField(blank=True, null=True, help_text="Reason for failure or cancellation")
     last_alert_sent_date = models.DateField(null=True, blank=True, help_text="Last date an SMS alert was sent for an upcoming installment")
     next_installment_date = models.DateField(null=True, blank=True, help_text="Calculated date for the next SIP installment")
     created_at = models.DateTimeField(auto_now_add=True)
@@ -358,6 +359,13 @@ class SIPInstallment(models.Model):
 
     order_id = models.CharField(max_length=50, blank=True, null=True, help_text="BSE Order ID or Reg No")
     transaction = models.ForeignKey('reconciliation.Transaction', on_delete=models.SET_NULL, null=True, blank=True, related_name='sip_installments')
+
+    # RTA Specific Fields
+    siptrxnno = models.CharField(max_length=50, blank=True, null=True, help_text="RTA SIP Transaction Number")
+    rta_txn_number = models.CharField(max_length=100, blank=True, null=True, help_text="Original RTA Transaction No")
+    remarks = models.CharField(max_length=255, blank=True, null=True, help_text="RTA Remarks or Description")
+    reversal_code = models.CharField(max_length=50, blank=True, null=True, help_text="RTA Reversal Code")
+    status_desc = models.CharField(max_length=100, blank=True, null=True, help_text="RTA Status Description")
 
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING)
     failure_reason = models.TextField(blank=True, null=True)
