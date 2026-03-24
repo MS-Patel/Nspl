@@ -471,7 +471,8 @@ class InvestorProfile(models.Model):
     )
 
     def __str__(self):
-        return f"{self.user.username} (PAN-{self.pan})"
+        name = self.user.name or self.user.username
+        return f"{name} (PAN-{self.pan})"
 
 class BankAccount(models.Model):
     ACCOUNT_TYPES = [
