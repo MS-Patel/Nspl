@@ -207,7 +207,7 @@ RTA_EMAIL_PASSWORD = os.environ.get('RTA_EMAIL_PASSWORD', 'zqdcbricbumdqyyo')
 
 # Passwords for encrypted RTA files (comma-separated list)
 # Note: RTA_FILE_PASSWORD env var should be comma separated if multiple
-RTA_FILE_PASSWORD = [p.strip() for p in os.environ.get('RTA_FILE_PASSWORD', '123456,Navin@2026').split(',') if p.strip()]
+RTA_FILE_PASSWORD = [p.strip() for p in os.environ.get('RTA_FILE_PASSWORD', 'cams123,Navin@2026').split(',') if p.strip()]
 
 # Filters for identifying relevant emails
 # Note: Env vars should be comma separated
