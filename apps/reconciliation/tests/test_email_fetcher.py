@@ -10,6 +10,7 @@ import os
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
+@pytest.mark.django_db
 @patch('apps.reconciliation.utils.email_fetcher.imaplib.IMAP4_SSL')
 def test_fetch_emails_search_criteria(mock_imap):
     # Setup
@@ -34,8 +35,12 @@ def test_fetch_emails_search_criteria(mock_imap):
         expected_criteria = f'(UNSEEN SINCE "{expected_date}")'
 
         # Verify search called with correct criteria
+        # Fallback uses days=3 since we mock get_solo which creates a fresh model instance (default=3)
+        expected_date = (datetime.now() - timedelta(days=3)).strftime("%d-%b-%Y")
+        expected_criteria = f'(UNSEEN SINCE "{expected_date}")'
         mock_conn.search.assert_called_with(None, expected_criteria)
 
+@pytest.mark.django_db
 @patch('apps.reconciliation.utils.email_fetcher.imaplib.IMAP4_SSL')
 def test_fetch_emails_search_criteria_custom_days(mock_imap):
     # Setup
@@ -60,6 +65,7 @@ def test_fetch_emails_search_criteria_custom_days(mock_imap):
         # Verify search called with correct criteria
         mock_conn.search.assert_called_with(None, expected_criteria)
 
+@pytest.mark.django_db
 @patch('apps.reconciliation.utils.email_fetcher.requests.get')
 @patch('apps.reconciliation.utils.email_fetcher.imaplib.IMAP4_SSL')
 def test_fetch_emails_with_cams_link(mock_imap, mock_get):
@@ -135,6 +141,7 @@ def test_fetch_emails_with_cams_link(mock_imap, mock_get):
         mock_get.assert_called_with('https://mailback12.camsonline.com/mailback_result/testfile.zip', stream=True, timeout=30)
 
 
+@pytest.mark.django_db
 @patch('apps.reconciliation.utils.email_fetcher.requests.get')
 @patch('apps.reconciliation.utils.email_fetcher.imaplib.IMAP4_SSL')
 def test_fetch_emails_with_karvy_link(mock_imap, mock_get):
@@ -192,6 +199,7 @@ def test_fetch_emails_with_karvy_link(mock_imap, mock_get):
 
         mock_get.assert_called_with('https://scdelivery.kfintech.com/c/?u=xyz', stream=True, timeout=30)
 
+@pytest.mark.django_db
 @patch('apps.reconciliation.utils.email_fetcher.requests.get')
 @patch('apps.reconciliation.utils.email_fetcher.imaplib.IMAP4_SSL')
 def test_fetch_emails_with_aes_encrypted_zip(mock_imap, mock_get):
@@ -261,6 +269,7 @@ def test_fetch_emails_with_aes_encrypted_zip(mock_imap, mock_get):
         assert 'encrypted_data.csv' in files[0]['path']
         assert files[0]['source'] == 'https://mailback12.camsonline.com/mailback_result/encrypted.zip'
 
+@pytest.mark.django_db
 @patch('apps.reconciliation.utils.email_fetcher.requests.get')
 @patch('apps.reconciliation.utils.email_fetcher.imaplib.IMAP4_SSL')
 def test_fetch_emails_magic_byte_detection(mock_imap, mock_get):

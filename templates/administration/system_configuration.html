@@ -125,6 +125,63 @@
 
       <div class="my-4 h-px bg-slate-200 dark:bg-navy-500"></div>
 
+      <!-- RTA Mail Configuration -->
+      <h3 class="text-base font-medium text-slate-700 dark:text-navy-100">RTA Mail Configuration</h3>
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <label class="block">
+            <span>IMAP Host</span>
+            {{ form.rta_email_host }}
+            <span class="text-tiny text-error">{{ form.rta_email_host.errors }}</span>
+        </label>
+
+        <label class="block">
+            <span>IMAP Port</span>
+            {{ form.rta_email_port }}
+            <span class="text-tiny text-error">{{ form.rta_email_port.errors }}</span>
+        </label>
+
+        <label class="block">
+            <span>Email User</span>
+            {{ form.rta_email_user }}
+            <span class="text-tiny text-error">{{ form.rta_email_user.errors }}</span>
+        </label>
+
+        <label class="block">
+            <span>Email Password / App Password</span>
+            {{ form.rta_email_password }}
+            <span class="text-tiny text-error">{{ form.rta_email_password.errors }}</span>
+        </label>
+
+        <label class="block sm:col-span-2">
+            <span>RTA ZIP Passwords (comma-separated)</span>
+            {{ form.rta_file_passwords }}
+            <span class="text-tiny text-error">{{ form.rta_file_passwords.errors }}</span>
+            <span class="text-tiny text-slate-400">Passwords to try when unzipping CAMS/Karvy files.</span>
+        </label>
+
+        <label class="block sm:col-span-2">
+            <span>Sender Filters (comma-separated)</span>
+            {{ form.rta_email_sender_filters }}
+            <span class="text-tiny text-error">{{ form.rta_email_sender_filters.errors }}</span>
+            <span class="text-tiny text-slate-400">Emails to fetch feeds from (e.g. donotreply@camsonline.com).</span>
+        </label>
+
+        <label class="block sm:col-span-2">
+            <span>Subject Filters (comma-separated)</span>
+            {{ form.rta_email_subject_filters }}
+            <span class="text-tiny text-error">{{ form.rta_email_subject_filters.errors }}</span>
+        </label>
+
+        <label class="block">
+            <span>Fetch Days</span>
+            {{ form.rta_email_fetch_days }}
+            <span class="text-tiny text-error">{{ form.rta_email_fetch_days.errors }}</span>
+            <span class="text-tiny text-slate-400">Number of days to look back when fetching emails.</span>
+        </label>
+      </div>
+
+      <div class="my-4 h-px bg-slate-200 dark:bg-navy-500"></div>
+
       <!-- Email Settings -->
       <h3 class="text-base font-medium text-slate-700 dark:text-navy-100">Email Configuration</h3>
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
