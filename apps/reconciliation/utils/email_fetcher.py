@@ -13,23 +13,39 @@ from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 from email.header import decode_header
 from django.conf import settings
+from apps.administration.models import SystemConfiguration
 
 logger = logging.getLogger(__name__)
 
 class RTAEmailFetcher:
     def __init__(self):
-        self.host = settings.RTA_EMAIL_HOST
-        self.port = settings.RTA_EMAIL_PORT
-        self.user = settings.RTA_EMAIL_USER
-        self.password = settings.RTA_EMAIL_PASSWORD
-        self.sender_filters = settings.RTA_EMAIL_SENDER_FILTERS
-        self.subject_filters = settings.RTA_EMAIL_SUBJECT_FILTERS
+        config = SystemConfiguration.get_solo()
 
-        self.file_passwords = getattr(settings, 'RTA_FILE_PASSWORD', [])
+        self.host = config.rta_email_host or getattr(settings, 'RTA_EMAIL_HOST', '')
+        self.port = config.rta_email_port or getattr(settings, 'RTA_EMAIL_PORT', 993)
+        self.user = config.rta_email_user or getattr(settings, 'RTA_EMAIL_USER', '')
+        self.password = config.rta_email_password or getattr(settings, 'RTA_EMAIL_PASSWORD', '')
+
+        # Parse filters from config or fall back to settings
+        if config.rta_email_sender_filters:
+            self.sender_filters = [s.strip().lower() for s in config.rta_email_sender_filters.split(',') if s.strip()]
+        else:
+            self.sender_filters = getattr(settings, 'RTA_EMAIL_SENDER_FILTERS', [])
+
+        if config.rta_email_subject_filters:
+            self.subject_filters = [s.strip().lower() for s in config.rta_email_subject_filters.split(',') if s.strip()]
+        else:
+            self.subject_filters = getattr(settings, 'RTA_EMAIL_SUBJECT_FILTERS', [])
+
+        if config.rta_file_passwords:
+            self.file_passwords = [p.strip() for p in config.rta_file_passwords.split(',') if p.strip()]
+        else:
+            self.file_passwords = getattr(settings, 'RTA_FILE_PASSWORD', [])
+
         if isinstance(self.file_passwords, str):
             self.file_passwords = [self.file_passwords]
 
-        self.fetch_days = getattr(settings, 'RTA_EMAIL_FETCH_DAYS', 7)
+        self.fetch_days = config.rta_email_fetch_days if config.rta_email_fetch_days is not None else getattr(settings, 'RTA_EMAIL_FETCH_DAYS', 7)
         self.conn = None
         self.temp_dir = None
 

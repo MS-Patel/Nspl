@@ -7,6 +7,7 @@ from apps.reconciliation.utils.parser_registry import get_parser_for_file
 from apps.reconciliation.models import RTAFile
 from apps.reconciliation.parsers import DBFParser, KarvyCSVParser, FranklinParser
 from django.conf import settings
+from apps.administration.models import SystemConfiguration
 
 logger = logging.getLogger(__name__)
 
@@ -14,8 +15,11 @@ class Command(BaseCommand):
     help = 'Fetches RTA transaction reports from email and imports them.'
 
     def handle(self, *args, **options):
+        config = SystemConfiguration.get_solo()
         # Basic check to avoid error if settings not present
-        if not getattr(settings, 'RTA_EMAIL_HOST', None) or not getattr(settings, 'RTA_EMAIL_USER', None):
+        host = config.rta_email_host or getattr(settings, 'RTA_EMAIL_HOST', None)
+        user = config.rta_email_user or getattr(settings, 'RTA_EMAIL_USER', None)
+        if not host or not user:
              self.stdout.write(self.style.WARNING("RTA Email configuration missing. Skipping."))
              return
 

@@ -34,6 +34,16 @@ class SystemConfiguration(models.Model):
     email_use_ssl = models.BooleanField(default=False)
     default_from_email = models.EmailField(default="noreply@example.com")
 
+    # RTA Mail Configuration
+    rta_email_host = models.CharField(max_length=255, default="imap.gmail.com", help_text="IMAP Host for RTA emails")
+    rta_email_port = models.IntegerField(default=993, help_text="IMAP Port for RTA emails")
+    rta_email_user = models.CharField(max_length=255, blank=True, null=True, help_text="Email address for receiving RTA feeds")
+    rta_email_password = models.CharField(max_length=255, blank=True, null=True, help_text="Password or App Password for RTA email")
+    rta_file_passwords = models.CharField(max_length=500, blank=True, null=True, help_text="Comma-separated list of passwords for RTA ZIP files")
+    rta_email_sender_filters = models.TextField(blank=True, null=True, help_text="Comma-separated list of sender emails (e.g., donotreply@camsonline.com)")
+    rta_email_subject_filters = models.TextField(blank=True, null=True, help_text="Comma-separated list of email subjects to filter by")
+    rta_email_fetch_days = models.IntegerField(default=3, help_text="Number of days to look back for RTA emails")
+
     class Meta:
         verbose_name = "System Configuration"
         verbose_name_plural = "System Configuration"

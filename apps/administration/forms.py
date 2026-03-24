@@ -6,6 +6,7 @@ class SystemConfigurationForm(forms.ModelForm):
         model = SystemConfiguration
         fields = '__all__'
         widgets = {
+            'rta_email_password': forms.PasswordInput(render_value=True),
             'email_host_password': forms.PasswordInput(render_value=True),
             'company_address': forms.Textarea(attrs={'rows': 3}),
         }
