@@ -59,6 +59,46 @@ This document outlines the technical debt identified in the project as of the cu
 *   **Issue:** `SIP` model exists, but there is no automated job (Celery/Cron) to process installments, track end dates, or mark SIPs as expired.
 *   **Recommendation:** Implement background tasks for SIP lifecycle management.
 
-## 5. Testing & Environment (MEDIUM)
+## 5. Performance & Reliability (HIGH)
+
+### 5.1 Missing Timeout on External API Calls
+*   **File:** `apps/users/utils/sms.py` (and potentially others)
+*   **Issue:** `requests.get` is used to call the SMS API without a `timeout` parameter.
+*   **Risk:** If the external SMS API hangs or is slow, the Django worker thread will hang indefinitely, potentially leading to application unresponsiveness or Denial of Service (DoS) if all workers are exhausted.
+*   **Recommendation:** Always include a reasonable `timeout` parameter (e.g., `timeout=10`) for all external HTTP requests.
+
+### 5.2 Large File Memory Usage
+*   **File:** `apps/users/utils/parsers.py`, `apps/reconciliation/parsers.py`, `apps/products/utils/parsers.py`
+*   **Issue:** The parsers use `pd.read_excel` and `pd.read_csv` to load entire RTA or master files into memory at once.
+*   **Risk:** If very large files (e.g., historical NAVs or full CAMS DBF dumps) are uploaded, it can cause Out-Of-Memory (OOM) errors, crashing the application server on limited-resource instances.
+*   **Recommendation:** Implement chunked processing or streaming reads for large files instead of loading them entirely into memory.
+
+## 6. Code Quality & Maintainability (MEDIUM)
+
+### 6.1 Overly Broad Exception Handling
+*   **File:** Across `apps/` (Over 130 instances)
+*   **Issue:** Extensive use of `except Exception as e:` blocks.
+*   **Risk:** This catches unexpected exceptions (like `NameError`, `KeyError`, `AttributeError`) that represent actual bugs, masking them and making debugging extremely difficult.
+*   **Recommendation:** Refactor exception handling to catch specific exceptions (e.g., `requests.exceptions.RequestException`, `ValueError`, `KeyError`) instead of a general `Exception`.
+
+### 6.2 Frontend: Hardcoded External URLs
+*   **File:** `buybestfin-main/src/pages/Explorer.tsx`, `buybestfin-main/src/components/ChatWidget.tsx`, `buybestfin-main/src/pages/UnlistedEquities.tsx`
+*   **Issue:** The React frontend contains hardcoded API URLs (e.g., `https://api.mfapi.in/mf`) and hardcoded WhatsApp URLs/phone numbers.
+*   **Risk:** Difficult to manage environment-specific configurations (Dev vs Prod) and update contact details without a new deployment.
+*   **Recommendation:** Move external URLs and contact details to environment variables (e.g., `VITE_MFAPI_BASE_URL`, `VITE_WHATSAPP_NUMBER`) or a centralized configuration file.
+
+### 6.3 Frontend: TypeScript `any` Usage
+*   **File:** Scattered across `buybestfin-main/src/` (e.g., `Login.tsx`, `Dashboard.tsx`, `ChatWidget.tsx`)
+*   **Issue:** The codebase uses the `any` type in several places (e.g., `catch (error: any)`, component state).
+*   **Risk:** Bypasses TypeScript's static type checking, increasing the risk of runtime type errors.
+*   **Recommendation:** Define strong types for API responses, state variables, and errors to fully leverage TypeScript's type safety.
+
+### 6.4 Frontend: Raw `fetch` API Usage
+*   **File:** Various components (e.g., `LiveMarket.tsx`, `Login.tsx`, `ChangePassword.tsx`)
+*   **Issue:** Raw `fetch()` calls are used directly within components.
+*   **Risk:** Leads to duplicated error handling logic, makes it difficult to implement global request/response interceptors (like automatically adding auth headers or handling 401s), and makes the code harder to test.
+*   **Recommendation:** Implement a centralized HTTP client wrapper (e.g., using Axios or a custom `fetch` utility) to handle standard configurations, interceptors, and error management uniformly.
+
+## 7. Testing & Environment (MEDIUM)
 
 *   **Status:** Test environment (`pytest`) dependencies and mock unit tests for `BSEStarMFClient` have been implemented.
