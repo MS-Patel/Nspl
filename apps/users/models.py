@@ -82,7 +82,8 @@ class RMProfile(models.Model):
     is_active = models.BooleanField(default=True, help_text="Designates whether this RM profile is active.")
 
     def __str__(self):
-        return f"{self.user.username} (RM)"
+        name = self.user.name or self.user.username
+        return f"{name} ({self.employee_code})"
 
 class DistributorProfile(models.Model):
     ACCOUNT_TYPES = [
@@ -151,7 +152,8 @@ class DistributorProfile(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.broker_code} (PAN-{self.pan})"
+        name = self.user.name or self.user.username
+        return f"{name} ({self.broker_code})"
 
 class InvestorProfile(models.Model):
     # Tax Status Choices
