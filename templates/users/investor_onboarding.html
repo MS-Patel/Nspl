@@ -583,43 +583,122 @@
         const rmDropdown = document.getElementById('rm');
         const distDropdown = document.getElementById('distributor');
 
-        if (rmDropdown && distDropdown && "{{ request.user.user_type }}" === "ADMIN") {
-            const allDistOptions = Array.from(distDropdown.options);
+        // Keep original options in memory BEFORE initializing TomSelect
+        let allDistOptions = [];
+        if (distDropdown) {
+            allDistOptions = Array.from(distDropdown.options).map(opt => ({
+                value: opt.value,
+                text: opt.text
+            }));
+            // Remove the form-select class to avoid double-arrow styling issues with TomSelect
+            distDropdown.classList.remove('form-select');
+        }
+        if (rmDropdown) {
+            rmDropdown.classList.remove('form-select');
+        }
 
+        // Initialize TomSelect
+        const TomConstructor = (typeof Tom !== 'undefined') ? Tom : (typeof TomSelect !== 'undefined' ? TomSelect : null);
+        let rmTom = null;
+        let distTom = null;
+
+        const tsConfig = {
+            create: false,
+            sortField: { field: "text", direction: "asc" }
+        };
+
+        if (TomConstructor) {
+            if (rmDropdown) {
+                rmDropdown._tom = new TomConstructor(rmDropdown, tsConfig);
+                rmTom = rmDropdown._tom;
+            }
+            if (distDropdown) {
+                distDropdown._tom = new TomConstructor(distDropdown, tsConfig);
+                distTom = distDropdown._tom;
+            }
+        }
+
+        if (rmDropdown && distDropdown && "{{ request.user.user_type }}" === "ADMIN") {
             const rmDistMap = {{ rm_distributor_map|default:"{}"|safe }};
 
             function filterDistributors() {
                 const selectedRm = rmDropdown.value;
                 const currentDistVal = distDropdown.value;
 
-                distDropdown.innerHTML = '';
-                // Always keep empty option
-                distDropdown.appendChild(allDistOptions[0]);
-
                 let selectedFound = false;
 
-                if (selectedRm && rmDistMap[selectedRm]) {
-                    const validIds = rmDistMap[selectedRm].map(String);
-                    allDistOptions.forEach(opt => {
-                        if (opt.value && validIds.includes(opt.value)) {
-                            distDropdown.appendChild(opt);
-                            if (opt.value === currentDistVal) selectedFound = true;
-                        }
-                    });
-                } else if (!selectedRm) {
-                    // Show all if no RM selected (optional, or show none)
-                    allDistOptions.forEach(opt => {
-                        if(opt.value) distDropdown.appendChild(opt);
-                    });
-                    // check if dist val is still valid
-                    selectedFound = true;
-                }
+                if (distTom) {
+                    distTom.clearOptions();
 
-                if (!selectedFound) distDropdown.value = '';
-                else distDropdown.value = currentDistVal;
+                    // Always add the empty option
+                    const emptyOpt = allDistOptions.find(o => o.value === '');
+                    if (emptyOpt) {
+                        distTom.addOption(emptyOpt);
+                    }
+
+                    if (selectedRm && rmDistMap[selectedRm]) {
+                        const validIds = rmDistMap[selectedRm].map(String);
+                        allDistOptions.forEach(opt => {
+                            if (opt.value && validIds.includes(opt.value)) {
+                                distTom.addOption(opt);
+                                if (opt.value === currentDistVal) selectedFound = true;
+                            }
+                        });
+                    } else if (!selectedRm) {
+                        // Show all if no RM selected (optional, or show none)
+                        allDistOptions.forEach(opt => {
+                            if (opt.value) distTom.addOption(opt);
+                        });
+                        selectedFound = true;
+                    }
+
+                    if (!selectedFound) distTom.setValue('');
+                    else distTom.setValue(currentDistVal);
+                } else {
+                    // Fallback for no TomSelect
+                    distDropdown.innerHTML = '';
+                    const emptyOpt = allDistOptions.find(o => o.value === '');
+                    if (emptyOpt) {
+                        const optEl = document.createElement('option');
+                        optEl.value = emptyOpt.value;
+                        optEl.text = emptyOpt.text;
+                        distDropdown.appendChild(optEl);
+                    }
+
+                    if (selectedRm && rmDistMap[selectedRm]) {
+                        const validIds = rmDistMap[selectedRm].map(String);
+                        allDistOptions.forEach(opt => {
+                            if (opt.value && validIds.includes(opt.value)) {
+                                const optEl = document.createElement('option');
+                                optEl.value = opt.value;
+                                optEl.text = opt.text;
+                                distDropdown.appendChild(optEl);
+                                if (opt.value === currentDistVal) selectedFound = true;
+                            }
+                        });
+                    } else if (!selectedRm) {
+                        allDistOptions.forEach(opt => {
+                            if (opt.value) {
+                                const optEl = document.createElement('option');
+                                optEl.value = opt.value;
+                                optEl.text = opt.text;
+                                distDropdown.appendChild(optEl);
+                            }
+                        });
+                        selectedFound = true;
+                    }
+
+                    if (!selectedFound) distDropdown.value = '';
+                    else distDropdown.value = currentDistVal;
+                }
             }
 
-            rmDropdown.addEventListener('change', filterDistributors);
+            if (rmTom) {
+                rmTom.on('change', filterDistributors);
+            } else {
+                rmDropdown.addEventListener('change', filterDistributors);
+            }
+
             // Run once on load
             filterDistributors();
         }
