@@ -127,6 +127,7 @@ class DistributorProfile(models.Model):
 
     # Status
     is_active = models.BooleanField(default=True, help_text="Designates whether this Distributor profile is active.")
+    is_approved = models.BooleanField(default=False, help_text="Designates whether this Distributor is approved to perform actions.")
 
     @staticmethod
     def generate_broker_code():
