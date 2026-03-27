@@ -25,15 +25,28 @@ class CheckPANStatusView(View):
                  return JsonResponse({'status': 'error', 'remarks': 'PAN is required.'}, status=400)
             
             pan = pan.strip().upper()
+            investor_id = data.get('investor_id')
 
             # 1. Local Check
-            if User.objects.filter(username=pan).exists():
+            user_qs = User.objects.filter(username=pan)
+            profile_qs = InvestorProfile.objects.filter(pan=pan)
+
+            if investor_id:
+                try:
+                    investor = InvestorProfile.objects.get(pk=investor_id)
+                    profile_qs = profile_qs.exclude(pk=investor.pk)
+                    if investor.user_id:
+                        user_qs = user_qs.exclude(pk=investor.user_id)
+                except InvestorProfile.DoesNotExist:
+                    pass
+
+            if user_qs.exists():
                  return JsonResponse({
                      'status': 'error', 
                      'remarks': f'PAN {pan} is already registered in the system.'
                  })
             
-            if InvestorProfile.objects.filter(pan=pan).exists():
+            if profile_qs.exists():
                  return JsonResponse({
                      'status': 'error', 
                      'remarks': f'Investor Profile with PAN {pan} already exists.'

@@ -800,13 +800,17 @@
                 panStatusSpan.className = 'text-xs mt-1 block h-4 text-info';
 
                 try {
+                    const payload = { pan: pan };
+                    {% if form.instance.pk %}
+                    payload.investor_id = "{{ form.instance.pk }}";
+                    {% endif %}
                     const response = await fetch("{% url 'integration:api_pan_check' %}", {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                             'X-CSRFToken': '{{ csrf_token }}'
                         },
-                        body: JSON.stringify({ pan: pan })
+                        body: JSON.stringify(payload)
                     });
                     const data = await response.json();
 
