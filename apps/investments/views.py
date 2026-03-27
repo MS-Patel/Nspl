@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.db.models import Q, Sum
+from django.db.models import Q, Sum, Count
 from django.http import JsonResponse, HttpResponseForbidden
 from django.urls import reverse
 from django.views import View
@@ -1356,6 +1356,70 @@ class SIPInsightsView(APIView):
             "timeline": timeline
         }
         return Response(data)
+
+class SIPDashboardView(LoginRequiredMixin, TemplateView):
+    template_name = 'investments/sip_dashboard.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+
+        # Determine the base queryset for SIPs
+        sips = SIP.objects.select_related('investor', 'investor__user', 'scheme')
+
+        if user.user_type == 'ADMIN':
+            pass
+        elif user.user_type == 'RM':
+            sips = sips.filter(Q(investor__distributor__rm__user=user) | Q(investor__rm__user=user))
+        elif user.user_type == 'DISTRIBUTOR':
+            sips = sips.filter(investor__distributor__user=user)
+        elif user.user_type == 'INVESTOR':
+            sips = sips.filter(investor__user=user)
+        else:
+            sips = sips.none()
+
+        # Calculate Aggregate Metrics
+        active_sips = sips.filter(status=SIP.STATUS_ACTIVE)
+        total_active_sips = active_sips.count()
+
+        # Only sum the amount for active SIPs
+        total_monthly_amount = active_sips.aggregate(total=Sum('amount'))['total'] or 0
+
+        # Calculate Success Rate
+        # Installments belong to the filtered SIPs
+        installments = SIPInstallment.objects.filter(sip_master__in=sips)
+        completed_inst = installments.filter(status=SIPInstallment.STATUS_SUCCESS).count()
+        failed_inst = installments.filter(status=SIPInstallment.STATUS_FAILED).count()
+        attempted_inst = completed_inst + failed_inst
+        success_rate = round((completed_inst / attempted_inst) * 100, 2) if attempted_inst > 0 else 0.0
+
+        total_investors = sips.values('investor').distinct().count()
+
+        # Build list for data table
+        # We need Investor Name, Scheme, Amount, Status, and Next Installment Date
+        sip_list = []
+        for sip in sips.order_by('-created_at'):
+            sip_list.append({
+                'id': sip.id,
+                'investor_name': f"{sip.investor.user.first_name} {sip.investor.user.last_name}".strip() or sip.investor.user.username,
+                'scheme_name': sip.scheme.name,
+                'amount': sip.amount,
+                'status': sip.get_status_display(),
+                'status_class': sip.status,
+                'next_installment_date': sip.next_installment_date,
+            })
+
+        context.update({
+            'total_active_sips': total_active_sips,
+            'total_monthly_amount': total_monthly_amount,
+            'success_rate': success_rate,
+            'total_investors': total_investors,
+            'sips': sip_list,
+            'user_type': user.user_type,
+        })
+
+        return context
+
 
 class UpcomingSIPInstallmentsView(APIView):
     permission_classes = [IsAuthenticated]

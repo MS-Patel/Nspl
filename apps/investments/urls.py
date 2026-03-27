@@ -13,6 +13,9 @@ urlpatterns = [
     # New: Investor Portfolio Dashboard
     path('portfolio/<int:investor_id>/', views.InvestorPortfolioView.as_view(), name='investor_portfolio'),
 
+    # SIP Dashboard
+    path('sip-dashboard/', views.SIPDashboardView.as_view(), name='sip_dashboard'),
+
     # Reports
     path('portfolio/<int:investor_id>/export/wealth-report/', views.ExportWealthReportView.as_view(), name='export_wealth_report'),
     path('portfolio/<int:investor_id>/export/pl-report/', views.ExportPLReportView.as_view(), name='export_pl_report'),
