@@ -1525,6 +1525,53 @@ class APIAuthStatusView(View):
                 'is_authenticated': False
             })
 
+class APIRegisterDistributorView(View):
+    def post(self, request, *args, **kwargs):
+        try:
+            data = json.loads(request.body)
+            name = data.get('name')
+            email = data.get('email')
+            password = data.get('password')
+            pan = data.get('pan')
+            mobile = data.get('mobile')
+            arn_number = data.get('arn_number')
+        except json.JSONDecodeError:
+            return JsonResponse({'status': 'error', 'message': 'Invalid JSON'}, status=400)
+
+        if not all([name, email, password, pan, mobile]):
+            return JsonResponse({'status': 'error', 'message': 'Name, Email, Password, PAN, and Mobile are required'}, status=400)
+
+        if User.objects.filter(username=email).exists():
+            return JsonResponse({'status': 'error', 'message': 'User with this email already exists.'}, status=400)
+
+        if DistributorProfile.objects.filter(pan=pan).exists():
+             return JsonResponse({'status': 'error', 'message': 'Distributor with this PAN already exists.'}, status=400)
+
+        try:
+            with transaction.atomic():
+                user = User.objects.create_user(
+                    username=email,
+                    email=email,
+                    password=password,
+                    name=name,
+                    user_type=User.Types.DISTRIBUTOR,
+                    is_active=True # Allow login
+                )
+
+                DistributorProfile.objects.create(
+                    user=user,
+                    pan=pan,
+                    mobile=mobile,
+                    arn_number=arn_number,
+                    is_approved=False,
+                    is_active=True
+                )
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': f'Registration failed: {str(e)}'}, status=500)
+
+        return JsonResponse({'status': 'success', 'message': 'Registration successful. Your account is pending approval.'})
+
+
 class APIPasswordChangeView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         try:

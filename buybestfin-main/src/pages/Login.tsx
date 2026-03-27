@@ -16,6 +16,9 @@ const Login = () => {
   const [otp, setOtp] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [fullName, setFullName] = useState("");
+  const [pan, setPan] = useState("");
+  const [mobile, setMobile] = useState("");
+  const [arnNumber, setArnNumber] = useState("");
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
@@ -51,7 +54,7 @@ const Login = () => {
       }
     }
     return cookieValue;
-  }
+  };
 
   const handleSendOTP = async () => {
     setLoading(true);
@@ -131,11 +134,34 @@ const Login = () => {
 
     try {
       if (isRegister) {
-        toast({
-          title: "Registration not available",
-          description: "Please contact support to create an account.",
-          variant: "destructive",
+        const csrftoken = getCookie('csrftoken');
+        const response = await fetch('/users/api/auth/register/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken || '',
+          },
+          body: JSON.stringify({
+            name: fullName,
+            email: email,
+            password: password,
+            pan: pan,
+            mobile: mobile,
+            arn_number: arnNumber,
+          }),
         });
+
+        const data = await response.json();
+
+        if (response.ok && data.status === 'success') {
+          toast({
+            title: "Registration successful!",
+            description: "Your account has been created. You can now login.",
+          });
+          setIsRegister(false);
+        } else {
+          throw new Error(data.message || 'Registration failed');
+        }
         setLoading(false);
       } else if (isOTPLogin) {
         if (!otpSent) {
@@ -227,7 +253,7 @@ const Login = () => {
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="email">Username / Email</Label>
+                <Label htmlFor="email">{isRegister ? "Email" : "Username / Email"}</Label>
                 <Input
                   id="email"
                   type="text"
@@ -244,6 +270,23 @@ const Login = () => {
                   <Label htmlFor="password">Password</Label>
                   <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required minLength={3} />
                 </div>
+              )}
+
+              {isRegister && (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="pan">PAN Number</Label>
+                    <Input id="pan" value={pan} onChange={(e) => setPan(e.target.value.toUpperCase())} placeholder="ABCDE1234F" required maxLength={10} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="mobile">Mobile Number</Label>
+                    <Input id="mobile" value={mobile} onChange={(e) => setMobile(e.target.value)} placeholder="9876543210" required maxLength={15} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="arnNumber">ARN Number (Optional)</Label>
+                    <Input id="arnNumber" value={arnNumber} onChange={(e) => setArnNumber(e.target.value)} placeholder="ARN-12345" />
+                  </div>
+                </>
               )}
 
               {isOTPLogin && otpSent && (
