@@ -25,8 +25,8 @@ class RTAUploadForm(forms.ModelForm):
 def upload_rta_file(request):
     # Only Admin or Operations (assuming Admin for now)
     # Note: User model custom user_type check
-    Transaction.objects.all().delete()
-    Holding.objects.all().delete()
+    # Transaction.objects.all().delete()
+    # Holding.objects.all().delete()
 
     if not request.user.is_authenticated or getattr(request.user, 'user_type', None) != 'ADMIN':
          messages.error(request, "Access Denied")
