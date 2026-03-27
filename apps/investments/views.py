@@ -924,6 +924,15 @@ class PortfolioInvestorListView(LoginRequiredMixin, ListView):
     template_name = 'investments/portfolio_investor_list.html'
     context_object_name = 'investors'
 
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated and request.user.user_type == 'INVESTOR':
+            try:
+                profile = request.user.investor_profile
+                return redirect('investments:investor_portfolio', investor_id=profile.id)
+            except InvestorProfile.DoesNotExist:
+                pass
+        return super().dispatch(request, *args, **kwargs)
+
     def get_queryset(self):
         user = self.request.user
         qs = InvestorProfile.objects.select_related('user', 'distributor', 'distributor__user')
