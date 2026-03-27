@@ -111,7 +111,7 @@ class BaseParser:
                 FailedRTARecord.objects.create(
                     source_file=self.rta_file,
                     rta_type=self.rta_file.rta_type if self.rta_file else 'UNKNOWN',
-                    original_txn_number=clean_row.get('trxnno') or clean_row.get('transaction number') or clean_row.get(6),
+                    txn_number=clean_row.get('trxnno') or clean_row.get('transaction number') or clean_row.get(6),
                     folio_number=clean_row.get('folio_no') or clean_row.get('folio number') or clean_row.get(3),
                     row_data=clean_row,
                     error_reason=str(row_dict.get('error', 'Unknown Error'))

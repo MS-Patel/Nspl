@@ -63,7 +63,7 @@
                     <td class="whitespace-nowrap px-4 py-3 text-xs">{{ record.source_file.file_name|default:"Unknown" }}</td>
                     <td class="whitespace-nowrap px-4 py-3">
                         <div class="flex flex-col">
-                            <span>Txn: {{ record.original_txn_number|default:"-" }}</span>
+                            <span>Txn: {{ record.txn_number|default:"-" }}</span>
                             <span>Folio: {{ record.folio_number|default:"-" }}</span>
                         </div>
                     </td>
