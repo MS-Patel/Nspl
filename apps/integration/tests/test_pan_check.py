@@ -23,23 +23,17 @@ class TestPANCheck(TestCase):
         self.client.force_login(self.user)
         self.url = reverse('integration:api_pan_check')
 
-    @patch('apps.integration.bse_client.BSEStarMFClient._get_auth_details')
-    @patch('apps.integration.bse_client.BSEStarMFClient._get_query_soap_client')
-    def test_check_pan_status_success(self, mock_get_client, mock_auth):
-        # Mock Auth
-        mock_auth.return_value = ('encrypted_pass', 'pass_key')
-
+    @patch('apps.integration.cvl_client.CVLClient.get_pan_status')
+    def test_check_pan_status_success(self, mock_get_pan_status):
         # Mock Service Response
-        mock_service = MagicMock()
-        mock_client_instance = MagicMock()
-        mock_get_client.return_value = (mock_client_instance, mock_service)
-
-        mock_response = MagicMock()
-        mock_response.Status = '100'
-        mock_response.BSERemarks = 'VALID PAN'
-        mock_response.PAN = 'ABCDE1234F'
-        mock_response.InvName = 'TEST INVESTOR'
-        mock_service.AOFPanSearch.return_value = mock_response
+        mock_get_pan_status.return_value = {
+            'status': 'success',
+            'data': {
+                'name': 'TEST INVESTOR',
+                'status': 'Verified',
+                'raw': 'TEST RAW XML'
+            }
+        }
 
         # Make Request
         response = self.client.post(
@@ -51,20 +45,13 @@ class TestPANCheck(TestCase):
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertEqual(data['status'], 'success')
-        self.assertEqual(data['data']['status'], '100')
-        self.assertEqual(data['data']['remarks'], 'VALID PAN')
-        self.assertEqual(data['data']['pan'], 'ABCDE1234F')
-        self.assertEqual(data['data']['inv_name'], 'TEST INVESTOR')
+        self.assertEqual(data['data']['status'], 'Verified')
+        self.assertEqual(data['data']['name'], 'TEST INVESTOR')
 
-    @patch('apps.integration.bse_client.BSEStarMFClient._get_auth_details')
-    @patch('apps.integration.bse_client.BSEStarMFClient._get_query_soap_client')
-    def test_check_pan_status_error(self, mock_get_client, mock_auth):
-        mock_auth.return_value = ('encrypted_pass', 'pass_key')
-
+    @patch('apps.integration.cvl_client.CVLClient.get_pan_status')
+    def test_check_pan_status_error(self, mock_get_pan_status):
         # Mock Service Error
-        mock_service = MagicMock()
-        mock_get_client.return_value = (MagicMock(), mock_service)
-        mock_service.AOFPanSearch.side_effect = Exception("SOAP Error")
+        mock_get_pan_status.side_effect = Exception("SOAP Error")
 
         response = self.client.post(
             self.url,
@@ -72,7 +59,7 @@ class TestPANCheck(TestCase):
             content_type='application/json'
         )
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 500)
         data = response.json()
         self.assertEqual(data['status'], 'error')
         self.assertIn('SOAP Error', data['remarks'])

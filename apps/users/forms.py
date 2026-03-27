@@ -582,10 +582,16 @@ class InvestorProfileForm(forms.ModelForm):
     def clean_pan(self):
         pan = self.cleaned_data.get('pan')
         if pan:
-            # If this is a new instance (create), check if User already exists with this PAN
-            if not self.instance.pk:
-                if User.objects.filter(username=pan).exists():
-                    raise forms.ValidationError(f"User with PAN {pan} already exists.")
+            user_qs = User.objects.filter(username=pan)
+            profile_qs = InvestorProfile.objects.filter(pan=pan)
+
+            if self.instance and self.instance.pk:
+                profile_qs = profile_qs.exclude(pk=self.instance.pk)
+                if hasattr(self.instance, 'user') and self.instance.user:
+                    user_qs = user_qs.exclude(pk=self.instance.user.pk)
+
+            if user_qs.exists() or profile_qs.exists():
+                raise forms.ValidationError(f"User with PAN {pan} already exists.")
         return pan
 
 class BankAccountForm(forms.ModelForm):
