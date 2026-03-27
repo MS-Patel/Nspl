@@ -1108,10 +1108,10 @@ class ExportWealthReportView(LoginRequiredMixin, View):
 
                 # Fetch aggregated transactions for this holding
                 folio_txns = transactions.filter(folio_number=f_num, scheme=h.scheme)
-                purchase = folio_txns.filter(txn_type__in=['Purchase', 'SIP', 'Dividend Reinvestment']).aggregate(Sum('amount'))['amount__sum'] or 0.0
-                switch_in = folio_txns.filter(txn_type__in=['Switch In']).aggregate(Sum('amount'))['amount__sum'] or 0.0
-                redemption = folio_txns.filter(txn_type__in=['Redemption', 'SWP']).aggregate(Sum('amount'))['amount__sum'] or 0.0
-                switch_out = folio_txns.filter(txn_type__in=['Switch Out']).aggregate(Sum('amount'))['amount__sum'] or 0.0
+                purchase = float(folio_txns.filter(txn_type__in=['Purchase', 'SIP', 'Dividend Reinvestment']).aggregate(Sum('amount'))['amount__sum'] or 0.0)
+                switch_in = float(folio_txns.filter(txn_type__in=['Switch In']).aggregate(Sum('amount'))['amount__sum'] or 0.0)
+                redemption = float(folio_txns.filter(txn_type__in=['Redemption', 'SWP']).aggregate(Sum('amount'))['amount__sum'] or 0.0)
+                switch_out = float(folio_txns.filter(txn_type__in=['Switch Out']).aggregate(Sum('amount'))['amount__sum'] or 0.0)
 
                 folios_map[f_num] = {
                     'folio_number': f_num,
@@ -1127,10 +1127,10 @@ class ExportWealthReportView(LoginRequiredMixin, View):
                 }
             else:
                 folio_txns = transactions.filter(folio_number=f_num, scheme=h.scheme)
-                folios_map[f_num]['purchase'] += folio_txns.filter(txn_type__in=['Purchase', 'SIP', 'Dividend Reinvestment']).aggregate(Sum('amount'))['amount__sum'] or 0.0
-                folios_map[f_num]['switch_in'] += folio_txns.filter(txn_type__in=['Switch In']).aggregate(Sum('amount'))['amount__sum'] or 0.0
-                folios_map[f_num]['redemption'] += folio_txns.filter(txn_type__in=['Redemption', 'SWP']).aggregate(Sum('amount'))['amount__sum'] or 0.0
-                folios_map[f_num]['switch_out'] += folio_txns.filter(txn_type__in=['Switch Out']).aggregate(Sum('amount'))['amount__sum'] or 0.0
+                folios_map[f_num]['purchase'] += float(folio_txns.filter(txn_type__in=['Purchase', 'SIP', 'Dividend Reinvestment']).aggregate(Sum('amount'))['amount__sum'] or 0.0)
+                folios_map[f_num]['switch_in'] += float(folio_txns.filter(txn_type__in=['Switch In']).aggregate(Sum('amount'))['amount__sum'] or 0.0)
+                folios_map[f_num]['redemption'] += float(folio_txns.filter(txn_type__in=['Redemption', 'SWP']).aggregate(Sum('amount'))['amount__sum'] or 0.0)
+                folios_map[f_num]['switch_out'] += float(folio_txns.filter(txn_type__in=['Switch Out']).aggregate(Sum('amount'))['amount__sum'] or 0.0)
 
             folios_map[f_num]['current_value'] += cv
             folios_map[f_num]['invested_value'] += iv
