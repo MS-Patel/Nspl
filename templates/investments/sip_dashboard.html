@@ -1,0 +1,187 @@
+{% extends 'layout/base.html' %}
+{% load static humanize core_extras %}
+
+{% block title %}SIP Dashboard{% endblock %}
+
+{% block content %}
+<div class="my-5 flex h-8 items-center justify-between px-4 sm:px-5">
+    <div class="flex items-center space-x-4">
+        <h2 class="text-xl font-medium text-slate-800 dark:text-navy-50 lg:text-2xl">
+            SIP Dashboard
+        </h2>
+        <div class="hidden h-full py-1 sm:flex">
+            <div class="h-full w-px bg-slate-300 dark:bg-navy-600"></div>
+        </div>
+        <ul class="hidden flex-wrap items-center space-x-2 sm:flex">
+            <li class="flex items-center space-x-2">
+                <a class="text-primary transition-colors hover:text-primary-focus dark:text-accent-light dark:hover:text-accent" href="#">Investments</a>
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+            </li>
+            <li>SIP Dashboard</li>
+        </ul>
+    </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4 lg:gap-6 px-4 sm:px-5 mb-6">
+    <!-- Total Active SIPs -->
+    <div class="card flex-row justify-between p-4 sm:p-5">
+        <div>
+            <p class="text-xs+ font-medium text-slate-700 dark:text-navy-100">
+                Active SIPs
+            </p>
+            <div class="mt-2 flex items-baseline space-x-0.5">
+                <span class="text-2xl font-semibold text-slate-700 dark:text-navy-100">
+                    {{ total_active_sips }}
+                </span>
+            </div>
+            <p class="text-xs text-slate-400">Total number of active SIPs</p>
+        </div>
+        <div class="mask is-hexagon flex h-10 w-10 items-center justify-center bg-primary/10 text-primary">
+            <i class="fa-solid fa-list-check text-xl"></i>
+        </div>
+    </div>
+
+    <!-- Total Monthly Amount -->
+    <div class="card flex-row justify-between p-4 sm:p-5">
+        <div>
+            <p class="text-xs+ font-medium text-slate-700 dark:text-navy-100">
+                Monthly Amount
+            </p>
+            <div class="mt-2 flex items-baseline space-x-0.5">
+                <span class="text-2xl font-semibold text-slate-700 dark:text-navy-100">
+                    ₹ {{ total_monthly_amount|indian_large_number }}
+                </span>
+            </div>
+            <p class="text-xs text-slate-400">Total active monthly investment</p>
+        </div>
+        <div class="mask is-hexagon flex h-10 w-10 items-center justify-center bg-info/10 text-info">
+            <i class="fa-solid fa-indian-rupee-sign text-xl"></i>
+        </div>
+    </div>
+
+    <!-- Success Rate -->
+    <div class="card flex-row justify-between p-4 sm:p-5">
+        <div>
+            <p class="text-xs+ font-medium text-slate-700 dark:text-navy-100">
+                Success Rate
+            </p>
+            <div class="mt-2 flex items-baseline space-x-0.5">
+                <span class="text-2xl font-semibold {% if success_rate >= 90 %}text-success{% elif success_rate >= 75 %}text-warning{% else %}text-error{% endif %}">
+                    {{ success_rate }}%
+                </span>
+            </div>
+            <p class="text-xs text-slate-400">Installment success percentage</p>
+        </div>
+        <div class="mask is-hexagon flex h-10 w-10 items-center justify-center {% if success_rate >= 90 %}bg-success/10 text-success{% elif success_rate >= 75 %}bg-warning/10 text-warning{% else %}bg-error/10 text-error{% endif %}">
+            <i class="fa-solid fa-check-double text-xl"></i>
+        </div>
+    </div>
+
+    <!-- Total Investors (Only for Admin, RM, Distributor) -->
+    {% if user_type != 'INVESTOR' %}
+    <div class="card flex-row justify-between p-4 sm:p-5">
+        <div>
+            <p class="text-xs+ font-medium text-slate-700 dark:text-navy-100">
+                Total Investors
+            </p>
+            <div class="mt-2 flex items-baseline space-x-0.5">
+                <span class="text-2xl font-semibold text-slate-700 dark:text-navy-100">
+                    {{ total_investors }}
+                </span>
+            </div>
+            <p class="text-xs text-slate-400">Investors with active/inactive SIPs</p>
+        </div>
+        <div class="mask is-hexagon flex h-10 w-10 items-center justify-center bg-secondary/10 text-secondary">
+            <i class="fa-solid fa-users text-xl"></i>
+        </div>
+    </div>
+    {% else %}
+    <div class="card flex-row justify-between p-4 sm:p-5 hidden lg:flex visibility-hidden">
+        <!-- Placeholder to keep grid layout intact for investors -->
+    </div>
+    {% endif %}
+</div>
+
+<!-- SIPs Table -->
+<div class="px-4 sm:px-5">
+    <div class="card">
+        <div class="flex items-center justify-between px-4 py-4 sm:px-5">
+            <h2 class="text-base font-medium tracking-wide text-slate-700 dark:text-navy-100">
+                All SIPs
+            </h2>
+        </div>
+        <div class="is-scrollbar-hidden min-w-full overflow-x-auto">
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="border-y border-transparent border-b-slate-200 dark:border-b-navy-500">
+                        {% if user_type != 'INVESTOR' %}
+                        <th class="whitespace-nowrap px-4 py-3 font-semibold uppercase text-slate-800 dark:text-navy-100 lg:px-5">Investor</th>
+                        {% endif %}
+                        <th class="whitespace-nowrap px-4 py-3 font-semibold uppercase text-slate-800 dark:text-navy-100 lg:px-5">Scheme Name</th>
+                        <th class="whitespace-nowrap px-4 py-3 font-semibold uppercase text-slate-800 dark:text-navy-100 lg:px-5">Amount</th>
+                        <th class="whitespace-nowrap px-4 py-3 font-semibold uppercase text-slate-800 dark:text-navy-100 lg:px-5 text-center">Status</th>
+                        <th class="whitespace-nowrap px-4 py-3 font-semibold uppercase text-slate-800 dark:text-navy-100 lg:px-5">Next Installment</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sip in sips %}
+                    <tr class="border-y border-transparent border-b-slate-200 dark:border-b-navy-500 hover:bg-slate-100 dark:hover:bg-navy-600">
+                        {% if user_type != 'INVESTOR' %}
+                        <td class="whitespace-nowrap px-4 py-3 text-slate-700 dark:text-navy-100 lg:px-5">
+                            {{ sip.investor_name }}
+                        </td>
+                        {% endif %}
+                        <td class="whitespace-nowrap px-4 py-3 text-slate-700 dark:text-navy-100 lg:px-5">
+                            {{ sip.scheme_name }}
+                        </td>
+                        <td class="whitespace-nowrap px-4 py-3 font-medium text-slate-700 dark:text-navy-100 lg:px-5">
+                            ₹ {{ sip.amount|intcomma }}
+                        </td>
+                        <td class="whitespace-nowrap px-4 py-3 text-center lg:px-5">
+                            {% if sip.status_class == 'ACTIVE' %}
+                                <div class="badge space-x-2.5 rounded-full bg-success/10 text-success dark:bg-success/15">
+                                    <div class="size-2 rounded-full bg-current"></div>
+                                    <span>Active</span>
+                                </div>
+                            {% elif sip.status_class == 'PAUSED' %}
+                                <div class="badge space-x-2.5 rounded-full bg-warning/10 text-warning dark:bg-warning/15">
+                                    <div class="size-2 rounded-full bg-current"></div>
+                                    <span>Paused</span>
+                                </div>
+                            {% elif sip.status_class == 'CANCELLED' %}
+                                <div class="badge space-x-2.5 rounded-full bg-error/10 text-error dark:bg-error/15">
+                                    <div class="size-2 rounded-full bg-current"></div>
+                                    <span>Cancelled</span>
+                                </div>
+                            {% elif sip.status_class == 'COMPLETED' %}
+                                <div class="badge space-x-2.5 rounded-full bg-info/10 text-info dark:bg-info/15">
+                                    <div class="size-2 rounded-full bg-current"></div>
+                                    <span>Completed</span>
+                                </div>
+                            {% else %}
+                                <div class="badge space-x-2.5 rounded-full bg-slate-150 text-slate-800 dark:bg-navy-500 dark:text-navy-100">
+                                    <div class="size-2 rounded-full bg-current"></div>
+                                    <span>{{ sip.status }}</span>
+                                </div>
+                            {% endif %}
+                        </td>
+                        <td class="whitespace-nowrap px-4 py-3 text-slate-700 dark:text-navy-100 lg:px-5">
+                            {{ sip.next_installment_date|default:"-" }}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="{% if user_type != 'INVESTOR' %}5{% else %}4{% endif %}" class="px-4 py-8 text-center text-slate-500 dark:text-navy-200">
+                            No SIPs found.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
