@@ -420,10 +420,10 @@ def generate_pl_report_pdf(investor, data_summary, data_folios, start_date=None,
     ]
 
     from decimal import Decimal
-    total_purchase = sum(Decimal(str(f.get('purchase', 0) or 0)) for f in data_folios)
-    total_switch_in = sum(Decimal(str(f.get('switch_in', 0) or 0)) for f in data_folios)
-    total_redemption = sum(Decimal(str(f.get('redemption', 0) or 0)) for f in data_folios)
-    total_switch_out = sum(Decimal(str(f.get('switch_out', 0) or 0)) for f in data_folios)
+    total_purchase = sum((Decimal(str(f.get('purchase', 0) or 0)) for f in data_folios), Decimal('0'))
+    total_switch_in = sum((Decimal(str(f.get('switch_in', 0) or 0)) for f in data_folios), Decimal('0'))
+    total_redemption = sum((Decimal(str(f.get('redemption', 0) or 0)) for f in data_folios), Decimal('0'))
+    total_switch_out = sum((Decimal(str(f.get('switch_out', 0) or 0)) for f in data_folios), Decimal('0'))
     total_div_payout = Decimal('0.00') # Standard DIV is aggregated if present
 
     net_inv = Decimal(str(data_summary.get('total_invested_value', 0) or 0))
@@ -530,7 +530,7 @@ def generate_capital_gain_pdf(investor, transactions, fy_start=None, fy_end=None
         # We assume recent transactions for ST.
         # gain = Redemption Amount - (Redeemed Units * Average Cost)
         # Note: True FIFO is complex to do on the fly without a dedicated service.
-        amount = t.amount if t.amount else Decimal('0.00')
+        amount = Decimal(str(t.amount)) if t.amount else Decimal('0.00')
         # We just place a placeholder logic for gain using the transaction amount for demonstration
         # Real logic would fetch the matched Purchase units
         # Let's just group them to ensure the table populates with real transaction references
@@ -655,8 +655,8 @@ def generate_transaction_statement_pdf(investor, transactions, fy_start="2024-04
             )
             for pt in past_txns:
                 action = pt.txn_action
-                units = pt.units if pt.units else Decimal('0.0000')
-                amount = pt.amount if pt.amount else Decimal('0.00')
+                units = Decimal(str(pt.units)) if pt.units else Decimal('0.0000')
+                amount = Decimal(str(pt.amount)) if pt.amount else Decimal('0.00')
                 if action == 'ADD' or action == 'DIV_REINV' or action == 'BONUS':
                     opening_units += units
                     # Cost is only increased for actual monetary inflows
@@ -670,7 +670,7 @@ def generate_transaction_statement_pdf(investor, transactions, fy_start="2024-04
         latest_nav = Decimal('0.0000')
         holding = Holding.objects.filter(investor=investor, scheme=scheme, folio_number=folio).first()
         if holding and holding.current_nav:
-            latest_nav = holding.current_nav
+            latest_nav = Decimal(str(holding.current_nav))
 
         txn_data = [txn_headers]
 
@@ -688,8 +688,8 @@ def generate_transaction_statement_pdf(investor, transactions, fy_start="2024-04
 
             # Determine if it adds or subtracts units
             # Usually: Purchase (+), Switch In (+), Redemption (-), Switch Out (-)
-            units = t.units if t.units else Decimal('0.0000')
-            amount = t.amount if t.amount else Decimal('0.00')
+            units = Decimal(str(t.units)) if t.units else Decimal('0.0000')
+            amount = Decimal(str(t.amount)) if t.amount else Decimal('0.00')
             if action == 'ADD' or action == 'DIV_REINV' or action == 'BONUS':
                 running_units += units
                 if action in ['ADD', 'DIV_REINV']:
@@ -698,7 +698,7 @@ def generate_transaction_statement_pdf(investor, transactions, fy_start="2024-04
                 running_units -= units
                 total_invested_cost -= amount
 
-            current_value_txn = t.units * latest_nav if t.units else Decimal('0.00')
+            current_value_txn = (Decimal(str(t.units)) if t.units else Decimal('0.00')) * latest_nav
 
             txn_type_display = t.txn_type if hasattr(t, 'txn_type') and t.txn_type else readable_txn_type(t.txn_type_code)
 
@@ -706,7 +706,7 @@ def generate_transaction_statement_pdf(investor, transactions, fy_start="2024-04
                 str(idx),
                 txn_type_display,
                 t.date.strftime('%Y-%m-%d') if t.date else '',
-                t.original_txn_number if t.original_txn_number else "-",
+                t.txn_number if hasattr(t, 'txn_number') and t.txn_number else "-",
                 f"{t.amount:,.2f}" if t.amount else "0.00",
                 f"{t.nav:,.4f}" if t.nav else "0.0000",
                 f"{t.units:,.4f}" if t.units else "0.0000",
