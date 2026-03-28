@@ -23,7 +23,7 @@ from apps.reconciliation.models import Holding, Transaction
 from apps.investments.templatetags.investment_extras import readable_txn_type
 from .utils import calculate_xirr, get_cash_flows
 from django.utils import timezone
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from apps.integration.bse_client import BSEStarMFClient
 from apps.integration.sync_utils import sync_pending_orders
 import logging
@@ -1300,7 +1300,6 @@ class ExportTransactionStatementView(LoginRequiredMixin, View):
         response['Content-Disposition'] = f'attachment; filename="Transaction_Statement_{investor.pan}.pdf"'
         return response
 
-import datetime
 
 class SIPInsightsView(APIView):
     permission_classes = [IsAuthenticated]
@@ -1325,7 +1324,7 @@ class SIPInsightsView(APIView):
 
         next_installment = installments.filter(
             status__in=[SIPInstallment.STATUS_PENDING, SIPInstallment.STATUS_TRIGGERED],
-            due_date__gte=datetime.date.today()
+            due_date__gte=date.today()
         ).order_by('due_date').first()
 
         next_inst_data = None
