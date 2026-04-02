@@ -21,11 +21,27 @@
   <meta name="twitter:title" content="One platform for all your investment needs">
   <meta property="og:description" content="BuyBestFin offers Mutual Funds, Equity, Unlisted Shares, PMS, AIF, Bonds, and FDs with expert guidance and a secure platform to help you grow your wealth.">
   <meta name="twitter:description" content="BuyBestFin offers Mutual Funds, Equity, Unlisted Shares, PMS, AIF, Bonds, and FDs with expert guidance and a secure platform to help you grow your wealth.">
-  <script type="module" crossorigin src="/static/assets/index-CoqJMZ7j.js"></script>
-  <link rel="stylesheet" crossorigin href="/static/assets/index-CAiWWUd5.css">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#0f172a">
+  <link rel="apple-touch-icon" href="/static/images/icons/icon-192x192.png">
+  <script type="module" crossorigin src="/static/assets/index-B1KaRfCq.js"></script>
+  <link rel="stylesheet" crossorigin href="/static/assets/index-BHZA5QHo.css">
 </head>
 
   <body>
     <div id="root"></div>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then(registration => {
+              console.log('ServiceWorker registration successful with scope: ', registration.scope);
+            })
+            .catch(err => {
+              console.log('ServiceWorker registration failed: ', err);
+            });
+        });
+      }
+    </script>
   </body>
 </html>
