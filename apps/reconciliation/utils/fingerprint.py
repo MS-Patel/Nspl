@@ -60,6 +60,7 @@ def generate_karvy_fingerprint(row_dict: dict) -> str:
         row_dict.get('transaction date'),       # date
         row_dict.get('transaction number'),     # trxnno
         row_dict.get('purchase transaction no'), # trxnno
+        row_dict.get('transaction flag'), # trxnno
         row_dict.get('siptrxnno'),              # siptrxnno (may be None for Karvy but include for consistency)
         row_dict.get('trxn_suffix'),            # trxn_suffix
         row_dict.get('scan_ref_no'),            # scan_ref_no
