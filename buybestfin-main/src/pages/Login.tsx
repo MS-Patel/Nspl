@@ -267,7 +267,14 @@ const Login = () => {
 
               {(!isOTPLogin || isRegister) && (
                 <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="password">Password</Label>
+                    {!isRegister && (
+                      <a href="/password-reset/" className="text-xs text-primary hover:underline">
+                        Forgot Password?
+                      </a>
+                    )}
+                  </div>
                   <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required minLength={3} />
                 </div>
               )}
