@@ -167,7 +167,7 @@ def get_cams_transaction_type_and_action(trxn_type):
     return code, None
 
 
-def get_karvy_transaction_type_and_action(txn_type, desc):
+def get_karvy_transaction_type_and_action(txn_type, desc, t_flag=""):
     """
     Returns a tuple of (human_readable_type, action) based on the Karvy transaction codes mapping.
     Karvy rejections have negative units, which negates their effect naturally if the action is maintained.
@@ -175,6 +175,13 @@ def get_karvy_transaction_type_and_action(txn_type, desc):
     """
     t_type = str(txn_type).strip().upper()
     description = str(desc).strip().upper()
+    flag = str(t_flag).strip().upper()
+
+    if "NCT" in description:
+        if flag in ["P", "TI", "PI"]:
+            return description.title() if description else t_type.title(), "ADD"
+        elif flag in ["R", "TO", "SO"]:
+            return description.title() if description else t_type.title(), "SUB"
 
     # Provided Map:
     # Key: Transaction Type Code (txn_type/description mapped) -> Action mapping
@@ -244,11 +251,11 @@ def _get_legacy_action(t_code, t_flag, desc, txn):
     Helper for Karvy/Legacy logic
     """
     if txn.source_file and txn.source_file.rta_type == 'KARVY':
-        _, action = get_karvy_transaction_type_and_action(t_code, desc)
+        _, action = get_karvy_transaction_type_and_action(t_code, desc, t_flag)
     elif txn.source_file and txn.source_file.rta_type == 'CAMS':
         _, action = get_cams_transaction_type_and_action(txn.txn_type_code)
     else:
         # Fallback for manual or Franklin
-        _, action = get_karvy_transaction_type_and_action(t_code, desc)
+        _, action = get_karvy_transaction_type_and_action(t_code, desc, t_flag)
 
     return action

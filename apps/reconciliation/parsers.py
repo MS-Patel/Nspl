@@ -871,7 +871,7 @@ class KarvyCSVParser(BaseParser):
 
                         raw_row_data = {k: str(v) if pd.notna(v) else None for k, v in row.items()}
 
-                        parsed_type, parsed_action = get_karvy_transaction_type_and_action(txn_type_code, description)
+                        parsed_type, parsed_action = get_karvy_transaction_type_and_action(txn_type_code, description, tr_flag)
 
                         self.match_or_create_transaction(
                             investor, scheme, folio_number, fingerprint, txn_date, amount, units, txn_type_code, 'KARVY',
