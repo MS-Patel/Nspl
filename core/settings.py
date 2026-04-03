@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'django.contrib.humanize',
     'rest_framework',
     'widget_tweaks',
+    'import_export',
     'apps.administration',
     'apps.core',
     'apps.users',
