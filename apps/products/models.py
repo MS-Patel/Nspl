@@ -109,6 +109,9 @@ class Scheme(models.Model):
 
     is_active = models.BooleanField(default=True, help_text="Set to False to disable this scheme for new investments.")
 
+    # External APIs
+    family_id = models.CharField(max_length=100, null=True, blank=True, help_text="mfdata.in Family ID", db_index=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -145,7 +148,9 @@ class SchemeManager(models.Model):
 class SchemeHolding(models.Model):
     scheme = models.ForeignKey(Scheme, on_delete=models.CASCADE, related_name='scheme_holdings')
     company_name = models.CharField(max_length=255)
-    percentage = models.DecimalField(max_digits=5, decimal_places=2, help_text="Holding percentage (e.g. 5.50)")
+    percentage = models.DecimalField(max_digits=8, decimal_places=2, help_text="Holding percentage (e.g. 5.50)")
+    market_value = models.DecimalField(max_digits=20, decimal_places=2, null=True, blank=True, help_text="Market Value")
+    quantity = models.DecimalField(max_digits=20, decimal_places=4, null=True, blank=True, help_text="Quantity")
 
     class Meta:
         ordering = ['-percentage']
@@ -164,7 +169,36 @@ class SchemeSectorAllocation(models.Model):
 class SchemeAssetAllocation(models.Model):
     scheme = models.ForeignKey(Scheme, on_delete=models.CASCADE, related_name='asset_allocations')
     asset_type = models.CharField(max_length=100, help_text="Equity, Debt, Cash, etc.")
-    percentage = models.DecimalField(max_digits=5, decimal_places=2)
+    percentage = models.DecimalField(max_digits=8, decimal_places=2)
 
     def __str__(self):
         return f"{self.asset_type} ({self.percentage}%)"
+
+class SchemeRatio(models.Model):
+    scheme = models.OneToOneField(Scheme, on_delete=models.CASCADE, related_name='ratios')
+    as_of_date = models.DateField(null=True, blank=True)
+
+    # Valuation
+    pe_ratio = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    pb_ratio = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    ps_ratio = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    dividend_yield = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+
+    # Efficiency
+    roe = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    roa = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+
+    # Returns
+    sharpe_ratio = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    jensens_alpha = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    treynor_ratio = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    information_ratio = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+
+    # Risk
+    std_deviation = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    beta = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    sortino_ratio = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    r_squared = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+
+    def __str__(self):
+        return f"Ratios for {self.scheme.name}"
