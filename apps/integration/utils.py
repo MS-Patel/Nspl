@@ -638,7 +638,7 @@ def get_bse_order_params(order, member_id, user_id, password, pass_key):
         euin = config.default_euin or ""
 
     euin_flag = "Y" if euin else "N"
-    folio_no = order.folio.folio_number if order.folio else "12523421"
+    folio_no = order.folio.folio_number if order.folio else None
     dpc = "N"
 
     # User confirmed TransMode P -> DPTxn
