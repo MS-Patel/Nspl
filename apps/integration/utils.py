@@ -738,7 +738,7 @@ def get_bse_xsip_order_params(sip, member_id, user_id, password, pass_key):
         'NoOfInstallment': str(sip.installments),
         'Remarks': '',
         'FolioNo': folio_no,
-        'FirstOrderFlag': 'Y',
+        'FirstOrderFlag': 'N',
         'Brokerage': '',
         'MandateID': sip.mandate.mandate_id,
         'SubberCode': sip.investor.distributor.broker_code if sip.investor.distributor else '',
