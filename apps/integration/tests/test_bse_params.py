@@ -11,6 +11,8 @@ class BSEParamStringTests(TestCase):
         self.user = User.objects.create_user(username='testinv', email='test@example.com', first_name='John', last_name='Doe')
         self.investor = InvestorProfile.objects.create(
             user=self.user,
+            firstname='John',
+            lastname='Doe',
             pan='ABCDE1234F',
             dob=datetime.date(1990, 1, 1),
             gender='M',
