@@ -443,7 +443,7 @@ def map_investor_to_bse_param_string(investor):
             bank_fields.extend([
                 b.account_type,                     # Acc Type
                 b.account_number,                   # Acc No
-                "",                                 # MICR
+                b.micr_code.strip() if b.micr_code else "", # MICR
                 b.ifsc_code.strip(),                # IFSC
                 "Y" if b.is_default else "N"        # Default Flag from model
             ])
@@ -791,7 +791,7 @@ def get_bse_mandate_param_string(mandate):
     ifsc = bank.ifsc_code.strip() if bank else ""
 
     # 7. MICR Code
-    micr = "" # Not mandatory as per docs, and usually not in our BankAccount model or optional
+    micr = bank.micr_code.strip() if bank and bank.micr_code else ""
 
     # 8. Start Date (DD/MM/YYYY)
     start_date = mandate.start_date.strftime("%d/%m/%Y")
