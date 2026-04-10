@@ -34,6 +34,13 @@ class SystemConfiguration(models.Model):
     email_use_ssl = models.BooleanField(default=False)
     default_from_email = models.EmailField(default="noreply@example.com")
 
+    # NDML KRA Configuration
+    ndml_env = models.CharField(max_length=10, choices=[('DEMO', 'DEMO'), ('PROD', 'PROD')], default='DEMO', help_text="NDML Environment")
+    ndml_user_name = models.CharField(max_length=100, blank=True, null=True, help_text="NDML API User Name")
+    ndml_password = models.CharField(max_length=100, blank=True, null=True, help_text="NDML API Password")
+    ndml_pos_code = models.CharField(max_length=50, blank=True, null=True, help_text="NDML POS Code")
+    ndml_mi_id = models.CharField(max_length=50, blank=True, null=True, help_text="NDML MI ID")
+
     # RTA Mail Configuration
     rta_email_host = models.CharField(max_length=255, default="imap.gmail.com", help_text="IMAP Host for RTA emails")
     rta_email_port = models.IntegerField(default=993, help_text="IMAP Port for RTA emails")

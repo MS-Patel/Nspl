@@ -473,9 +473,37 @@ class InvestorProfile(models.Model):
         help_text="True if investor is onboarded offline via RTA feed and not yet synced with BSE."
     )
 
+    # NDML KYC Status Fields
+    ndml_kyc_status = models.CharField(max_length=50, blank=True, null=True, help_text="Status code from NDML")
+    ndml_reg_ack = models.CharField(max_length=50, blank=True, null=True, help_text="NDML Registration Acknowledgement")
+    ndml_status_desc = models.TextField(blank=True, null=True, help_text="Description of the NDML status")
+    ndml_last_synced_at = models.DateTimeField(null=True, blank=True)
+
     def __str__(self):
         name = self.user.name or self.user.username
         return f"{name} (PAN-{self.pan})"
+
+class NDMLKYCDetails(models.Model):
+    investor = models.OneToOneField(InvestorProfile, on_delete=models.CASCADE, related_name='ndml_kyc_details')
+    raw_response = models.TextField(help_text="Raw XML response from NDML download")
+    name = models.CharField(max_length=255, blank=True, null=True)
+    father_name = models.CharField(max_length=255, blank=True, null=True)
+    dob = models.DateField(null=True, blank=True)
+    gender = models.CharField(max_length=10, blank=True, null=True)
+    mobile = models.CharField(max_length=20, blank=True, null=True)
+    email = models.EmailField(blank=True, null=True)
+    address = models.TextField(blank=True, null=True)
+    pincode = models.CharField(max_length=10, blank=True, null=True)
+    city = models.CharField(max_length=100, blank=True, null=True)
+    state = models.CharField(max_length=100, blank=True, null=True)
+    country = models.CharField(max_length=100, blank=True, null=True)
+    kyc_mode = models.CharField(max_length=50, blank=True, null=True)
+    status = models.CharField(max_length=50, blank=True, null=True)
+    status_date = models.CharField(max_length=50, blank=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"NDML Details for {self.investor.pan}"
 
 class BankAccount(models.Model):
     ACCOUNT_TYPES = [

@@ -193,6 +193,10 @@ else:
     BSE_EMANDATE_API_URL = os.environ.get('BSE_EMANDATE_API_URL', "https://bsestarmfdemo.bseindia.com/StarMFWebService/StarMFWebService.svc/EMandateAuthURL")
     BSE_NOMINEE_API_URL = os.environ.get('BSE_NOMINEE_API_URL', "https://bsestarmfdemo.bseindia.com/BSEMFWEBAPI/api/NomineeFlag/Change")
 
+# NDML KRA API Configuration
+NDML_OKRA_WSDL = os.environ.get('NDML_OKRA_WSDL', f"file://{os.path.join(WSDL_DIR, 'NDMLOkraService.wsdl')}")
+NDML_PAN_WSDL = os.environ.get('NDML_PAN_WSDL', f"file://{os.path.join(WSDL_DIR, 'NDMLPANService.wsdl')}")
+
 # CVL KRA API Configuration
 CVL_USER_NAME = os.environ.get('CVL_USER_NAME', "WEBADMIN")
 CVL_POS_CODE = os.environ.get('CVL_POS_CODE', "5100147231")

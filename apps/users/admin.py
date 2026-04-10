@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import BankAccount, InvestorProfile, Nominee, User, Branch, RMProfile, DistributorProfile, Document, AuditLog, OneTimePassword
+from .models import BankAccount, InvestorProfile, Nominee, User, Branch, RMProfile, DistributorProfile, Document, AuditLog, OneTimePassword, NDMLKYCDetails
 
 # Register your models here.
 
@@ -70,3 +70,9 @@ class OneTimePasswordAdmin(admin.ModelAdmin):
     list_display = ('id', 'user', 'otp', 'created_at', 'is_used')
     search_fields = ('user__username', 'otp')
     list_filter = ('created_at', 'is_used')
+
+@admin.register(NDMLKYCDetails)
+class NDMLKYCDetailsAdmin(admin.ModelAdmin):
+    list_display = ('id', 'investor', 'name', 'status', 'updated_at')
+    search_fields = ('investor__pan', 'name', 'status')
+    list_filter = ('status', 'updated_at')
