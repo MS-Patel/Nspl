@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions name="PANServiceImplService" targetNamespace="http://service.webservice.pan.kra.ndml.com/" xmlns="http://schemas.xmlsoap.org/wsdl/" xmlns:wsp="http://www.w3.org/ns/ws-policy" xmlns:tns="http://service.webservice.pan.kra.ndml.com/" xmlns:wsp1_2="http://schemas.xmlsoap.org/ws/2004/09/policy" xmlns:wsu="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata">
+  <types>
+    <xsd:schema>
+      <xsd:import namespace="http://service.webservice.pan.kra.ndml.com/" schemaLocation="PANServiceImplService_schema1.xsd"/>
+    </xsd:schema>
+  </types>
+  <message name="panInquiryDetailsTwo">
+    <part name="parameters" element="tns:panInquiryDetailsTwo">
+    </part>
+  </message>
+  <message name="getPasscode">
+    <part name="parameters" element="tns:getPasscode">
+    </part>
+  </message>
+  <message name="panInquiryDetails">
+    <part name="parameters" element="tns:panInquiryDetails">
+    </part>
+  </message>
+  <message name="panDownloadDetailsComplete">
+    <part name="parameters" element="tns:panDownloadDetailsComplete">
+    </part>
+  </message>
+  <message name="panDownloadDetailsCompleteResponse">
+    <part name="parameters" element="tns:panDownloadDetailsCompleteResponse">
+    </part>
+  </message>
+  <message name="getPasscodeTest">
+    <part name="parameters" element="tns:getPasscodeTest">
+    </part>
+  </message>
+  <message name="panDownloadDetailsResponse">
+    <part name="parameters" element="tns:panDownloadDetailsResponse">
+    </part>
+  </message>
+  <message name="panDownloadDetails">
+    <part name="parameters" element="tns:panDownloadDetails">
+    </part>
+  </message>
+  <message name="getPasscodeTestResponse">
+    <part name="parameters" element="tns:getPasscodeTestResponse">
+    </part>
+  </message>
+  <message name="panInquiryDetailsResponse">
+    <part name="parameters" element="tns:panInquiryDetailsResponse">
+    </part>
+  </message>
+  <message name="processModificationResponse">
+    <part name="parameters" element="tns:processModificationResponse">
+    </part>
+  </message>
+  <message name="processModificationTest">
+    <part name="parameters" element="tns:processModificationTest">
+    </part>
+  </message>
+  <message name="panInquiryDetailsThreeResponse">
+    <part name="parameters" element="tns:panInquiryDetailsThreeResponse">
+    </part>
+  </message>
+  <message name="panInquiryDetailsThree">
+    <part name="parameters" element="tns:panInquiryDetailsThree">
+    </part>
+  </message>
+  <message name="processModificationTestResponse">
+    <part name="parameters" element="tns:processModificationTestResponse">
+    </part>
+  </message>
+  <message name="getPasscodeResponse">
+    <part name="parameters" element="tns:getPasscodeResponse">
+    </part>
+  </message>
+  <message name="processModification">
+    <part name="parameters" element="tns:processModification">
+    </part>
+  </message>
+  <message name="panInquiryDetailsTwoResponse">
+    <part name="parameters" element="tns:panInquiryDetailsTwoResponse">
+    </part>
+  </message>
+  <portType name="PANServiceImpl">
+    <operation name="processModificationTest">
+      <input message="tns:processModificationTest" wsam:Action="http://service.webservice.pan.kra.ndml.com/PANServiceImpl/processModificationTestRequest">
+    </input>
+      <output message="tns:processModificationTestResponse" wsam:Action="http://service.webservice.pan.kra.ndml.com/PANServiceImpl/processModificationTestResponse">
+    </output>
+    </operation>
+    <operation name="panInquiryDetailsThree">
+      <input message="tns:panInquiryDetailsThree" wsam:Action="http://service.webservice.pan.kra.ndml.com/PANServiceImpl/panInquiryDetailsThreeRequest">
+    </input>
+      <output message="tns:panInquiryDetailsThreeResponse" wsam:Action="http://service.webservice.pan.kra.ndml.com/PANServiceImpl/panInquiryDetailsThreeResponse">
+    </output>
+    </operation>
+    <operation name="panDownloadDetailsComplete">
+      <input message="tns:panDownloadDetailsComplete" wsam:Action="http://service.webservice.pan.kra.ndml.com/PANServiceImpl/panDownloadDetailsCompleteRequest">
+    </input>
+      <output message="tns:panDownloadDetailsCompleteResponse" wsam:Action="http://service.webservice.pan.kra.ndml.com/PANServiceImpl/panDownloadDetailsCompleteResponse">
+    </output>
+    </operation>
+    <operation name="panDownloadDetails">
+      <input message="tns:panDownloadDetails" wsam:Action="http://service.webservice.pan.kra.ndml.com/PANServiceImpl/panDownloadDetailsRequest">
+    </input>
+      <output message="tns:panDownloadDetailsResponse" wsam:Action="http://service.webservice.pan.kra.ndml.com/PANServiceImpl/panDownloadDetailsResponse">
+    </output>
+    </operation>
+    <operation name="panInquiryDetails">
+      <input message="tns:panInquiryDetails" wsam:Action="http://service.webservice.pan.kra.ndml.com/PANServiceImpl/panInquiryDetailsRequest">
+    </input>
+      <output message="tns:panInquiryDetailsResponse" wsam:Action="http://service.webservice.pan.kra.ndml.com/PANServiceImpl/panInquiryDetailsResponse">
+    </output>
+    </operation>
+    <operation name="getPasscode">
+      <input message="tns:getPasscode" wsam:Action="http://service.webservice.pan.kra.ndml.com/PANServiceImpl/getPasscodeRequest">
+    </input>
+      <output message="tns:getPasscodeResponse" wsam:Action="http://service.webservice.pan.kra.ndml.com/PANServiceImpl/getPasscodeResponse">
+    </output>
+    </operation>
+    <operation name="processModification">
+      <input message="tns:processModification" wsam:Action="http://service.webservice.pan.kra.ndml.com/PANServiceImpl/processModificationRequest">
+    </input>
+      <output message="tns:processModificationResponse" wsam:Action="http://service.webservice.pan.kra.ndml.com/PANServiceImpl/processModificationResponse">
+    </output>
+    </operation>
+    <operation name="getPasscodeTest">
+      <input message="tns:getPasscodeTest" wsam:Action="http://service.webservice.pan.kra.ndml.com/PANServiceImpl/getPasscodeTestRequest">
+    </input>
+      <output message="tns:getPasscodeTestResponse" wsam:Action="http://service.webservice.pan.kra.ndml.com/PANServiceImpl/getPasscodeTestResponse">
+    </output>
+    </operation>
+    <operation name="panInquiryDetailsTwo">
+      <input message="tns:panInquiryDetailsTwo" wsam:Action="http://service.webservice.pan.kra.ndml.com/PANServiceImpl/panInquiryDetailsTwoRequest">
+    </input>
+      <output message="tns:panInquiryDetailsTwoResponse" wsam:Action="http://service.webservice.pan.kra.ndml.com/PANServiceImpl/panInquiryDetailsTwoResponse">
+    </output>
+    </operation>
+  </portType>
+  <binding name="PANServiceImplPortBinding" type="tns:PANServiceImpl">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <operation name="processModificationTest">
+      <soap:operation soapAction=""/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+    </operation>
+    <operation name="panInquiryDetailsThree">
+      <soap:operation soapAction=""/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+    </operation>
+    <operation name="panDownloadDetailsComplete">
+      <soap:operation soapAction=""/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+    </operation>
+    <operation name="panDownloadDetails">
+      <soap:operation soapAction=""/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+    </operation>
+    <operation name="panInquiryDetails">
+      <soap:operation soapAction=""/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+    </operation>
+    <operation name="getPasscode">
+      <soap:operation soapAction=""/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+    </operation>
+    <operation name="processModification">
+      <soap:operation soapAction=""/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+    </operation>
+    <operation name="getPasscodeTest">
+      <soap:operation soapAction=""/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+    </operation>
+    <operation name="panInquiryDetailsTwo">
+      <soap:operation soapAction=""/>
+      <input>
+        <soap:body use="literal"/>
+      </input>
+      <output>
+        <soap:body use="literal"/>
+      </output>
+    </operation>
+  </binding>
+  <service name="PANServiceImplService">
+    <port name="PANServiceImplPort" binding="tns:PANServiceImplPortBinding">
+      <soap:address location="http://pilot.kra.ndml.in:80/sms-ws/PANServiceImplService"/>
+    </port>
+  </service>
+</definitions>
