@@ -256,6 +256,7 @@ class Command(BaseCommand):
                 continue
 
             ifsc = row.get(f'IFSC Code {i}', '').strip()
+            micr = row.get(f'MICR Code {i}', '').strip()
             bank_name = row.get(f'Bank Name {i}', '').strip()
             branch_name = row.get(f'Bank Branch {i}', '').strip()
             acc_type_str = row.get(f'Account Type {i}', '')
@@ -270,6 +271,7 @@ class Command(BaseCommand):
                 account_number=acc_no,
                 defaults={
                     'ifsc_code': ifsc,
+                    'micr_code': micr,
                     'bank_name': bank_name,
                     'branch_name': branch_name,
                     'account_type': acc_type,

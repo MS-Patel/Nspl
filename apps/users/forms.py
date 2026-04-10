@@ -599,7 +599,7 @@ class BankAccountForm(forms.ModelForm):
 
     class Meta:
         model = BankAccount
-        fields = ['ifsc_code', 'account_number', 'account_type', 'bank_name', 'branch_name', 'is_default']
+        fields = ['ifsc_code', 'micr_code', 'account_number', 'account_type', 'bank_name', 'branch_name', 'is_default']
 
 class NomineeForm(forms.ModelForm):
     date_of_birth = forms.DateField(

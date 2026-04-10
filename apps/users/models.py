@@ -487,6 +487,7 @@ class BankAccount(models.Model):
 
     investor = models.ForeignKey(InvestorProfile, on_delete=models.CASCADE, related_name='bank_accounts')
     ifsc_code = models.CharField(max_length=11)
+    micr_code = models.CharField(max_length=9, blank=True)
     account_number = models.CharField(max_length=20)
     account_type = models.CharField(max_length=2, choices=ACCOUNT_TYPES, default='SB')
     bank_name = models.CharField(max_length=100, blank=True)
