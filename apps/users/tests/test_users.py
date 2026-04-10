@@ -22,6 +22,7 @@ class TestUserCreation:
             'name': 'RM One',
             'employee_code': 'EMP001',
             'pan': 'ABCDE1234F',
+            'mobile': '9876543210',
             'is_active': True
         }
         response = client.post(url, data)

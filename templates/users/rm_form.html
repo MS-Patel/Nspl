@@ -135,6 +135,11 @@
             <div class="grid grid-cols-1 gap-4">
                  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div>
+                        <label class="block mb-1 text-sm font-medium">Mobile *</label>
+                        {{ form.mobile|add_class:"form-input w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" }}
+                        <span class="text-tiny+ text-error">{{ form.mobile.errors.0 }}</span>
+                    </div>
+                    <div>
                         <label class="block mb-1 text-sm font-medium">Alternate Mobile</label>
                         {{ form.alternate_mobile|add_class:"form-input w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 placeholder:text-slate-400/70 hover:border-slate-400 focus:border-primary dark:border-navy-450 dark:hover:border-navy-400 dark:focus:border-accent" }}
                         <span class="text-tiny+ text-error">{{ form.alternate_mobile.errors.0 }}</span>
