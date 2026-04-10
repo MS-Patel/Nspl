@@ -15,8 +15,8 @@ class TestBSEAuthSplit(SimpleTestCase):
         # Mock getPassword response
         mock_order_service_instance.getPassword.return_value = "100|OrderAuthToken"
 
-        # Override the method on the instance
-        client._get_soap_client = MagicMock(return_value=mock_order_client)
+        # Override the method on the instance: returns (client, service)
+        client._get_soap_client = MagicMock(return_value=(mock_order_client, mock_order_service_instance))
 
         # --- Mock Upload Service (New) ---
         mock_upload_client = MagicMock()
@@ -66,23 +66,23 @@ class TestBSEAuthSplit(SimpleTestCase):
             mock_upload_service_instance.reset_mock()
             mock_query_service_instance.reset_mock()
 
-        # --- TEST 2: Register Mandate (Should use Upload Service Auth) ---
+        # --- TEST 2: Register Mandate (Should use Query Service Auth) ---
         with patch('apps.integration.bse_client.get_bse_mandate_param_string') as mock_mandate_params:
             mock_mandate_params.return_value = "pipe|separated|string"
             mock_mandate = MagicMock()
 
-            # Mock MFAPI call on the upload service
-            mock_upload_service_instance.MFAPI.return_value = "100|MandateID|Success"
+            # Mock MFAPI call on the query service
+            mock_query_service_instance.MFAPI.return_value = "100|MandateID|Success"
 
             # CALL
             client.register_mandate(mock_mandate)
 
             # VERIFY
-            mock_upload_service_instance.getPassword.assert_called()
+            mock_query_service_instance.getPassword.assert_called()
             mock_order_service_instance.getPassword.assert_not_called()
-            mock_query_service_instance.getPassword.assert_not_called()
+            mock_upload_service_instance.getPassword.assert_not_called()
 
-            call_args = mock_upload_service_instance.getPassword.call_args
+            call_args = mock_query_service_instance.getPassword.call_args
             self.assertEqual(call_args.kwargs['UserId'], "USER_ID")
             self.assertEqual(call_args.kwargs['Password'], "PASSWORD")
 

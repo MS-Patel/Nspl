@@ -556,6 +556,54 @@ class BSEStarMFClient:
             bse_logger.error(f"API Error: {str(e)}")
             return {"status": "exception", "remarks": f"HTTP/Network Error: {str(e)}"}
 
+
+    def change_password(self, new_password):
+        """
+        Changes the BSE API password.
+        The Old Password|newpassword|conf password param format is used with MFAPI Flag '04'.
+        """
+        try:
+            return self._retry_call(self._change_password_internal, new_password)
+        except Exception as e:
+            return {'status': 'exception', 'remarks': str(e)}
+
+    def _change_password_internal(self, new_password):
+        try:
+            encrypted_password, _ = self._get_query_auth_details()
+            param_string = f"{self.password}|{new_password}|{new_password}"
+
+            _, service = self._get_query_soap_client(self)
+
+            # Mask the param string for logging to avoid exposing passwords
+            log_param = "********|********|********"
+
+            bse_logger.info(f"CHANGE PASSWORD Request: Flag=04, Param={log_param}")
+            response = service.MFAPI(
+                Flag='04',
+                UserId=self.user_id,
+                EncryptedPassword=encrypted_password,
+                param=param_string
+            )
+            bse_logger.info(f"CHANGE PASSWORD | RESPONSE: {response}")
+            parts = str(response).split('|')
+            if parts[0] == '100':
+                 return {
+                    'status': 'success',
+                    'remarks': parts[1] if len(parts) > 1 else 'Password Changed Successfully',
+                }
+            else:
+                remarks = parts[1] if len(parts) > 1 else response
+                if self._is_connection_error(remarks):
+                    return {'status': 'exception', 'remarks': remarks}
+
+                return {
+                    'status': 'error',
+                    'remarks': remarks
+                }
+        except Exception as e:
+            bse_logger.error(f"CHANGE PASSWORD ERROR: {str(e)}")
+            raise e
+
     def fatca_upload(self, investor):
         try:
             # Use Query Auth Details (StarMFWebService) instead of Upload Service
