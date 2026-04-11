@@ -53,18 +53,19 @@ def generate_karvy_fingerprint(row_dict: dict) -> str:
         "KARVY",
         row_dict.get('folio number'),           # folio_number
         row_dict.get('scheme code'),            # scheme_code
-        row_dict.get('transaction type'),       # txn_type_code
-        row_dict.get('transaction description'),# txn_nature
-        row_dict.get('amount'),                 # amount
-        row_dict.get('units'),                  # units
         row_dict.get('transaction date'),       # date
         row_dict.get('transaction number'),     # trxnno
-        row_dict.get('purchase transaction no'), # trxnno
+        row_dict.get('transaction type'),       # txn_type_code
         row_dict.get('transaction flag'), # trxnno
-        row_dict.get('siptrxnno'),              # siptrxnno (may be None for Karvy but include for consistency)
-        row_dict.get('trxn_suffix'),            # trxn_suffix
-        row_dict.get('scan_ref_no'),            # scan_ref_no
-        row_dict.get('reversal_code')           # reversal_code
+        row_dict.get('amount'),                 # amount
+        row_dict.get('units'),                  # units
+        row_dict.get('stamp duty charges'),     # stamp_duty_charges
+        # row_dict.get('purchase transaction no'), # trxnno
+        # row_dict.get('transaction description'),# txn_nature
+        # row_dict.get('siptrxnno'),              # siptrxnno (may be None for Karvy but include for consistency)
+        # row_dict.get('trxn_suffix'),            # trxn_suffix
+        # row_dict.get('scan_ref_no'),            # scan_ref_no
+        # row_dict.get('reversal_code')           # reversal_code
     ]
     return generate_fingerprint(values)
 

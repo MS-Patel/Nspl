@@ -296,6 +296,7 @@ class BaseParser:
         or creates a new one. Updates existing RTA transactions if changed.
         """
         if not txn_number:
+            print("Warning: No transaction number provided for RTA transaction. Matching will be based on fingerprint and may lead to updates of existing transactions if multiple transactions share the same fingerprint." + folio_number)
             return
 
         # Prepare extra fields dict for update/create
@@ -791,8 +792,8 @@ class KarvyCSVParser(BaseParser):
                         # 'scheme code'
                         scheme_code = str(row.get('product code', '')).strip()
                         if not scheme_code or scheme_code.lower() == 'nan':
-                             # Fallback to Product Code if needed
-                             scheme_code = str(row.get('scheme code', '')).strip()
+                            # Fallback to Product Code if needed
+                            scheme_code = str(row.get('scheme code', '')).strip()
 
                         isin = str(row.get('isin', '')).strip()
 
@@ -813,6 +814,7 @@ class KarvyCSVParser(BaseParser):
 
                         amount = self.clean_decimal(row.get('amount'))
                         units = self.clean_decimal(row.get('units'))
+                        stamp_duty_charges = self.clean_decimal(row.get('stamp duty charges'))
 
                         # Type: Use SubTranType (e.g. RED, SIN) or Transaction Type (Redemption)
                         txn_type_code = str(row.get('transaction type', '')).strip()
@@ -837,6 +839,7 @@ class KarvyCSVParser(BaseParser):
                             'transaction description': str(row.get('transaction description', '')).strip(),
                             'amount': amount,
                             'units': units,
+                            'stamp duty charges': stamp_duty_charges,
                             'transaction date': txn_date,
                             'transaction number': str(row.get('transaction number', '')).strip(),
                             'transaction flag': str(row.get('transaction flag', '')).strip(),
