@@ -640,3 +640,129 @@ class RedemptionReportView(LoginRequiredMixin, TemplateView):
         context['from_date'] = from_date_str
         context['to_date'] = to_date_str
         return context
+
+
+class RTATransactionReportView(LoginRequiredMixin, TemplateView):
+    template_name = 'reports/rta_transaction_report.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+
+        # Date range filter
+        end_date_str = self.request.GET.get('end_date')
+        start_date_str = self.request.GET.get('start_date')
+
+        if end_date_str:
+            end_date = datetime.datetime.strptime(end_date_str, '%Y-%m-%d').date()
+        else:
+            end_date = datetime.date.today()
+
+        if start_date_str:
+            start_date = datetime.datetime.strptime(start_date_str, '%Y-%m-%d').date()
+        else:
+            start_date = end_date - datetime.timedelta(days=7)
+
+        context['start_date'] = start_date.strftime('%Y-%m-%d')
+        context['end_date'] = end_date.strftime('%Y-%m-%d')
+
+        # Access Control & Queryset
+        if user.user_type == User.Types.ADMIN:
+            qs = Transaction.objects.all()
+        elif user.user_type == User.Types.RM:
+            qs = Transaction.objects.filter(
+                Q(investor__rm__user=user) | Q(investor__distributor__rm__user=user)
+            ).distinct()
+        elif user.user_type == User.Types.DISTRIBUTOR:
+            qs = Transaction.objects.filter(investor__distributor__user=user)
+        elif user.user_type == User.Types.INVESTOR:
+            qs = Transaction.objects.filter(investor__user=user)
+        else:
+            qs = Transaction.objects.none()
+
+        qs = qs.filter(date__gte=start_date, date__lte=end_date)
+        qs = qs.select_related('investor', 'investor__user', 'scheme').order_by('-date')
+
+        data = []
+        for txn in qs:
+            row = {
+                'id': txn.id,
+                'investor': txn.investor.user.name or txn.investor.user.username if txn.investor and txn.investor.user else '',
+                'scheme': txn.scheme.name if txn.scheme else '',
+                'folio_number': txn.folio_number,
+                'rta_code': txn.rta_code,
+                'fingerprint': txn.fingerprint,
+                'txn_number': txn.txn_number,
+                'txn_type': txn.txn_type,
+                'txn_action': txn.txn_action,
+                'txn_type_code': txn.txn_type_code,
+                'txn_nature': txn.txn_nature,
+                'description': txn.description,
+                'tr_flag': txn.tr_flag,
+                'tax_status': txn.tax_status,
+                'source': txn.source,
+                'origin': txn.origin,
+                'is_provisional': txn.is_provisional,
+                'bse_order_id': txn.bse_order_id,
+                'matched_at': txn.matched_at.strftime('%Y-%m-%d %H:%M') if txn.matched_at else '',
+                'match_confidence': txn.match_confidence,
+                'date': txn.date.strftime('%Y-%m-%d') if txn.date else '',
+                'amount': float(txn.amount) if txn.amount is not None else 0.0,
+                'units': float(txn.units) if txn.units is not None else 0.0,
+                'nav': float(txn.nav) if txn.nav is not None else 0.0,
+                'stt': float(txn.stt) if txn.stt is not None else 0.0,
+                'stamp_duty': float(txn.stamp_duty) if txn.stamp_duty is not None else 0.0,
+                'load_amount': float(txn.load_amount) if txn.load_amount is not None else 0.0,
+                'tax_amount': float(txn.tax_amount) if txn.tax_amount is not None else 0.0,
+                'broker_code': txn.broker_code,
+                'sub_broker_code': txn.sub_broker_code,
+                'euin': txn.euin,
+                'amc_code': txn.amc_code,
+                'product_code': txn.product_code,
+                'micr_no': txn.micr_no,
+                'old_folio': txn.old_folio,
+                'reinvest_flag': txn.reinvest_flag,
+                'mult_brok': txn.mult_brok,
+                'scan_ref_no': txn.scan_ref_no,
+                'pan': txn.pan,
+                'min_no': txn.min_no,
+                'targ_src_scheme': txn.targ_src_scheme,
+                'ticob_trtype': txn.ticob_trtype,
+                'ticob_trno': txn.ticob_trno,
+                'ticob_posted_date': txn.ticob_posted_date.strftime('%Y-%m-%d') if txn.ticob_posted_date else '',
+                'dp_id': txn.dp_id,
+                'trxn_charges': float(txn.trxn_charges) if txn.trxn_charges is not None else 0.0,
+                'eligib_amt': float(txn.eligib_amt) if txn.eligib_amt is not None else 0.0,
+                'src_of_txn': txn.src_of_txn,
+                'trxn_suffix': txn.trxn_suffix,
+                'siptrxnno': txn.siptrxnno,
+                'ter_location': txn.ter_location,
+                'euin_valid': txn.euin_valid,
+                'euin_opted': txn.euin_opted,
+                'sub_brk_arn': txn.sub_brk_arn,
+                'exch_dc_flag': txn.exch_dc_flag,
+                'src_brk_code': txn.src_brk_code,
+                'sys_regn_date': txn.sys_regn_date.strftime('%Y-%m-%d') if txn.sys_regn_date else '',
+                'ac_no': txn.ac_no,
+                'reversal_code': txn.reversal_code,
+                'exchange_flag': txn.exchange_flag,
+                'ca_initiated_date': txn.ca_initiated_date.strftime('%Y-%m-%d') if txn.ca_initiated_date else '',
+                'gst_state_code': txn.gst_state_code,
+                'igst_amount': float(txn.igst_amount) if txn.igst_amount is not None else 0.0,
+                'cgst_amount': float(txn.cgst_amount) if txn.cgst_amount is not None else 0.0,
+                'sgst_amount': float(txn.sgst_amount) if txn.sgst_amount is not None else 0.0,
+                'bank_account_no': txn.bank_account_no,
+                'bank_name': txn.bank_name,
+                'payment_mode': txn.payment_mode,
+                'instrument_no': txn.instrument_no,
+                'instrument_date': txn.instrument_date.strftime('%Y-%m-%d') if txn.instrument_date else '',
+                'status_desc': txn.status_desc,
+                'remarks': txn.remarks,
+                'location': txn.location,
+                'source_file_id': txn.source_file_id,
+                'created_at': txn.created_at.strftime('%Y-%m-%d %H:%M') if txn.created_at else '',
+            }
+            data.append(row)
+
+        context['grid_data_json'] = json.dumps(data, cls=DjangoJSONEncoder)
+        return context
