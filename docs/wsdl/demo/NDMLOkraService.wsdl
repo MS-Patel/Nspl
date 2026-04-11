@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions targetNamespace="http://common.nsdl.com" xmlns:impl="http://common.nsdl.com" xmlns:intf="http://common.nsdl.com" xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:wsdlsoap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:wsi="http://ws-i.org/profiles/basic/1.1/xsd" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <wsdl:types>
+    <schema targetNamespace="http://common.nsdl.com" xmlns="http://www.w3.org/2001/XMLSchema" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+			<complexType name="ArrayOf_xsd_nillable_byte">
+				<sequence>
+					<element maxOccurs="unbounded" minOccurs="0" name="byte" nillable="true" type="xsd:byte"/>
+				</sequence>
+			</complexType>
+			<element name="getPanDetailResponse">
+				<complexType>
+					<sequence>
+						<element name="getPanDetailReturn" nillable="true" type="impl:ArrayOf_xsd_nillable_byte"/>
+					</sequence>
+				</complexType>
+			</element>
+			<element name="getPassword">
+				<complexType>
+					<sequence>
+						<element name="password" nillable="true" type="xsd:string"/>
+						<element name="key" nillable="true" type="xsd:string"/>
+					</sequence>
+				</complexType>
+			</element>
+			<element name="getPasswordResponse">
+				<complexType>
+					<sequence>
+						<element name="getPasswordReturn" nillable="true" type="xsd:string"/>
+					</sequence>
+				</complexType>
+			</element>
+			<element name="processModification">
+				<complexType>
+					<sequence>
+						<element name="input" nillable="true" type="impl:ArrayOf_xsd_nillable_byte"/>
+						<element name="userId" nillable="true" type="xsd:string"/>
+						<element name="userPassword" nillable="true" type="xsd:string"/>
+						<element name="passKey" nillable="true" type="xsd:string"/>
+						<element name="okraCd" nillable="true" type="xsd:string"/>
+					</sequence>
+				</complexType>
+			</element>
+			<element name="processModificationResponse">
+				<complexType>
+					<sequence>
+						<element name="processModificationReturn" nillable="true" type="impl:ArrayOf_xsd_nillable_byte"/>
+					</sequence>
+				</complexType>
+			</element>
+			<element name="processPanFile">
+				<complexType>
+					<sequence>
+						<element name="input" nillable="true" type="impl:ArrayOf_xsd_nillable_byte"/>
+						<element name="userId" nillable="true" type="xsd:string"/>
+						<element name="userPassword" nillable="true" type="xsd:string"/>
+						<element name="passKey" nillable="true" type="xsd:string"/>
+						<element name="okraCd" nillable="true" type="xsd:string"/>
+					</sequence>
+				</complexType>
+			</element>
+			<element name="processPanFileResponse">
+				<complexType>
+					<sequence>
+						<element name="processPanFileReturn" nillable="true" type="impl:ArrayOf_xsd_nillable_byte"/>
+					</sequence>
+				</complexType>
+			</element>
+			<element name="getPanDetail">
+				<complexType>
+					<sequence>
+						<element name="input" nillable="true" type="impl:ArrayOf_xsd_nillable_byte"/>
+						<element name="userId" nillable="true" type="xsd:string"/>
+						<element name="userPassword" nillable="true" type="xsd:string"/>
+						<element name="passKey" nillable="true" type="xsd:string"/>
+						<element name="okraCd" nillable="true" type="xsd:string"/>
+					</sequence>
+				</complexType>
+			</element>
+			<element name="registration">
+				<complexType>
+					<sequence>
+						<element maxOccurs="unbounded" name="input" type="xsd:byte"/>
+						<element name="userId" type="xsd:string"/>
+						<element name="userPassword" type="xsd:string"/>
+						<element name="passKey" type="xsd:string"/>
+						<element name="okraCdOrMiId" type="xsd:string"/>
+					</sequence>
+				</complexType>
+			</element>
+			<element name="registrationResponse">
+				<complexType>
+					<sequence>
+						<element maxOccurs="unbounded" name="registrationReturn" type="xsd:byte"/>
+					</sequence>
+				</complexType>
+			</element>
+		</schema>
+  </wsdl:types>
+  <wsdl:message name="processPanFileRequest">
+    <wsdl:part element="impl:processPanFile" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="processModificationResponse">
+    <wsdl:part element="impl:processModificationResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="processModificationRequest">
+    <wsdl:part element="impl:processModification" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="registrationResponse">
+    <wsdl:part element="impl:registrationResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="processPanFileResponse">
+    <wsdl:part element="impl:processPanFileResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getPasswordRequest">
+    <wsdl:part element="impl:getPassword" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="registrationRequest">
+    <wsdl:part element="impl:registration" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getPanDetailResponse">
+    <wsdl:part element="impl:getPanDetailResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getPanDetailRequest">
+    <wsdl:part element="impl:getPanDetail" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:message name="getPasswordResponse">
+    <wsdl:part element="impl:getPasswordResponse" name="parameters">
+    </wsdl:part>
+  </wsdl:message>
+  <wsdl:portType name="OkraServiceImpl">
+    <wsdl:operation name="getPanDetail">
+      <wsdl:input message="impl:getPanDetailRequest" name="getPanDetailRequest">
+    </wsdl:input>
+      <wsdl:output message="impl:getPanDetailResponse" name="getPanDetailResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getPassword">
+      <wsdl:input message="impl:getPasswordRequest" name="getPasswordRequest">
+    </wsdl:input>
+      <wsdl:output message="impl:getPasswordResponse" name="getPasswordResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="processModification">
+      <wsdl:input message="impl:processModificationRequest" name="processModificationRequest">
+    </wsdl:input>
+      <wsdl:output message="impl:processModificationResponse" name="processModificationResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="processPanFile">
+      <wsdl:input message="impl:processPanFileRequest" name="processPanFileRequest">
+    </wsdl:input>
+      <wsdl:output message="impl:processPanFileResponse" name="processPanFileResponse">
+    </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="registration">
+      <wsdl:input message="impl:registrationRequest" name="registrationRequest">
+    </wsdl:input>
+      <wsdl:output message="impl:registrationResponse" name="registrationResponse">
+    </wsdl:output>
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="OkraServiceImplSoapBinding" type="impl:OkraServiceImpl">
+<wsaw:UsingAddressing wsdl:required="false"/>
+    <wsdlsoap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="getPanDetail">
+      <wsdlsoap:operation soapAction="getPanDetail"/>
+      <wsdl:input name="getPanDetailRequest">
+        <wsdlsoap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="getPanDetailResponse">
+        <wsdlsoap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getPassword">
+      <wsdlsoap:operation soapAction="getPassword"/>
+      <wsdl:input name="getPasswordRequest">
+        <wsdlsoap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="getPasswordResponse">
+        <wsdlsoap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="processModification">
+      <wsdlsoap:operation soapAction="processModification"/>
+      <wsdl:input name="processModificationRequest">
+        <wsdlsoap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="processModificationResponse">
+        <wsdlsoap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="processPanFile">
+      <wsdlsoap:operation soapAction="processPanFile"/>
+      <wsdl:input name="processPanFileRequest">
+        <wsdlsoap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="processPanFileResponse">
+        <wsdlsoap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="registration">
+      <wsdlsoap:operation soapAction=""/>
+      <wsdl:input name="registrationRequest">
+        <wsdlsoap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="registrationResponse">
+        <wsdlsoap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="OkraServiceImplService">
+    <wsdl:port binding="impl:OkraServiceImplSoapBinding" name="OkraServiceImpl">
+      <wsdlsoap:address location="http://pilot.kra.ndml.in:80/okra-iop/services/OkraServiceImpl"/>
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>

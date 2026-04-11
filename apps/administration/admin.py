@@ -32,6 +32,12 @@ class SystemConfigurationAdmin(admin.ModelAdmin):
         ('Maintenance Mode', {
             'fields': ('is_maintenance_mode',)
         }),
+        ('NDML KRA Configuration', {
+            'fields': (
+                'ndml_env', 'ndml_user_name', 'ndml_password',
+                'ndml_pos_code', 'ndml_mi_id'
+            )
+        }),
         ('RTA Mail Configuration', {
             'fields': (
                 'rta_email_host', 'rta_email_port', 'rta_email_user',

@@ -75,6 +75,7 @@ class RMCreationForm(forms.ModelForm):
     country = forms.CharField(max_length=50, initial='India', required=False)
 
     # Contact Details
+    mobile = forms.CharField(max_length=15, required=True, validators=[mobile_validator])
     alternate_mobile = forms.CharField(max_length=15, required=False, validators=[mobile_validator])
     alternate_email = forms.EmailField(required=False)
 
@@ -127,6 +128,7 @@ class RMCreationForm(forms.ModelForm):
                     pincode=self.cleaned_data.get('pincode', ''),
                     state=self.cleaned_data.get('state', ''),
                     country=self.cleaned_data.get('country', ''),
+                    mobile=self.cleaned_data.get('mobile', ''),
                     alternate_mobile=self.cleaned_data.get('alternate_mobile', ''),
                     alternate_email=self.cleaned_data.get('alternate_email', ''),
                     dob=self.cleaned_data.get('dob'),
@@ -152,6 +154,8 @@ class RMChangeForm(forms.ModelForm):
     dob = forms.DateField(required=False, widget=forms.DateInput(attrs={'type': 'date'}), label="Date of Birth")
     address = forms.CharField(widget=forms.Textarea(attrs={'rows': 3}), required=False)
 
+    mobile = forms.CharField(max_length=15, required=True, validators=[mobile_validator])
+
     is_active = forms.BooleanField(required=False, label="Active Status")
 
     class Meta:
@@ -159,7 +163,7 @@ class RMChangeForm(forms.ModelForm):
         fields = [
             'employee_code', 'pan', 'branch', 'dob', 'gstin',
             'address', 'city', 'state', 'pincode', 'country',
-            'alternate_mobile', 'alternate_email',
+            'mobile', 'alternate_mobile', 'alternate_email',
             'bank_name', 'account_number', 'ifsc_code', 'account_type', 'branch_name',
             'is_active'
         ]

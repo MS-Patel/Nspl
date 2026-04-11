@@ -1,0 +1,252 @@
+
+
+
+
+
+WSDL Links
+
+
+
+Perquisites
+Please provide static public IP address of your server to whitelisting the same.
+
+Contact Details for API Integration, testing and go live Support
+
+
+
+
+
+
+Introduction
+This document provides the details of integration of 4 distinct services within our API. Each Service serves a unique purpose and requires specific parameters for the successful execution. There are following services :
+KYC registration to register a new KYC record.
+KYC modification to modify an existing KYC
+KYC inquiry to get the status of the KYC
+KYC download to get the documents of the KYC
+Each service first requires authentication through encrypted password.
+Authentication & KYC Upload/KYC Registration
+This is the first service that will register a new KYC. Before uploading the records for KYC registration, you will have to get the encrypted password through “getPassword”
+Authentication
+Method - getPassword
+Request Parameters:
+
+Response Parameter:
+
+Once you have the encrypted password, you can upload the registration with below details
+
+
+
+
+
+Registration
+Intermediary can upload the registration of PANs which are not available in any KRA.
+Method- registration
+Request Parameters:
+
+
+Response Parameter:
+
+
+
+
+Sharing files through SFTP
+NDML also have facility to upload documents through SFTP, which is provided on case to case basis by NDML to SRIs as it requires specific system requirements and also a requirement of minimum number of KYC records uploads to NDML KRA by SRI.  SRIs need to send email to NDML KRA helpdesk on info.kra@nsdl.co.in requesting for SFTP access.
+
+
+
+
+ Sample Code:
+
+
+KYC Status Inquiry
+
+There are two methods available for KYC status inquiry.
+Method 1: panInquiryDetails  :This method provides only latest status.
+Method 2: panInquiryDetailsTwo : This method provides both registration & modification status. We recommend you to integrate this method as it will provide you both status of the PANs.
+The request for both the methods have same attributes. In Method two, Response will have additional tag APP_UPDT_STATUS to provide for modification status.
+
+As explained above, you will have to get the encrypted password as defined above in authentication
+KYC Status Inquiry
+NDML KRA will provide KYC statuses of PANs available across KRAs. Single Pan per request is allowed.
+Method 1- panInquiryDetails
+
+Sample Call of Method:
+
+Request Attributes
+
+User ID, Encrypted Password and Pass Key will be passed as separate parameters in panInquiryDetails call.
+
+Response Attributes – Method 1
+
+Response Attributes – Method 2
+
+
+
+Table 1 Following are the statuses given in tag <APP_STATUS>
+
+Below are the Web service Arguments.
+processPanFile(inputXML in byteString format, userId, encrypted userPassword, passKey, Mi Id);
+KYC download
+As explained above, you will have to get the encrypted password as defined above in authentication to get encrypted password before any services can be called   through getPasscode method
+KYC Download
+NDML KRA will provide KYC download details of KYCs available in any KRA.
+The web service accepts single request at each time
+Method - panDownloadDetailsComplete
+Request Attributes
+
+
+
+
+Status code description
+
+
+Post download of KYC records through API, SRI user will get pdf of documents (KYC application form, Proof of Identity and Proof of Address) / Images for KYC records which are downloaded by SRI user from/through NDML KRA via API in SFTP date wise folder under main folder Solicited.
+
+Below are the Web service Arguments.
+getPanDetail(inputXML in byteString format, userId, encrypted userPassword, passKey, Mi Id);
+
+
+KYC Modification
+
+Note: Before calling API for modification intermediary needs to download the KYC through web service method “panDownloadDetailsComplete”
+As explained above, you will have to get the encrypted password as defined above in authentication to get encrypted password before any services can be called   through getPasscode method
+KYC Modification
+NDML KRA will facilitate to modify KYC details available with any KRA. The web service accepts single request at each time.
+Method - processModification
+
+
+Below are the Web service Arguments.
+processModification(inputXML in byteString format, userId, encrypted userPassword, passKey, Mi Id);
+
+Errors and Solution
+
+Invalid Requester IP
+ 	Solution: Provide public IP instead of System IP. (To get public IP, Type in google what is my ip)
+
+Authentication Failed
+If User is not authorized to access this method, the following message is returned in ERROR tag. ERROR>AUTHENTICATION FAILED.</ERROR>
+Solution: Make sure that your User Id, Password & Passkey is correct.
+
+Unregistered/Inactive mobile number
+Similarly, if the mobile no. used to send the request is either not registered or inactive, then the same will be reflected in the ERROR tag.
+<ERROR>UNREGISTERED MOBILE NO.</ERROR>
+<ERROR>INACTIVE MOBILE NO.</ERROR>
+Solution- Make sure that mobile number is registered in system.
+
+
+
+Steps to add web services client
+
+
+
+
+Sample client (Java Code) for Getting Encrypted Password from Web Service
+
+
+Sample client (Java Code) to GetPANDetails from Web Service
+
+
+
+Sample Codes – PAN inquiry and download (PHP code)
+
+        <?php
+        print_r("\r\n@@@@@@@@@@      Calling NDML KRA WebService      @@@@@@@@@@\r\n");
+        $wsdl = 'http://121.242.223.211/sms-ws/PANServiceImplService/PANServiceImplService.wsdl';
+        $options = array(
+                                'uri'=>'http://schemas.xmlsoap.org/soap/envelope/',
+                                'style'=>SOAP_RPC,
+                                'use'=>SOAP_ENCODED,
+                                'soap_version'=>SOAP_1_1,
+                                'cache_wsdl'=>WSDL_CACHE_NONE,
+                                'connection_timeout'=>15,
+                                'trace'=>true,
+                                'encoding'=>'UTF-8',
+                                'exceptions'=>true,
+                ); 
+        $soap = new SoapClient($wsdl, $options);
+//        print_r($soap->__getFunctions());
+        try {
+            $userId = '<<userID>>';
+            $password = '<<password>>';
+            $passKey = '<<passkey>>';
+            $passcode_params = array('arg0' => $password, 'arg1' => $passKey);
+            $encPass = $soap->getPasscode($passcode_params);           
+            $encPassword = $encPass->return;
+            print_r("@@@@@@@@@@      Encrypted Password  :->      ".$encPassword."\r\n");           
+            $xml_request =  '
+                            <APP_REQ_ROOT>
+                                 <APP_PAN_DOWN>
+                                     <APP_PAN_NO>BODPA7810Q</APP_PAN_NO>
+                                     <APP_PAN_DOB>01011900</APP_PAN_DOB>
+                                     <APP_MOBILE_NO><<mobile number>></APP_MOBILE_NO>
+                                     <APP_REQ_NO>1234567890</APP_REQ_NO>
+                                 </APP_PAN_DOWN>
+                             </APP_REQ_ROOT>
+                             ';
+            $params = array('arg0' => $xml_request, 'arg1' => $userId, 'arg2' => $encPassword, 'arg3' => $passKey);
+//            $data = $soap->panInquiryDetails($params)->return;
+            $data = $soap->panDownloadDetails($params)->return;
+            print_r("@@@@@@@@@@      XML Response :->      \r\n");
+            print_r($data);
+        }
+        catch(Exception $e) {
+            print_r("@@@@@@@@@@      Exception occured :->      ".$e->getMessage()."\r\n");
+            die($e->getTraceAsString());
+        }
+        die;
+
+
+
+
+JAVA Code – Registration and modification
+
+package com.ndml.okra.registration.main;
+
+import java.rmi.RemoteException;
+
+import com.nsdl.common.OkraServiceImplProxy;
+
+public class OkraRegSample
+{
+
+	public static void main(String[] args) throws RemoteException
+	{
+		String userId="AKASHK";
+		String password="NDML123";
+		String okraCdOrMiId="P2057";
+		String passKey="pass@1234";
+		String request_xml="<APP_REQ_ROOT> <APP_PAN_INQ> <APP_IOP_FLG>IE</APP_IOP_FLG> <APP_POS_CODE>P2057</APP_POS_CODE> <APP_TYPE>I</APP_TYPE> <APP_NO>ABCDE1234X</APP_NO> <APP_DATE>09-05-2012 00:00:00</APP_DATE> <APP_PAN_NO>ABCDE0000M</APP_PAN_NO> <APP_PANEX_NO></APP_PANEX_NO> <APP_PAN_COPY>N</APP_PAN_COPY> <APP_EXMT>M</APP_EXMT> <APP_EXMT_CAT/> <APP_KYC_MODE></APP_KYC_MODE> <APP_EXMT_ID_PROOF>06</APP_EXMT_ID_PROOF> <APP_IPV_FLAG></APP_IPV_FLAG> <APP_IPV_DATE>15-05-2015 12:03:02</APP_IPV_DATE> <APP_GEN>M</APP_GEN> <APP_NAME>APP_NAME</APP_NAME> <APP_F_NAME>FATHER</APP_F_NAME> <APP_REGNO></APP_REGNO> <APP_DOB_DT>09-12-2015 00:00:00</APP_DOB_DT> <APP_DOI_DT></APP_DOI_DT> <APP_COMMENCE_DT></APP_COMMENCE_DT> <APP_NATIONALITY>02</APP_NATIONALITY> <APP_OTH_NATIONALITY>UNITED KINGDOM OF G</APP_OTH_NATIONALITY> <APP_COMP_STATUS></APP_COMP_STATUS> <APP_OTH_COMP_STATUS/> <APP_RES_STATUS>R</APP_RES_STATUS> <APP_RES_STATUS_PROOF></APP_RES_STATUS_PROOF> <APP_UID_NO>9632145789632587</APP_UID_NO> <APP_COR_ADD1>B304 ASX</APP_COR_ADD1> <APP_COR_ADD2>KAMGAR NAGAR</APP_COR_ADD2> <APP_COR_ADD3>address 3</APP_COR_ADD3> <APP_COR_CITY>GOA </APP_COR_CITY> <APP_COR_PINCD>400615</APP_COR_PINCD> <APP_COR_STATE>006</APP_COR_STATE> <APP_COR_CTRY>011</APP_COR_CTRY> <APP_OFF_NO>0123456789</APP_OFF_NO> <APP_RES_NO>0227578989</APP_RES_NO> <APP_MOB_NO>0123456789</APP_MOB_NO> <APP_FAX_NO>0227572244</APP_FAX_NO> <APP_EMAIL>testingMODIFIED@gmail.com</APP_EMAIL> <APP_COR_ADD_PROOF>06</APP_COR_ADD_PROOF> <APP_COR_ADD_REF>NA</APP_COR_ADD_REF> <APP_COR_ADD_DT>00/00/0000</APP_COR_ADD_DT> <APP_PER_ADD1>address 1</APP_PER_ADD1> <APP_PER_ADD2>KAMGAR NAGAR</APP_PER_ADD2> <APP_PER_ADD3></APP_PER_ADD3> <APP_PER_CITY></APP_PER_CITY> <APP_PER_PINCD>500502</APP_PER_PINCD> <APP_PER_STATE>006</APP_PER_STATE> <APP_PER_CTRY>014</APP_PER_CTRY> <APP_PER_ADD_PROOF>06</APP_PER_ADD_PROOF> <APP_PER_ADD_REF>NA</APP_PER_ADD_REF> <APP_PER_ADD_DT>00/00/0000</APP_PER_ADD_DT> <APP_INCOME>05</APP_INCOME> <APP_OCC>08</APP_OCC> <APP_OTH_OCC></APP_OTH_OCC> <APP_POL_CONN></APP_POL_CONN> <APP_DOC_PROOF>T</APP_DOC_PROOF> <APP_INTERNAL_REF/> <APP_BRANCH_CODE></APP_BRANCH_CODE> <APP_MAR_STATUS>01</APP_MAR_STATUS> <APP_NETWRTH>01234534.225</APP_NETWRTH> <APP_NETWORTH_DT>13-10-2014 00:00:00</APP_NETWORTH_DT> <APP_INCORP_PLC></APP_INCORP_PLC> <APP_OTHERINFO>WITHOUT KYC DOCUMENT ONLY EMAIL ID AND MOBILE NUMBER UPDATED</APP_OTHERINFO> <APP_FILLER1/> <APP_FILLER2></APP_FILLER2> <APP_FILLER3></APP_FILLER3> <APP_STATUS></APP_STATUS> <APP_STATUSDT></APP_STATUSDT> <APP_ERROR_DESC/> <APP_DUMP_TYPE>T</APP_DUMP_TYPE> <APP_DNLDDT>78945</APP_DNLDDT> <APP_KRA_INFO>NDML</APP_KRA_INFO> <APP_SIGNATURE/> </APP_PAN_INQ> <APP_SUMM_REC>   <APP_REQ_DATE>10-06-2013</APP_REQ_DATE>   <APP_OTHKRA_BATCH></APP_OTHKRA_BATCH>   <APP_OTHKRA_CODE>P2057</APP_OTHKRA_CODE>   <APP_RESPONSE_DATE></APP_RESPONSE_DATE>   <APP_TOTAL_REC>5</APP_TOTAL_REC>   </APP_SUMM_REC>   </APP_REQ_ROOT>";
+		OkraServiceImplProxy client=new OkraServiceImplProxy();
+		String encrypted_pwd=client.getPassword(password, passKey);
+		System.out.println("Encrypted Password: " + encrypted_pwd);
+		byte[] reg_request=request_xml.getBytes();
+		byte[] responseInBytes=client.registration(reg_request, userId,encrypted_pwd, passKey, okraCdOrMiId);
+		String response=new String(responseInBytes);
+		System.out.println(response);
+	}
+
+
+}
+
+Java utilities available in below link
+https://kra.ndml.in/kra-web/downloads/SMS_WebService_Utility.zip
+
+
+
+
+
+
+User creation and Service Registration
+
+Go to website- https://kra.ndml.in/kra-web/ and click on MI Login option and follow below steps
+
+Admin user will login for creation of new user option and select System Security- User Maintenance- New
+On the user profile page, select the user type as Functional User and fill in the other mandatory details. (Leave Issuer CA and Certificate No fields as it is in case of password base login).
+Group id should be 100 and Login type should be password based.
+Change the password of the user by login through website. System will prompt you to change the password while first login.
+
+Please follow below steps for API user registration in admin login
+
+Admin user has functionality in ‘System Security’ as ‘Mobile Registration’ to register users and their mobile number for this facility.
+Intermediary administrator has to select Service Type option from drop down as ‘ALL’ services.
+Intermediary administrator has to ensure that the mobile number registered for this facility is that of a valid user
