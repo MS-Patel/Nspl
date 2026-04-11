@@ -20,6 +20,17 @@ from apps.reconciliation.utils.fingerprint import generate_cams_fingerprint, gen
 User = get_user_model()
 logger = logging.getLogger(__name__)
 
+def generate_pseudo_pan(guardian_pan, investor_name):
+    """
+    Generates a deterministic 10-character pseudo-PAN for a minor based on
+    the guardian's PAN and the minor's name.
+    """
+    raw_string = f"{str(guardian_pan).upper().strip()}_{str(investor_name).upper().strip()}"
+    hash_obj = hashlib.md5(raw_string.encode('utf-8'))
+    # Prefix with M and take 9 characters from hash
+    return f"M{hash_obj.hexdigest()[:9].upper()}"
+
+
 class BaseParser:
     """
     Base parser containing shared logic for all RTA mailback parsers.
@@ -187,7 +198,7 @@ class BaseParser:
                 )
                 self._folio_cache.add(cache_key)
 
-    def get_or_create_provisional_investor(self, pan, name=None, is_offline=True):
+    def get_or_create_provisional_investor(self, pan, name=None, is_offline=True, is_minor=False, guardian_pan=None):
         """
         Finds an investor by PAN or creates a provisional one. Uses cache.
         """
@@ -244,7 +255,9 @@ class BaseParser:
                     middlename=middlename,
                     lastname=lastname,
                     kyc_status=False, # Assumption until verified
-                    is_offline=is_offline
+                    is_offline=is_offline,
+                    tax_status=InvestorProfile.MINOR if is_minor else '',
+                    guardian_pan=guardian_pan if is_minor and guardian_pan else ''
                 )
                 logger.info(f"Created provisional investor for PAN {pan}")
 
@@ -612,11 +625,25 @@ class DBFParser(BaseParser):
                 try:
                     with transaction.atomic():
                         # Map Fields from User List (lower cased)
-                        pan = str(row.get('pan', '')).strip()
+                        raw_pan = str(row.get('pan', '')).strip()
+                        inv_name = str(row.get('inv_name', '')).strip()
+
+                        tax_status = str(row.get('tax_status', '')).strip()
+                        is_minor = False
+                        guardian_pan = None
+                        pan = raw_pan
+
+                        if tax_status.lower() in ['minor', 'on behalf of minor']:
+                            is_minor = True
+                            guardian_pan = raw_pan
+                            if guardian_pan and guardian_pan.lower() != 'nan':
+                                pan = generate_pseudo_pan(guardian_pan, inv_name)
+                            else:
+                                pan = '' # Cannot generate without guardian pan
+
                         if not pan or pan.lower() == 'nan': continue
 
-                        inv_name = str(row.get('inv_name', '')).strip()
-                        investor = self.get_or_create_provisional_investor(pan, inv_name, is_offline=True)
+                        investor = self.get_or_create_provisional_investor(pan, inv_name, is_offline=True, is_minor=is_minor, guardian_pan=guardian_pan)
 
                         scheme_code = str(row.get('prodcode', '')).strip()
                         # Fallback to scheme name if code fails? No, rely on mapping
@@ -677,7 +704,7 @@ class DBFParser(BaseParser):
                         # Corrected mapping from code review feedback
                         txn_nature = str(row.get('trxn_natur', '')).strip()
                         
-                        tax_status = str(row.get('tax_status', '')).strip()
+                        # tax_status was already extracted above
                         micr_no = str(row.get('micr_no', '')).strip()
                         old_folio = str(row.get('old_folio', '')).strip()
                         reinvest_flag = str(row.get('reinvest_f', '')).strip() # Mapped from REINVEST_F
@@ -783,11 +810,23 @@ class KarvyCSVParser(BaseParser):
                     with transaction.atomic():
                         # Map columns
                         # 'pan1' -> pan
-                        pan = str(row.get('pan1', '')).strip()
+                        raw_pan = str(row.get('pan1', '')).strip()
+                        inv_name = str(row.get('investor name', '')).strip()
+
+                        pan = raw_pan
+                        is_minor = False
+                        guardian_pan = None
+
+                        if not pan or pan.lower() == 'nan':
+                            guardpanno = str(row.get('guardpanno', '')).strip()
+                            if guardpanno and guardpanno.lower() != 'nan':
+                                is_minor = True
+                                guardian_pan = guardpanno
+                                pan = generate_pseudo_pan(guardian_pan, inv_name)
+
                         if not pan or pan.lower() == 'nan': continue
 
-                        inv_name = str(row.get('investor name', '')).strip()
-                        investor = self.get_or_create_provisional_investor(pan, inv_name, is_offline=True)
+                        investor = self.get_or_create_provisional_investor(pan, inv_name, is_offline=True, is_minor=is_minor, guardian_pan=guardian_pan)
 
                         # 'scheme code'
                         scheme_code = str(row.get('product code', '')).strip()
