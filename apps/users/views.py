@@ -551,6 +551,7 @@ class InvestorListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
                 'name': inv.user.name if inv.user.name else inv.user.username,
                 'pan': inv.pan,
                 'mobile': inv.mobile,
+                'rm': inv.rm.user.name if inv.rm else '',
                 'distributor_name': inv.distributor.user.name if inv.distributor and inv.distributor.user.name else (inv.distributor.user.username if inv.distributor else ''),
                 'status': 'Active' if inv.user.is_active else 'Inactive',
                 'detail_url': reverse('users:investor_detail', args=[inv.pk]),
