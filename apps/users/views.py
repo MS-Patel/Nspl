@@ -1598,3 +1598,172 @@ class APIPasswordChangeView(LoginRequiredMixin, View):
         update_session_auth_hash(request, user)
 
         return JsonResponse({'status': 'success', 'message': 'Password changed successfully.'})
+
+
+class RMMappingView(LoginRequiredMixin, IsAdminOrRMMixin, TemplateView):
+    template_name = 'users/rm_mapping.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+
+        # Get selected investor IDs from query string
+        investor_ids = self.request.GET.get('ids', '')
+        context['investor_ids'] = investor_ids
+        context['selected_count'] = len([x for x in investor_ids.split(',') if x.strip()]) if investor_ids else 0
+
+        # Fetch RMs
+        if user.user_type == User.Types.ADMIN:
+            context['rms'] = RMProfile.objects.select_related('user').all()
+        elif user.user_type == User.Types.RM:
+            # RM can only map to themselves
+            context['rms'] = RMProfile.objects.select_related('user').filter(user=user)
+
+        return context
+
+    def post(self, request, *args, **kwargs):
+        action = request.POST.get('action')
+
+        if action == 'assign_selected':
+            return self.handle_manual_assignment(request)
+        elif action == 'upload_csv':
+            return self.handle_csv_upload(request)
+
+        messages.error(request, "Invalid Action")
+        return redirect('users:rm_mapping')
+
+    def handle_manual_assignment(self, request):
+        investor_ids_str = request.POST.get('investor_ids', '')
+        rm_id = request.POST.get('rm_id')
+
+        if not investor_ids_str:
+            messages.error(request, "No investors selected.")
+            return redirect('users:rm_mapping')
+
+        investor_ids = [int(id) for id in investor_ids_str.split(',') if id.isdigit()]
+
+        # Validate RM Access
+        rm = None
+        if rm_id:
+            try:
+                qs = RMProfile.objects.all()
+                if request.user.user_type == User.Types.RM:
+                    qs = qs.filter(user=request.user)
+                rm = qs.get(pk=rm_id)
+            except RMProfile.DoesNotExist:
+                messages.error(request, "Invalid RM Selected.")
+                return redirect('users:rm_mapping')
+
+        # Scope Validation for Investors
+        investors = InvestorProfile.objects.filter(id__in=investor_ids)
+        if request.user.user_type == User.Types.RM:
+            # RM can see investors if (distributor.rm == self) OR (rm == self)
+            investors = investors.filter(
+                models.Q(distributor__rm__user=request.user) | models.Q(rm__user=request.user)
+            )
+
+        updated_count = 0
+        with transaction.atomic():
+            for investor in investors:
+                investor.rm = rm
+
+                # Update Hierarchy
+                if rm:
+                    investor.branch = rm.branch
+                else:
+                    # Unassigning
+                    investor.branch = None
+
+                investor.save()
+                updated_count += 1
+
+        messages.success(request, f"Successfully mapped {updated_count} investors.")
+        return redirect('users:investor_list')
+
+    def handle_csv_upload(self, request):
+        csv_file = request.FILES.get('csv_file')
+        if not csv_file:
+            messages.error(request, "Please upload a CSV file.")
+            return redirect('users:rm_mapping')
+
+        if not csv_file.name.endswith('.csv'):
+             messages.error(request, "Invalid file format. Please upload a CSV.")
+             return redirect('users:rm_mapping')
+
+        try:
+            decoded_file = csv_file.read().decode('utf-8-sig').splitlines()
+            reader = csv.DictReader(decoded_file)
+
+            # Normalize headers
+            if reader.fieldnames:
+                reader.fieldnames = [name.lower().strip() for name in reader.fieldnames]
+
+            if 'investor_pan' not in reader.fieldnames or 'rm_employee_code' not in reader.fieldnames:
+                 messages.error(request, "CSV must contain 'investor_pan' and 'rm_employee_code' columns.")
+                 return redirect('users:rm_mapping')
+
+            success_count = 0
+            errors = []
+
+            with transaction.atomic():
+                for row_idx, row in enumerate(reader, start=1):
+                    pan = row.get('investor_pan', '').strip()
+                    rm_emp_code = row.get('rm_employee_code', '').strip()
+
+                    if not pan: continue
+
+                    # 1. Find Investor
+                    try:
+                        investor = InvestorProfile.objects.get(pan__iexact=pan)
+                    except InvestorProfile.DoesNotExist:
+                        errors.append(f"Row {row_idx}: Investor PAN {pan} not found.")
+                        continue
+
+                    # Scope Check for Investor (RM)
+                    if request.user.user_type == User.Types.RM:
+                        # Check if RM has access to this investor
+                        has_access = False
+                        if investor.rm and investor.rm.user == request.user:
+                            has_access = True
+                        elif investor.distributor and investor.distributor.rm and investor.distributor.rm.user == request.user:
+                            has_access = True
+
+                        if not has_access:
+                           errors.append(f"Row {row_idx}: Permission denied for PAN {pan}.")
+                           continue
+
+                    # 2. Find RM
+                    rm = None
+                    if rm_emp_code:
+                        try:
+                            qs = RMProfile.objects.all()
+                            if request.user.user_type == User.Types.RM:
+                                qs = qs.filter(user=request.user)
+                            rm = qs.get(employee_code__iexact=rm_emp_code)
+                        except RMProfile.DoesNotExist:
+                            errors.append(f"Row {row_idx}: RM Employee Code {rm_emp_code} not found (or access denied).")
+                            continue
+
+                    # 3. Apply Mapping
+                    investor.rm = rm
+                    if rm:
+                        investor.branch = rm.branch
+                    else:
+                        investor.branch = None
+
+                    investor.save()
+                    success_count += 1
+
+            if errors:
+                for err in errors[:5]: # Show first 5 errors
+                    messages.warning(request, err)
+                if len(errors) > 5:
+                    messages.warning(request, f"...and {len(errors)-5} more errors.")
+
+            if success_count > 0:
+                messages.success(request, f"Successfully processed {success_count} rows.")
+
+        except Exception as e:
+            messages.error(request, f"Error processing CSV: {str(e)}")
+
+        return redirect('users:rm_mapping')

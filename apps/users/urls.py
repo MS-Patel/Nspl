@@ -43,6 +43,7 @@ urlpatterns = [
 
     path('users/investor/', views.InvestorListView.as_view(), name='investor_list'),
     path('users/investor/mapping/', views.DistributorMappingView.as_view(), name='distributor_mapping'),
+    path('users/investor/rm-mapping/', views.RMMappingView.as_view(), name='rm_mapping'),
     path('users/investor/create/', views.InvestorCreateView.as_view(), name='investor_create'),
     path('users/investor/onboard/', views.InvestorCreateView.as_view(), name='investor_onboard'), # New Wizard
     path('users/investor/<int:pk>/update/', views.InvestorUpdateView.as_view(), name='investor_update'),
