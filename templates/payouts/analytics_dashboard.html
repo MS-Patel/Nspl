@@ -91,16 +91,38 @@
         </a>
     </div>
 
-    <!-- Data Grid -->
+    <!-- Data Grids (Tabs) -->
     <div class="card p-4">
-        <h3 class="text-base font-medium text-slate-700 dark:text-navy-100 mb-4 border-b border-slate-150 pb-2 dark:border-navy-600">
-            Investor Brokerage Details
-        </h3>
+        <div x-data="{ activeTab: 'rm' }" class="w-full">
+            <div class="flex items-center justify-between mb-4 border-b border-slate-150 pb-2 dark:border-navy-600">
+                <div class="flex space-x-4">
+                    <button @click="activeTab = 'rm'"
+                            :class="activeTab === 'rm' ? 'text-primary border-primary dark:text-accent-light dark:border-accent-light' : 'text-slate-500 border-transparent hover:text-slate-800 dark:text-navy-200 dark:hover:text-navy-50'"
+                            class="pb-2 border-b-2 font-medium transition-colors">
+                        RM Brokerage Details
+                    </button>
+                    <button @click="activeTab = 'distributor'"
+                            :class="activeTab === 'distributor' ? 'text-primary border-primary dark:text-accent-light dark:border-accent-light' : 'text-slate-500 border-transparent hover:text-slate-800 dark:text-navy-200 dark:hover:text-navy-50'"
+                            class="pb-2 border-b-2 font-medium transition-colors">
+                        Distributor Brokerage Details
+                    </button>
+                </div>
+            </div>
 
-        <!-- Pass data safely to Grid.js -->
-        {{ investor_data_json|json_script:"investor-data" }}
+            <!-- Pass data safely to Grid.js -->
+            {{ rm_data_json|json_script:"rm-data" }}
+            {{ distributor_data_json|json_script:"distributor-data" }}
 
-        <div id="analytics-grid" class="w-full"></div>
+            <!-- RM Tab Panel -->
+            <div x-show="activeTab === 'rm'" class="w-full">
+                <div id="rm-analytics-grid" class="w-full"></div>
+            </div>
+
+            <!-- Distributor Tab Panel -->
+            <div x-show="activeTab === 'distributor'" style="display: none;" class="w-full">
+                <div id="distributor-analytics-grid" class="w-full"></div>
+            </div>
+        </div>
     </div>
 
 </div>
@@ -109,31 +131,10 @@
 {% block javascript %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const rawData = JSON.parse(document.getElementById('investor-data').textContent);
+        const rmData = JSON.parse(document.getElementById('rm-data').textContent);
+        const distributorData = JSON.parse(document.getElementById('distributor-data').textContent);
 
-        const grid = new window.Gridjs.Grid({
-            columns: [
-                { name: 'Investor Name', id: 'name' },
-                { name: 'PAN', id: 'pan', width: '120px' },
-                {
-                    name: 'Type',
-                    id: 'direct',
-                    width: '100px',
-                    formatter: (cell) => window.Gridjs.html(
-                        cell
-                        ? `<span class="badge rounded-full bg-warning/10 text-warning dark:bg-warning/15">Direct</span>`
-                        : `<span class="badge rounded-full bg-info/10 text-info dark:bg-info/15">Mapped</span>`
-                    )
-                },
-                { name: 'RM Name', id: 'rm' },
-                { name: 'Distributor Name', id: 'distributor' },
-                {
-                    name: 'Total Earned',
-                    id: 'amount',
-                    formatter: (cell) => `₹${parseFloat(cell).toFixed(2)}`
-                }
-            ],
-            data: rawData,
+        const gridConfig = {
             search: true,
             sort: true,
             pagination: {
@@ -151,7 +152,35 @@
                 paginationButton: 'btn h-8 w-8 rounded-lg p-0 hover:bg-slate-100 focus:bg-slate-100 active:bg-slate-150/80 dark:hover:bg-navy-500 dark:focus:bg-navy-500 dark:active:bg-navy-500/90 mx-1',
                 paginationButtonCurrent: 'bg-primary text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90',
             }
-        }).render(document.getElementById("analytics-grid"));
+        };
+
+        const rmGrid = new window.Gridjs.Grid({
+            columns: [
+                { name: 'RM Code', id: 'code' },
+                { name: 'RM Name', id: 'name' },
+                {
+                    name: 'Total Earned',
+                    id: 'amount',
+                    formatter: (cell) => `₹${parseFloat(cell).toFixed(2)}`
+                }
+            ],
+            data: rmData,
+            ...gridConfig
+        }).render(document.getElementById("rm-analytics-grid"));
+
+        const distributorGrid = new window.Gridjs.Grid({
+            columns: [
+                { name: 'Distributor Code', id: 'code' },
+                { name: 'Distributor Name', id: 'name' },
+                {
+                    name: 'Total Earned',
+                    id: 'amount',
+                    formatter: (cell) => `₹${parseFloat(cell).toFixed(2)}`
+                }
+            ],
+            data: distributorData,
+            ...gridConfig
+        }).render(document.getElementById("distributor-analytics-grid"));
     });
 </script>
 {% endblock %}

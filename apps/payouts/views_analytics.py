@@ -27,19 +27,38 @@ class InvestorAnalyticsDashboardView(LoginRequiredMixin, UserPassesTestMixin, De
 
         context['analytics_summary'] = summary
 
-        # Prepare data for Grid.js safely
-        grid_data = []
-        for item in results_list:
-            grid_data.append({
-                "name": item['investor_name'],
-                "pan": item['pan'],
-                "direct": item['is_direct'],
-                "rm": item['rm_name'],
-                "distributor": item['distributor_name'],
-                "amount": float(item['total_brokerage'])
-            })
+        # Prepare aggregated data for RM and Distributor grids
+        rm_dict = {}
+        dist_dict = {}
 
-        context['investor_data_json'] = grid_data
+        for item in results_list:
+            # RM Aggregation
+            if item['rm_name']:
+                rm_str = item['rm_name']
+                # parse Code(Name) format
+                if '(' in rm_str and rm_str.endswith(')'):
+                    code, name = rm_str[:-1].split('(', 1)
+                else:
+                    code, name = rm_str, ''
+
+                if code not in rm_dict:
+                    rm_dict[code] = {'code': code, 'name': name, 'amount': 0.0}
+                rm_dict[code]['amount'] += float(item['total_brokerage'])
+
+            # Distributor Aggregation
+            if item['distributor_name']:
+                dist_str = item['distributor_name']
+                if '(' in dist_str and dist_str.endswith(')'):
+                    code, name = dist_str[:-1].split('(', 1)
+                else:
+                    code, name = dist_str, ''
+
+                if code not in dist_dict:
+                    dist_dict[code] = {'code': code, 'name': name, 'amount': 0.0}
+                dist_dict[code]['amount'] += float(item['total_brokerage'])
+
+        context['rm_data_json'] = list(rm_dict.values())
+        context['distributor_data_json'] = list(dist_dict.values())
 
         return context
 
