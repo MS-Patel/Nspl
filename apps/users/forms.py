@@ -606,6 +606,7 @@ class BankAccountForm(forms.ModelForm):
         fields = ['ifsc_code', 'micr_code', 'account_number', 'account_type', 'bank_name', 'branch_name', 'is_default']
 
 class NomineeForm(forms.ModelForm):
+    name = forms.CharField(max_length=100, required=False)
     date_of_birth = forms.DateField(
         required=False,
         widget=forms.DateInput(attrs={'type': 'date'}),
@@ -620,7 +621,7 @@ class NomineeForm(forms.ModelForm):
         model = Nominee
         fields = [
             'name', 'relationship', 'percentage', 'date_of_birth',
-            'guardian_name', 'guardian_pan', 'pan',
+            'guardian_name', 'guardian_pan',
             'address_1', 'address_2', 'address_3', 'city', 'state', 'pincode', 'country', 'mobile', 'email',
             'id_type', 'id_number'
         ]
@@ -628,17 +629,30 @@ class NomineeForm(forms.ModelForm):
             'relationship': forms.Select(),
         }
 
+    def clean(self):
+        cleaned_data = super().clean()
+        name = cleaned_data.get('name')
+        if not name:
+            cleaned_data['DELETE'] = True
+            self.errors.clear()
+        return cleaned_data
+
 class BaseNomineeFormSet(BaseInlineFormSet):
     def clean(self):
         super().clean()
-        if any(self.errors):
-            return
+        # We don't return early on `if any(self.errors)` because we want to
+        # allow forms with an empty name to be ignored instead of triggering required field errors from other fields.
+        # So we evaluate the valid forms here.
 
         total_percentage = 0
         has_forms = False
 
         for form in self.forms:
             if not form.cleaned_data or form.cleaned_data.get('DELETE'):
+                continue
+
+            # If name is not provided, we ignore this form completely
+            if not form.cleaned_data.get('name'):
                 continue
 
             has_forms = True

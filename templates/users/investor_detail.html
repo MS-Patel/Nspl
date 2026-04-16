@@ -363,7 +363,6 @@
                                 <tr class="border-y border-transparent border-b-slate-200 dark:border-b-navy-500">
                                     <td class="whitespace-nowrap px-4 py-3 sm:px-5">
                                         {{ nominee.name }}
-                                        <div class="text-xs text-slate-400">PAN: {{ nominee.pan|default:"-" }}</div>
                                         {% if nominee.id_type %}
                                         <div class="text-xs text-slate-400">ID: {{ nominee.get_id_type_display }} - {{ nominee.id_number }}</div>
                                         {% endif %}
