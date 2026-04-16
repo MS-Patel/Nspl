@@ -39,7 +39,7 @@ class InvestorAnalyticsDashboardView(LoginRequiredMixin, UserPassesTestMixin, De
                 "amount": float(item['total_brokerage'])
             })
 
-        context['investor_data_json'] = json.dumps(grid_data)
+        context['investor_data_json'] = grid_data
 
         return context
 
@@ -56,7 +56,7 @@ class ExportInvestorAnalyticsView(LoginRequiredMixin, UserPassesTestMixin, View)
             data.append({
                 'Investor Name': item['investor_name'],
                 'PAN': item['pan'],
-                'Direct Investor': 'Yes' if item['is_direct'] else 'No',
+                'Direct Investor': 'Yes' if item['is_direct'] else '',
                 'RM Name': item['rm_name'],
                 'Distributor Name': item['distributor_name'],
                 'Total Brokerage Earned': item['total_brokerage'],
