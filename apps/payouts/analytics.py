@@ -42,12 +42,12 @@ def get_investor_brokerage_analytics(brokerage_import):
 
                 rm_name_str = ""
                 if investor.rm:
-                    rm_name = investor.rm.user.get_full_name() or investor.rm.user.username
+                    rm_name = investor.rm.user.name or investor.rm.user.username
                     rm_name_str = f"{investor.rm.employee_code}({rm_name})"
 
                 dist_name_str = ""
                 if investor.distributor:
-                    dist_name = investor.distributor.user.get_full_name() or investor.distributor.user.username
+                    dist_name = investor.distributor.user.name or investor.distributor.user.username
                     dist_name_str = f"{investor.distributor.broker_code}({dist_name})"
 
                 investor_analytics[inv_key] = {
