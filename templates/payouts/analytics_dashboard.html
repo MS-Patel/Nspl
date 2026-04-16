@@ -1,0 +1,157 @@
+{% extends 'layout/base.html' %}
+{% load humanize %}
+
+{% block title %}Investor Analytics - {{ brokerage_import.get_month_display }} {{ brokerage_import.year }}{% endblock %}
+
+{% block content %}
+<div class="flex items-center space-x-4 py-5 lg:py-6">
+    <h2 class="text-xl font-medium text-slate-800 dark:text-navy-50 lg:text-2xl">
+        Investor Brokerage Analytics
+    </h2>
+    <div class="hidden h-full py-1 sm:flex">
+        <div class="h-full w-px bg-slate-300 dark:bg-navy-600"></div>
+    </div>
+    <ul class="hidden flex-wrap items-center space-x-2 sm:flex">
+        <li class="flex items-center space-x-2">
+            <a class="text-primary transition-colors hover:text-primary-focus dark:text-accent-light dark:hover:text-accent" href="{% url 'payouts:import_list' %}">Imports</a>
+            <svg x-ignore xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+        </li>
+        <li class="flex items-center space-x-2">
+            <a class="text-primary transition-colors hover:text-primary-focus dark:text-accent-light dark:hover:text-accent" href="{% url 'payouts:import_detail' brokerage_import.id %}">{{ brokerage_import.get_month_display }} {{ brokerage_import.year }}</a>
+            <svg x-ignore xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+            </svg>
+        </li>
+        <li>Analytics</li>
+    </ul>
+</div>
+
+<div class="grid grid-cols-1 gap-4 sm:gap-5 lg:gap-6">
+
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4 lg:gap-6">
+        <div class="card flex-row justify-between p-4">
+            <div>
+                <p class="text-xs+ uppercase">Total Brokerage</p>
+                <div class="mt-2 flex items-baseline space-x-1">
+                    <p class="text-2xl font-semibold text-slate-700 dark:text-navy-100">₹{{ analytics_summary.total_brokerage|floatformat:2|intcomma }}</p>
+                </div>
+            </div>
+            <div class="mask is-squircle flex h-10 w-10 items-center justify-center bg-primary/10 text-primary dark:bg-accent-light/10 dark:text-accent-light">
+                <i class="fas fa-rupee-sign text-xl"></i>
+            </div>
+        </div>
+
+        <div class="card flex-row justify-between p-4">
+            <div>
+                <p class="text-xs+ uppercase">Direct Brokerage</p>
+                <div class="mt-2 flex items-baseline space-x-1">
+                    <p class="text-2xl font-semibold text-warning">₹{{ analytics_summary.direct_brokerage|floatformat:2|intcomma }}</p>
+                </div>
+            </div>
+            <div class="mask is-squircle flex h-10 w-10 items-center justify-center bg-warning/10 text-warning">
+                <i class="fas fa-user-tie text-xl"></i>
+            </div>
+        </div>
+
+        <div class="card flex-row justify-between p-4">
+            <div>
+                <p class="text-xs+ uppercase">RM Brokerage</p>
+                <div class="mt-2 flex items-baseline space-x-1">
+                    <p class="text-2xl font-semibold text-info">₹{{ analytics_summary.rm_brokerage|floatformat:2|intcomma }}</p>
+                </div>
+            </div>
+            <div class="mask is-squircle flex h-10 w-10 items-center justify-center bg-info/10 text-info">
+                <i class="fas fa-user-friends text-xl"></i>
+            </div>
+        </div>
+
+        <div class="card flex-row justify-between p-4">
+            <div>
+                <p class="text-xs+ uppercase">Distributor Brokerage</p>
+                <div class="mt-2 flex items-baseline space-x-1">
+                    <p class="text-2xl font-semibold text-success">₹{{ analytics_summary.distributor_brokerage|floatformat:2|intcomma }}</p>
+                </div>
+            </div>
+            <div class="mask is-squircle flex h-10 w-10 items-center justify-center bg-success/10 text-success">
+                <i class="fas fa-building text-xl"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex justify-end space-x-2">
+        <a href="{% url 'payouts:import_detail' brokerage_import.id %}" class="btn bg-slate-150 font-medium text-slate-800 hover:bg-slate-200 focus:bg-slate-200 active:bg-slate-200/80 dark:bg-navy-500 dark:text-navy-50 dark:hover:bg-navy-450 dark:focus:bg-navy-450 dark:active:bg-navy-450/90">
+            Back to Import
+        </a>
+        <a href="{% url 'payouts:export_investor_analytics' brokerage_import.id %}" class="btn gap-2 bg-success text-white hover:bg-success-focus focus:bg-success-focus active:bg-success-focus/90">
+            <i class="fas fa-file-excel"></i> Export Dashboard Data
+        </a>
+    </div>
+
+    <!-- Data Grid -->
+    <div class="card p-4">
+        <h3 class="text-base font-medium text-slate-700 dark:text-navy-100 mb-4 border-b border-slate-150 pb-2 dark:border-navy-600">
+            Investor Brokerage Details
+        </h3>
+
+        <!-- Pass data safely to Grid.js -->
+        {{ investor_data_json|json_script:"investor-data" }}
+
+        <div id="analytics-grid" class="w-full"></div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block javascript %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const rawData = JSON.parse(document.getElementById('investor-data').textContent);
+
+        const grid = new window.Gridjs.Grid({
+            columns: [
+                { name: 'Investor Name', id: 'name' },
+                { name: 'PAN', id: 'pan', width: '120px' },
+                {
+                    name: 'Type',
+                    id: 'direct',
+                    width: '100px',
+                    formatter: (cell) => window.Gridjs.html(
+                        cell
+                        ? `<span class="badge rounded-full bg-warning/10 text-warning dark:bg-warning/15">Direct</span>`
+                        : `<span class="badge rounded-full bg-info/10 text-info dark:bg-info/15">Mapped</span>`
+                    )
+                },
+                { name: 'RM Name', id: 'rm' },
+                { name: 'Distributor Name', id: 'distributor' },
+                {
+                    name: 'Total Earned',
+                    id: 'amount',
+                    formatter: (cell) => `₹${parseFloat(cell).toFixed(2)}`
+                }
+            ],
+            data: rawData,
+            search: true,
+            sort: true,
+            pagination: {
+                enabled: true,
+                limit: 20
+            },
+            fixedHeader: true,
+            height: '600px',
+            className: {
+                table: 'w-full text-left border-collapse',
+                th: 'bg-slate-50 dark:bg-navy-800 font-semibold text-slate-700 dark:text-navy-100 p-3 border-b border-slate-200 dark:border-navy-500 whitespace-nowrap',
+                td: 'p-3 border-b border-slate-100 dark:border-navy-600 text-slate-600 dark:text-navy-200',
+                pagination: 'flex items-center justify-between p-4',
+                paginationSummary: 'text-sm text-slate-500 dark:text-navy-300',
+                paginationButton: 'btn h-8 w-8 rounded-lg p-0 hover:bg-slate-100 focus:bg-slate-100 active:bg-slate-150/80 dark:hover:bg-navy-500 dark:focus:bg-navy-500 dark:active:bg-navy-500/90 mx-1',
+                paginationButtonCurrent: 'bg-primary text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90',
+            }
+        }).render(document.getElementById("analytics-grid"));
+    });
+</script>
+{% endblock %}

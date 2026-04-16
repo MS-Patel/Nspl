@@ -77,6 +77,19 @@
     <!-- Payouts Generated -->
     <div class="card p-4">
         <div class="flex flex-col sm:flex-row items-center justify-between mb-4 border-b border-slate-150 pb-2 dark:border-navy-600">
+            <h3 class="text-base font-medium text-slate-700 dark:text-navy-100">Investor Brokerage Analytics</h3>
+            <div class="flex space-x-2 mt-2 sm:mt-0">
+                <a href="{% url 'payouts:investor_analytics' object.id %}" class="btn h-8 gap-2 bg-primary text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90">
+                    <i class="fas fa-chart-pie"></i> View Investor Analytics
+                </a>
+            </div>
+        </div>
+        <p class="text-sm text-slate-500 mb-4">View direct brokerage earned, and breakdown by RM and Distributor based on Investor Mapping.</p>
+    </div>
+
+    <!-- Payouts Generated -->
+    <div class="card p-4 mt-4">
+        <div class="flex flex-col sm:flex-row items-center justify-between mb-4 border-b border-slate-150 pb-2 dark:border-navy-600">
             <h3 class="text-base font-medium text-slate-700 dark:text-navy-100">Payouts Generated</h3>
             <div class="flex space-x-2 mt-2 sm:mt-0">
                 <a href="{% url 'payouts:export_amc_report' object.id %}" class="btn h-8 gap-2 bg-info text-white hover:bg-info-focus focus:bg-info-focus active:bg-info-focus/90">
