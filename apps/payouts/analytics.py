@@ -40,12 +40,22 @@ def get_investor_brokerage_analytics(brokerage_import):
                 if not investor_name:
                     investor_name = txn.investor_name or investor.pan
 
+                rm_name_str = ""
+                if investor.rm:
+                    rm_name = investor.rm.user.get_full_name() or investor.rm.user.username
+                    rm_name_str = f"{investor.rm.employee_code}({rm_name})"
+
+                dist_name_str = ""
+                if investor.distributor:
+                    dist_name = investor.distributor.user.get_full_name() or investor.distributor.user.username
+                    dist_name_str = f"{investor.distributor.broker_code}({dist_name})"
+
                 investor_analytics[inv_key] = {
                     'investor_name': investor_name,
                     'pan': investor.pan,
                     'is_direct': not bool(investor.rm or investor.distributor),
-                    'rm_name': investor.rm.user.get_full_name() or investor.rm.user.username if investor.rm else 'None',
-                    'distributor_name': investor.distributor.user.get_full_name() or investor.distributor.user.username if investor.distributor else 'None',
+                    'rm_name': rm_name_str,
+                    'distributor_name': dist_name_str,
                     'total_brokerage': 0,
                     'is_mapped_in_system': True
                 }
@@ -57,8 +67,8 @@ def get_investor_brokerage_analytics(brokerage_import):
                     'investor_name': txn.investor_name or 'Unknown',
                     'pan': 'Unknown',
                     'is_direct': True, # Treat completely unmapped as direct since we don't know
-                    'rm_name': 'None',
-                    'distributor_name': 'None',
+                    'rm_name': '',
+                    'distributor_name': '',
                     'total_brokerage': 0,
                     'is_mapped_in_system': False
                 }
@@ -71,8 +81,8 @@ def get_investor_brokerage_analytics(brokerage_import):
     summary = {
         'total_brokerage': sum(float(item['total_brokerage']) for item in results_list),
         'direct_brokerage': sum(float(item['total_brokerage']) for item in results_list if item['is_direct']),
-        'rm_brokerage': sum(float(item['total_brokerage']) for item in results_list if item['rm_name'] != 'None'),
-        'distributor_brokerage': sum(float(item['total_brokerage']) for item in results_list if item['distributor_name'] != 'None'),
+        'rm_brokerage': sum(float(item['total_brokerage']) for item in results_list if item['rm_name'] != ''),
+        'distributor_brokerage': sum(float(item['total_brokerage']) for item in results_list if item['distributor_name'] != ''),
     }
 
     return results_list, summary
