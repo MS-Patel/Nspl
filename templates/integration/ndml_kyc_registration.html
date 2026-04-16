@@ -1,0 +1,174 @@
+{% extends 'layout/base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block content %}
+<div class="flex items-center space-x-4 py-5 lg:py-6">
+    <h2 class="text-xl font-medium text-slate-800 dark:text-navy-50 lg:text-2xl">
+        NDML KYC Registration
+    </h2>
+</div>
+
+<div class="grid grid-cols-12 gap-4 sm:gap-5 lg:gap-6">
+    <div class="col-span-12 lg:col-span-8">
+        <div class="card p-4 sm:p-5">
+            <p class="text-base font-medium text-slate-700 dark:text-navy-100 mb-4">Register new investor for KYC</p>
+
+            {% if success %}
+                <div class="alert flex rounded-lg bg-success/10 p-4 text-success dark:bg-success/15 mb-6">
+                    <div class="w-full">
+                        <h3 class="text-base font-medium">Registration Sent Successfully</h3>
+                        <p class="mt-1 break-words text-sm">{{ response_data }}</p>
+                    </div>
+                </div>
+            {% endif %}
+
+            {% if error %}
+                <div class="alert flex rounded-lg bg-error/10 p-4 text-error dark:bg-error/15 mb-6">
+                    <div class="w-full">
+                        <h3 class="text-base font-medium">Registration Failed</h3>
+                        <p class="mt-1 break-words text-sm">{{ response_data }}</p>
+                    </div>
+                </div>
+            {% endif %}
+
+            <form method="post" action="{% url 'integration:ndml_kyc_registration_tool' %}">
+                {% csrf_token %}
+
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+
+                    <!-- Personal Details -->
+                    <div class="col-span-1 sm:col-span-2 mt-4">
+                        <h3 class="text-sm font-semibold uppercase tracking-wider text-slate-400 dark:text-navy-300">Personal Details</h3>
+                        <div class="my-2 h-px bg-slate-200 dark:bg-navy-500"></div>
+                    </div>
+
+                    <label class="block">
+                        <span>{{ form.pan_no.label }}</span>
+                        {{ form.pan_no }}
+                        {% if form.pan_no.errors %}
+                            <span class="text-xs text-error">{{ form.pan_no.errors.0 }}</span>
+                        {% endif %}
+                    </label>
+
+                    <label class="block">
+                        <span>{{ form.name.label }}</span>
+                        {{ form.name }}
+                        {% if form.name.errors %}
+                            <span class="text-xs text-error">{{ form.name.errors.0 }}</span>
+                        {% endif %}
+                    </label>
+
+                    <label class="block">
+                        <span>{{ form.dob.label }}</span>
+                        {{ form.dob }}
+                        {% if form.dob.errors %}
+                            <span class="text-xs text-error">{{ form.dob.errors.0 }}</span>
+                        {% endif %}
+                    </label>
+
+                    <label class="block">
+                        <span>{{ form.gender.label }}</span>
+                        {{ form.gender }}
+                        {% if form.gender.errors %}
+                            <span class="text-xs text-error">{{ form.gender.errors.0 }}</span>
+                        {% endif %}
+                    </label>
+
+                    <label class="block">
+                        <span>{{ form.mobile_no.label }}</span>
+                        {{ form.mobile_no }}
+                        {% if form.mobile_no.errors %}
+                            <span class="text-xs text-error">{{ form.mobile_no.errors.0 }}</span>
+                        {% endif %}
+                    </label>
+
+                    <label class="block">
+                        <span>{{ form.email.label }}</span>
+                        {{ form.email }}
+                        {% if form.email.errors %}
+                            <span class="text-xs text-error">{{ form.email.errors.0 }}</span>
+                        {% endif %}
+                    </label>
+
+                    <!-- Address Details -->
+                    <div class="col-span-1 sm:col-span-2 mt-4">
+                        <h3 class="text-sm font-semibold uppercase tracking-wider text-slate-400 dark:text-navy-300">Address Details</h3>
+                        <div class="my-2 h-px bg-slate-200 dark:bg-navy-500"></div>
+                    </div>
+
+                    <label class="block sm:col-span-2">
+                        <span>{{ form.cor_add1.label }}</span>
+                        {{ form.cor_add1 }}
+                        {% if form.cor_add1.errors %}
+                            <span class="text-xs text-error">{{ form.cor_add1.errors.0 }}</span>
+                        {% endif %}
+                    </label>
+
+                    <label class="block sm:col-span-2">
+                        <span>{{ form.cor_add2.label }}</span>
+                        {{ form.cor_add2 }}
+                        {% if form.cor_add2.errors %}
+                            <span class="text-xs text-error">{{ form.cor_add2.errors.0 }}</span>
+                        {% endif %}
+                    </label>
+
+                    <label class="block">
+                        <span>{{ form.cor_city.label }}</span>
+                        {{ form.cor_city }}
+                        {% if form.cor_city.errors %}
+                            <span class="text-xs text-error">{{ form.cor_city.errors.0 }}</span>
+                        {% endif %}
+                    </label>
+
+                    <label class="block">
+                        <span>{{ form.cor_state.label }}</span>
+                        {{ form.cor_state }}
+                        {% if form.cor_state.errors %}
+                            <span class="text-xs text-error">{{ form.cor_state.errors.0 }}</span>
+                        {% endif %}
+                    </label>
+
+                    <label class="block">
+                        <span>{{ form.cor_pincode.label }}</span>
+                        {{ form.cor_pincode }}
+                        {% if form.cor_pincode.errors %}
+                            <span class="text-xs text-error">{{ form.cor_pincode.errors.0 }}</span>
+                        {% endif %}
+                    </label>
+
+                    <label class="block">
+                        <span>{{ form.cor_ctry.label }}</span>
+                        {{ form.cor_ctry }}
+                        {% if form.cor_ctry.errors %}
+                            <span class="text-xs text-error">{{ form.cor_ctry.errors.0 }}</span>
+                        {% endif %}
+                    </label>
+
+                </div>
+
+                <div class="mt-6 flex justify-end">
+                    <button type="submit" class="btn bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90">
+                        Submit KYC Registration
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-span-12 lg:col-span-4">
+        <div class="card p-4 sm:p-5">
+            <h3 class="text-base font-medium text-slate-800 dark:text-navy-50 mb-3">Information</h3>
+            <p class="text-sm text-slate-500 dark:text-navy-200">
+                This tool sends a direct KYC registration request to the NDML Okra service. Ensure all details exactly match the investor's identity documents.
+            </p>
+            <ul class="mt-4 list-disc pl-5 text-sm text-slate-500 dark:text-navy-200 space-y-1">
+                <li>PAN must be 10 characters (e.g. ABCDE1234F).</li>
+                <li>Mobile must be 10 digits.</li>
+                <li>Pincode must be 6 digits.</li>
+                <li>Date of Birth must be in DD-MM-YYYY format.</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
