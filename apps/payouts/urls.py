@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from . import views_analytics
 
 app_name = 'payouts'
 
@@ -13,6 +14,11 @@ urlpatterns = [
     path('payouts/import/<int:pk>/export/', views.ExportPayoutReportView.as_view(), name='export_payout_report'),
     path('payouts/import/<int:pk>/export-amc/', views.ExportAMCPayoutReportView.as_view(), name='export_amc_report'),
     path('payouts/import/<int:pk>/export-transactions/', views.ExportTransactionReportView.as_view(), name='export_transaction_report'),
+
+    # Investor Analytics
+    path('payouts/import/<int:pk>/analytics/', views_analytics.InvestorAnalyticsDashboardView.as_view(), name='investor_analytics'),
+    path('payouts/import/<int:pk>/analytics/export/', views_analytics.ExportInvestorAnalyticsView.as_view(), name='export_investor_analytics'),
+
     path('payouts/import-list/', views.BrokerageImportListView.as_view(), name='import_list'),
 
     # Category Management
