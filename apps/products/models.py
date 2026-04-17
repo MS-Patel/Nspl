@@ -1,5 +1,7 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from django.contrib.postgres.indexes import BrinIndex
+from simple_history.models import HistoricalRecords
 
 class AMC(models.Model):
     name = models.CharField(max_length=255)
@@ -33,11 +35,12 @@ class FundManager(models.Model):
 
 class Scheme(models.Model):
     # Identifiers
-    amc = models.ForeignKey(AMC, on_delete=models.CASCADE, related_name='schemes')
+    amc = models.ForeignKey(AMC, on_delete=models.CASCADE, related_name='schemes', null=True, blank=True)
     category = models.ForeignKey(SchemeCategory, on_delete=models.SET_NULL, null=True, blank=True)
     name = models.CharField(max_length=255)
+    normalized_name = models.CharField(max_length=255, db_index=True, null=True, blank=True)
     isin = models.CharField(max_length=20, db_index=True)
-    scheme_code = models.CharField(max_length=50, unique=True, help_text="BSE Scheme Code")
+    scheme_code = models.CharField(max_length=50, unique=True, null=True, blank=True, help_text="BSE Scheme Code (legacy)")
     unique_no = models.BigIntegerField(unique=True, null=True, blank=True, help_text="BSE Unique No")
     rta_scheme_code = models.CharField(max_length=50, blank=True, null=True)
     amc_scheme_code = models.CharField(max_length=50, blank=True, null=True)
@@ -45,7 +48,17 @@ class Scheme(models.Model):
 
     # Classification
     scheme_type = models.CharField(max_length=50, blank=True, null=True, help_text="e.g. Open Ended")
-    scheme_plan = models.CharField(max_length=50, blank=True, null=True, help_text="e.g. NORMAL, DIRECT")
+    plan_type = models.CharField(
+        max_length=50,
+        choices=[("DIRECT", "Direct"), ("REGULAR", "Regular")],
+        db_index=True, null=True, blank=True
+    )
+    option = models.CharField(
+        max_length=50,
+        choices=[("GROWTH", "Growth"), ("IDCW", "IDCW")],
+        db_index=True, null=True, blank=True
+    )
+    scheme_plan = models.CharField(max_length=50, blank=True, null=True, help_text="Legacy e.g. NORMAL, DIRECT")
 
     # Purchase Rules
     purchase_allowed = models.BooleanField(default=True)
@@ -114,16 +127,66 @@ class Scheme(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    history = HistoricalRecords()
 
     class Meta:
         ordering = ['name']
+        indexes = [
+            models.Index(fields=["isin", "plan_type", "option"]),
+            models.Index(fields=["amfi_code"]),
+            models.Index(fields=["normalized_name"]),
+        ]
 
     def __str__(self):
         return f"{self.name} ({self.isin})"
 
+
+class BSESchemeMapping(models.Model):
+    scheme = models.ForeignKey(Scheme, on_delete=models.CASCADE, related_name="bse_mappings")
+    bse_code = models.CharField(max_length=20, unique=True)
+    transaction_type = models.CharField(
+        max_length=10,
+        choices=[("LUMPSUM", "LUMPSUM"), ("SIP", "SIP"), ("STP", "STP"), ("SWP", "SWP")]
+    )
+    min_amount = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    max_amount = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    history = HistoricalRecords()
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["scheme", "transaction_type"]),
+            models.Index(fields=["bse_code"]),
+        ]
+
+    def __str__(self):
+        return f"{self.bse_code} - {self.transaction_type} ({self.scheme.name})"
+
+
+class RTASchemeMapping(models.Model):
+    scheme = models.ForeignKey(Scheme, on_delete=models.CASCADE, related_name="rta_mappings")
+    rta_code = models.CharField(max_length=50, unique=True)
+    rta_name = models.CharField(max_length=255)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    history = HistoricalRecords()
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["rta_code"]),
+        ]
+
+    def __str__(self):
+        return f"{self.rta_code} ({self.scheme.name})"
+
+
 class NAVHistory(models.Model):
     scheme = models.ForeignKey(Scheme, on_delete=models.CASCADE, related_name='nav_history')
-    nav_date = models.DateField()
+    nav_date = models.DateField(db_index=True)
     net_asset_value = models.DecimalField(max_digits=15, decimal_places=4)
     repurchase_price = models.DecimalField(max_digits=15, decimal_places=4, null=True, blank=True)
     sale_price = models.DecimalField(max_digits=15, decimal_places=4, null=True, blank=True)
@@ -132,9 +195,25 @@ class NAVHistory(models.Model):
         unique_together = ('scheme', 'nav_date')
         ordering = ['-nav_date']
         get_latest_by = 'nav_date'
+        indexes = [
+            models.Index(fields=["scheme", "-nav_date"], name="navhist_scheme_date_idx"),
+            BrinIndex(fields=["nav_date"], name="navhist_date_brin_idx"),
+        ]
 
     def __str__(self):
-        return f"{self.scheme.scheme_code} - {self.nav_date} - {self.net_asset_value}"
+        return f"{self.scheme.isin} - {self.nav_date} - {self.net_asset_value}"
+
+
+class UnmatchedSchemeLog(models.Model):
+    source = models.CharField(max_length=50, choices=[("AMFI", "AMFI"), ("BSE", "BSE"), ("RTA", "RTA")])
+    raw_data = models.JSONField(help_text="The raw row data that failed to match")
+    reason = models.TextField(help_text="Why it failed to match")
+    resolved = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Unmatched {self.source} log - {self.created_at}"
+
 
 class SchemeManager(models.Model):
     scheme = models.ForeignKey(Scheme, on_delete=models.CASCADE, related_name='managers')

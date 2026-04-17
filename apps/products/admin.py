@@ -1,3 +1,6 @@
+from simple_history.admin import SimpleHistoryAdmin
+from .models import BSESchemeMapping, RTASchemeMapping, UnmatchedSchemeLog
+
 from django.contrib import admin
 from .models import (
     AMC, SchemeCategory, Scheme, NAVHistory,
@@ -37,7 +40,7 @@ class SchemeAssetAllocationInline(admin.TabularInline):
     extra = 1
 
 @admin.register(Scheme)
-class SchemeAdmin(admin.ModelAdmin):
+class SchemeAdmin(SimpleHistoryAdmin):
     list_display = ('id', 'name', 'amc', 'scheme_code', 'isin', 'scheme_type', 'scheme_plan', 'channel_partner_code')
     search_fields = ('name', 'scheme_code', 'isin', 'rta_scheme_code','channel_partner_code')
     list_filter = ('amc', 'category', 'scheme_type', 'scheme_plan', 'riskometer', 'purchase_allowed', 'redemption_allowed', 'is_sip_allowed')
@@ -48,3 +51,20 @@ class NAVHistoryAdmin(admin.ModelAdmin):
     list_display = ('id', 'scheme', 'nav_date', 'net_asset_value', 'repurchase_price', 'sale_price')
     search_fields = ('scheme__name', 'scheme__scheme_code')
     list_filter = ('nav_date',)
+
+@admin.register(BSESchemeMapping)
+class BSESchemeMappingAdmin(SimpleHistoryAdmin):
+    list_display = ('bse_code', 'scheme', 'transaction_type', 'is_active')
+    search_fields = ('bse_code', 'scheme__name', 'scheme__isin')
+    list_filter = ('transaction_type', 'is_active')
+
+@admin.register(RTASchemeMapping)
+class RTASchemeMappingAdmin(SimpleHistoryAdmin):
+    list_display = ('rta_code', 'rta_name', 'scheme')
+    search_fields = ('rta_code', 'rta_name', 'scheme__name', 'scheme__isin')
+
+@admin.register(UnmatchedSchemeLog)
+class UnmatchedSchemeLogAdmin(admin.ModelAdmin):
+    list_display = ('source', 'reason', 'resolved', 'created_at')
+    list_filter = ('source', 'resolved', 'created_at')
+    search_fields = ('reason', 'raw_data')

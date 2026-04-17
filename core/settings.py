@@ -59,6 +59,8 @@ INSTALLED_APPS = [
     'apps.analytics',
     'apps.reconciliation',
     'apps.reports',
+    'simple_history',
+    'django.contrib.postgres',
     'apps.website',
 ]
 
