@@ -40,13 +40,13 @@ def get_investor_brokerage_analytics(brokerage_import):
                 if not investor_name:
                     investor_name = txn.investor_name or investor.pan
 
-                rm_name_str = ""
+                rm_name_str, rm_code = "", ""
                 if investor.rm:
                     rm_code = investor.rm.employee_code
                     rm_name = investor.rm.user.name or investor.rm.user.username
                     rm_name_str = f"{investor.rm.employee_code}({rm_name})"
 
-                dist_name_str = ""
+                dist_name_str, dist_code = "", ""
                 if investor.distributor:
                     dist_name = investor.distributor.user.name or investor.distributor.user.username
                     dist_code = investor.distributor.broker_code
