@@ -42,12 +42,14 @@ def get_investor_brokerage_analytics(brokerage_import):
 
                 rm_name_str = ""
                 if investor.rm:
+                    rm_code = investor.rm.employee_code
                     rm_name = investor.rm.user.name or investor.rm.user.username
                     rm_name_str = f"{investor.rm.employee_code}({rm_name})"
 
                 dist_name_str = ""
                 if investor.distributor:
                     dist_name = investor.distributor.user.name or investor.distributor.user.username
+                    dist_code = investor.distributor.broker_code
                     dist_name_str = f"{investor.distributor.broker_code}({dist_name})"
 
                 investor_analytics[inv_key] = {
@@ -55,7 +57,9 @@ def get_investor_brokerage_analytics(brokerage_import):
                     'pan': investor.pan,
                     'is_direct': not bool(investor.rm or investor.distributor),
                     'rm_name': rm_name_str,
+                    'rm_code': rm_code,
                     'distributor_name': dist_name_str,
+                    'distributor_code': dist_code,
                     'total_brokerage': 0,
                     'is_mapped_in_system': True
                 }
