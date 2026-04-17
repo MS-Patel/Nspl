@@ -72,7 +72,9 @@ def get_investor_brokerage_analytics(brokerage_import):
                     'pan': 'Unknown',
                     'is_direct': True, # Treat completely unmapped as direct since we don't know
                     'rm_name': '',
+                    'rm_code': '',
                     'distributor_name': '',
+                    'distributor_code': '',
                     'total_brokerage': 0,
                     'is_mapped_in_system': False
                 }
