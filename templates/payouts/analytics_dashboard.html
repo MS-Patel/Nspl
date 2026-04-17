@@ -93,29 +93,28 @@
 
     <!-- Data Grids (Tabs) -->
     <div class="card p-4">
-        <div x-data="{
-                activeTab: 'rm',
-                init() {
-                    this.$watch('activeTab', value => {
-                        if (value === 'distributor' && !window.distributorGridRendered) {
-                            window.distributorGrid.render(document.getElementById('distributor-analytics-grid'));
-                            window.distributorGridRendered = true;
-                        }
-                    });
-                }
-            }" class="w-full">
-            <div class="flex items-center justify-between mb-4 border-b border-slate-150 pb-2 dark:border-navy-600">
-                <div class="flex space-x-4">
-                    <button @click="activeTab = 'rm'"
-                            :class="activeTab === 'rm' ? 'text-primary border-primary dark:text-accent-light dark:border-accent-light' : 'text-slate-500 border-transparent hover:text-slate-800 dark:text-navy-200 dark:hover:text-navy-50'"
-                            class="pb-2 border-b-2 font-medium transition-colors">
-                        RM Brokerage Details
-                    </button>
-                    <button @click="activeTab = 'distributor'"
-                            :class="activeTab === 'distributor' ? 'text-primary border-primary dark:text-accent-light dark:border-accent-light' : 'text-slate-500 border-transparent hover:text-slate-800 dark:text-navy-200 dark:hover:text-navy-50'"
-                            class="pb-2 border-b-2 font-medium transition-colors">
-                        Distributor Brokerage Details
-                    </button>
+        <div id="analytics-tabs" class="tabs flex flex-col w-full">
+            <div class="is-scrollbar-hidden overflow-x-auto">
+                <div class="border-b-2 border-slate-150 dark:border-navy-500">
+                    <div class="tabs-list flex">
+                        <button
+                                class="tab btn shrink-0 rounded-none border-b-2 px-3 py-2 font-medium"
+                                data-active-class="border-primary dark:border-accent text-primary dark:text-accent-light"
+                                data-default-class="border-transparent hover:text-slate-800 focus:text-slate-800 dark:hover:text-navy-100 dark:focus:text-navy-100"
+                                data-target="#tab-rm"
+                        >
+                            RM Brokerage Details
+                        </button>
+                        <button
+                                id="btn-tab-distributor"
+                                class="tab btn shrink-0 rounded-none border-b-2 px-3 py-2 font-medium"
+                                data-active-class="border-primary dark:border-accent text-primary dark:text-accent-light"
+                                data-default-class="border-transparent hover:text-slate-800 focus:text-slate-800 dark:hover:text-navy-100 dark:focus:text-navy-100"
+                                data-target="#tab-distributor"
+                        >
+                            Distributor Brokerage Details
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -123,14 +122,16 @@
             {{ rm_data_json|json_script:"rm-data" }}
             {{ distributor_data_json|json_script:"distributor-data" }}
 
-            <!-- RM Tab Panel -->
-            <div x-show="activeTab === 'rm'" class="w-full">
-                <div id="rm-analytics-grid" class="w-full"></div>
-            </div>
+            <div class="pt-4">
+                <!-- RM Tab Panel -->
+                <div class="tab-content tab-shift-up" id="tab-rm">
+                    <div id="rm-analytics-grid" class="w-full"></div>
+                </div>
 
-            <!-- Distributor Tab Panel -->
-            <div x-show="activeTab === 'distributor'" style="display: none;" class="w-full">
-                <div id="distributor-analytics-grid" class="w-full"></div>
+                <!-- Distributor Tab Panel -->
+                <div class="tab-content tab-shift-up" id="tab-distributor">
+                    <div id="distributor-analytics-grid" class="w-full"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -191,6 +192,22 @@
             data: distributorData,
             ...gridConfig
         });
+
+        // Initialize Native Tab
+        new window.Tab(document.querySelector("#analytics-tabs"));
+
+        // Event listener to render distributor grid on first tab click
+        const distributorTabBtn = document.getElementById('btn-tab-distributor');
+        if (distributorTabBtn) {
+            distributorTabBtn.addEventListener('click', function() {
+                if (!window.distributorGridRendered) {
+                    setTimeout(() => {
+                        window.distributorGrid.render(document.getElementById('distributor-analytics-grid'));
+                        window.distributorGridRendered = true;
+                    }, 50); // slight delay to allow tab content to display first
+                }
+            });
+        }
     });
 </script>
 {% endblock %}

@@ -46,7 +46,9 @@ class TestBrokerageParsing(TestCase):
         self.import_obj.cams_file = MagicMock()
         self.import_obj.cams_file.path = "dummy.csv"
 
-        process_cams_file(self.import_obj)
+        from apps.payouts.utils import prefetch_mapping_data
+        scheme_map, distributor_map, folio_map = prefetch_mapping_data()
+        process_cams_file(self.import_obj, scheme_map, distributor_map, folio_map)
 
         txn = BrokerageTransaction.objects.first()
         self.assertIsNotNone(txn)
@@ -73,7 +75,9 @@ class TestBrokerageParsing(TestCase):
         self.import_obj.karvy_file = MagicMock()
         self.import_obj.karvy_file.path = "dummy_karvy.csv"
 
-        process_karvy_file(self.import_obj)
+        from apps.payouts.utils import prefetch_mapping_data
+        scheme_map, distributor_map, folio_map = prefetch_mapping_data()
+        process_karvy_file(self.import_obj, scheme_map, distributor_map, folio_map)
 
         txn = BrokerageTransaction.objects.first()
         self.assertIsNotNone(txn)
