@@ -93,7 +93,17 @@
 
     <!-- Data Grids (Tabs) -->
     <div class="card p-4">
-        <div x-data="{ activeTab: 'rm' }" class="w-full">
+        <div x-data="{
+                activeTab: 'rm',
+                init() {
+                    this.$watch('activeTab', value => {
+                        if (value === 'distributor' && !window.distributorGridRendered) {
+                            window.distributorGrid.render(document.getElementById('distributor-analytics-grid'));
+                            window.distributorGridRendered = true;
+                        }
+                    });
+                }
+            }" class="w-full">
             <div class="flex items-center justify-between mb-4 border-b border-slate-150 pb-2 dark:border-navy-600">
                 <div class="flex space-x-4">
                     <button @click="activeTab = 'rm'"
@@ -142,7 +152,6 @@
                 limit: 20
             },
             fixedHeader: true,
-            height: '600px',
             className: {
                 table: 'w-full text-left border-collapse',
                 th: 'bg-slate-50 dark:bg-navy-800 font-semibold text-slate-700 dark:text-navy-100 p-3 border-b border-slate-200 dark:border-navy-500 whitespace-nowrap',
@@ -168,7 +177,8 @@
             ...gridConfig
         }).render(document.getElementById("rm-analytics-grid"));
 
-        const distributorGrid = new window.Gridjs.Grid({
+        window.distributorGridRendered = false;
+        window.distributorGrid = new window.Gridjs.Grid({
             columns: [
                 { name: 'Distributor Code', id: 'code' },
                 { name: 'Distributor Name', id: 'name' },
@@ -180,7 +190,7 @@
             ],
             data: distributorData,
             ...gridConfig
-        }).render(document.getElementById("distributor-analytics-grid"));
+        });
     });
 </script>
 {% endblock %}
