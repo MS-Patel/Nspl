@@ -210,7 +210,7 @@ class AdminDashboardView(LoginRequiredMixin, IsAdminMixin, TemplateView):
         target_date = today + datetime.timedelta(days=7)
 
         upcoming_sips = list(SIP.objects.filter(
-            status='ACTIVE',
+            status=SIP.STATUS_ACTIVE,
             next_installment_date__gte=today,
             next_installment_date__lte=target_date
         ).select_related('investor__user', 'scheme').order_by('next_installment_date'))
@@ -237,7 +237,7 @@ class RMDashboardView(LoginRequiredMixin, IsRMMixin, TemplateView):
 
             upcoming_sips = list(SIP.objects.filter(
                 investor__in=investors,
-                status='ACTIVE',
+                status=SIP.STATUS_ACTIVE,
                 next_installment_date__gte=today,
                 next_installment_date__lte=target_date
             ).select_related('investor__user', 'scheme').order_by('next_installment_date'))
@@ -264,7 +264,7 @@ class DistributorDashboardView(LoginRequiredMixin, IsDistributorMixin, TemplateV
         context['total_aum'] = aum_agg['total_aum'] or 0
 
         # 3. Active SIPs
-        context['active_sip_count'] = SIP.objects.filter(investor__in=investors, status='ACTIVE').count()
+        context['active_sip_count'] = SIP.objects.filter(investor__in=investors, status=SIP.STATUS_ACTIVE).count()
 
         # 4. Recent Orders (Limit 5)
         recent_orders = Order.objects.filter(investor__in=investors).select_related('investor__user', 'scheme').order_by('-created_at')[:5]
@@ -278,7 +278,7 @@ class DistributorDashboardView(LoginRequiredMixin, IsDistributorMixin, TemplateV
 
         upcoming_sips = list(SIP.objects.filter(
             investor__in=investors,
-            status='ACTIVE',
+            status=SIP.STATUS_ACTIVE,
             next_installment_date__gte=today,
             next_installment_date__lte=target_date
         ).select_related('investor__user', 'scheme').order_by('next_installment_date'))
@@ -329,7 +329,7 @@ class InvestorDashboardView(LoginRequiredMixin, TemplateView):
 
             upcoming_sips = list(SIP.objects.filter(
                 investor=investor_profile,
-                status='ACTIVE',
+                status=SIP.STATUS_ACTIVE,
                 next_installment_date__gte=today,
                 next_installment_date__lte=target_date
             ).select_related('scheme').order_by('next_installment_date'))
