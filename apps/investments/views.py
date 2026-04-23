@@ -1406,7 +1406,7 @@ class SIPDashboardView(LoginRequiredMixin, TemplateView):
         # Build list for data table
         # We need Investor Name, Scheme, Amount, Status, and Next Installment Date
         sip_list = []
-        for sip in sips.order_by('-created_at'):
+        for sip in active_sips.order_by('-created_at'):
             sip_list.append({
                 'id': sip.id,
                 'investor_name': f"{sip.investor.user.first_name} {sip.investor.user.last_name}".strip() or sip.investor.user.username,
