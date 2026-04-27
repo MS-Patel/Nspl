@@ -1,3 +1,4 @@
+import datetime
 from apps.users.models import InvestorProfile, BankAccount, Nominee
 from apps.users.constants import STATE_MAPPING
 from apps.administration.models import SystemConfiguration
@@ -722,6 +723,17 @@ def get_bse_xsip_order_params(sip, member_id, user_id, password, pass_key):
 
     start_date = sip.start_date.strftime("%d/%m/%Y")
 
+    # BSE expects EndDate in Param3 for DAILY XSIPs
+    end_date_str = ""
+    if sip.end_date:
+        end_date_str = sip.end_date.strftime("%d/%m/%Y")
+    elif sip.frequency == 'DAILY' and sip.installments:
+        calculated_end_date = sip.start_date + datetime.timedelta(days=sip.installments)
+        end_date_str = calculated_end_date.strftime("%d/%m/%Y")
+    elif sip.frequency == 'DAILY':
+        # Default to 2099 for perpetual SIP if no installments
+        end_date_str = "31/12/2099"
+
     params = {
         'TransactionCode': 'NEW',
         'UniqueRefNo': str(sip.unique_ref_no), # Changed from sip.id to unique_ref_no
@@ -752,8 +764,8 @@ def get_bse_xsip_order_params(sip, member_id, user_id, password, pass_key):
         'PassKey': pass_key,
         'Param1': '',
         'Param2': '',
-        'Param3': '',
-        'Filler1': '',
+        'Param3': end_date_str if sip.frequency == 'DAILY' else '',
+        'Filler1': sip.investor.distributor.broker_code if sip.investor.distributor else '',
         'Filler2': '',
         'Filler3': '',
         'Filler4': '',
