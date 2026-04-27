@@ -714,6 +714,7 @@ def get_bse_xsip_order_params(sip, member_id, user_id, password, pass_key):
     folio_no = sip.folio.folio_number if sip.folio else ""
 
     freq_map = {
+        'DAILY' : 'DAILY',
         'MONTHLY': 'MONTHLY',
         'WEEKLY': 'WEEKLY',
         'QUARTERLY': 'QUARTERLY'
@@ -732,7 +733,7 @@ def get_bse_xsip_order_params(sip, member_id, user_id, password, pass_key):
         'TransMode': 'P',
         'DpTxnMode': 'P', # Assuming Physical like DPTxn
         'StartDate': start_date,
-        'FrequencyType': freq_map.get(sip.frequency, 'MONTHLY'),
+        'FrequencyType': freq_map.get(sip.frequency),
         'FrequencyAllowed': '1', # Guideline mandates '1' (rolling)
         'InstallmentAmount': f"{sip.amount:.2f}",
         'NoOfInstallment': str(sip.installments),
