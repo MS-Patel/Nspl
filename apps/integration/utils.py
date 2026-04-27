@@ -748,7 +748,7 @@ def get_bse_xsip_order_params(sip, member_id, user_id, password, pass_key):
         'FrequencyType': freq_map.get(sip.frequency),
         'FrequencyAllowed': '1', # Guideline mandates '1' (rolling)
         'InstallmentAmount': f"{sip.amount:.2f}",
-        'NoOfInstallment': str(sip.installments),
+        'NoOfInstallment': '' if sip.frequency == 'DAILY' else str(sip.installments),
         'Remarks': '',
         'FolioNo': folio_no,
         'FirstOrderFlag': 'N',
