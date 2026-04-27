@@ -733,7 +733,7 @@ def get_bse_xsip_order_params(sip, member_id, user_id, password, pass_key):
     elif sip.frequency == 'DAILY':
         # Default to 2099 for perpetual SIP if no installments
         end_date_str = "31/12/2099"
-
+    broker=broker
     params = {
         'TransactionCode': 'NEW',
         'UniqueRefNo': str(sip.unique_ref_no), # Changed from sip.id to unique_ref_no
@@ -754,7 +754,7 @@ def get_bse_xsip_order_params(sip, member_id, user_id, password, pass_key):
         'FirstOrderFlag': 'N',
         'Brokerage': '',
         'MandateID': sip.mandate.mandate_id,
-        'SubberCode': sip.investor.distributor.broker_code if sip.investor.distributor else '',
+        'SubberCode': broker.broker_code if broker else '',
         'Euin': euin, # Use correct EUIN
         'EuinVal': euin_val, # Updated Name
         'DPC': 'Y', # Guideline mandates 'Y'
@@ -765,7 +765,7 @@ def get_bse_xsip_order_params(sip, member_id, user_id, password, pass_key):
         'Param1': '',
         'Param2': '',
         'Param3': end_date_str if sip.frequency == 'DAILY' else '',
-        'Filler1': sip.investor.distributor.broker_code if sip.investor.distributor else '',
+        'Filler1': broker.arn_number if broker and broker.arn_number else '',
         'Filler2': '',
         'Filler3': '',
         'Filler4': '',
