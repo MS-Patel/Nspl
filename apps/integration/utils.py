@@ -733,7 +733,7 @@ def get_bse_xsip_order_params(sip, member_id, user_id, password, pass_key):
     elif sip.frequency == 'DAILY':
         # Default to 2099 for perpetual SIP if no installments
         end_date_str = "31/12/2099"
-    broker=broker
+    broker=sip.investor.distributor
     params = {
         'TransactionCode': 'NEW',
         'UniqueRefNo': str(sip.unique_ref_no), # Changed from sip.id to unique_ref_no
