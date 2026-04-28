@@ -165,7 +165,7 @@ MEDIA_URL = '/media/'
 # BSE StarMF API Configuration
 BSE_MEMBER_ID = os.environ.get('BSE_MEMBER_ID', "24637")
 BSE_USER_ID = os.environ.get('BSE_USER_ID', "2463702")
-BSE_PASSWORD = os.environ.get('BSE_PASSWORD', "Navin@2026")
+BSE_PASSWORD = os.environ.get('BSE_PASSWORD', "Vadodaramf@2026")
 
 BSE_ENV = os.environ.get('BSE_ENV', 'DEMO').upper()
 
