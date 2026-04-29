@@ -76,10 +76,10 @@ class ExportInvestorAnalyticsView(LoginRequiredMixin, UserPassesTestMixin, View)
                 'Investor Name': item['investor_name'],
                 'PAN': item['pan'],
                 'Direct Investor': 'Yes' if item['is_direct'] else '',
-                'RM Name': item['rm_name'],
                 'RM Code': item['rm_code'],
-                'Distributor Name': item['distributor_name'],
+                'RM Name': item['rm_name'],
                 'Distributor Code': item['distributor_code'],
+                'Distributor Name': item['distributor_name'],
                 'Total Brokerage Earned': item['total_brokerage'],
             })
 
