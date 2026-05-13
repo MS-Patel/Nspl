@@ -174,3 +174,25 @@ class NDMLClient:
         except Exception as e:
             ndml_logger.error(f"NDML KYC Download Error: {str(e)}")
             return {'status': 'error', 'remarks': str(e)}
+
+    def kyc_modification(self, request_xml):
+        """
+        Sends the KYC Modification XML to NDML Okra Service.
+        Note: Before calling API for modification intermediary needs to download the KYC through web service method panDownloadDetailsComplete.
+        """
+        try:
+            encrypted_password, pass_key = self._get_auth_details('okra')
+            client = self._get_okra_client(self)
+
+            response = client.service.processModification(
+                input=request_xml.encode('utf-8'),
+                userId=self.user_name,
+                userPassword=encrypted_password,
+                passKey=pass_key,
+                okraCdOrMiId=self.mi_id
+            )
+
+            return {'status': 'success', 'data': response}
+        except Exception as e:
+            ndml_logger.error(f"NDML Modification Error: {str(e)}")
+            return {'status': 'error', 'remarks': str(e)}

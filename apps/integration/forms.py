@@ -47,3 +47,8 @@ class NDMLRegistrationForm(forms.Form):
         if not re.match(r'^[0-9]{6}$', pincode):
             raise forms.ValidationError("Pincode must be 6 digits.")
         return pincode
+
+
+class NDMLModificationForm(NDMLRegistrationForm):
+    # Same fields as Registration, but can add any specific ones if needed.
+    pass

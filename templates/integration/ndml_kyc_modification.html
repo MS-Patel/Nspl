@@ -1,0 +1,144 @@
+{% extends 'layout/base.html' %}
+{% load widget_tweaks %}
+
+{% block title %}NDML KYC Modification Tool{% endblock %}
+
+{% block content %}
+<main class="main-content w-full px-[var(--margin-x)] pb-8">
+  <div class="flex items-center space-x-4 py-5 lg:py-6">
+    <h2 class="text-xl font-medium text-slate-800 dark:text-navy-50 lg:text-2xl">
+      NDML KYC Modification Tool
+    </h2>
+    <div class="hidden h-full py-1 sm:flex">
+      <div class="h-full w-px bg-slate-300 dark:bg-navy-600"></div>
+    </div>
+    <ul class="hidden flex-wrap items-center space-x-2 sm:flex">
+      <li class="flex items-center space-x-2">
+        <a class="text-primary transition-colors hover:text-primary-focus dark:text-accent-light dark:hover:text-accent" href="#">Tools</a>
+        <svg x-ignore="" xmlns="http://www.w3.org/2000/svg" class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+      </li>
+      <li>NDML KYC Modification</li>
+    </ul>
+  </div>
+
+  <div class="grid grid-cols-1 gap-4 sm:gap-5 lg:gap-6">
+    <!-- Form Card -->
+    <div class="card p-4 sm:p-5">
+      <p class="text-base font-medium text-slate-700 dark:text-navy-100 mb-4">
+        Submit KYC Modification to NDML Okra (Requires prior download)
+      </p>
+
+      {% if success %}
+      <div class="alert flex rounded-lg border border-success px-4 py-4 text-success sm:px-5 mb-4">
+        <div class="mr-3 flex size-8 shrink-0 items-center justify-center rounded-full bg-success/10">
+          <svg xmlns="http://www.w3.org/2000/svg" class="size-5" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+          </svg>
+        </div>
+        <div>
+          <h4 class="text-lg font-semibold text-success">Success</h4>
+          <div class="mt-1 text-sm break-all">
+            {{ response_data }}
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      {% if error %}
+      <div class="alert flex rounded-lg border border-error px-4 py-4 text-error sm:px-5 mb-4">
+        <div class="mr-3 flex size-8 shrink-0 items-center justify-center rounded-full bg-error/10">
+          <svg xmlns="http://www.w3.org/2000/svg" class="size-5" viewBox="0 0 20 20" fill="currentColor">
+             <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+          </svg>
+        </div>
+        <div>
+          <h4 class="text-lg font-semibold text-error">Error</h4>
+          <div class="mt-1 text-sm break-all">
+            {{ response_data }}
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      <form method="post" action="{% url 'integration:ndml_kyc_modification_tool' %}">
+        {% csrf_token %}
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <!-- Personal Details -->
+            <div class="col-span-1 sm:col-span-2"><h3 class="text-lg font-medium text-slate-700 dark:text-navy-100">Personal Details</h3></div>
+            <label class="block">
+                <span>{{ form.pan_no.label }}</span>
+                {{ form.pan_no }}
+                {{ form.pan_no.errors }}
+            </label>
+             <label class="block">
+                <span>{{ form.name.label }}</span>
+                {{ form.name }}
+                 {{ form.name.errors }}
+            </label>
+             <label class="block">
+                <span>{{ form.dob.label }}</span>
+                {{ form.dob }}
+                {{ form.dob.errors }}
+            </label>
+             <label class="block">
+                <span>{{ form.gender.label }}</span>
+                {{ form.gender }}
+                {{ form.gender.errors }}
+            </label>
+             <label class="block">
+                <span>{{ form.mobile_no.label }}</span>
+                {{ form.mobile_no }}
+                 {{ form.mobile_no.errors }}
+            </label>
+             <label class="block">
+                <span>{{ form.email.label }}</span>
+                {{ form.email }}
+                 {{ form.email.errors }}
+            </label>
+
+            <!-- Address Details -->
+            <div class="col-span-1 sm:col-span-2 mt-4"><h3 class="text-lg font-medium text-slate-700 dark:text-navy-100">Correspondence Address</h3></div>
+            <label class="block col-span-1 sm:col-span-2">
+                <span>{{ form.cor_add1.label }}</span>
+                {{ form.cor_add1 }}
+                 {{ form.cor_add1.errors }}
+            </label>
+            <label class="block col-span-1 sm:col-span-2">
+                <span>{{ form.cor_add2.label }}</span>
+                {{ form.cor_add2 }}
+                {{ form.cor_add2.errors }}
+            </label>
+            <label class="block">
+                <span>{{ form.cor_city.label }}</span>
+                {{ form.cor_city }}
+                 {{ form.cor_city.errors }}
+            </label>
+            <label class="block">
+                <span>{{ form.cor_state.label }}</span>
+                {{ form.cor_state }}
+                {{ form.cor_state.errors }}
+            </label>
+            <label class="block">
+                <span>{{ form.cor_pincode.label }}</span>
+                {{ form.cor_pincode }}
+                {{ form.cor_pincode.errors }}
+            </label>
+            <label class="block">
+                <span>{{ form.cor_ctry.label }}</span>
+                {{ form.cor_ctry }}
+                 {{ form.cor_ctry.errors }}
+            </label>
+        </div>
+
+        <div class="mt-6 flex justify-end">
+            <button type="submit" class="btn bg-primary font-medium text-white hover:bg-primary-focus focus:bg-primary-focus active:bg-primary-focus/90 dark:bg-accent dark:hover:bg-accent-focus dark:focus:bg-accent-focus dark:active:bg-accent/90">
+                Submit Modification
+            </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</main>
+{% endblock %}

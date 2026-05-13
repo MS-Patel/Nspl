@@ -6,6 +6,11 @@ app_name = 'integration'
 urlpatterns = [
     path('tools/pan-check/', views.BSEPanCheckToolView.as_view(), name='pan_check_tool'),
     path('tools/ndml-kyc-registration/', views.NDMLRegistrationToolView.as_view(), name='ndml_kyc_registration_tool'),
+    path('tools/ndml-kyc-status/', views.NDMLKYCStatusListView.as_view(), name='ndml_kyc_status_list'),
+
+    path('tools/ndml-kyc-modification/', views.NDMLModificationToolView.as_view(), name='ndml_kyc_modification_tool'),
+    path('api/ndml/modify/', views.NDMLModificationView.as_view(), name='api_ndml_modify'),
+
     path('api/pan-check/', views.CheckPANStatusView.as_view(), name='api_pan_check'),
     path('api/bank-details/', views.GetBankDetailsView.as_view(), name='api_bank_details'),
     path('api/ndml/register/', views.NDMLRegistrationView.as_view(), name='api_ndml_register'),
