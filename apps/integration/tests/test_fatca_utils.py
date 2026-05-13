@@ -41,7 +41,7 @@ class TestFatcaMapping(SimpleTestCase):
 
         self.assertEqual(parts[11], "IN", "Tax Residence 1 should be IN (Index 11)")
         self.assertEqual(parts[12], "ABCDE1234F", "TPIN1 should be the PAN (Index 12)")
-        self.assertEqual(parts[13], "", "ID1_TYPE must be empty for Indian residents (Index 13)")
+        self.assertEqual(parts[13], "T", "ID1_TYPE must be 'T' (Index 13)")
 
     def test_id1_type_present_for_foreign_resident(self):
         """

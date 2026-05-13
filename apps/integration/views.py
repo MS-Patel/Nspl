@@ -193,6 +193,201 @@ from .forms import NDMLRegistrationForm
 import xml.etree.ElementTree as ET
 from datetime import datetime
 
+
+class NDMLModificationView(LoginRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        try:
+            data = json.loads(request.body)
+            request_xml = data.get('request_xml')
+            investor_id = data.get('investor_id')
+
+            if not request_xml:
+                return JsonResponse({'status': 'error', 'remarks': 'XML request is required.'}, status=400)
+
+            client = NDMLClient()
+            response = client.kyc_modification(request_xml)
+
+            if response['status'] == 'success' and investor_id:
+                try:
+                    investor = InvestorProfile.objects.get(id=investor_id)
+                    investor.ndml_last_synced_at = timezone.now()
+                    investor.save()
+                except InvestorProfile.DoesNotExist:
+                    pass
+
+            return JsonResponse(response)
+        except json.JSONDecodeError:
+            return JsonResponse({'status': 'error', 'remarks': 'Invalid JSON.'}, status=400)
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'remarks': str(e)}, status=500)
+
+
+from .forms import NDMLModificationForm
+
+class NDMLModificationToolView(LoginRequiredMixin, View):
+    template_name = 'integration/ndml_kyc_modification.html'
+
+    def get(self, request, *args, **kwargs):
+        form = NDMLModificationForm()
+        return render(request, self.template_name, {'form': form})
+
+    def post(self, request, *args, **kwargs):
+        form = NDMLModificationForm(request.POST)
+        context = {'form': form}
+
+        if form.is_valid():
+            try:
+                data = form.cleaned_data
+
+                root = ET.Element("APP_REQ_ROOT")
+                app_pan_inq = ET.SubElement(root, "APP_PAN_INQ")
+
+                ET.SubElement(app_pan_inq, "APP_IOP_FLG").text = "IE"
+
+                config = SystemConfiguration.get_solo()
+                pos_code = config.ndml_pos_code if config else ""
+                ET.SubElement(app_pan_inq, "APP_POS_CODE").text = pos_code
+
+                ET.SubElement(app_pan_inq, "APP_TYPE").text = "I"
+                ET.SubElement(app_pan_inq, "APP_NO").text = ""
+                ET.SubElement(app_pan_inq, "APP_DATE").text = ""
+
+                ET.SubElement(app_pan_inq, "APP_PAN_NO").text = data['pan_no']
+                ET.SubElement(app_pan_inq, "APP_PANEX_NO").text = ""
+                ET.SubElement(app_pan_inq, "APP_PAN_COPY").text = "Y"
+                ET.SubElement(app_pan_inq, "APP_EXMT").text = "N"
+                ET.SubElement(app_pan_inq, "APP_EXMT_CAT").text = ""
+                ET.SubElement(app_pan_inq, "APP_KYC_MODE").text = "0"
+                ET.SubElement(app_pan_inq, "APP_EXMT_ID_PROOF").text = "02"
+                ET.SubElement(app_pan_inq, "APP_IPV_FLAG").text = "E"
+                ET.SubElement(app_pan_inq, "APP_IPV_DATE").text = datetime.now().strftime("%d-%m-%Y")
+                ET.SubElement(app_pan_inq, "APP_GEN").text = data['gender']
+
+                full_name = data['name']
+                name_parts = full_name.split(' ')
+                f_name = name_parts[0] if name_parts else ""
+
+                ET.SubElement(app_pan_inq, "APP_NAME").text = full_name
+                ET.SubElement(app_pan_inq, "APP_F_NAME").text = f_name
+                ET.SubElement(app_pan_inq, "APP_REGNO").text = ""
+
+                dob_str = data['dob'].strftime("%d-%m-%Y")
+                ET.SubElement(app_pan_inq, "APP_DOB_DT").text = dob_str
+                ET.SubElement(app_pan_inq, "APP_DOI_DT").text = dob_str
+                ET.SubElement(app_pan_inq, "APP_COMMENCE_DT").text = ""
+
+                ET.SubElement(app_pan_inq, "APP_NATIONALITY").text = ""
+                ET.SubElement(app_pan_inq, "APP_OTH_NATIONALITY").text = "UAE"
+                ET.SubElement(app_pan_inq, "APP_COMP_STATUS").text = ""
+                ET.SubElement(app_pan_inq, "APP_OTH_COMP_STATUS").text = ""
+                ET.SubElement(app_pan_inq, "APP_RES_STATUS").text = ""
+                ET.SubElement(app_pan_inq, "APP_RES_STATUS_PROOF").text = ""
+                ET.SubElement(app_pan_inq, "APP_UID_NO").text = ""
+
+                ET.SubElement(app_pan_inq, "APP_COR_ADD1").text = data['cor_add1']
+                ET.SubElement(app_pan_inq, "APP_COR_ADD2").text = data['cor_add2']
+                ET.SubElement(app_pan_inq, "APP_COR_ADD3").text = ""
+                ET.SubElement(app_pan_inq, "APP_COR_CITY").text = data['cor_city']
+                ET.SubElement(app_pan_inq, "APP_COR_PINCD").text = data['cor_pincode']
+                ET.SubElement(app_pan_inq, "APP_COR_STATE").text = data['cor_state']
+                ET.SubElement(app_pan_inq, "APP_OTH_COR_STATE").text = data['cor_state']
+                ET.SubElement(app_pan_inq, "APP_COR_CTRY").text = data['cor_ctry']
+
+                ET.SubElement(app_pan_inq, "APP_OFF_NO").text = ""
+                ET.SubElement(app_pan_inq, "APP_RES_NO").text = ""
+                ET.SubElement(app_pan_inq, "APP_MOB_NO").text = data['mobile_no']
+                ET.SubElement(app_pan_inq, "APP_FAX_NO").text = ""
+                ET.SubElement(app_pan_inq, "APP_EMAIL").text = data['email']
+
+                ET.SubElement(app_pan_inq, "APP_COR_ADD_PROOF").text = "26"
+                ET.SubElement(app_pan_inq, "APP_COR_ADD_REF").text = ""
+                ET.SubElement(app_pan_inq, "APP_COR_ADD_DT").text = ""
+
+                ET.SubElement(app_pan_inq, "APP_PER_ADD1").text = data['cor_add1']
+                ET.SubElement(app_pan_inq, "APP_PER_ADD2").text = data['cor_add2']
+                ET.SubElement(app_pan_inq, "APP_PER_ADD3").text = ""
+                ET.SubElement(app_pan_inq, "APP_PER_CITY").text = data['cor_city']
+                ET.SubElement(app_pan_inq, "APP_PER_PINCD").text = data['cor_pincode']
+                ET.SubElement(app_pan_inq, "APP_PER_STATE").text = "099"
+                ET.SubElement(app_pan_inq, "APP_OTH_PER_STATE").text = data['cor_state']
+                ET.SubElement(app_pan_inq, "APP_PER_CTRY").text = data['cor_ctry']
+                ET.SubElement(app_pan_inq, "APP_PER_ADD_PROOF").text = "26"
+                ET.SubElement(app_pan_inq, "APP_PER_ADD_REF").text = ""
+                ET.SubElement(app_pan_inq, "APP_PER_ADD_DT").text = ""
+
+                ET.SubElement(app_pan_inq, "APP_INCOME").text = ""
+                ET.SubElement(app_pan_inq, "APP_OCC").text = ""
+                ET.SubElement(app_pan_inq, "APP_OTH_OCC").text = ""
+                ET.SubElement(app_pan_inq, "APP_POL_CONN").text = "NA"
+                ET.SubElement(app_pan_inq, "APP_DOC_PROOF").text = "E"
+                ET.SubElement(app_pan_inq, "APP_INTERNAL_REF").text = ""
+                ET.SubElement(app_pan_inq, "APP_BRANCH_CODE").text = ""
+                ET.SubElement(app_pan_inq, "APP_MAR_STATUS").text = "01"
+                ET.SubElement(app_pan_inq, "APP_NETWRTH").text = ""
+                ET.SubElement(app_pan_inq, "APP_NETWORTH_DT").text = ""
+                ET.SubElement(app_pan_inq, "APP_INCORP_PLC").text = ""
+                ET.SubElement(app_pan_inq, "APP_OTHERINFO").text = ""
+                ET.SubElement(app_pan_inq, "APP_FILLER1").text = ""
+                ET.SubElement(app_pan_inq, "APP_FILLER2").text = ""
+                ET.SubElement(app_pan_inq, "APP_FILLER3").text = ""
+                ET.SubElement(app_pan_inq, "APP_DUMP_TYPE").text = ""
+                ET.SubElement(app_pan_inq, "APP_KRA_INFO").text = ""
+                ET.SubElement(app_pan_inq, "APP_SIGNATURE").text = ""
+                ET.SubElement(app_pan_inq, "APP_FATCA_APPLICABLE_FLAG").text = ""
+                ET.SubElement(app_pan_inq, "APP_FATCA_BIRTH_PLACE").text = ""
+                ET.SubElement(app_pan_inq, "APP_FATCA_BIRTH_COUNTRY").text = ""
+                ET.SubElement(app_pan_inq, "APP_FATCA_COUNTRY_RES").text = ""
+                ET.SubElement(app_pan_inq, "APP_FATCA_COUNTRY_CITYZENSHIP").text = ""
+                ET.SubElement(app_pan_inq, "APP_FATCA_DATE_DECLARATION").text = ""
+
+                for _ in range(4):
+                    fatca = ET.SubElement(root, "FATCA_ADDL_DTLS")
+                    ET.SubElement(fatca, "APP_FATCA_ENTITY_PAN").text = ""
+                    ET.SubElement(fatca, "APP_FATCA_COUNTRY_RESIDENCY").text = ""
+                    ET.SubElement(fatca, "APP_FATCA_TAX_IDENTIFICATION_NO").text = ""
+                    ET.SubElement(fatca, "APP_FATCA_TAX_EXEMPT_FLAG").text = ""
+                    ET.SubElement(fatca, "APP_FATCA_TAX_EXEMPT_REASON").text = ""
+
+                summ_rec = ET.SubElement(root, "APP_SUMM_REC")
+                ET.SubElement(summ_rec, "APP_REQ_DATE").text = datetime.now().strftime("%d-%m-%Y")
+                ET.SubElement(summ_rec, "APP_OTHKRA_BATCH").text = ""
+                ET.SubElement(summ_rec, "APP_OTHKRA_CODE").text = ""
+                ET.SubElement(summ_rec, "APP_TOTAL_REC").text = "1"
+                ET.SubElement(summ_rec, "NO_OF_FATCA_ADDL_DTLS_RECORDS").text = "4"
+
+                request_xml = ET.tostring(root, encoding='utf-8', method='xml').decode('utf-8')
+
+                client = NDMLClient()
+                response = client.kyc_modification(request_xml)
+
+                if response['status'] == 'success':
+                    context['success'] = True
+                    context['response_data'] = str(response.get('data', 'Modification Successful'))
+                else:
+                    context['error'] = True
+                    context['response_data'] = str(response.get('remarks', 'An error occurred'))
+
+            except Exception as e:
+                context['error'] = True
+                context['response_data'] = str(e)
+        else:
+             context['error'] = True
+             context['response_data'] = "Please correct the errors in the form below."
+
+        return render(request, self.template_name, context)
+
+
+
+class NDMLKYCStatusListView(LoginRequiredMixin, View):
+    template_name = 'integration/ndml_kyc_status_list.html'
+
+    def get(self, request, *args, **kwargs):
+        # We fetch all InvestorProfiles. This view should probably be paginated in a real app,
+        # but for this requirement we can just fetch and pass them to the template.
+        investors = InvestorProfile.objects.all().order_by('-created_at')
+        return render(request, self.template_name, {'investors': investors})
+
+
 class NDMLRegistrationToolView(LoginRequiredMixin, View):
     template_name = 'integration/ndml_kyc_registration.html'
 
@@ -276,7 +471,7 @@ class NDMLRegistrationToolView(LoginRequiredMixin, View):
                 ET.SubElement(app_pan_inq, "APP_EMAIL").text = data['email']
 
                 ET.SubElement(app_pan_inq, "APP_COR_ADD_PROOF").text = "26"
-                ET.SubElement(app_pan_inq, "APP_COR_ADD_REF").text = "xxxxxxxx5831"
+                ET.SubElement(app_pan_inq, "APP_COR_ADD_REF").text = ""
                 ET.SubElement(app_pan_inq, "APP_COR_ADD_DT").text = ""
 
                 # Copying Correspondence to Permanent for simplicity
@@ -329,8 +524,8 @@ class NDMLRegistrationToolView(LoginRequiredMixin, View):
                 # SUMM REC
                 summ_rec = ET.SubElement(root, "APP_SUMM_REC")
                 ET.SubElement(summ_rec, "APP_REQ_DATE").text = datetime.now().strftime("%d-%m-%Y")
-                ET.SubElement(summ_rec, "APP_OTHKRA_BATCH").text = "ACC0671559052174" # Sample
-                ET.SubElement(summ_rec, "APP_OTHKRA_CODE").text = "A1249" # Sample
+                ET.SubElement(summ_rec, "APP_OTHKRA_BATCH").text = "" # Sample
+                ET.SubElement(summ_rec, "APP_OTHKRA_CODE").text = "" # Sample
                 ET.SubElement(summ_rec, "APP_TOTAL_REC").text = "1"
                 ET.SubElement(summ_rec, "NO_OF_FATCA_ADDL_DTLS_RECORDS").text = "4"
 
