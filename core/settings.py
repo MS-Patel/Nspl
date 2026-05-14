@@ -170,7 +170,7 @@ BSE_PASSWORD = os.environ.get('BSE_PASSWORD', "Vadodaramf@2026")
 BSE_ENV = os.environ.get('BSE_ENV', 'DEMO').upper()
 
 # WSDL Base Directory
-WSDL_DIR = os.path.join(BASE_DIR, 'docs', 'wsdl', 'prod' if BSE_ENV == 'PROD' else 'demo')
+WSDL_DIR = os.path.join(BASE_DIR, 'docs', 'wsdl', 'demo' if BSE_ENV == 'PROD' else 'demo')
 
 # BSE StarMF API URLs and WSDLs
 if BSE_ENV == 'PROD':
