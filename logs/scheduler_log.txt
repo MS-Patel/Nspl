@@ -2075,3 +2075,548 @@ Step 4: Updating Holding Valuations...
 Starting Holding Valuation Update...
 Successfully updated valuation for 30182 holdings.
 Daily Jobs Completed Successfully.
+Forcing soap:address location to HTTPS
+Failed to process redemption for 2671747723: RedemptionDetails instance has no attribute 'AllottedUnit'
+Extraction failed with provided password for C:\Users\ADMINI~1\AppData\Local\Temp\tmpzqmq0_l4\downloaded_file_20260429085810.zip: Bad password for file 'MFSD307_WBTRN19371298_1019805.csv'
+PyTables is not installed. No support for HDF output.
+SQLalchemy is not installed. No support for SQL output.
+Starting Daily Jobs...
+Step 1: Syncing BSE Reports...
+Starting sync for last 1 days...
+Successfully completed BSE report sync.
+Step 2: Fetching RTA Emails...
+Connecting to Email Server...
+Found 4 emails. Processing...
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmpzqmq0_l4\MFSD307_WBTRN19371298_1019805.csv from https://scdelivery.kfintech.com/c/?u=iuuqt%3B00ngt%2Flgjoufdi%2Fdpn0ngt0Ejtusjcvups0Sfrvftut0Sfr%60bmmsqutmjol%2Fbtqy%40rszuzqf%3EV%7BO9W1KVVl5yPUN4NUJ6PEd1PUFzOIxzNEJ3NERzPR%3E%3E&p=qqttqbdb.bqeesknn--325837207-5EF408D8-E556-4A2F-9B8C-BC1BE68FBF27.1.1&e=s1
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmpzqmq0_l4\MFSD307_WBTRN19371298_1019805.csv
+Archived email b'11948'
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmpzqmq0_l4\29042026063601_175322479R2.dbf from https://mailback16.camsonline.com/mailback_result/56662024094AH4BHTKSTJSV4FLJOK9MFO7BHA9R2F2X974221591814DBMB175322479R2.zip
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmpzqmq0_l4\29042026063601_175322479R2.dbf
+Archived email b'11950'
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmpzqmq0_l4\29042026070845_183524946R2.dbf from https://mailback16.camsonline.com/mailback_result/024094B_4BHTKS5HUZHIDJ6JPQ5SKFIMLF3KTLDE52B449485381151DBMB183524946R2.zip
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmpzqmq0_l4\29042026070845_183524946R2.dbf
+Archived email b'11952'
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmpzqmq0_l4\29042026072729_193621839R2.dbf from https://mailback16.camsonline.com/mailback_result/094B_4BHTKS5HUZHIDJ6JPQ5SKEID6GSN0MIJFDOA2T998120371131DBMB193621839R2.zip
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmpzqmq0_l4\29042026072729_193621839R2.dbf
+Archived email b'11954'
+RTA Email Fetch Complete.
+Step 3: Fetching NAVs...
+Starting NAV Update...
+NAV Update Completed Successfully.
+Step 4: Updating Holding Valuations...
+Starting Holding Valuation Update...
+Successfully updated valuation for 30342 holdings.
+Daily Jobs Completed Successfully.
+Forcing soap:address location to HTTPS
+Failed to process allotment for 2671870130: AllotmentDetails instance has no attribute 'Nav'
+Failed to process allotment for 2671817529: AllotmentDetails instance has no attribute 'Nav'
+Extraction failed with provided password for C:\Users\ADMINI~1\AppData\Local\Temp\tmpqh81l1ch\downloaded_file_20260430085813.zip: Bad password for file 'MFSD307_WBTRN19371298_950140.csv'
+PyTables is not installed. No support for HDF output.
+SQLalchemy is not installed. No support for SQL output.
+Starting Daily Jobs...
+Step 1: Syncing BSE Reports...
+Starting sync for last 1 days...
+Successfully completed BSE report sync.
+Step 2: Fetching RTA Emails...
+Connecting to Email Server...
+Found 4 emails. Processing...
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmpqh81l1ch\30042026060809_175322479R2.dbf from https://mailback19.camsonline.com/mailback_result/6662024005AH4BHTKSTJSV4FLJOK9MFO7BHA9R2F2X9742215911252DBMB175322479R2.zip
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmpqh81l1ch\30042026060809_175322479R2.dbf
+Archived email b'11968'
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmpqh81l1ch\MFSD307_WBTRN19371298_950140.csv from https://scdelivery.kfintech.com/c/?u=iuuqt%3B00ngt%2Flgjoufdi%2Fdpn0ngt0Ejtusjcvups0Sfrvftut0Sfr%60bmmsqutmjol%2Fbtqy%40rszuzqf%3EV%7BO9W1KVVl5yPUN4NUJ6PEZ4PUR2PYxzNEJ3NER%7BNB%3E%3E&p=qqttqbdb.bqeesknn--325923462-10C79202-E683-4392-BAAF-7C870AA0B494.1.1&e=s1
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmpqh81l1ch\MFSD307_WBTRN19371298_950140.csv
+Archived email b'11970'
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmpqh81l1ch\30042026062912_183524946R2.dbf from https://mailback5.camsonline.com/mailback_result/024005B_4BHTKS5HUZHIDJ6JPQ5SKFIMLF3KTLDE52B449485381303DBMB183524946R2.zip
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmpqh81l1ch\30042026062912_183524946R2.dbf
+Archived email b'11972'
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmpqh81l1ch\30042026064937_193621839R2.dbf from https://mailback19.camsonline.com/mailback_result/05B_4BHTKS5HUZHIDJ6JPQ5SKEID6GSN0MIJFDOA2T9981203711237DBMB193621839R2.zip
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmpqh81l1ch\30042026064937_193621839R2.dbf
+Archived email b'11973'
+RTA Email Fetch Complete.
+Step 3: Fetching NAVs...
+Starting NAV Update...
+NAV Update Completed Successfully.
+Step 4: Updating Holding Valuations...
+Starting Holding Valuation Update...
+Successfully updated valuation for 30781 holdings.
+Daily Jobs Completed Successfully.
+Forcing soap:address location to HTTPS
+Failed to process allotment for 2673885618: AllotmentDetails instance has no attribute 'Nav'
+Failed to process allotment for 2674262734: AllotmentDetails instance has no attribute 'Nav'
+Extraction failed with provided password for C:\Users\ADMINI~1\AppData\Local\Temp\tmp39ob5wjm\downloaded_file_20260501085816.zip: Bad password for file 'MFSD307_WBTRN19371298_1198743.csv'
+PyTables is not installed. No support for HDF output.
+SQLalchemy is not installed. No support for SQL output.
+Starting Daily Jobs...
+Step 1: Syncing BSE Reports...
+Starting sync for last 1 days...
+Successfully completed BSE report sync.
+Step 2: Fetching RTA Emails...
+Connecting to Email Server...
+Found 4 emails. Processing...
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmp39ob5wjm\01052026060240_175322479R2.dbf from https://mailback16.camsonline.com/mailback_result/26662025012AH4BHTKSTJSV4FLJOK9MFO7BHA9R2F2X974221591132DBMB175322479R2.zip
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmp39ob5wjm\01052026060240_175322479R2.dbf
+Archived email b'11981'
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmp39ob5wjm\01052026061555_183524946R2.dbf from https://mailback6.camsonline.com/mailback_result/025012B_4BHTKS5HUZHIDJ6JPQ5SKFIMLF3KTLDE52B449485381190DBMB183524946R2.zip
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmp39ob5wjm\01052026061555_183524946R2.dbf
+Archived email b'11982'
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmp39ob5wjm\01052026062727_193621839R2.dbf from https://mailback16.camsonline.com/mailback_result/012B_4BHTKS5HUZHIDJ6JPQ5SKEID6GSN0MIJFDOA2T998120371136DBMB193621839R2.zip
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmp39ob5wjm\01052026062727_193621839R2.dbf
+Archived email b'11985'
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmp39ob5wjm\MFSD307_WBTRN19371298_1198743.csv from https://scdelivery.kfintech.com/c/?u=iuuqt%3B00ngt%2Flgjoufdi%2Fdpn0ngt0Ejtusjcvups0Sfrvftut0Sfr%60bmmsqutmjol%2Fbtqy%40rszuzqf%3EV%7BO9W1KVVl5yPUN4NUJ6PElzPEB3NoxzNEJ3NEVxNR%3E%3E&p=qqttqbdb.bqeesknn--326012082-94FA0908-C0F9-4107-B9F5-0F9D5C41A1C1.1.1&e=s1
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmp39ob5wjm\MFSD307_WBTRN19371298_1198743.csv
+Archived email b'11987'
+RTA Email Fetch Complete.
+Step 3: Fetching NAVs...
+Starting NAV Update...
+NAV Update Completed Successfully.
+Step 4: Updating Holding Valuations...
+Starting Holding Valuation Update...
+Successfully updated valuation for 30837 holdings.
+Daily Jobs Completed Successfully.
+Forcing soap:address location to HTTPS
+Extraction failed with provided password for C:\Users\ADMINI~1\AppData\Local\Temp\tmpbtl2rqlu\downloaded_file_20260502085810.zip: Bad password for file 'MFSD307_WBTRN19371298_963957.csv'
+PyTables is not installed. No support for HDF output.
+SQLalchemy is not installed. No support for SQL output.
+Starting Daily Jobs...
+Step 1: Syncing BSE Reports...
+Starting sync for last 1 days...
+Successfully completed BSE report sync.
+Step 2: Fetching RTA Emails...
+Connecting to Email Server...
+Found 4 emails. Processing...
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmpbtl2rqlu\02052026055053_175322479R2.dbf from https://mailback16.camsonline.com/mailback_result/75662025022AH4BHTKSTJSV4FLJOK9MFO7BHA9R2F2X974221591147DBMB175322479R2.zip
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmpbtl2rqlu\02052026055053_175322479R2.dbf
+Archived email b'11993'
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmpbtl2rqlu\02052026060515_183524946R2.dbf from https://mailback6.camsonline.com/mailback_result/025022B_4BHTKS5HUZHIDJ6JPQ5SKFIMLF3KTLDE52B449485381160DBMB183524946R2.zip
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmpbtl2rqlu\02052026060515_183524946R2.dbf
+Archived email b'11995'
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmpbtl2rqlu\02052026061636_193621839R2.dbf from https://mailback16.camsonline.com/mailback_result/022B_4BHTKS5HUZHIDJ6JPQ5SKEID6GSN0MIJFDOA2T998120371150DBMB193621839R2.zip
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmpbtl2rqlu\02052026061636_193621839R2.dbf
+Archived email b'11996'
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmpbtl2rqlu\MFSD307_WBTRN19371298_963957.csv from https://scdelivery.kfintech.com/c/?u=iuuqt%3B00ngt%2Flgjoufdi%2Fdpn0ngt0Ejtusjcvups0Sfrvftut0Sfr%60bmmsqutmjol%2Fbtqy%40rszuzqf%3EV%7BO9W1KVVl5yPUN4NUJ6PEZ6N%7BJ4OoxzNEJ3NEVxNh%3E%3E&p=qqttqbdb.bqeesknn--326096490-67B4CDD9-3E68-45B0-AFB8-C9C95AF6DBD4.1.1&e=s1
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmpbtl2rqlu\MFSD307_WBTRN19371298_963957.csv
+Archived email b'11997'
+RTA Email Fetch Complete.
+Step 3: Fetching NAVs...
+Starting NAV Update...
+NAV Update Completed Successfully.
+Step 4: Updating Holding Valuations...
+Starting Holding Valuation Update...
+Successfully updated valuation for 30844 holdings.
+Daily Jobs Completed Successfully.
+Forcing soap:address location to HTTPS
+Extraction failed with provided password for C:\Users\ADMINI~1\AppData\Local\Temp\tmpwc2yntse\downloaded_file_20260503085807.zip: Bad password for file 'MFSD307_WBTRN19371298_938439.csv'
+PyTables is not installed. No support for HDF output.
+SQLalchemy is not installed. No support for SQL output.
+Starting Daily Jobs...
+Step 1: Syncing BSE Reports...
+Starting sync for last 1 days...
+Successfully completed BSE report sync.
+Step 2: Fetching RTA Emails...
+Connecting to Email Server...
+Found 1 emails. Processing...
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmpwc2yntse\MFSD307_WBTRN19371298_938439.csv from https://scdelivery.kfintech.com/c/?u=iuuqt%3B00ngt%2Flgjoufdi%2Fdpn0ngt0Ejtusjcvups0Sfrvftut0Sfr%60bmmsqutmjol%2Fbtqy%40rszuzqf%3EV%7BO9W1KVVl5yPUN4NUJ6PEZ3O%7Bd2PIxzNEJ3NEVxNx%3E%3E&p=qqttqbdb.bqeesknn--326181258-7D077E01-C8D7-4481-97BB-C99374B764FD.1.1&e=s1
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmpwc2yntse\MFSD307_WBTRN19371298_938439.csv
+Archived email b'12002'
+RTA Email Fetch Complete.
+Step 3: Fetching NAVs...
+Starting NAV Update...
+NAV Update Completed Successfully.
+Step 4: Updating Holding Valuations...
+Starting Holding Valuation Update...
+Successfully updated valuation for 30844 holdings.
+Daily Jobs Completed Successfully.
+Forcing soap:address location to HTTPS
+Extraction failed with provided password for C:\Users\ADMINI~1\AppData\Local\Temp\tmphmz4axbq\downloaded_file_20260504085806.zip: Bad password for file 'MFSD307_WBTRN19371298_1212302.csv'
+PyTables is not installed. No support for HDF output.
+SQLalchemy is not installed. No support for SQL output.
+Starting Daily Jobs...
+Step 1: Syncing BSE Reports...
+Starting sync for last 1 days...
+Successfully completed BSE report sync.
+Step 2: Fetching RTA Emails...
+Connecting to Email Server...
+Found 1 emails. Processing...
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmphmz4axbq\MFSD307_WBTRN19371298_1212302.csv from https://scdelivery.kfintech.com/c/?u=iuuqt%3B00ngt%2Flgjoufdi%2Fdpn0ngt0Ejtusjcvups0Sfrvftut0Sfr%60bmmsqutmjol%2Fbtqy%40rszuzqf%3EV%7BO9W1KVVl5yPUN4NUJ6PEl1NUZzNYxzNEJ3NEVxOB%3E%3E&p=qqttqbdb.bqeesknn--326267039-07149E57-DCF8-4297-9444-81B6BD50EA55.1.1&e=s1
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmphmz4axbq\MFSD307_WBTRN19371298_1212302.csv
+Archived email b'12014'
+RTA Email Fetch Complete.
+Step 3: Fetching NAVs...
+Starting NAV Update...
+NAV Update Completed Successfully.
+Step 4: Updating Holding Valuations...
+Starting Holding Valuation Update...
+Successfully updated valuation for 30844 holdings.
+Daily Jobs Completed Successfully.
+Forcing soap:address location to HTTPS
+Failed to process allotment for 2686541790: AllotmentDetails instance has no attribute 'Nav'
+Failed to process allotment for 2675149735: AllotmentDetails instance has no attribute 'Nav'
+Failed to process allotment for 2686494118: AllotmentDetails instance has no attribute 'Nav'
+Failed to process allotment for 2686538639: AllotmentDetails instance has no attribute 'Nav'
+Failed to process allotment for 2686467264: AllotmentDetails instance has no attribute 'Nav'
+Extraction failed with provided password for C:\Users\ADMINI~1\AppData\Local\Temp\tmprhwysq3f\downloaded_file_20260505085813.zip: Bad password for file 'MFSD307_WBTRN19371298_1071999.csv'
+PyTables is not installed. No support for HDF output.
+SQLalchemy is not installed. No support for SQL output.
+Starting Daily Jobs...
+Step 1: Syncing BSE Reports...
+Starting sync for last 1 days...
+Successfully completed BSE report sync.
+Step 2: Fetching RTA Emails...
+Connecting to Email Server...
+Found 4 emails. Processing...
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmprhwysq3f\05052026061341_175322479R2.dbf from https://mailback21.camsonline.com/mailback_result/6662025052AH4BHTKSTJSV4FLJOK9MFO7BHA9R2F2X9742215911384DBMB175322479R2.zip
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmprhwysq3f\05052026061341_175322479R2.dbf
+Archived email b'12034'
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmprhwysq3f\MFSD307_WBTRN19371298_1071999.csv from https://scdelivery.kfintech.com/c/?u=iuuqt%3B00ngt%2Flgjoufdi%2Fdpn0ngt0Ejtusjcvups0Sfrvftut0Sfr%60bmmsqutmjol%2Fbtqy%40rszuzqf%3EV%7BO9W1KVVl5yPUN4NUJ6PEhxNUNyPIxzNEJ3NEVxOR%3E%3E&p=qqttqbdb.bqeesknn--326356609-88606910-7285-421E-BBA8-1427DF116EA8.1.1&e=s1
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmprhwysq3f\MFSD307_WBTRN19371298_1071999.csv
+Archived email b'12036'
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmprhwysq3f\05052026064851_183524946R2.dbf from https://mailback8.camsonline.com/mailback_result/25052B_4BHTKS5HUZHIDJ6JPQ5SKFIMLF3KTLDE52B4494853811104DBMB183524946R2.zip
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmprhwysq3f\05052026064851_183524946R2.dbf
+Archived email b'12038'
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmprhwysq3f\05052026070646_193621839R2.dbf from https://mailback21.camsonline.com/mailback_result/52B_4BHTKS5HUZHIDJ6JPQ5SKEID6GSN0MIJFDOA2T9981203711345DBMB193621839R2.zip
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmprhwysq3f\05052026070646_193621839R2.dbf
+Archived email b'12040'
+RTA Email Fetch Complete.
+Step 3: Fetching NAVs...
+Starting NAV Update...
+NAV Update Completed Successfully.
+Step 4: Updating Holding Valuations...
+Starting Holding Valuation Update...
+Successfully updated valuation for 30863 holdings.
+Daily Jobs Completed Successfully.
+Forcing soap:address location to HTTPS
+Failed to process allotment for 2692959734: AllotmentDetails instance has no attribute 'Nav'
+Failed to process allotment for 2693198025: AllotmentDetails instance has no attribute 'Nav'
+Failed to process allotment for 2693793460: AllotmentDetails instance has no attribute 'Nav'
+Failed to process allotment for 2692959733: AllotmentDetails instance has no attribute 'Nav'
+Failed to process allotment for 2693197942: AllotmentDetails instance has no attribute 'Nav'
+Failed to process allotment for 2693572535: AllotmentDetails instance has no attribute 'Nav'
+Extraction failed with provided password for C:\Users\ADMINI~1\AppData\Local\Temp\tmpg413j53a\downloaded_file_20260506085810.zip: Bad password for file 'MFSD307_WBTRN19371298_1044438.csv'
+PyTables is not installed. No support for HDF output.
+SQLalchemy is not installed. No support for SQL output.
+Starting Daily Jobs...
+Step 1: Syncing BSE Reports...
+Starting sync for last 1 days...
+Successfully completed BSE report sync.
+Step 2: Fetching RTA Emails...
+Connecting to Email Server...
+Found 4 emails. Processing...
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmpg413j53a\06052026061524_175322479R2.dbf from https://mailback21.camsonline.com/mailback_result/36662025062AH4BHTKSTJSV4FLJOK9MFO7BHA9R2F2X9742215911384BMB175322479R2.zip
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmpg413j53a\06052026061524_175322479R2.dbf
+Archived email b'12046'
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmpg413j53a\MFSD307_WBTRN19371298_1044438.csv from https://scdelivery.kfintech.com/c/?u=iuuqt%3B00ngt%2Flgjoufdi%2Fdpn0ngt0Ejtusjcvups0Sfrvftut0Sfr%60bmmsqutmjol%2Fbtqy%40rszuzqf%3EV%7BO9W1KVVl5yPUN4NUJ6PEd4N%7Bd2O4xzNEJ3NEVxOh%3E%3E&p=qqttqbdb.bqeesknn--326441916-72564E4C-02CA-4925-9E01-6FD8521A2246.1.1&e=s1
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmpg413j53a\MFSD307_WBTRN19371298_1044438.csv
+Archived email b'12048'
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmpg413j53a\06052026063847_183524946R2.dbf from https://mailback8.camsonline.com/mailback_result/25062B_4BHTKS5HUZHIDJ6JPQ5SKFIMLF3KTLDE52B4494853811108DBMB183524946R2.zip
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmpg413j53a\06052026063847_183524946R2.dbf
+Archived email b'12050'
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmpg413j53a\06052026065904_193621839R2.dbf from https://mailback21.camsonline.com/mailback_result/62B_4BHTKS5HUZHIDJ6JPQ5SKEID6GSN0MIJFDOA2T9981203711335DBMB193621839R2.zip
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmpg413j53a\06052026065904_193621839R2.dbf
+Archived email b'12051'
+RTA Email Fetch Complete.
+Step 3: Fetching NAVs...
+Starting NAV Update...
+NAV Update Completed Successfully.
+Step 4: Updating Holding Valuations...
+Starting Holding Valuation Update...
+Successfully updated valuation for 31076 holdings.
+Daily Jobs Completed Successfully.
+Forcing soap:address location to HTTPS
+Failed to process allotment for 2697151757: AllotmentDetails instance has no attribute 'Nav'
+Failed to process allotment for 2697069561: AllotmentDetails instance has no attribute 'Nav'
+Extraction failed with provided password for C:\Users\ADMINI~1\AppData\Local\Temp\tmp0ybb35o7\downloaded_file_20260507085812.zip: Bad password for file 'MFSD307_WBTRN19371298_512790.csv'
+PyTables is not installed. No support for HDF output.
+SQLalchemy is not installed. No support for SQL output.
+Starting Daily Jobs...
+Step 1: Syncing BSE Reports...
+Starting sync for last 1 days...
+Successfully completed BSE report sync.
+Step 2: Fetching RTA Emails...
+Connecting to Email Server...
+Found 4 emails. Processing...
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmp0ybb35o7\07052026060528_175322479R2.dbf from https://mailback21.camsonline.com/mailback_result/26662025072AH4BHTKSTJSV4FLJOK9MFO7BHA9R2F2X9742215911371BMB175322479R2.zip
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmp0ybb35o7\07052026060528_175322479R2.dbf
+Archived email b'12061'
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmp0ybb35o7\07052026063103_183524946R2.dbf from https://mailback8.camsonline.com/mailback_result/025072B_4BHTKS5HUZHIDJ6JPQ5SKFIMLF3KTLDE52B4494853811004BMB183524946R2.zip
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmp0ybb35o7\07052026063103_183524946R2.dbf
+Archived email b'12063'
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmp0ybb35o7\MFSD307_WBTRN19371298_512790.csv from https://scdelivery.kfintech.com/c/?u=iuuqt%3B00ngt%2Flgjoufdi%2Fdpn0ngt0Ejtusjcvups0Sfrvftut0Sfr%60bmmsqutmjol%2Fbtqy%40rszuzqf%3EV%7BO9W1KVVl5yPUN4NUJ6PEJ1NkFxPYxzNEJ3NEVxOx%3E%3E&p=qqttqbdb.bqeesknn--326529599-2A60C7F0-5B99-48FE-B0F4-66092B24AB1B.1.1&e=s1
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmp0ybb35o7\MFSD307_WBTRN19371298_512790.csv
+Archived email b'12065'
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmp0ybb35o7\07052026064946_193621839R2.dbf from https://mailback21.camsonline.com/mailback_result/72B_4BHTKS5HUZHIDJ6JPQ5SKEID6GSN0MIJFDOA2T9981203711372DBMB193621839R2.zip
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmp0ybb35o7\07052026064946_193621839R2.dbf
+Archived email b'12066'
+RTA Email Fetch Complete.
+Step 3: Fetching NAVs...
+Starting NAV Update...
+NAV Update Completed Successfully.
+Step 4: Updating Holding Valuations...
+Starting Holding Valuation Update...
+Successfully updated valuation for 31218 holdings.
+Daily Jobs Completed Successfully.
+Forcing soap:address location to HTTPS
+Failed to process allotment for 2700057904: AllotmentDetails instance has no attribute 'Nav'
+Failed to process allotment for 2700057868: AllotmentDetails instance has no attribute 'Nav'
+Failed to process allotment for 2700126716: AllotmentDetails instance has no attribute 'Nav'
+Failed to process allotment for 2700658367: AllotmentDetails instance has no attribute 'Nav'
+Failed to process allotment for 2700068693: AllotmentDetails instance has no attribute 'Nav'
+Extraction failed with provided password for C:\Users\ADMINI~1\AppData\Local\Temp\tmp6il1hb1m\downloaded_file_20260508085808.zip: Bad password for file 'MFSD307_WBTRN19371298_806346.csv'
+PyTables is not installed. No support for HDF output.
+SQLalchemy is not installed. No support for SQL output.
+Starting Daily Jobs...
+Step 1: Syncing BSE Reports...
+Starting sync for last 1 days...
+Successfully completed BSE report sync.
+Step 2: Fetching RTA Emails...
+Connecting to Email Server...
+Found 4 emails. Processing...
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmp6il1hb1m\08052026061005_175322479R2.dbf from https://mailback21.camsonline.com/mailback_result/6662025082AH4BHTKSTJSV4FLJOK9MFO7BHA9R2F2X9742215911332DBMB175322479R2.zip
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmp6il1hb1m\08052026061005_175322479R2.dbf
+Archived email b'12074'
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmp6il1hb1m\MFSD307_WBTRN19371298_806346.csv from https://scdelivery.kfintech.com/c/?u=iuuqt%3B00ngt%2Flgjoufdi%2Fdpn0ngt0Ejtusjcvups0Sfrvftut0Sfr%60bmmsqutmjol%2Fbtqy%40rszuzqf%3EV%7BO9W1KVVl5yPUN4NUJ6PEV%7BOUZ3OYxzNEJ3NEVxPB%3E%3E&p=qqttqbdb.bqeesknn--326615020-0CEDEFF5-BC9F-49C0-8B8B-49989A192E67.1.1&e=s1
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmp6il1hb1m\MFSD307_WBTRN19371298_806346.csv
+Archived email b'12075'
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmp6il1hb1m\08052026063216_183524946R2.dbf from https://mailback8.camsonline.com/mailback_result/25082B_4BHTKS5HUZHIDJ6JPQ5SKFIMLF3KTLDE52B4494853811019DBMB183524946R2.zip
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmp6il1hb1m\08052026063216_183524946R2.dbf
+Archived email b'12077'
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmp6il1hb1m\08052026065058_193621839R2.dbf from https://mailback21.camsonline.com/mailback_result/82B_4BHTKS5HUZHIDJ6JPQ5SKEID6GSN0MIJFDOA2T9981203711382DBMB193621839R2.zip
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmp6il1hb1m\08052026065058_193621839R2.dbf
+Archived email b'12079'
+RTA Email Fetch Complete.
+Step 3: Fetching NAVs...
+Starting NAV Update...
+NAV Update Completed Successfully.
+Step 4: Updating Holding Valuations...
+Starting Holding Valuation Update...
+Successfully updated valuation for 31364 holdings.
+Daily Jobs Completed Successfully.
+Forcing soap:address location to HTTPS
+Failed to process allotment for 2700866369: AllotmentDetails instance has no attribute 'Nav'
+Failed to process allotment for 2702848329: AllotmentDetails instance has no attribute 'Nav'
+Failed to process allotment for 2702835862: AllotmentDetails instance has no attribute 'Nav'
+Failed to process allotment for 2700737836: AllotmentDetails instance has no attribute 'Nav'
+Extraction failed with provided password for C:\Users\ADMINI~1\AppData\Local\Temp\tmp3n81pn_v\downloaded_file_20260509085808.zip: Bad password for file 'MFSD307_WBTRN19371298_1206749.csv'
+PyTables is not installed. No support for HDF output.
+SQLalchemy is not installed. No support for SQL output.
+Starting Daily Jobs...
+Step 1: Syncing BSE Reports...
+Starting sync for last 1 days...
+Successfully completed BSE report sync.
+Step 2: Fetching RTA Emails...
+Connecting to Email Server...
+Found 4 emails. Processing...
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmp3n81pn_v\09052026060720_175322479R2.dbf from https://mailback21.camsonline.com/mailback_result/6662025092AH4BHTKSTJSV4FLJOK9MFO7BHA9R2F2X9742215911387DBMB175322479R2.zip
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmp3n81pn_v\09052026060720_175322479R2.dbf
+Archived email b'12083'
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmp3n81pn_v\09052026063249_183524946R2.dbf from https://mailback8.camsonline.com/mailback_result/25092B_4BHTKS5HUZHIDJ6JPQ5SKFIMLF3KTLDE52B4494853811013DBMB183524946R2.zip
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmp3n81pn_v\09052026063249_183524946R2.dbf
+Archived email b'12086'
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmp3n81pn_v\MFSD307_WBTRN19371298_1206749.csv from https://scdelivery.kfintech.com/c/?u=iuuqt%3B00ngt%2Flgjoufdi%2Fdpn0ngt0Ejtusjcvups0Sfrvftut0Sfr%60bmmsqutmjol%2Fbtqy%40rszuzqf%3EV%7BO9W1KVVl5yPUN4NUJ6PEl%7BOkB3PIxzNEJ3NEVxPR%3E%3E&p=qqttqbdb.bqeesknn--326703138-6E487262-783F-4139-8063-19FF7489302F.1.1&e=s1
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmp3n81pn_v\MFSD307_WBTRN19371298_1206749.csv
+Archived email b'12087'
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmp3n81pn_v\09052026065344_193621839R2.dbf from https://mailback21.camsonline.com/mailback_result/92B_4BHTKS5HUZHIDJ6JPQ5SKEID6GSN0MIJFDOA2T9981203711384DBMB193621839R2.zip
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmp3n81pn_v\09052026065344_193621839R2.dbf
+Archived email b'12088'
+RTA Email Fetch Complete.
+Step 3: Fetching NAVs...
+Starting NAV Update...
+NAV Update Completed Successfully.
+Step 4: Updating Holding Valuations...
+Starting Holding Valuation Update...
+Successfully updated valuation for 31406 holdings.
+Daily Jobs Completed Successfully.
+Forcing soap:address location to HTTPS
+Extraction failed with provided password for C:\Users\ADMINI~1\AppData\Local\Temp\tmpw3tomqdo\4BHTKS5HUZFCHBCNPH4V3CAEOG6H1Y0HGCDD0U0I372L860918112535BMB211219088R2.zip: Bad password for file '09052026111823_211219088R2.dbf'
+Extraction failed with provided password for C:\Users\ADMINI~1\AppData\Local\Temp\tmpw3tomqdo\4BHTKS5HUZFCHBCNPH4V3CAEOG6H1Y0HGCDD0U0I372L860918112535BMB211219088R2.zip: Bad password for file '09052026111823_211219088R2.dbf'
+Failed to extract C:\Users\ADMINI~1\AppData\Local\Temp\tmpw3tomqdo\4BHTKS5HUZFCHBCNPH4V3CAEOG6H1Y0HGCDD0U0I372L860918112535BMB211219088R2.zip: Incorrect password or unsupported encryption.
+Extraction failed with provided password for C:\Users\ADMINI~1\AppData\Local\Temp\tmpw3tomqdo\_4BHTKS5HUZFCHBCNPH4V3CAEOG6H1Y0HGCDD0U0I372L91491811219BMB211219419R2.zip: Bad password for file '09052026112118_211219419R2.xls'
+Extraction failed with provided password for C:\Users\ADMINI~1\AppData\Local\Temp\tmpw3tomqdo\_4BHTKS5HUZFCHBCNPH4V3CAEOG6H1Y0HGCDD0U0I372L91491811219BMB211219419R2.zip: Bad password for file '09052026112118_211219419R2.xls'
+Failed to extract C:\Users\ADMINI~1\AppData\Local\Temp\tmpw3tomqdo\_4BHTKS5HUZFCHBCNPH4V3CAEOG6H1Y0HGCDD0U0I372L91491811219BMB211219419R2.zip: Incorrect password or unsupported encryption.
+Extraction failed with provided password for C:\Users\ADMINI~1\AppData\Local\Temp\tmpw3tomqdo\4BHTKS5HUZFCHBCNPH4V3CAEOG6H1Y0HGCDD0U0I372L642938112112BMB211237266R2.zip: Bad password for file '09052026135754_211237266R2.xls'
+Extraction failed with provided password for C:\Users\ADMINI~1\AppData\Local\Temp\tmpw3tomqdo\4BHTKS5HUZFCHBCNPH4V3CAEOG6H1Y0HGCDD0U0I372L642938112112BMB211237266R2.zip: Bad password for file '09052026135754_211237266R2.xls'
+Failed to extract C:\Users\ADMINI~1\AppData\Local\Temp\tmpw3tomqdo\4BHTKS5HUZFCHBCNPH4V3CAEOG6H1Y0HGCDD0U0I372L642938112112BMB211237266R2.zip: Incorrect password or unsupported encryption.
+Extraction failed with provided password for C:\Users\ADMINI~1\AppData\Local\Temp\tmpw3tomqdo\downloaded_file_20260510085806.zip: Bad password for file 'MFSD307_WBTRN19371298_800093.csv'
+PyTables is not installed. No support for HDF output.
+SQLalchemy is not installed. No support for SQL output.
+Starting Daily Jobs...
+Step 1: Syncing BSE Reports...
+Starting sync for last 1 days...
+Successfully completed BSE report sync.
+Step 2: Fetching RTA Emails...
+Connecting to Email Server...
+Found 4 emails. Processing...
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmpw3tomqdo\MFSD307_WBTRN19371298_800093.csv from https://scdelivery.kfintech.com/c/?u=iuuqt%3B00ngt%2Flgjoufdi%2Fdpn0ngt0Ejtusjcvups0Sfrvftut0Sfr%60bmmsqutmjol%2Fbtqy%40rszuzqf%3EV%7BO9W1KVVl5yPUN4NUJ6PEVzPURyNoxzNEJ3NEVyNB%3E%3E&p=qqttqbdb.bqeesknn--326783741-2871B0C6-1B91-44ED-9163-8417B4E213E2.1.1&e=s1
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmpw3tomqdo\MFSD307_WBTRN19371298_800093.csv
+Archived email b'12094'
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmpw3tomqdo\10052026074947_175322479R2.dbf from https://mailback21.camsonline.com/mailback_result/7662025003AH4BHTKSTJSV4FLJOK9MFO7BHA9R2F2X9742215911359DBMB175322479R2.zip
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmpw3tomqdo\10052026074947_175322479R2.dbf
+Archived email b'12098'
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmpw3tomqdo\10052026082742_183524946R2.dbf from https://mailback8.camsonline.com/mailback_result/25003B_4BHTKS5HUZHIDJ6JPQ5SKFIMLF3KTLDE52B4494853811102DBMB183524946R2.zip
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmpw3tomqdo\10052026082742_183524946R2.dbf
+Archived email b'12100'
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmpw3tomqdo\10052026084707_193621839R2.dbf from https://mailback21.camsonline.com/mailback_result/03B_4BHTKS5HUZHIDJ6JPQ5SKEID6GSN0MIJFDOA2T9981203711384DBMB193621839R2.zip
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmpw3tomqdo\10052026084707_193621839R2.dbf
+Archived email b'12101'
+RTA Email Fetch Complete.
+Step 3: Fetching NAVs...
+Starting NAV Update...
+NAV Update Completed Successfully.
+Step 4: Updating Holding Valuations...
+Starting Holding Valuation Update...
+Successfully updated valuation for 31474 holdings.
+Daily Jobs Completed Successfully.
+Forcing soap:address location to HTTPS
+Extraction failed with provided password for C:\Users\ADMINI~1\AppData\Local\Temp\tmpcb2q3ulk\downloaded_file_20260511085806.zip: Bad password for file 'MFSD307_WBTRN19371298_985058.csv'
+PyTables is not installed. No support for HDF output.
+SQLalchemy is not installed. No support for SQL output.
+Starting Daily Jobs...
+Step 1: Syncing BSE Reports...
+Starting sync for last 1 days...
+Successfully completed BSE report sync.
+Step 2: Fetching RTA Emails...
+Connecting to Email Server...
+Found 1 emails. Processing...
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmpcb2q3ulk\MFSD307_WBTRN19371298_985058.csv from https://scdelivery.kfintech.com/c/?u=iuuqt%3B00ngt%2Flgjoufdi%2Fdpn0ngt0Ejtusjcvups0Sfrvftut0Sfr%60bmmsqutmjol%2Fbtqy%40rszuzqf%3EV%7BO9W1KVVl5yPUN4NUJ6PEdyOEN4O4xzNEJ3NEVyNR%3E%3E&p=qqttqbdb.bqeesknn--326871317-CE527F8C-8829-4E64-9106-8D69C1B61D34.1.1&e=s1
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmpcb2q3ulk\MFSD307_WBTRN19371298_985058.csv
+Archived email b'12107'
+RTA Email Fetch Complete.
+Step 3: Fetching NAVs...
+Starting NAV Update...
+NAV Update Completed Successfully.
+Step 4: Updating Holding Valuations...
+Starting Holding Valuation Update...
+Successfully updated valuation for 31474 holdings.
+Daily Jobs Completed Successfully.
+Forcing soap:address location to HTTPS
+Failed to process allotment for 2709701905: AllotmentDetails instance has no attribute 'Nav'
+Failed to process allotment for 2709826503: AllotmentDetails instance has no attribute 'Nav'
+Failed to process allotment for 2709860852: AllotmentDetails instance has no attribute 'Nav'
+Failed to process allotment for 2709885657: AllotmentDetails instance has no attribute 'Nav'
+Failed to process allotment for 2710036659: AllotmentDetails instance has no attribute 'Nav'
+Failed to process allotment for 2710036666: AllotmentDetails instance has no attribute 'Nav'
+Failed to process allotment for 2710046234: AllotmentDetails instance has no attribute 'Nav'
+Failed to process allotment for 2710255698: AllotmentDetails instance has no attribute 'Nav'
+Failed to process allotment for 2710479316: AllotmentDetails instance has no attribute 'Nav'
+Failed to process allotment for 2711175664: AllotmentDetails instance has no attribute 'Nav'
+Failed to process allotment for 2711403796: AllotmentDetails instance has no attribute 'Nav'
+Failed to process allotment for 2709539925: AllotmentDetails instance has no attribute 'Nav'
+Failed to process allotment for 2709539928: AllotmentDetails instance has no attribute 'Nav'
+Failed to process allotment for 2710369624: AllotmentDetails instance has no attribute 'Nav'
+Failed to process allotment for 2712160451: AllotmentDetails instance has no attribute 'Nav'
+Failed to process allotment for 2712266892: AllotmentDetails instance has no attribute 'Nav'
+Failed to process allotment for 2712319061: AllotmentDetails instance has no attribute 'Nav'
+Failed to process allotment for 2712651043: AllotmentDetails instance has no attribute 'Nav'
+Failed to process allotment for 2712724594: AllotmentDetails instance has no attribute 'Nav'
+Failed to process allotment for 2713102967: AllotmentDetails instance has no attribute 'Nav'
+Failed to process allotment for 2713455568: AllotmentDetails instance has no attribute 'Nav'
+Failed to process allotment for 2709645075: AllotmentDetails instance has no attribute 'Nav'
+Failed to process allotment for 2713413637: AllotmentDetails instance has no attribute 'Nav'
+Failed to process redemption for 2714005118: RedemptionDetails instance has no attribute 'AllottedUnit'
+Extraction failed with provided password for C:\Users\ADMINI~1\AppData\Local\Temp\tmpgweio6dm\downloaded_file_20260512085807.zip: Bad password for file 'MFSD307_WBTRN19371298_807939.csv'
+PyTables is not installed. No support for HDF output.
+SQLalchemy is not installed. No support for SQL output.
+Starting Daily Jobs...
+Step 1: Syncing BSE Reports...
+Starting sync for last 1 days...
+Successfully completed BSE report sync.
+Step 2: Fetching RTA Emails...
+Connecting to Email Server...
+Found 4 emails. Processing...
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmpgweio6dm\MFSD307_WBTRN19371298_807939.csv from https://scdelivery.kfintech.com/c/?u=iuuqt%3B00ngt%2Flgjoufdi%2Fdpn0ngt0Ejtusjcvups0Sfrvftut0Sfr%60bmmsqutmjol%2Fbtqy%40rszuzqf%3EV%7BO9W1KVVl5yPUN4NUJ6PEV%7BO%7BJ2PIxzNEJ3NEVyNh%3E%3E&p=qqttqbdb.bqeesknn--326959708-C48871A4-C16B-462B-ADA0-42D00D107B49.1.1&e=s1
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmpgweio6dm\MFSD307_WBTRN19371298_807939.csv
+Archived email b'12123'
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmpgweio6dm\12052026061039_175322479R2.dbf from https://mailback12.camsonline.com/mailback_result/36662025023AH4BHTKSTJSV4FLJOK9MFO7BHA9R2F2X974221591750DBMB175322479R2.zip
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmpgweio6dm\12052026061039_175322479R2.dbf
+Archived email b'12124'
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmpgweio6dm\12052026064853_183524946R2.dbf from https://mailback10.camsonline.com/mailback_result/025023B_4BHTKS5HUZHIDJ6JPQ5SKFIMLF3KTLDE52B449485381610DBMB183524946R2.zip
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmpgweio6dm\12052026064853_183524946R2.dbf
+Archived email b'12128'
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmpgweio6dm\12052026065412_193621839R2.dbf from https://mailback12.camsonline.com/mailback_result/023B_4BHTKS5HUZHIDJ6JPQ5SKEID6GSN0MIJFDOA2T998120371742DBMB193621839R2.zip
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmpgweio6dm\12052026065412_193621839R2.dbf
+Archived email b'12129'
+RTA Email Fetch Complete.
+Step 3: Fetching NAVs...
+Starting NAV Update...
+NAV Update Completed Successfully.
+Step 4: Updating Holding Valuations...
+Starting Holding Valuation Update...
+Successfully updated valuation for 31784 holdings.
+Daily Jobs Completed Successfully.
+Forcing soap:address location to HTTPS
+Failed to process allotment for 2716186336: AllotmentDetails instance has no attribute 'Nav'
+Failed to process allotment for 2716186328: AllotmentDetails instance has no attribute 'Nav'
+Failed to process allotment for 2716204790: AllotmentDetails instance has no attribute 'Nav'
+Failed to process allotment for 2716204807: AllotmentDetails instance has no attribute 'Nav'
+Failed to process allotment for 2716199963: AllotmentDetails instance has no attribute 'Nav'
+Extraction failed with provided password for C:\Users\ADMINI~1\AppData\Local\Temp\tmp9f181_jb\downloaded_file_20260513085807.zip: Bad password for file 'MFSD307_WBTRN19371298_1076939.csv'
+PyTables is not installed. No support for HDF output.
+SQLalchemy is not installed. No support for SQL output.
+Starting Daily Jobs...
+Step 1: Syncing BSE Reports...
+Starting sync for last 1 days...
+Successfully completed BSE report sync.
+Step 2: Fetching RTA Emails...
+Connecting to Email Server...
+Found 5 emails. Processing...
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmp9f181_jb\MFSD307_WBTRN19371298_1076939.csv from https://scdelivery.kfintech.com/c/?u=iuuqt%3B00ngt%2Flgjoufdi%2Fdpn0ngt0Ejtusjcvups0Sfrvftut0Sfr%60bmmsqutmjol%2Fbtqy%40rszuzqf%3EV%7BO9W1KVVl5yPUN4NUJ6PEhxOkJ2PIxzNEJ3NEVyNx%3E%3E&p=qqttqbdb.bqeesknn--327046662-2262D5F8-E137-4275-B97C-60A9EEE57018.1.1&e=s1
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmp9f181_jb\MFSD307_WBTRN19371298_1076939.csv
+Archived email b'12135'
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmp9f181_jb\13052026064611_183524946R2.dbf from https://mailback11.camsonline.com/mailback_result/025033B_4BHTKS5HUZHIDJ6JPQ5SKFIMLF3KTLDE52B449485381685DBMB183524946R2.zip
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmp9f181_jb\13052026064611_183524946R2.dbf
+Archived email b'12138'
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmp9f181_jb\13052026065410_175322479R2.dbf from https://mailback19.camsonline.com/mailback_result/6662025033AH4BHTKSTJSV4FLJOK9MFO7BHA9R2F2X9742215911212DBMB175322479R2.zip
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmp9f181_jb\13052026065410_175322479R2.dbf
+Archived email b'12139'
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmp9f181_jb\13052026071943_193621839R2.dbf from https://mailback2.camsonline.com/mailback_result/033B_4BHTKS5HUZHIDJ6JPQ5SKEID6GSN0MIJFDOA2T998120371871DBMB193621839R2.zip
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmp9f181_jb\13052026071943_193621839R2.dbf
+Archived email b'12141'
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmp9f181_jb\13052026071945_193621839R2.dbf from https://mailback19.camsonline.com/mailback_result/33B_4BHTKS5HUZHIDJ6JPQ5SKEID6GSN0MIJFDOA2T9981203711204DBMB193621839R2.zip
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmp9f181_jb\13052026071945_193621839R2.dbf
+Archived email b'12142'
+RTA Email Fetch Complete.
+Step 3: Fetching NAVs...
+Starting NAV Update...
+NAV Update Completed Successfully.
+Step 4: Updating Holding Valuations...
+Starting Holding Valuation Update...
+Successfully updated valuation for 32033 holdings.
+Daily Jobs Completed Successfully.
+Forcing soap:address location to HTTPS
+Failed to process allotment for 2718267791: AllotmentDetails instance has no attribute 'Nav'
+Failed to process allotment for 2718267792: AllotmentDetails instance has no attribute 'Nav'
+Failed to process allotment for 2718219540: AllotmentDetails instance has no attribute 'Nav'
+Failed to process allotment for 2718219542: AllotmentDetails instance has no attribute 'Nav'
+Failed to process allotment for 2718219549: AllotmentDetails instance has no attribute 'Nav'
+Failed to process allotment for 2718303910: AllotmentDetails instance has no attribute 'Nav'
+Failed to process allotment for 2718338484: AllotmentDetails instance has no attribute 'Nav'
+Failed to process allotment for 2718276895: AllotmentDetails instance has no attribute 'Nav'
+Failed to process allotment for 2718276896: AllotmentDetails instance has no attribute 'Nav'
+Extraction failed with provided password for C:\Users\ADMINI~1\AppData\Local\Temp\tmpz4hjyd59\downloaded_file_20260514085813.zip: Bad password for file 'MFSD307_WBTRN19371298_913800.csv'
+Extraction failed with provided password for C:\Users\ADMINI~1\AppData\Local\Temp\tmpz4hjyd59\downloaded_file_20260514085813.zip: Bad password for file 'MFSD307_WBTRN19371298_913800.csv'
+Failed to extract C:\Users\ADMINI~1\AppData\Local\Temp\tmpz4hjyd59\downloaded_file_20260514085813.zip: Incorrect password or unsupported encryption.
+PyTables is not installed. No support for HDF output.
+SQLalchemy is not installed. No support for SQL output.
+Starting Daily Jobs...
+Step 1: Syncing BSE Reports...
+Starting sync for last 1 days...
+Successfully completed BSE report sync.
+Step 2: Fetching RTA Emails...
+Connecting to Email Server...
+Found 3 emails. Processing...
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmpz4hjyd59\14052026063805_183524946R2.dbf from https://mailback11.camsonline.com/mailback_result/2025043B_4BHTKS5HUZHIDJ6JPQ5SKFIMLF3KTLDE52B449485381656BMB183524946R2.zip
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmpz4hjyd59\14052026063805_183524946R2.dbf
+Archived email b'12154'
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmpz4hjyd59\14052026064906_175322479R2.dbf from https://mailback19.camsonline.com/mailback_result/66662025043AH4BHTKSTJSV4FLJOK9MFO7BHA9R2F2X9742215911229BMB175322479R2.zip
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmpz4hjyd59\14052026064906_175322479R2.dbf
+Archived email b'12155'
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmpz4hjyd59\14052026074215_193621839R2.dbf from https://mailback14.camsonline.com/mailback_result/043B_4BHTKS5HUZHIDJ6JPQ5SKEID6GSN0MIJFDOA2T998120371397DBMB193621839R2.zip
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmpz4hjyd59\14052026074215_193621839R2.dbf
+Archived email b'12157'
+RTA Email Fetch Complete.
+Step 3: Fetching NAVs...
+Starting NAV Update...
+NAV Update Completed Successfully.
+Step 4: Updating Holding Valuations...
+Starting Holding Valuation Update...
+Successfully updated valuation for 32055 holdings.
+Daily Jobs Completed Successfully.
