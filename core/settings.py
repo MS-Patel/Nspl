@@ -174,9 +174,9 @@ WSDL_DIR = os.path.join(BASE_DIR, 'docs', 'wsdl', 'demo' if BSE_ENV == 'PROD' el
 
 # BSE StarMF API URLs and WSDLs
 if BSE_ENV == 'PROD':
-    BSE_ORDER_WSDL = os.environ.get('BSE_ORDER_WSDL', f"file://{os.path.join(WSDL_DIR, 'MFOrder.wsdl')}")
-    BSE_UPLOAD_WSDL = os.environ.get('BSE_UPLOAD_WSDL', f"file://{os.path.join(WSDL_DIR, 'MFUploadService.wsdl')}")
-    BSE_QUERY_WSDL = os.environ.get('BSE_QUERY_WSDL', f"file://{os.path.join(WSDL_DIR, 'StarMFWebService.wsdl')}")
+    BSE_ORDER_WSDL = os.environ.get('BSE_ORDER_WSDL', Path(os.path.join(WSDL_DIR, 'MFOrder.wsdl')).resolve().as_uri())
+    BSE_UPLOAD_WSDL = os.environ.get('BSE_UPLOAD_WSDL', Path(os.path.join(WSDL_DIR, 'MFUploadService.wsdl')).resolve().as_uri())
+    BSE_QUERY_WSDL = os.environ.get('BSE_QUERY_WSDL', Path(os.path.join(WSDL_DIR, 'StarMFWebService.wsdl')).resolve().as_uri())
 
     BSE_UPLOAD_SERVICE_URL = os.environ.get('BSE_UPLOAD_SERVICE_URL', "https://bsestarmf.in/StarMFFileUploadService/StarMFFileUploadService.svc/Secure/UploadFile")
     BSE_COMMON_API_URL = os.environ.get('BSE_COMMON_API_URL', "https://bsestarmf.in/BSEMFWEBAPI/UCCAPI/UCCRegistrationV183")
@@ -185,9 +185,9 @@ if BSE_ENV == 'PROD':
     BSE_NOMINEE_API_URL = os.environ.get('BSE_NOMINEE_API_URL', "https://bsestarmf.in/BSEMFWEBAPI/api/NomineeFlag/Change")
 else:
     # Defaults to DEMO
-    BSE_ORDER_WSDL = os.environ.get('BSE_ORDER_WSDL', f"file://{os.path.join(WSDL_DIR, 'MFOrder.wsdl')}")
-    BSE_UPLOAD_WSDL = os.environ.get('BSE_UPLOAD_WSDL', f"file://{os.path.join(WSDL_DIR, 'MFUploadService.wsdl')}")
-    BSE_QUERY_WSDL = os.environ.get('BSE_QUERY_WSDL', f"file://{os.path.join(WSDL_DIR, 'StarMFWebService.wsdl')}")
+    BSE_ORDER_WSDL = os.environ.get('BSE_ORDER_WSDL', Path(os.path.join(WSDL_DIR, 'MFOrder.wsdl')).resolve().as_uri())
+    BSE_UPLOAD_WSDL = os.environ.get('BSE_UPLOAD_WSDL', Path(os.path.join(WSDL_DIR, 'MFUploadService.wsdl')).resolve().as_uri())
+    BSE_QUERY_WSDL = os.environ.get('BSE_QUERY_WSDL', Path(os.path.join(WSDL_DIR, 'StarMFWebService.wsdl')).resolve().as_uri())
 
     BSE_UPLOAD_SERVICE_URL = os.environ.get('BSE_UPLOAD_SERVICE_URL', "https://bsestarmfdemo.bseindia.com/StarMFFileUploadService/StarMFFileUploadService.svc/Secure/UploadFile")
     BSE_COMMON_API_URL = os.environ.get('BSE_COMMON_API_URL', "https://bsestarmfdemo.bseindia.com/BSEMFWEBAPI/UCCAPI/UCCRegistrationV183")
@@ -196,8 +196,8 @@ else:
     BSE_NOMINEE_API_URL = os.environ.get('BSE_NOMINEE_API_URL', "https://bsestarmfdemo.bseindia.com/BSEMFWEBAPI/api/NomineeFlag/Change")
 
 # NDML KRA API Configuration
-NDML_OKRA_WSDL = os.environ.get('NDML_OKRA_WSDL', f"file://{os.path.join(WSDL_DIR, 'NDMLOkraService.wsdl')}")
-NDML_PAN_WSDL = os.environ.get('NDML_PAN_WSDL', f"file://{os.path.join(WSDL_DIR, 'NDMLPANService.wsdl')}")
+NDML_OKRA_WSDL = os.environ.get('NDML_OKRA_WSDL', Path(os.path.join(WSDL_DIR, 'NDMLOkraService.wsdl')).resolve().as_uri())
+NDML_PAN_WSDL = os.environ.get('NDML_PAN_WSDL', Path(os.path.join(WSDL_DIR, 'NDMLPANService.wsdl')).resolve().as_uri())
 
 # CVL KRA API Configuration
 CVL_USER_NAME = os.environ.get('CVL_USER_NAME', "WEBADMIN")
