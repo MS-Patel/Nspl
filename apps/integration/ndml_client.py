@@ -73,6 +73,44 @@ class NDMLClient:
             )
         return cls._okra_client
 
+    def _decode_and_parse_response(self, response):
+        """
+        Decodes a list of bytes into an XML string and checks for <ERROR> tags.
+        """
+        import re
+        import html
+
+        try:
+            if isinstance(response, list):
+                byte_data = response
+            elif isinstance(response, dict) and 'byte' in response:
+                byte_data = response['byte']
+            elif isinstance(response, bytes):
+                byte_data = response
+            elif isinstance(response, str):
+                decoded_xml = response
+                byte_data = None
+            else:
+                return {'status': 'error', 'remarks': 'Invalid response format from NDML'}
+
+            if byte_data is not None:
+                decoded_xml = "".join([chr(b) for b in byte_data])
+
+            unescaped_xml = html.unescape(decoded_xml)
+
+            # Look for <ERROR> tags
+            error_match = re.search(r'<ERROR>(.*?)</ERROR>', unescaped_xml, re.DOTALL)
+            if error_match:
+                inner_content = error_match.group(1)
+                inner_match = re.search(r'<ERROR>(.*?)</ERROR>', inner_content, re.DOTALL)
+                if inner_match:
+                    return {'status': 'error', 'remarks': inner_match.group(1).strip(), 'data': decoded_xml}
+                return {'status': 'error', 'remarks': inner_content.strip(), 'data': decoded_xml}
+
+            return {'status': 'success', 'data': decoded_xml}
+        except Exception as e:
+            return {'status': 'error', 'remarks': f"Failed to parse NDML response: {str(e)}"}
+
     @classmethod
     def _get_pan_client(cls, instance):
         if cls._pan_client is None:
@@ -120,15 +158,18 @@ class NDMLClient:
             encrypted_password, pass_key = self._get_auth_details('okra')
             client = self._get_okra_client(self)
 
+            xml_bytes = request_xml.encode('utf-8')
+            byte_list = [b for b in xml_bytes]
+
             response = client.service.registration(
-                input=request_xml.encode('utf-8'),
+                input=byte_list,
                 userId=self.user_name,
                 userPassword=encrypted_password,
                 passKey=pass_key,
                 okraCdOrMiId=self.mi_id
             )
 
-            return {'status': 'success', 'data': response}
+            return self._decode_and_parse_response(response)
         except Exception as e:
             ndml_logger.error(f"NDML Registration Error: {str(e)}")
             return {'status': 'error', 'remarks': str(e)}
@@ -184,15 +225,18 @@ class NDMLClient:
             encrypted_password, pass_key = self._get_auth_details('okra')
             client = self._get_okra_client(self)
 
+            xml_bytes = request_xml.encode('utf-8')
+            byte_list = [b for b in xml_bytes]
+
             response = client.service.processModification(
-                input=request_xml.encode('utf-8'),
+                input={'byte': byte_list},
                 userId=self.user_name,
                 userPassword=encrypted_password,
                 passKey=pass_key,
-                okraCdOrMiId=self.mi_id
+                okraCd=self.mi_id
             )
 
-            return {'status': 'success', 'data': response}
+            return self._decode_and_parse_response(response)
         except Exception as e:
             ndml_logger.error(f"NDML Modification Error: {str(e)}")
             return {'status': 'error', 'remarks': str(e)}
