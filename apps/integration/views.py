@@ -250,7 +250,8 @@ class NDMLModificationToolView(LoginRequiredMixin, View):
 
                 ET.SubElement(app_pan_inq, "APP_TYPE").text = "I"
                 ET.SubElement(app_pan_inq, "APP_NO").text = ""
-                ET.SubElement(app_pan_inq, "APP_DATE").text = ""
+                app_date_str = datetime.now().strftime("%d-%m-%Y")
+                ET.SubElement(app_pan_inq, "APP_DATE").text = app_date_str
 
                 ET.SubElement(app_pan_inq, "APP_PAN_NO").text = data['pan_no']
                 ET.SubElement(app_pan_inq, "APP_PANEX_NO").text = ""
@@ -276,11 +277,11 @@ class NDMLModificationToolView(LoginRequiredMixin, View):
                 ET.SubElement(app_pan_inq, "APP_DOI_DT").text = dob_str
                 ET.SubElement(app_pan_inq, "APP_COMMENCE_DT").text = ""
 
-                ET.SubElement(app_pan_inq, "APP_NATIONALITY").text = ""
+                ET.SubElement(app_pan_inq, "APP_NATIONALITY").text = data['nationality']
                 ET.SubElement(app_pan_inq, "APP_OTH_NATIONALITY").text = "UAE"
                 ET.SubElement(app_pan_inq, "APP_COMP_STATUS").text = ""
                 ET.SubElement(app_pan_inq, "APP_OTH_COMP_STATUS").text = ""
-                ET.SubElement(app_pan_inq, "APP_RES_STATUS").text = ""
+                ET.SubElement(app_pan_inq, "APP_RES_STATUS").text = data['res_status']
                 ET.SubElement(app_pan_inq, "APP_RES_STATUS_PROOF").text = ""
                 ET.SubElement(app_pan_inq, "APP_UID_NO").text = ""
 
@@ -333,7 +334,7 @@ class NDMLModificationToolView(LoginRequiredMixin, View):
                 ET.SubElement(app_pan_inq, "APP_DUMP_TYPE").text = ""
                 ET.SubElement(app_pan_inq, "APP_KRA_INFO").text = ""
                 ET.SubElement(app_pan_inq, "APP_SIGNATURE").text = ""
-                ET.SubElement(app_pan_inq, "APP_FATCA_APPLICABLE_FLAG").text = ""
+                ET.SubElement(app_pan_inq, "APP_FATCA_APPLICABLE_FLAG").text = data['fatca_applicable']
                 ET.SubElement(app_pan_inq, "APP_FATCA_BIRTH_PLACE").text = ""
                 ET.SubElement(app_pan_inq, "APP_FATCA_BIRTH_COUNTRY").text = ""
                 ET.SubElement(app_pan_inq, "APP_FATCA_COUNTRY_RES").text = ""
@@ -420,7 +421,8 @@ class NDMLRegistrationToolView(LoginRequiredMixin, View):
 
                 ET.SubElement(app_pan_inq, "APP_TYPE").text = "I"
                 ET.SubElement(app_pan_inq, "APP_NO").text = ""
-                ET.SubElement(app_pan_inq, "APP_DATE").text = ""
+                app_date_str = datetime.now().strftime("%d-%m-%Y")
+                ET.SubElement(app_pan_inq, "APP_DATE").text = app_date_str
 
                 ET.SubElement(app_pan_inq, "APP_PAN_NO").text = data['pan_no']
                 ET.SubElement(app_pan_inq, "APP_PANEX_NO").text = ""
@@ -447,11 +449,11 @@ class NDMLRegistrationToolView(LoginRequiredMixin, View):
                 ET.SubElement(app_pan_inq, "APP_DOI_DT").text = dob_str
                 ET.SubElement(app_pan_inq, "APP_COMMENCE_DT").text = ""
 
-                ET.SubElement(app_pan_inq, "APP_NATIONALITY").text = ""
+                ET.SubElement(app_pan_inq, "APP_NATIONALITY").text = data['nationality']
                 ET.SubElement(app_pan_inq, "APP_OTH_NATIONALITY").text = "UAE"
                 ET.SubElement(app_pan_inq, "APP_COMP_STATUS").text = ""
                 ET.SubElement(app_pan_inq, "APP_OTH_COMP_STATUS").text = ""
-                ET.SubElement(app_pan_inq, "APP_RES_STATUS").text = ""
+                ET.SubElement(app_pan_inq, "APP_RES_STATUS").text = data['res_status']
                 ET.SubElement(app_pan_inq, "APP_RES_STATUS_PROOF").text = ""
                 ET.SubElement(app_pan_inq, "APP_UID_NO").text = ""
 
@@ -505,7 +507,7 @@ class NDMLRegistrationToolView(LoginRequiredMixin, View):
                 ET.SubElement(app_pan_inq, "APP_DUMP_TYPE").text = ""
                 ET.SubElement(app_pan_inq, "APP_KRA_INFO").text = ""
                 ET.SubElement(app_pan_inq, "APP_SIGNATURE").text = ""
-                ET.SubElement(app_pan_inq, "APP_FATCA_APPLICABLE_FLAG").text = ""
+                ET.SubElement(app_pan_inq, "APP_FATCA_APPLICABLE_FLAG").text = data['fatca_applicable']
                 ET.SubElement(app_pan_inq, "APP_FATCA_BIRTH_PLACE").text = ""
                 ET.SubElement(app_pan_inq, "APP_FATCA_BIRTH_COUNTRY").text = ""
                 ET.SubElement(app_pan_inq, "APP_FATCA_COUNTRY_RES").text = ""
