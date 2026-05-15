@@ -527,7 +527,7 @@ class NDMLRegistrationToolView(LoginRequiredMixin, View):
                 summ_rec = ET.SubElement(root, "APP_SUMM_REC")
                 ET.SubElement(summ_rec, "APP_REQ_DATE").text = datetime.now().strftime("%d-%m-%Y")
                 ET.SubElement(summ_rec, "APP_OTHKRA_BATCH").text = "" # Sample
-                ET.SubElement(summ_rec, "APP_OTHKRA_CODE").text = "" # Sample
+                ET.SubElement(summ_rec, "APP_OTHKRA_CODE").text = "A1249" # Sample
                 ET.SubElement(summ_rec, "APP_TOTAL_REC").text = "1"
                 ET.SubElement(summ_rec, "NO_OF_FATCA_ADDL_DTLS_RECORDS").text = "4"
 
