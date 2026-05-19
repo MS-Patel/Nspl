@@ -76,6 +76,30 @@
                     </label>
 
                     <label class="block">
+                        <span>{{ form.nationality.label }}</span>
+                        {{ form.nationality }}
+                        {% if form.nationality.errors %}
+                            <span class="text-xs text-error">{{ form.nationality.errors.0 }}</span>
+                        {% endif %}
+                    </label>
+
+                    <label class="block">
+                        <span>{{ form.res_status.label }}</span>
+                        {{ form.res_status }}
+                        {% if form.res_status.errors %}
+                            <span class="text-xs text-error">{{ form.res_status.errors.0 }}</span>
+                        {% endif %}
+                    </label>
+
+                    <label class="block">
+                        <span>{{ form.fatca_applicable.label }}</span>
+                        {{ form.fatca_applicable }}
+                        {% if form.fatca_applicable.errors %}
+                            <span class="text-xs text-error">{{ form.fatca_applicable.errors.0 }}</span>
+                        {% endif %}
+                    </label>
+
+                    <label class="block">
                         <span>{{ form.mobile_no.label }}</span>
                         {{ form.mobile_no }}
                         {% if form.mobile_no.errors %}

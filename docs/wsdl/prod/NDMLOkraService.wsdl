@@ -219,7 +219,7 @@
   </wsdl:binding>
   <wsdl:service name="OkraServiceImplService">
     <wsdl:port binding="impl:OkraServiceImplSoapBinding" name="OkraServiceImpl">
-      <wsdlsoap:address location="http://kra.ndml.in:80/okra-iop/services/OkraServiceImpl"/>
+      <wsdlsoap:address location="https://kra.ndml.in/okra-iop/services/OkraServiceImpl"/>
     </wsdl:port>
   </wsdl:service>
 </wsdl:definitions>

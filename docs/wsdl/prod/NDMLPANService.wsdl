@@ -219,7 +219,7 @@
   </binding>
   <service name="PANServiceImplService">
     <port name="PANServiceImplPort" binding="tns:PANServiceImplPortBinding">
-      <soap:address location="http://kra.ndml.in:80/sms-ws/PANServiceImplService"/>
+      <soap:address location="https://kra.ndml.in/sms-ws/PANServiceImplService"/>
     </port>
   </service>
 </definitions>
