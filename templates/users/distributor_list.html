@@ -239,10 +239,10 @@
       }
       const filteredData = tableData.filter(item =>
           item.name.toLowerCase().includes(keyword) ||
-          item.arn.toLowerCase().includes(keyword) ||
+          item.arn.includes(keyword) ||
           (item.broker_code && item.broker_code.toLowerCase().includes(keyword)) ||
           item.mobile.toLowerCase().includes(keyword) ||
-          item.rm_name.toLowerCase().includes(keyword)
+          item.rm_name.includes(keyword)
       );
       grid.updateConfig({ data: filteredData }).forceRender();
     });

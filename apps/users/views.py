@@ -458,7 +458,7 @@ class DistributorListView(LoginRequiredMixin, IsAdminOrRMMixin, ListView):
             data.append({
                 'id': dist.id,
                 'name': dist.user.name if dist.user.name else dist.user.username,
-                'arn': dist.arn_number,
+                'arn': dist.arn if dist.arn else '',
                 'broker_code': dist.broker_code,
                 'old_broker_code': dist.old_broker_code,
                 'mobile': dist.mobile,
