@@ -878,7 +878,7 @@ def get_bse_switch_order_params(order, member_id, user_id, password, pass_key):
     dptxn = "P" # Physical
 
     params = {
-        'TransCode': 'NEW',
+        'TransCode': 'SO',
         'TransNo': str(order.unique_ref_no),
         'OrderId': '',
         'UserId': user_id,
@@ -896,8 +896,8 @@ def get_bse_switch_order_params(order, member_id, user_id, password, pass_key):
         'Remarks': '',
         'KYCStatus': 'Y',
         'SubBrCode': order.distributor.broker_code if order.distributor else '',
-        'Euin': euin,
-        'EuinVal': euin_flag,
+        'EUIN': euin,
+        'EUINVal': euin_flag,
         'MinRedeem': 'N',
         'IPAdd': '',
         'Password': password,

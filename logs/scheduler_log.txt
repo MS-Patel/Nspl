@@ -4021,3 +4021,360 @@ Step 4: Updating Holding Valuations...
 Starting Holding Valuation Update...
 Successfully updated valuation for 33881 holdings.
 Daily Jobs Completed Successfully.
+Forcing soap:address location to HTTPS
+Failed to process allotment for 2819721570: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (330734, 91047923221, BSE, P, , null, 100.0000, 9.2990, null, 0.0000, 0.0000, , 2026-06-25 03:27:59.922586+00, 1102, 50267, null, 2819721570, t, BSE, null, 2819721570, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2819714570: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (330735, 31045574905, BSE, P, , null, 100.0000, 7.1430, null, 0.0000, 0.0000, , 2026-06-25 03:27:59.954069+00, 1102, 7812, null, 2819714570, t, BSE, null, 2819714570, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2819717803: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (330736, 91048677784, BSE, P, , null, 100.0000, 0.9340, null, 0.0000, 0.0000, , 2026-06-25 03:27:59.969765+00, 1715, 17649, null, 2819717803, t, BSE, null, 2819717803, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2819686362: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (330737, 910227381844, BSE, P, , null, 100.0000, 5.3940, null, 0.0000, 0.0000, , 2026-06-25 03:27:59.984993+00, 1617, 18625, null, 2819686362, t, BSE, null, 2819686362, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2819710180: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (330738, 11159162/27, BSE, P, , null, 199.9900, 0.9220, null, 0.0000, 0.0000, , 2026-06-25 03:28:00.016485+00, 1650, 12472, null, 2819710180, t, BSE, null, 2819710180, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Extraction failed with provided password for C:\Users\ADMINI~1\AppData\Local\Temp\tmp4fliz3ro\BHTKS5HUZFCHBCNPH4V3CAEOG6H1Y0HGCDD0U0I372L6297685121367BMB215265946R2.zip: Bad password for file '24062026114217_215265946R2.dbf'
+Extraction failed with provided password for C:\Users\ADMINI~1\AppData\Local\Temp\tmp4fliz3ro\BHTKS5HUZFCHBCNPH4V3CAEOG6H1Y0HGCDD0U0I372L6297685121367BMB215265946R2.zip: Bad password for file '24062026114217_215265946R2.dbf'
+Failed to extract C:\Users\ADMINI~1\AppData\Local\Temp\tmp4fliz3ro\BHTKS5HUZFCHBCNPH4V3CAEOG6H1Y0HGCDD0U0I372L6297685121367BMB215265946R2.zip: Incorrect password or unsupported encryption.
+Extraction failed with provided password for C:\Users\ADMINI~1\AppData\Local\Temp\tmp4fliz3ro\5662026054AH4BHTKSTJSV4FLJOK9MFO7BHA9R2F2X9742215911333DBMB175322479R2.zip: Bad password for file '25062026055923_175322479R2.dbf'
+Extraction failed with provided password for C:\Users\ADMINI~1\AppData\Local\Temp\tmp4fliz3ro\26054B_4BHTKS5HUZHIDJ6JPQ5SKFIMLF3KTLDE52B4494853811144DBMB183524946R2.zip: Bad password for file '25062026062320_183524946R2.dbf'
+Extraction failed with provided password for C:\Users\ADMINI~1\AppData\Local\Temp\tmp4fliz3ro\54B_4BHTKS5HUZHIDJ6JPQ5SKEID6GSN0MIJFDOA2T9981203711348DBMB193621839R2.zip: Bad password for file '25062026064120_193621839R2.dbf'
+PyTables is not installed. No support for HDF output.
+SQLalchemy is not installed. No support for SQL output.
+Starting Daily Jobs...
+Step 1: Syncing BSE Reports...
+Starting sync for last 1 days...
+Successfully completed BSE report sync.
+Step 2: Fetching RTA Emails...
+Connecting to Email Server...
+Found 4 emails. Processing...
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmp4fliz3ro\MFSD307_WBTRN19371298_1059836.csv from https://scdelivery.kfintech.com/c/?u=iuuqt%3B00ngt%2Flgjoufdi%2Fdpn0ngt0Ejtusjcvups0Sfrvftut0Sfr%60bmmsqutmjol%2Fbtqy%40rszuzqf%3EV%7BO9W1KVVl5yPUN4NUJ6PEd5PUF2OYxzNEJ3NEZzOR%3E%3E&p=qqttqbdb.bqeesknn--330760651-E19A242A-C777-4E84-8575-A891E1C40048.1.1&e=s1
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmp4fliz3ro\MFSD307_WBTRN19371298_1059836.csv
+Archived email b'12819'
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmp4fliz3ro\25062026055923_175322479R2.dbf from https://mailback21.camsonline.com/mailback_result/5662026054AH4BHTKSTJSV4FLJOK9MFO7BHA9R2F2X9742215911333DBMB175322479R2.zip
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmp4fliz3ro\25062026055923_175322479R2.dbf
+Archived email b'12820'
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmp4fliz3ro\25062026062320_183524946R2.dbf from https://mailback18.camsonline.com/mailback_result/26054B_4BHTKS5HUZHIDJ6JPQ5SKFIMLF3KTLDE52B4494853811144DBMB183524946R2.zip
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmp4fliz3ro\25062026062320_183524946R2.dbf
+Archived email b'12822'
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmp4fliz3ro\25062026064120_193621839R2.dbf from https://mailback21.camsonline.com/mailback_result/54B_4BHTKS5HUZHIDJ6JPQ5SKEID6GSN0MIJFDOA2T9981203711348DBMB193621839R2.zip
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmp4fliz3ro\25062026064120_193621839R2.dbf
+Archived email b'12824'
+RTA Email Fetch Complete.
+Step 3: Fetching NAVs...
+Starting NAV Update...
+NAV Update Completed Successfully.
+Step 4: Updating Holding Valuations...
+Starting Holding Valuation Update...
+Successfully updated valuation for 34534 holdings.
+Daily Jobs Completed Successfully.
+Forcing soap:address location to HTTPS
+Failed to process allotment for 2822602089: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (330753, 910227381844, BSE, P, , null, 100.0000, 5.4020, null, 0.0000, 0.0000, , 2026-06-26 03:28:00.064716+00, 1617, 18625, null, 2822602089, t, BSE, null, 2822602089, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2823117935: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (330754, 91048677784, BSE, P, , null, 100.0000, 0.9380, null, 0.0000, 0.0000, , 2026-06-26 03:28:00.080415+00, 1715, 17649, null, 2823117935, t, BSE, null, 2823117935, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2823169831: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (330755, 31045574905, BSE, P, , null, 100.0000, 7.1430, null, 0.0000, 0.0000, , 2026-06-26 03:28:00.096097+00, 1102, 7812, null, 2823169831, t, BSE, null, 2823169831, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2823185712: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (330756, 11225845/89, BSE, P, , null, 1499.9300, 6.9300, null, 0.0000, 0.0000, , 2026-06-26 03:28:00.111816+00, 2229, 12472, null, 2823185712, t, BSE, null, 2823185712, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2823205189: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (330757, 91047923221, BSE, P, , null, 100.0000, 9.3090, null, 0.0000, 0.0000, , 2026-06-26 03:28:00.111816+00, 1102, 50267, null, 2823205189, t, BSE, null, 2823205189, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2823104885: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (330758, 77755837662, BSE, P, , null, 1999.9000, 51.6260, null, 0.0000, 0.0000, , 2026-06-26 03:28:00.127498+00, 1651, 14360, null, 2823104885, t, BSE, null, 2823104885, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2823099488: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (330759, 11159162/27, BSE, P, , null, 199.9900, 0.9240, null, 0.0000, 0.0000, , 2026-06-26 03:28:00.142689+00, 1650, 12472, null, 2823099488, t, BSE, null, 2823099488, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Extraction failed with provided password for C:\Users\ADMINI~1\AppData\Local\Temp\tmpddca_7p6\6662026064AH4BHTKSTJSV4FLJOK9MFO7BHA9R2F2X9742215911196DBMB175322479R2.zip: Bad password for file '26062026061113_175322479R2.dbf'
+Extraction failed with provided password for C:\Users\ADMINI~1\AppData\Local\Temp\tmpddca_7p6\026064B_4BHTKS5HUZHIDJ6JPQ5SKFIMLF3KTLDE52B449485381290DBMB183524946R2.zip: Bad password for file '26062026063623_183524946R2.dbf'
+Extraction failed with provided password for C:\Users\ADMINI~1\AppData\Local\Temp\tmpddca_7p6\64B_4BHTKS5HUZHIDJ6JPQ5SKEID6GSN0MIJFDOA2T9981203711197DBMB193621839R2.zip: Bad password for file '26062026065317_193621839R2.dbf'
+PyTables is not installed. No support for HDF output.
+SQLalchemy is not installed. No support for SQL output.
+Starting Daily Jobs...
+Step 1: Syncing BSE Reports...
+Starting sync for last 1 days...
+Successfully completed BSE report sync.
+Step 2: Fetching RTA Emails...
+Connecting to Email Server...
+Found 4 emails. Processing...
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmpddca_7p6\26062026061113_175322479R2.dbf from https://mailback19.camsonline.com/mailback_result/6662026064AH4BHTKSTJSV4FLJOK9MFO7BHA9R2F2X9742215911196DBMB175322479R2.zip
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmpddca_7p6\26062026061113_175322479R2.dbf
+Archived email b'12834'
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmpddca_7p6\26062026063623_183524946R2.dbf from https://mailback5.camsonline.com/mailback_result/026064B_4BHTKS5HUZHIDJ6JPQ5SKFIMLF3KTLDE52B449485381290DBMB183524946R2.zip
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmpddca_7p6\26062026063623_183524946R2.dbf
+Archived email b'12836'
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmpddca_7p6\MFSD307_WBTRN19371298_634198.csv from https://scdelivery.kfintech.com/c/?u=iuuqt%3B00ngt%2Flgjoufdi%2Fdpn0ngt0Ejtusjcvups0Sfrvftut0Sfr%60bmmsqutmjol%2Fbtqy%40rszuzqf%3EV%7BO9W1KVVl5yPUN4NUJ6PEN3N%7BVyO4xzNEJ3NEZzOh%3E%3E&p=qqttqbdb.bqeesknn--330850231-A0B937F0-82E5-4A78-9D77-61A4B8F51DBA.1.1&e=s1
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmpddca_7p6\MFSD307_WBTRN19371298_634198.csv
+Archived email b'12838'
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmpddca_7p6\26062026065317_193621839R2.dbf from https://mailback19.camsonline.com/mailback_result/64B_4BHTKS5HUZHIDJ6JPQ5SKEID6GSN0MIJFDOA2T9981203711197DBMB193621839R2.zip
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmpddca_7p6\26062026065317_193621839R2.dbf
+Archived email b'12839'
+RTA Email Fetch Complete.
+Step 3: Fetching NAVs...
+Starting NAV Update...
+NAV Update Completed Successfully.
+Step 4: Updating Holding Valuations...
+Starting Holding Valuation Update...
+Successfully updated valuation for 34544 holdings.
+Daily Jobs Completed Successfully.
+Forcing soap:address location to HTTPS
+Extraction failed with provided password for C:\Users\ADMINI~1\AppData\Local\Temp\tmpunzcyfhu\26662026074AH4BHTKSTJSV4FLJOK9MFO7BHA9R2F2X974221591323DBMB175322479R2.zip: Bad password for file '27062026060122_175322479R2.dbf'
+Extraction failed with provided password for C:\Users\ADMINI~1\AppData\Local\Temp\tmpunzcyfhu\026074B_4BHTKS5HUZHIDJ6JPQ5SKFIMLF3KTLDE52B449485381631DBMB183524946R2.zip: Bad password for file '27062026062632_183524946R2.dbf'
+Extraction failed with provided password for C:\Users\ADMINI~1\AppData\Local\Temp\tmpunzcyfhu\074B_4BHTKS5HUZHIDJ6JPQ5SKEID6GSN0MIJFDOA2T998120371346DBMB193621839R2.zip: Bad password for file '27062026064312_193621839R2.dbf'
+PyTables is not installed. No support for HDF output.
+SQLalchemy is not installed. No support for SQL output.
+Starting Daily Jobs...
+Step 1: Syncing BSE Reports...
+Starting sync for last 1 days...
+Successfully completed BSE report sync.
+Step 2: Fetching RTA Emails...
+Connecting to Email Server...
+Found 4 emails. Processing...
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmpunzcyfhu\27062026060122_175322479R2.dbf from https://mailback8.camsonline.com/mailback_result/26662026074AH4BHTKSTJSV4FLJOK9MFO7BHA9R2F2X974221591323DBMB175322479R2.zip
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmpunzcyfhu\27062026060122_175322479R2.dbf
+Archived email b'12844'
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmpunzcyfhu\27062026062632_183524946R2.dbf from https://mailback10.camsonline.com/mailback_result/026074B_4BHTKS5HUZHIDJ6JPQ5SKFIMLF3KTLDE52B449485381631DBMB183524946R2.zip
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmpunzcyfhu\27062026062632_183524946R2.dbf
+Archived email b'12846'
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmpunzcyfhu\MFSD307_WBTRN19371298_1193657.csv from https://scdelivery.kfintech.com/c/?u=iuuqt%3B00ngt%2Flgjoufdi%2Fdpn0ngt0Ejtusjcvups0Sfrvftut0Sfr%60bmmsqutmjol%2Fbtqy%40rszuzqf%3EV%7BO9W1KVVl5yPUN4NUJ6PElzNkl4OoxzNEJ3NEZzOx%3E%3E&p=qqttqbdb.bqeesknn--330935579-11E1E09A-662F-4F7E-931D-7AB972EBC135.1.1&e=s1
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmpunzcyfhu\MFSD307_WBTRN19371298_1193657.csv
+Archived email b'12848'
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmpunzcyfhu\27062026064312_193621839R2.dbf from https://mailback8.camsonline.com/mailback_result/074B_4BHTKS5HUZHIDJ6JPQ5SKEID6GSN0MIJFDOA2T998120371346DBMB193621839R2.zip
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmpunzcyfhu\27062026064312_193621839R2.dbf
+Archived email b'12849'
+RTA Email Fetch Complete.
+Step 3: Fetching NAVs...
+Starting NAV Update...
+NAV Update Completed Successfully.
+Step 4: Updating Holding Valuations...
+Starting Holding Valuation Update...
+Successfully updated valuation for 34544 holdings.
+Daily Jobs Completed Successfully.
+Forcing soap:address location to HTTPS
+PyTables is not installed. No support for HDF output.
+SQLalchemy is not installed. No support for SQL output.
+Starting Daily Jobs...
+Step 1: Syncing BSE Reports...
+Starting sync for last 1 days...
+Successfully completed BSE report sync.
+Step 2: Fetching RTA Emails...
+Connecting to Email Server...
+Found 1 emails. Processing...
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmp1ve80tgy\MFSD307_WBTRN19371298_1129654.csv from https://scdelivery.kfintech.com/c/?u=iuuqt%3B00ngt%2Flgjoufdi%2Fdpn0ngt0Ejtusjcvups0Sfrvftut0Sfr%60bmmsqutmjol%2Fbtqy%40rszuzqf%3EV%7BO9W1KVVl5yPUN4NUJ6PEh2PEl4N4xzNEJ3NEZzPB%3E%3E&p=qqttqbdb.bqeesknn--331027696-D41D65B6-AE5A-4347-8D02-035AD15B3A79.1.1&e=s1
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmp1ve80tgy\MFSD307_WBTRN19371298_1129654.csv
+Archived email b'12859'
+RTA Email Fetch Complete.
+Step 3: Fetching NAVs...
+Starting NAV Update...
+NAV Update Completed Successfully.
+Step 4: Updating Holding Valuations...
+Starting Holding Valuation Update...
+Successfully updated valuation for 34544 holdings.
+Daily Jobs Completed Successfully.
+Forcing soap:address location to HTTPS
+PyTables is not installed. No support for HDF output.
+SQLalchemy is not installed. No support for SQL output.
+Starting Daily Jobs...
+Step 1: Syncing BSE Reports...
+Starting sync for last 1 days...
+Successfully completed BSE report sync.
+Step 2: Fetching RTA Emails...
+Connecting to Email Server...
+Found 1 emails. Processing...
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmpcqq60r8k\MFSD307_WBTRN19371298_925876.csv from https://scdelivery.kfintech.com/c/?u=iuuqt%3B00ngt%2Flgjoufdi%2Fdpn0ngt0Ejtusjcvups0Sfrvftut0Sfr%60bmmsqutmjol%2Fbtqy%40rszuzqf%3EV%7BO9W1KVVl5yPUN4NUJ6PEZ2OUF6OYxzNEJ3NEZzPR%3E%3E&p=qqttqbdb.bqeesknn--331096173-FC03D2E7-FB0C-4751-A265-642951BE1DC6.1.1&e=s1
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmpcqq60r8k\MFSD307_WBTRN19371298_925876.csv
+Archived email b'12866'
+RTA Email Fetch Complete.
+Step 3: Fetching NAVs...
+Starting NAV Update...
+NAV Update Completed Successfully.
+Step 4: Updating Holding Valuations...
+Starting Holding Valuation Update...
+Successfully updated valuation for 34544 holdings.
+Daily Jobs Completed Successfully.
+Forcing soap:address location to HTTPS
+Failed to process allotment for 2827852406: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (330798, 910227381844, BSE, P, , null, 100.0000, 5.4080, null, 0.0000, 0.0000, , 2026-06-30 03:28:00.080856+00, 1617, 18625, null, 2827852406, t, BSE, null, 2827852406, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2828343544: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (330799, 91048677784, BSE, P, , null, 100.0000, 0.9400, null, 0.0000, 0.0000, , 2026-06-30 03:28:00.111823+00, 1715, 17649, null, 2828343544, t, BSE, null, 2828343544, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2828345750: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (330800, 43180732/43, BSE, P, , null, 499.9800, 2.4580, null, 0.0000, 0.0000, , 2026-06-30 03:28:00.127512+00, 1995, 1679, null, 2828345750, t, BSE, null, 2828345750, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2828317916: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (330801, 11159162/27, BSE, P, , null, 199.9900, 0.9270, null, 0.0000, 0.0000, , 2026-06-30 03:28:00.143211+00, 1650, 12472, null, 2828317916, t, BSE, null, 2828317916, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2828399152: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (330802, 91047923221, BSE, P, , null, 100.0000, 9.3320, null, 0.0000, 0.0000, , 2026-06-30 03:28:00.143211+00, 1102, 50267, null, 2828399152, t, BSE, null, 2828399152, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2828416483: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (330803, 31045574905, BSE, P, , null, 100.0000, 7.1530, null, 0.0000, 0.0000, , 2026-06-30 03:28:00.158945+00, 1102, 7812, null, 2828416483, t, BSE, null, 2828416483, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Extraction failed with provided password for C:\Users\ADMINI~1\AppData\Local\Temp\tmpqtu2x6br\5662026005AH4BHTKSTJSV4FLJOK9MFO7BHA9R2F2X9742215911378DBMB175322479R2.zip: Bad password for file '30062026055024_175322479R2.dbf'
+Extraction failed with provided password for C:\Users\ADMINI~1\AppData\Local\Temp\tmpqtu2x6br\26005B_4BHTKS5HUZHIDJ6JPQ5SKFIMLF3KTLDE52B4494853811177DBMB183524946R2.zip: Bad password for file '30062026061024_183524946R2.dbf'
+Extraction failed with provided password for C:\Users\ADMINI~1\AppData\Local\Temp\tmpqtu2x6br\05B_4BHTKS5HUZHIDJ6JPQ5SKEID6GSN0MIJFDOA2T9981203711327DBMB193621839R2.zip: Bad password for file '30062026062329_193621839R2.dbf'
+PyTables is not installed. No support for HDF output.
+SQLalchemy is not installed. No support for SQL output.
+Starting Daily Jobs...
+Step 1: Syncing BSE Reports...
+Starting sync for last 1 days...
+Successfully completed BSE report sync.
+Step 2: Fetching RTA Emails...
+Connecting to Email Server...
+Found 4 emails. Processing...
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmpqtu2x6br\30062026055024_175322479R2.dbf from https://mailback21.camsonline.com/mailback_result/5662026005AH4BHTKSTJSV4FLJOK9MFO7BHA9R2F2X9742215911378DBMB175322479R2.zip
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmpqtu2x6br\30062026055024_175322479R2.dbf
+Archived email b'12880'
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmpqtu2x6br\30062026061024_183524946R2.dbf from https://mailback18.camsonline.com/mailback_result/26005B_4BHTKS5HUZHIDJ6JPQ5SKFIMLF3KTLDE52B4494853811177DBMB183524946R2.zip
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmpqtu2x6br\30062026061024_183524946R2.dbf
+Archived email b'12882'
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmpqtu2x6br\30062026062329_193621839R2.dbf from https://mailback21.camsonline.com/mailback_result/05B_4BHTKS5HUZHIDJ6JPQ5SKEID6GSN0MIJFDOA2T9981203711327DBMB193621839R2.zip
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmpqtu2x6br\30062026062329_193621839R2.dbf
+Archived email b'12884'
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmpqtu2x6br\MFSD307_WBTRN19371298_1095480.csv from https://scdelivery.kfintech.com/c/?u=iuuqt%3B00ngt%2Flgjoufdi%2Fdpn0ngt0Ejtusjcvups0Sfrvftut0Sfr%60bmmsqutmjol%2Fbtqy%40rszuzqf%3EV%7BO9W1KVVl5yPUN4NUJ6PEhzOEd6PYxzNEJ3NEZ%7BNB%3E%3E&p=qqttqbdb.bqeesknn--331194958-C9E08E42-C295-4365-8F4F-4AC5C33A9707.1.1&e=s1
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmpqtu2x6br\MFSD307_WBTRN19371298_1095480.csv
+Archived email b'12886'
+RTA Email Fetch Complete.
+Step 3: Fetching NAVs...
+Starting NAV Update...
+NAV Update Completed Successfully.
+Step 4: Updating Holding Valuations...
+Starting Holding Valuation Update...
+Successfully updated valuation for 34544 holdings.
+Daily Jobs Completed Successfully.
+Forcing soap:address location to HTTPS
+Failed to process allotment for 2829741220: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (330809, 11159162/27, BSE, P, , null, 199.9900, 0.9180, null, 0.0000, 0.0000, , 2026-07-01 03:28:01.129348+00, 1650, 12472, null, 2829741220, t, BSE, null, 2829741220, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2829729562: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (330810, 91048677784, BSE, P, , null, 100.0000, 0.9330, null, 0.0000, 0.0000, , 2026-07-01 03:28:01.145635+00, 1715, 17649, null, 2829729562, t, BSE, null, 2829729562, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2829724013: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (330811, 910227381844, BSE, P, , null, 100.0000, 5.3820, null, 0.0000, 0.0000, , 2026-07-01 03:28:01.177725+00, 1617, 18625, null, 2829724013, t, BSE, null, 2829724013, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2829725831: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (330812, 31045574905, BSE, P, , null, 100.0000, 7.1120, null, 0.0000, 0.0000, , 2026-07-01 03:28:01.177725+00, 1102, 7812, null, 2829725831, t, BSE, null, 2829725831, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2829721048: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (330813, 91047923221, BSE, P, , null, 100.0000, 9.3220, null, 0.0000, 0.0000, , 2026-07-01 03:28:01.209391+00, 1102, 50267, null, 2829721048, t, BSE, null, 2829721048, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Extraction failed with provided password for C:\Users\ADMINI~1\AppData\Local\Temp\tmp6d571j8y\5662027012AH4BHTKSTJSV4FLJOK9MFO7BHA9R2F2X9742215911368DBMB175322479R2.zip: Bad password for file '01072026055424_175322479R2.dbf'
+Extraction failed with provided password for C:\Users\ADMINI~1\AppData\Local\Temp\tmp6d571j8y\27012B_4BHTKS5HUZHIDJ6JPQ5SKFIMLF3KTLDE52B4494853811157DBMB183524946R2.zip: Bad password for file '01072026061718_183524946R2.dbf'
+Extraction failed with provided password for C:\Users\ADMINI~1\AppData\Local\Temp\tmp6d571j8y\12B_4BHTKS5HUZHIDJ6JPQ5SKEID6GSN0MIJFDOA2T9981203711374DBMB193621839R2.zip: Bad password for file '01072026063409_193621839R2.dbf'
+PyTables is not installed. No support for HDF output.
+SQLalchemy is not installed. No support for SQL output.
+Starting Daily Jobs...
+Step 1: Syncing BSE Reports...
+Starting sync for last 1 days...
+Successfully completed BSE report sync.
+Step 2: Fetching RTA Emails...
+Connecting to Email Server...
+Found 4 emails. Processing...
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmp6d571j8y\01072026055424_175322479R2.dbf from https://mailback21.camsonline.com/mailback_result/5662027012AH4BHTKSTJSV4FLJOK9MFO7BHA9R2F2X9742215911368DBMB175322479R2.zip
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmp6d571j8y\01072026055424_175322479R2.dbf
+Archived email b'12899'
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmp6d571j8y\01072026061718_183524946R2.dbf from https://mailback18.camsonline.com/mailback_result/27012B_4BHTKS5HUZHIDJ6JPQ5SKFIMLF3KTLDE52B4494853811157DBMB183524946R2.zip
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmp6d571j8y\01072026061718_183524946R2.dbf
+Archived email b'12901'
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmp6d571j8y\MFSD307_WBTRN19371298_933134.csv from https://scdelivery.kfintech.com/c/?u=iuuqt%3B00ngt%2Flgjoufdi%2Fdpn0ngt0Ejtusjcvups0Sfrvftut0Sfr%60bmmsqutmjol%2Fbtqy%40rszuzqf%3EV%7BO9W1KVVl5yPUN4NUJ6PEZ3NkR2N4xzNEJ3NEdxNR%3E%3E&p=qqttqbdb.bqeesknn--331281113-FC316147-0727-40BC-8430-080761CCB4F5.1.1&e=s1
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmp6d571j8y\MFSD307_WBTRN19371298_933134.csv
+Archived email b'12902'
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmp6d571j8y\01072026063409_193621839R2.dbf from https://mailback21.camsonline.com/mailback_result/12B_4BHTKS5HUZHIDJ6JPQ5SKEID6GSN0MIJFDOA2T9981203711374DBMB193621839R2.zip
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmp6d571j8y\01072026063409_193621839R2.dbf
+Archived email b'12904'
+RTA Email Fetch Complete.
+Step 3: Fetching NAVs...
+Starting NAV Update...
+NAV Update Completed Successfully.
+Step 4: Updating Holding Valuations...
+Starting Holding Valuation Update...
+Successfully updated valuation for 34608 holdings.
+Daily Jobs Completed Successfully.
+Forcing soap:address location to HTTPS
+Failed to process allotment for 2835959847: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (330843, 477497832072, BSE, P, , null, 39998.0000, 26.9590, null, 0.0000, 0.0000, , 2026-07-02 03:27:59.897811+00, 2239, 4145, null, 2835959847, t, BSE, null, 2835959847, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2834220803: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (330844, 34973655/55, BSE, P, , null, 999.9500, 4.8760, null, 0.0000, 0.0000, , 2026-07-02 03:27:59.913027+00, 1751, 1679, null, 2834220803, t, BSE, null, 2834220803, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2834136058: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (330845, 11236577/97, BSE, P, , null, 199.9900, 0.9200, null, 0.0000, 0.0000, , 2026-07-02 03:27:59.929513+00, 2236, 12472, null, 2834136058, t, BSE, null, 2834136058, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2834188592: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (330846, 11236784/58, BSE, P, , null, 100.0000, 0.4600, null, 0.0000, 0.0000, , 2026-07-02 03:27:59.929513+00, 2185, 12472, null, 2834188592, t, BSE, null, 2834188592, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2834188572: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (330847, 11236831/14, BSE, P, , null, 100.0000, 0.4600, null, 0.0000, 0.0000, , 2026-07-02 03:27:59.945088+00, 2200, 12472, null, 2834188572, t, BSE, null, 2834188572, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2834104124: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (330848, 910166420204, BSE, P, , null, 2999.8500, 83.1610, null, 0.0000, 0.0000, , 2026-07-02 03:27:59.960814+00, 2233, 15953, null, 2834104124, t, BSE, null, 2834104124, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2834116894: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (330849, 9367422/89, BSE, P, , null, 3999.8000, 80.5630, null, 0.0000, 0.0000, , 2026-07-02 03:27:59.976466+00, 2233, 9917, null, 2834116894, t, BSE, null, 2834116894, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2834159286: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (330850, 1001951682, BSE, P, , null, 2999.8500, 79.2440, null, 0.0000, 0.0000, , 2026-07-02 03:27:59.992148+00, 2233, 22644, null, 2834159286, t, BSE, null, 2834159286, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2835181870: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (330851, 91048677784, BSE, P, , null, 100.0000, 0.9310, null, 0.0000, 0.0000, , 2026-07-02 03:28:00.007885+00, 1715, 17649, null, 2835181870, t, BSE, null, 2835181870, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2834189741: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (330852, 91050070603, BSE, P, , null, 199.9900, 1.8620, null, 0.0000, 0.0000, , 2026-07-02 03:28:00.023598+00, 1804, 17649, null, 2834189741, t, BSE, null, 2834189741, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2835187116: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (330853, 11159162/27, BSE, P, , null, 199.9900, 0.9200, null, 0.0000, 0.0000, , 2026-07-02 03:28:00.039263+00, 1650, 12472, null, 2835187116, t, BSE, null, 2835187116, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2834762419: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (330854, 910227381844, BSE, P, , null, 100.0000, 5.3680, null, 0.0000, 0.0000, , 2026-07-02 03:28:00.054514+00, 1617, 18625, null, 2834762419, t, BSE, null, 2834762419, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2835282067: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (330855, 91047923221, BSE, P, , null, 100.0000, 9.2990, null, 0.0000, 0.0000, , 2026-07-02 03:28:00.054514+00, 1102, 50267, null, 2835282067, t, BSE, null, 2835282067, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2835293514: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (330856, 31045574905, BSE, P, , null, 100.0000, 7.0370, null, 0.0000, 0.0000, , 2026-07-02 03:28:00.070208+00, 1102, 7812, null, 2835293514, t, BSE, null, 2835293514, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2835270951: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (330857, 910227804146, BSE, P, , null, 100.0000, 5.3680, null, 0.0000, 0.0000, , 2026-07-02 03:28:00.085971+00, 1714, 18625, null, 2835270951, t, BSE, null, 2835270951, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Extraction failed with provided password for C:\Users\ADMINI~1\AppData\Local\Temp\tmp23l8dbjf\75662027022AH4BHTKSTJSV4FLJOK9MFO7BHA9R2F2X974221591951DBMB175322479R2.zip: Bad password for file '02072026055629_175322479R2.dbf'
+Extraction failed with provided password for C:\Users\ADMINI~1\AppData\Local\Temp\tmp23l8dbjf\27022B_4BHTKS5HUZHIDJ6JPQ5SKFIMLF3KTLDE52B4494853811096DBMB183524946R2.zip: Bad password for file '02072026061606_183524946R2.dbf'
+Extraction failed with provided password for C:\Users\ADMINI~1\AppData\Local\Temp\tmp23l8dbjf\022B_4BHTKS5HUZHIDJ6JPQ5SKEID6GSN0MIJFDOA2T998120371970DBMB193621839R2.zip: Bad password for file '02072026062339_193621839R2.dbf'
+PyTables is not installed. No support for HDF output.
+SQLalchemy is not installed. No support for SQL output.
+Starting Daily Jobs...
+Step 1: Syncing BSE Reports...
+Starting sync for last 1 days...
+Successfully completed BSE report sync.
+Step 2: Fetching RTA Emails...
+Connecting to Email Server...
+Found 4 emails. Processing...
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmp23l8dbjf\02072026055629_175322479R2.dbf from https://mailback17.camsonline.com/mailback_result/75662027022AH4BHTKSTJSV4FLJOK9MFO7BHA9R2F2X974221591951DBMB175322479R2.zip
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmp23l8dbjf\02072026055629_175322479R2.dbf
+Archived email b'12914'
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmp23l8dbjf\02072026061606_183524946R2.dbf from https://mailback9.camsonline.com/mailback_result/27022B_4BHTKS5HUZHIDJ6JPQ5SKFIMLF3KTLDE52B4494853811096DBMB183524946R2.zip
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmp23l8dbjf\02072026061606_183524946R2.dbf
+Archived email b'12916'
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmp23l8dbjf\02072026062339_193621839R2.dbf from https://mailback17.camsonline.com/mailback_result/022B_4BHTKS5HUZHIDJ6JPQ5SKEID6GSN0MIJFDOA2T998120371970DBMB193621839R2.zip
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmp23l8dbjf\02072026062339_193621839R2.dbf
+Archived email b'12919'
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmp23l8dbjf\MFSD307_WBTRN19371298_1100430.csv from https://scdelivery.kfintech.com/c/?u=iuuqt%3B00ngt%2Flgjoufdi%2Fdpn0ngt0Ejtusjcvups0Sfrvftut0Sfr%60bmmsqutmjol%2Fbtqy%40rszuzqf%3EV%7BO9W1KVVl5yPUN4NUJ6PEhzPUd1PYxzNEJ3NEdxNh%3E%3E&p=qqttqbdb.bqeesknn--331371105-D29DCF85-63A1-48D8-88E9-EA3A7DFD9C9C.1.1&e=s1
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmp23l8dbjf\MFSD307_WBTRN19371298_1100430.csv
+Archived email b'12920'
+RTA Email Fetch Complete.
+Step 3: Fetching NAVs...
+Starting NAV Update...
+NAV Update Completed Successfully.
+Step 4: Updating Holding Valuations...
+Starting Holding Valuation Update...
+Successfully updated valuation for 34688 holdings.
+Daily Jobs Completed Successfully.
