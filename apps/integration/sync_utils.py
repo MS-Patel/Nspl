@@ -416,10 +416,10 @@ def _sync_allotments(client, from_date, to_date):
                     # Upsert Transaction
                     allotted_units = Decimal(item.AllottedUnit) if item.AllottedUnit else Decimal(0)
                     allotted_amt = Decimal(item.AllottedAmt) if item.AllottedAmt else Decimal(0)
-                    nav = Decimal(item.Nav) if item.Nav else Decimal(0)
+                    # nav = Decimal(item.Nav) if item.Nav else Decimal(0)
 
                     # Parse Date
-                    txn_date = item.AllotmentDate
+                    txn_date = None # item.AllotmentDate
                     if isinstance(txn_date, str):
                         try:
                             txn_date = datetime.datetime.strptime(txn_date, "%d/%m/%Y").date()
@@ -438,7 +438,7 @@ def _sync_allotments(client, from_date, to_date):
                         'date': txn_date,
                         'amount': allotted_amt,
                         'units': allotted_units,
-                        'nav': nav
+                        # 'nav': nav
                     }
 
                     if existing_txn:

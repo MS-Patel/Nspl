@@ -165,7 +165,7 @@ MEDIA_URL = '/media/'
 # BSE StarMF API Configuration
 BSE_MEMBER_ID = os.environ.get('BSE_MEMBER_ID', "24637")
 BSE_USER_ID = os.environ.get('BSE_USER_ID', "2463702")
-BSE_PASSWORD = os.environ.get('BSE_PASSWORD', "Vadodaramf@2026")
+BSE_PASSWORD = os.environ.get('BSE_PASSWORD', "Vadodara@@753")
 
 BSE_ENV = os.environ.get('BSE_ENV', 'DEMO').upper()
 
@@ -214,7 +214,7 @@ RTA_EMAIL_PASSWORD = os.environ.get('RTA_EMAIL_PASSWORD', 'zqdcbricbumdqyyo')
 
 # Passwords for encrypted RTA files (comma-separated list)
 # Note: RTA_FILE_PASSWORD env var should be comma separated if multiple
-RTA_FILE_PASSWORD = [p.strip() for p in os.environ.get('RTA_FILE_PASSWORD', 'cams123,Navin@2026').split(',') if p.strip()]
+RTA_FILE_PASSWORD = [p.strip() for p in os.environ.get('RTA_FILE_PASSWORD', 'cams123,Navin@@2026').split(',') if p.strip()]
 
 # Filters for identifying relevant emails
 # Note: Env vars should be comma separated
