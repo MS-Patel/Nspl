@@ -872,39 +872,45 @@ def get_bse_switch_order_params(order, member_id, user_id, password, pass_key):
         txt_units = f"{order.units:.4f}"
         txt_amount = "0"
 
+    buy_sell_type = "FRESH" if order.is_new_folio else "ADDITIONAL"
+
     # User confirmed TransMode P -> DPTxn
     dptxn = "P" # Physical
 
     params = {
         'TransCode': 'NEW',
         'TransNo': str(order.unique_ref_no),
+        'OrderId': '',
         'UserId': user_id,
         'MemberId': member_id,
         'ClientCode': client_code,
-        'SwitchCode': order.scheme.scheme_code,  # Source Scheme
-        'ToSchemeCode': order.target_scheme.scheme_code, # Target Scheme
-        'SwitchAmount': txt_amount,
+        'FromSchemeCd': order.scheme.scheme_code,
+        'ToSchemeCd': order.target_scheme.scheme_code,
+        'BuySell': order.transaction_type,
+        'BuySellType': buy_sell_type,
         'SwitchUnits': txt_units,
         'AllUnitsFlag': all_units_flag,
         'DPTxn': dptxn,
+        'OrderVal': txt_amount,
         'FolioNo': folio_no,
         'Remarks': '',
         'KYCStatus': 'Y',
-        'RefNo': '',
         'SubBrCode': order.distributor.broker_code if order.distributor else '',
         'Euin': euin,
         'EuinVal': euin_flag,
         'MinRedeem': 'N',
-        'DPC': 'N', # Usually N for Switch? Or DPTxn? Let's assume N for now.
         'IPAdd': '',
         'Password': password,
         'PassKey': pass_key,
-        'Param1': '',
+        'Parma1': '',
         'Param2': '',
         'Param3': '',
         'Filler1': '',
         'Filler2': '',
         'Filler3': '',
+        'Filler4': '',
+        'Filler5': '',
+        'Filler6': '',
     }
 
     return params

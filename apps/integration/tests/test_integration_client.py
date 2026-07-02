@@ -133,6 +133,45 @@ class TestBSEClient:
             call_args = mock_service.orderEntryParam.call_args[1]
             assert call_args['Qty'] == '10.5567' # Updated Key
 
+    def test_switch_order_success_uses_wsdl_param_names(self):
+        investor = InvestorProfileFactory(ucc_code='TEST001')
+        scheme = SchemeFactory(scheme_code='SRC001')
+        target_scheme = SchemeFactory(scheme_code='TGT001', amc=scheme.amc)
+        order = OrderFactory(
+            investor=investor,
+            distributor=investor.distributor,
+            scheme=scheme,
+            target_scheme=target_scheme,
+            amount=5000,
+            transaction_type=Order.SWITCH,
+            is_new_folio=False,
+        )
+
+        with patch('apps.integration.bse_client.Client') as MockZeepClient:
+            mock_service = MagicMock()
+            mock_service.getPassword.return_value = "100|EncryptedToken123"
+            mock_service.switchOrderEntryParam.return_value = "0|123456|Switch Order Placed"
+
+            MockZeepClient.return_value.service = mock_service
+
+            client = BSEStarMFClient()
+            result = client.switch_order(order)
+
+            assert result['status'] == 'success'
+            assert result['bse_order_id'] == '123456'
+
+            call_args = mock_service.switchOrderEntryParam.call_args[1]
+            assert call_args['FromSchemeCd'] == 'SRC001'
+            assert call_args['ToSchemeCd'] == 'TGT001'
+            assert call_args['OrderVal'] == '5000.00'
+            assert call_args['BuySell'] == Order.SWITCH
+            assert call_args['Parma1'] == ''
+            assert 'SwitchCode' not in call_args
+            assert 'ToSchemeCode' not in call_args
+            assert 'SwitchAmount' not in call_args
+            assert 'Param1' not in call_args
+            assert 'RefNo' not in call_args
+
     def test_register_sip_success(self):
         investor = InvestorProfileFactory(ucc_code='TEST001')
         scheme = SchemeFactory(scheme_code='SCHEME001')

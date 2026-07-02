@@ -1,87 +1,110 @@
-from django.test import TestCase
+import pytest
+
 from apps.integration.utils import get_bse_switch_order_params
-from apps.investments.models import Order, Scheme, Folio
-from apps.users.models import InvestorProfile
-from apps.products.models import AMC
-from django.contrib.auth import get_user_model
-from unittest.mock import MagicMock
-import datetime
+from apps.investments.factories import FolioFactory, OrderFactory
+from apps.investments.models import Order
+from apps.products.factories import AMCFactory, SchemeFactory
+from apps.users.factories import DistributorProfileFactory, InvestorProfileFactory
 
-class BSESwitchOrderParamsTests(TestCase):
-    def test_switch_order_params_structure(self):
-        # Mock objects
-        User = get_user_model()
-        user = User.objects.create(username='testinv')
-        investor = InvestorProfile.objects.create(user=user, pan='ABCDE1234F', ucc_code='TEST001')
 
-        amc = AMC.objects.create(name='Test AMC', code='AMC001')
+@pytest.mark.django_db
+def test_switch_order_params_match_wsdl_for_amount_switch():
+    amc = AMCFactory()
+    distributor = DistributorProfileFactory(broker_code="SUB001", euin="E123456")
+    investor = InvestorProfileFactory(
+        distributor=distributor,
+        ucc_code="TEST001",
+        pan="ABCDE1234F",
+    )
+    source_scheme = SchemeFactory(scheme_code="SRC001", amc=amc)
+    target_scheme = SchemeFactory(scheme_code="TGT001", amc=amc)
+    folio = FolioFactory(investor=investor, amc=amc, folio_number="12345/67")
+    order = OrderFactory(
+        investor=investor,
+        distributor=distributor,
+        scheme=source_scheme,
+        target_scheme=target_scheme,
+        folio=folio,
+        transaction_type=Order.SWITCH,
+        amount=5000,
+        units=0,
+        all_redeem=False,
+        unique_ref_no="123456",
+        is_new_folio=False,
+        euin="",
+    )
 
-        scheme_source = Scheme.objects.create(name='Source Scheme', scheme_code='SRC001', amc=amc)
-        scheme_target = Scheme.objects.create(name='Target Scheme', scheme_code='TGT001', amc=amc)
+    params = get_bse_switch_order_params(
+        order,
+        member_id="MEMBER1",
+        user_id="USER1",
+        password="enc_password",
+        pass_key="pass_key",
+    )
 
-        folio = Folio.objects.create(investor=investor, amc=amc, folio_number='12345/67')
+    assert params == {
+        "TransCode": "NEW",
+        "TransNo": "123456",
+        "OrderId": "",
+        "UserId": "USER1",
+        "MemberId": "MEMBER1",
+        "ClientCode": "TEST001",
+        "FromSchemeCd": "SRC001",
+        "ToSchemeCd": "TGT001",
+        "BuySell": Order.SWITCH,
+        "BuySellType": "ADDITIONAL",
+        "DPTxn": "P",
+        "OrderVal": "5000.00",
+        "SwitchUnits": "0",
+        "AllUnitsFlag": "N",
+        "FolioNo": "12345/67",
+        "Remarks": "",
+        "KYCStatus": "Y",
+        "SubBrCode": "SUB001",
+        "Euin": "E123456",
+        "EuinVal": "Y",
+        "MinRedeem": "N",
+        "IPAdd": "",
+        "Password": "enc_password",
+        "PassKey": "pass_key",
+        "Parma1": "",
+        "Param2": "",
+        "Param3": "",
+        "Filler1": "",
+        "Filler2": "",
+        "Filler3": "",
+        "Filler4": "",
+        "Filler5": "",
+        "Filler6": "",
+    }
 
-        order = Order.objects.create(
-            investor=investor,
-            scheme=scheme_source,
-            target_scheme=scheme_target,
-            folio=folio,
-            transaction_type=Order.SWITCH,
-            amount=5000,
-            units=0,
-            all_redeem=False,
-            unique_ref_no='123456'
-        )
 
-        params = get_bse_switch_order_params(
-            order,
-            member_id='MEMBER1',
-            user_id='USER1',
-            password='enc_password',
-            pass_key='pass_key'
-        )
+@pytest.mark.django_db
+def test_switch_order_params_use_all_units_flag_for_full_switch():
+    amc = AMCFactory()
+    investor = InvestorProfileFactory(ucc_code="TEST002", pan="ABCDE1234G")
+    source_scheme = SchemeFactory(scheme_code="SRC002", amc=amc)
+    target_scheme = SchemeFactory(scheme_code="TGT002", amc=amc)
+    order = OrderFactory(
+        investor=investor,
+        distributor=investor.distributor,
+        scheme=source_scheme,
+        target_scheme=target_scheme,
+        transaction_type=Order.SWITCH,
+        amount=0,
+        units=0,
+        all_redeem=True,
+        unique_ref_no="654321",
+    )
 
-        # Verify DPTxn key exists and is 'P'
-        self.assertIn('DPTxn', params)
-        self.assertEqual(params['DPTxn'], 'P')
+    params = get_bse_switch_order_params(
+        order,
+        member_id="MEMBER1",
+        user_id="USER1",
+        password="enc_password",
+        pass_key="pass_key",
+    )
 
-        # Verify other fields
-        self.assertEqual(params['SwitchCode'], 'SRC001')
-        self.assertEqual(params['ToSchemeCode'], 'TGT001')
-        self.assertEqual(params['SwitchAmount'], '5000.00')
-        self.assertEqual(params['SwitchUnits'], '0')
-        self.assertEqual(params['FolioNo'], '12345/67')
-        self.assertEqual(params['ClientCode'], 'TEST001')
-
-    def test_switch_all_units(self):
-        User = get_user_model()
-        user = User.objects.create(username='testinv2')
-        investor = InvestorProfile.objects.create(user=user, pan='ABCDE1234G')
-
-        amc = AMC.objects.create(name='Test AMC 2', code='AMC002')
-
-        scheme_source = Scheme.objects.create(name='Source Scheme', scheme_code='SRC002', amc=amc)
-        scheme_target = Scheme.objects.create(name='Target Scheme', scheme_code='TGT002', amc=amc)
-
-        order = Order.objects.create(
-            investor=investor,
-            scheme=scheme_source,
-            target_scheme=scheme_target,
-            transaction_type=Order.SWITCH,
-            amount=0,
-            units=0,
-            all_redeem=True,
-            unique_ref_no='654321'
-        )
-
-        params = get_bse_switch_order_params(
-            order,
-            member_id='MEMBER1',
-            user_id='USER1',
-            password='enc_password',
-            pass_key='pass_key'
-        )
-
-        self.assertEqual(params['AllUnitsFlag'], 'Y')
-        self.assertEqual(params['SwitchAmount'], '0')
-        self.assertEqual(params['SwitchUnits'], '0')
+    assert params["AllUnitsFlag"] == "Y"
+    assert params["OrderVal"] == "0"
+    assert params["SwitchUnits"] == "0"
