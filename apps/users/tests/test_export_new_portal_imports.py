@@ -119,6 +119,13 @@ def test_export_new_portal_imports_command_writes_expected_csvs(tmp_path):
         amount_limit="100000",
         mandate_type="X",
     )
+    MandateFactory(
+        investor=investor,
+        bank_account=bank_account,
+        mandate_id="MAND10002",
+        amount_limit="50000",
+        status="PENDING",
+    )
     scheme = SchemeFactory(isin="INF000000001", scheme_code="SCH12345")
     SIPFactory(
         investor=investor,
