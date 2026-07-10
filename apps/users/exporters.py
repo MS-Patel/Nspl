@@ -260,7 +260,9 @@ def build_investor_fatca_rows(queryset):
 
 
 def build_investor_mandate_rows():
-    queryset = Mandate.objects.select_related("investor", "bank_account").order_by("id")
+    queryset = Mandate.objects.select_related("investor", "bank_account").filter(
+        status=Mandate.APPROVED
+    ).order_by("id")
     rows = []
     for mandate in queryset:
         bank_account = mandate.bank_account
