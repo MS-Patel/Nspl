@@ -4882,3 +4882,173 @@ Step 4: Updating Holding Valuations...
 Starting Holding Valuation Update...
 Successfully updated valuation for 35278 holdings.
 Daily Jobs Completed Successfully.
+Forcing soap:address location to HTTPS
+Failed to process allotment for 2865761707: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (331229, 31014732772, BSE, P, , null, 999.9500, 21.0960, null, 0.0000, 0.0000, , 2026-07-11 03:28:00.991084+00, 1659, 8327, null, 2865761707, t, BSE, null, 2865761707, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2865872974: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (331230, 31014732782, BSE, P, , null, 999.9500, 19.0100, null, 0.0000, 0.0000, , 2026-07-11 03:28:01.029863+00, 1659, 8079, null, 2865872974, t, BSE, null, 2865872974, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2866059605: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (331231, 11236831/14, BSE, P, , null, 100.0000, 0.4490, null, 0.0000, 0.0000, , 2026-07-11 03:28:01.038805+00, 2200, 12472, null, 2866059605, t, BSE, null, 2866059605, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2866060896: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (331232, 11236784/58, BSE, P, , null, 100.0000, 0.4490, null, 0.0000, 0.0000, , 2026-07-11 03:28:01.054631+00, 2185, 12472, null, 2866060896, t, BSE, null, 2866060896, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2866074646: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (331233, 11236577/97, BSE, P, , null, 199.9900, 0.8980, null, 0.0000, 0.0000, , 2026-07-11 03:28:01.070345+00, 2236, 12472, null, 2866074646, t, BSE, null, 2866074646, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2866093021: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (331234, 77714536344, BSE, P, , null, 4999.7500, 461.9130, null, 0.0000, 0.0000, , 2026-07-11 03:28:01.087052+00, 2236, 24652, null, 2866093021, t, BSE, null, 2866093021, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2866358653: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (331235, 7779283583, BSE, P, , null, 499.9800, 46.1920, null, 0.0000, 0.0000, , 2026-07-11 03:28:01.087052+00, 1759, 24652, null, 2866358653, t, BSE, null, 2866358653, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2866445494: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (331236, 39619741/18, BSE, P, , null, 999.9500, 0.9640, null, 0.0000, 0.0000, , 2026-07-11 03:28:01.102303+00, 1758, 2695, null, 2866445494, t, BSE, null, 2866445494, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2866465281: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (331237, 77710125682, BSE, P, , null, 999.9500, 92.3830, null, 0.0000, 0.0000, , 2026-07-11 03:28:01.11808+00, 1763, 24652, null, 2866465281, t, BSE, null, 2866465281, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2866526536: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (331238, 21626542, BSE, P, , null, 4999.7500, 53.1150, null, 0.0000, 0.0000, , 2026-07-11 03:28:01.133759+00, 1536, 5451, null, 2866526536, t, BSE, null, 2866526536, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2866526537: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (331239, 12757124/75, BSE, P, , null, 4999.7500, 56.1710, null, 0.0000, 0.0000, , 2026-07-11 03:28:01.149453+00, 1536, 3998, null, 2866526537, t, BSE, null, 2866526537, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2866526538: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (331240, 15104457/82, BSE, P, , null, 4999.7500, 2.4550, null, 0.0000, 0.0000, , 2026-07-11 03:28:01.149453+00, 1536, 1293, null, 2866526538, t, BSE, null, 2866526538, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2866526539: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (331241, 21626542, BSE, P, , null, 4999.7500, 20.5910, null, 0.0000, 0.0000, , 2026-07-11 03:28:01.165162+00, 1536, 5419, null, 2866526539, t, BSE, null, 2866526539, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2866949562: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (331242, 910128704331, BSE, P, , null, 2499.8800, 25.3970, null, 0.0000, 0.0000, , 2026-07-11 03:28:01.180824+00, 1760, 15731, null, 2866949562, t, BSE, null, 2866949562, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2867023278: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (331243, 7779658506, BSE, P, , null, 999.9500, 92.3830, null, 0.0000, 0.0000, , 2026-07-11 03:28:01.180824+00, 1758, 24652, null, 2867023278, t, BSE, null, 2867023278, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2867743917: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (331244, 910227381844, BSE, P, , null, 100.0000, 5.2910, null, 0.0000, 0.0000, , 2026-07-11 03:28:01.196516+00, 1617, 18625, null, 2867743917, t, BSE, null, 2867743917, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2867778385: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (331245, 77714014425, BSE, P, , null, 999.9500, 64.3470, null, 0.0000, 0.0000, , 2026-07-11 03:28:01.212216+00, 2168, 24460, null, 2867778385, t, BSE, null, 2867778385, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2867898826: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (331246, 477481613332, BSE, P, , null, 999.9500, 11.0960, null, 0.0000, 0.0000, , 2026-07-11 03:28:01.227891+00, 1500, 4075, null, 2867898826, t, BSE, null, 2867898826, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2867972009: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (331247, 11242967/36, BSE, P, , null, 100.0000, 0.4490, null, 0.0000, 0.0000, , 2026-07-11 03:28:01.243379+00, 1715, 12472, null, 2867972009, t, BSE, null, 2867972009, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2868143320: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (331248, 27982790/86, BSE, P, , null, 1999.9000, 4.3010, null, 0.0000, 0.0000, , 2026-07-11 03:28:01.258995+00, 1690, 2668, null, 2868143320, t, BSE, null, 2868143320, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2868385092: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (331249, 36633409/94, BSE, P, , null, 2999.8500, 47.2110, null, 0.0000, 0.0000, , 2026-07-11 03:28:01.258995+00, 1735, 3756, null, 2868385092, t, BSE, null, 2868385092, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2868610317: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (331250, 7776708874, BSE, P, , null, 1999.9000, 162.2240, null, 0.0000, 0.0000, , 2026-07-11 03:28:01.274677+00, 1553, 24540, null, 2868610317, t, BSE, null, 2868610317, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2868610334: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (331251, 91095080904, BSE, P, , null, 1999.9000, 121.8430, null, 0.0000, 0.0000, , 2026-07-11 03:28:01.290392+00, 1553, 16059, null, 2868610334, t, BSE, null, 2868610334, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2869109513: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (331252, 91046359794, BSE, P, , null, 999.9500, 92.1190, null, 0.0000, 0.0000, , 2026-07-11 03:28:01.305591+00, 1500, 50267, null, 2869109513, t, BSE, null, 2869109513, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2869120769: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (331253, 910109635365, BSE, P, , null, 999.9500, 10.1590, null, 0.0000, 0.0000, , 2026-07-11 03:28:01.32131+00, 1746, 15731, null, 2869120769, t, BSE, null, 2869120769, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2869165071: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (331254, 9476044/46, BSE, P, , null, 2499.8800, 49.4030, null, 0.0000, 0.0000, , 2026-07-11 03:28:01.336999+00, 2221, 9917, null, 2869165071, t, BSE, null, 2869165071, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2869211080: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (331255, 31014792526, BSE, P, , null, 2499.8800, 47.5260, null, 0.0000, 0.0000, , 2026-07-11 03:28:01.336999+00, 1661, 8079, null, 2869211080, t, BSE, null, 2869211080, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2869211085: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (331256, 10532766, BSE, P, , null, 2499.8800, 4.4030, null, 0.0000, 0.0000, , 2026-07-11 03:28:01.3527+00, 1661, 12667, null, 2869211085, t, BSE, null, 2869211085, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2869235247: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (331257, 31013526594, BSE, P, , null, 999.9500, 4.9930, null, 0.0000, 0.0000, , 2026-07-11 03:28:01.368387+00, 1646, 8099, null, 2869235247, t, BSE, null, 2869235247, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2869242203: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (331258, 91047923221, BSE, P, , null, 100.0000, 9.2120, null, 0.0000, 0.0000, , 2026-07-11 03:28:01.368387+00, 1102, 50267, null, 2869242203, t, BSE, null, 2869242203, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2869258317: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (331259, 11243058/54, BSE, P, , null, 100.0000, 0.4490, null, 0.0000, 0.0000, , 2026-07-11 03:28:01.384069+00, 2238, 12472, null, 2869258317, t, BSE, null, 2869258317, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2866169659: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (331260, 7778902996, BSE, P, , null, 499.9800, 41.3510, null, 0.0000, 0.0000, , 2026-07-11 03:28:01.39976+00, 1750, 24564, null, 2866169659, t, BSE, null, 2866169659, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2867464939: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (331261, 91044349193, BSE, P, , null, 2499.8800, 23.0270, null, 0.0000, 0.0000, , 2026-07-11 03:28:01.414968+00, 1773, 17649, null, 2867464939, t, BSE, null, 2867464939, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2868634591: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (331262, 43033807/50, BSE, P, , null, 2499.8800, 22.9140, null, 0.0000, 0.0000, , 2026-07-11 03:28:01.414968+00, 1773, 2693, null, 2868634591, t, BSE, null, 2868634591, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2869008384: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (331263, 11159162/27, BSE, P, , null, 199.9900, 0.8980, null, 0.0000, 0.0000, , 2026-07-11 03:28:01.430649+00, 1650, 12472, null, 2869008384, t, BSE, null, 2869008384, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2869249526: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (331264, 11257009/08, BSE, P, , null, 149.9900, 0.6740, null, 0.0000, 0.0000, , 2026-07-11 03:28:01.446721+00, 1766, 12472, null, 2869249526, t, BSE, null, 2869249526, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2869253224: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (331265, 21438709/14, BSE, P, , null, 2499.8800, 196.9480, null, 0.0000, 0.0000, , 2026-07-11 03:28:01.461955+00, 1707, 16798, null, 2869253224, t, BSE, null, 2869253224, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2866127520: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (331266, 29601295/03, BSE, P, , null, 1999.9000, 5.7480, null, 0.0000, 0.0000, , 2026-07-11 03:28:01.461955+00, 1730, 1717, null, 2866127520, t, BSE, null, 2866127520, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2866127546: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (331267, 7774248131, BSE, P, , null, 1999.9000, 128.6940, null, 0.0000, 0.0000, , 2026-07-11 03:28:01.478883+00, 1730, 24460, null, 2866127546, t, BSE, null, 2866127546, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2867941582: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (331268, 27279273/14, BSE, P, , null, 2499.8800, 5.3760, null, 0.0000, 0.0000, , 2026-07-11 03:28:01.493594+00, 1717, 2668, null, 2867941582, t, BSE, null, 2867941582, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Failed to process allotment for 2867981523: null value in column "date" of relation "reconciliation_transaction" violates not-null constraint
+DETAIL:  Failing row contains (331269, 77766887944, BSE, P, , null, 2499.8800, 15.8500, null, 0.0000, 0.0000, , 2026-07-11 03:28:01.509267+00, 1717, 14158, null, 2867981523, t, BSE, null, 2867981523, null, null, null, null, null, null, 0.0000, null, null, {}, null, null, null, 0.0000, null, null, null, 0.0000, null, 0.0000, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, null, null, null, null, null, null, null, 0.0000, null, null, null, null, 0, null, UNKNOWN).
+
+Extraction failed with provided password for C:\Users\ADMINI~1\AppData\Local\Temp\tmp3zzmi9j6\TKS5HUZFCHBCNPH4V3CAEOG6H1Y0HGCDD0U0I37DA10R945239010218BMB216932547R2.zip: Bad password for file '10072026220149_216932547R2.dbf'
+Extraction failed with provided password for C:\Users\ADMINI~1\AppData\Local\Temp\tmp3zzmi9j6\TKS5HUZFCHBCNPH4V3CAEOG6H1Y0HGCDD0U0I37DA10R945239010218BMB216932547R2.zip: Bad password for file '10072026220149_216932547R2.dbf'
+Failed to extract C:\Users\ADMINI~1\AppData\Local\Temp\tmp3zzmi9j6\TKS5HUZFCHBCNPH4V3CAEOG6H1Y0HGCDD0U0I37DA10R945239010218BMB216932547R2.zip: Incorrect password or unsupported encryption.
+Extraction failed with provided password for C:\Users\ADMINI~1\AppData\Local\Temp\tmp3zzmi9j6\75662027013AH4BHTKSTJSV4FLJOK9MFO7BHA9R2F2X974221591677DBMB175322479R2.zip: Bad password for file '11072026055415_175322479R2.dbf'
+Extraction failed with provided password for C:\Users\ADMINI~1\AppData\Local\Temp\tmp3zzmi9j6\27013B_4BHTKS5HUZHIDJ6JPQ5SKFIMLF3KTLDE52B4494853811740DBMB183524946R2.zip: Bad password for file '11072026055925_183524946R2.dbf'
+Extraction failed with provided password for C:\Users\ADMINI~1\AppData\Local\Temp\tmp3zzmi9j6\013B_4BHTKS5HUZHIDJ6JPQ5SKEID6GSN0MIJFDOA2T998120371657DBMB193621839R2.zip: Bad password for file '11072026063212_193621839R2.dbf'
+PyTables is not installed. No support for HDF output.
+SQLalchemy is not installed. No support for SQL output.
+Starting Daily Jobs...
+Step 1: Syncing BSE Reports...
+Starting sync for last 1 days...
+Successfully completed BSE report sync.
+Step 2: Fetching RTA Emails...
+Connecting to Email Server...
+Found 4 emails. Processing...
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmp3zzmi9j6\11072026055415_175322479R2.dbf from https://mailback11.camsonline.com/mailback_result/75662027013AH4BHTKSTJSV4FLJOK9MFO7BHA9R2F2X974221591677DBMB175322479R2.zip
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmp3zzmi9j6\11072026055415_175322479R2.dbf
+Archived email b'13072'
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmp3zzmi9j6\11072026055925_183524946R2.dbf from https://mailback27.camsonline.com/mailback_result/27013B_4BHTKS5HUZHIDJ6JPQ5SKFIMLF3KTLDE52B4494853811740DBMB183524946R2.zip
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmp3zzmi9j6\11072026055925_183524946R2.dbf
+Archived email b'13073'
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmp3zzmi9j6\11072026063212_193621839R2.dbf from https://mailback11.camsonline.com/mailback_result/013B_4BHTKS5HUZHIDJ6JPQ5SKEID6GSN0MIJFDOA2T998120371657DBMB193621839R2.zip
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmp3zzmi9j6\11072026063212_193621839R2.dbf
+Archived email b'13076'
+Processing file: C:\Users\ADMINI~1\AppData\Local\Temp\tmp3zzmi9j6\MFSD307_WBTRN19371298_1085368.csv from https://scdelivery.kfintech.com/c/?u=iuuqt%3B00ngt%2Flgjoufdi%2Fdpn0ngt0Ejtusjcvups0Sfrvftut0Sfr%60bmmsqutmjol%2Fbtqy%40rszuzqf%3EV%7BO9W1KVVl5yPUN4NUJ6PEhyOEZ5O4xzNEJ3NEdyNR%3E%3E&p=qqttqbdb.bqeesknn--332147993-D40C3CC9-4988-48D3-9F25-17F730ADCA39.1.1&e=s1
+Successfully processed C:\Users\ADMINI~1\AppData\Local\Temp\tmp3zzmi9j6\MFSD307_WBTRN19371298_1085368.csv
+Archived email b'13079'
+RTA Email Fetch Complete.
+Step 3: Fetching NAVs...
+Starting NAV Update...
+NAV Update Completed Successfully.
+Step 4: Updating Holding Valuations...
+Starting Holding Valuation Update...
+Successfully updated valuation for 35490 holdings.
+Daily Jobs Completed Successfully.
+Forcing soap:address location to HTTPS
+Daily Jobs Failed: connection to server at "localhost" (::1), port 5433 failed: FATAL:  password authentication failed for user "postgres"
+
+PyTables is not installed. No support for HDF output.
+SQLalchemy is not installed. No support for SQL output.
+Starting Daily Jobs...
+Step 1: Syncing BSE Reports...
+Starting sync for last 1 days...
+Successfully completed BSE report sync.
+Step 2: Fetching RTA Emails...
+Daily Jobs Failed: connection to server at "localhost" (::1), port 5433 failed: FATAL:  password authentication failed for user "postgres"
