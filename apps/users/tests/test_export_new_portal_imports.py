@@ -1,10 +1,13 @@
 import csv
 from datetime import date
+from io import StringIO
 
 import pytest
+from django.core.management.base import CommandError
 from django.core.management import call_command
 
 from apps.investments.factories import MandateFactory, SIPFactory
+from apps.payouts.factories import FolioDistributorMappingFactory
 from apps.products.factories import SchemeFactory
 from apps.users.factories import (
     BankAccountFactory,
@@ -13,6 +16,7 @@ from apps.users.factories import (
     NomineeFactory,
     RMProfileFactory,
 )
+from apps.users.exporters import build_investor_relationship_rows
 from apps.users.models import Branch
 
 
@@ -291,3 +295,115 @@ def test_export_new_portal_imports_command_writes_expected_csvs(tmp_path):
         "Status": "ACTIVE",
         "Folio Number": "",
     }]
+
+    relationship_rows = read_csv_rows(output_dir / "investor_relationships.csv")
+    assert relationship_rows == [{
+        "investor_pan": "ABCDE1234G",
+        "distributor_pan": "ABCDE2222F",
+        "rm_code": "RM001",
+        "distributor_code": "DIST001",
+    }]
+
+    assert read_csv_rows(output_dir / "folio_distributor_mappings.csv") == []
+
+
+@pytest.mark.django_db
+def test_relationship_export_includes_distributor_and_direct_rm_mappings():
+    distributor_rm = RMProfileFactory(employee_code="RM-DISTRIBUTOR")
+    direct_rm = RMProfileFactory(employee_code="RM-DIRECT")
+    distributor = DistributorProfileFactory(
+        rm=distributor_rm,
+        broker_code="DIST-EXPLICIT",
+        pan="DDDDD1111D",
+    )
+    distributor_investor = InvestorProfileFactory(
+        distributor=distributor,
+        rm=None,
+        pan="IIIII1111I",
+    )
+    rm_only_investor = InvestorProfileFactory(
+        distributor=None,
+        rm=direct_rm,
+        pan="IIIII2222I",
+    )
+    InvestorProfileFactory(distributor=None, rm=None, pan="IIIII3333I")
+
+    rows = build_investor_relationship_rows()
+
+    assert rows == [
+        {
+            "investor_pan": distributor_investor.pan,
+            "distributor_pan": distributor.pan,
+            "rm_code": distributor_rm.employee_code,
+            "distributor_code": distributor.broker_code,
+        },
+        {
+            "investor_pan": rm_only_investor.pan,
+            "distributor_pan": "",
+            "rm_code": direct_rm.employee_code,
+            "distributor_code": "",
+        },
+    ]
+
+
+@pytest.mark.django_db
+def test_production_relationship_command_refuses_sqlite(tmp_path):
+    with pytest.raises(CommandError, match="SQLite"):
+        call_command(
+            "export_bbf_relationships",
+            output_dir=str(tmp_path / "exports"),
+        )
+
+
+@pytest.mark.django_db
+def test_production_relationship_command_exports_only_required_files(tmp_path):
+    rm = RMProfileFactory(employee_code="RM-PROD")
+    direct_rm = RMProfileFactory(employee_code="RM-DIRECT-PROD")
+    distributor = DistributorProfileFactory(
+        rm=rm,
+        broker_code="DIST-PROD",
+        pan="PPPPP1111P",
+    )
+    investor = InvestorProfileFactory(
+        distributor=distributor,
+        pan="IIIII9999I",
+    )
+    rm_only_investor = InvestorProfileFactory(
+        distributor=None,
+        rm=direct_rm,
+        pan="IIIII8888I",
+    )
+    FolioDistributorMappingFactory(
+        folio_number="PROD-FOLIO",
+        distributor=distributor,
+    )
+    output_dir = tmp_path / "exports"
+    stdout = StringIO()
+
+    call_command(
+        "export_bbf_relationships",
+        output_dir=str(output_dir),
+        allow_sqlite=True,
+        stdout=stdout,
+    )
+
+    assert {path.name for path in output_dir.iterdir()} == {
+        "investor_relationships.csv",
+        "folio_distributor_mappings.csv",
+    }
+    assert read_csv_rows(output_dir / "investor_relationships.csv") == [
+        {
+            "investor_pan": investor.pan,
+            "distributor_pan": distributor.pan,
+            "rm_code": rm.employee_code,
+            "distributor_code": distributor.broker_code,
+        },
+        {
+            "investor_pan": rm_only_investor.pan,
+            "distributor_pan": "",
+            "rm_code": direct_rm.employee_code,
+            "distributor_code": "",
+        },
+    ]
+    assert "Database vendor: sqlite" in stdout.getvalue()
+    assert "Relationship rows: 2" in stdout.getvalue()

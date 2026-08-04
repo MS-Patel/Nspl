@@ -5,6 +5,7 @@ from pathlib import Path
 from django.db.models import Prefetch
 
 from apps.investments.models import Mandate, SIP
+from apps.payouts.models import FolioDistributorMapping
 from apps.users.models import BankAccount, DistributorProfile, InvestorProfile, Nominee, RMProfile
 
 
@@ -49,6 +50,14 @@ INVESTOR_MANDATE_HEADERS = [
 INVESTOR_SIP_HEADERS = [
     "SIP Registration Number", "PAN", "Client Code", "Scheme Code", "Mandate Code", "Amount",
     "Frequency", "Start Date", "End Date", "Installments", "Status", "Folio Number",
+]
+
+INVESTOR_RELATIONSHIP_HEADERS = [
+    "investor_pan", "distributor_pan", "rm_code", "distributor_code",
+]
+
+FOLIO_DISTRIBUTOR_MAPPING_HEADERS = [
+    "folio_number", "distributor_code",
 ]
 
 ACCOUNT_TYPE_LABELS = {
@@ -120,7 +129,27 @@ def export_new_portal_import_files(output_dir, member_code):
             build_investor_sip_rows(),
         ),
     }
+    files.update(export_bbf_relationship_files(output_path))
     return files
+
+
+def export_bbf_relationship_files(output_dir):
+    """Export only the relationship files required for the BBF migration."""
+    output_path = Path(output_dir)
+    output_path.mkdir(parents=True, exist_ok=True)
+
+    return {
+        "investor_relationships.csv": write_csv(
+            output_path / "investor_relationships.csv",
+            INVESTOR_RELATIONSHIP_HEADERS,
+            build_investor_relationship_rows(),
+        ),
+        "folio_distributor_mappings.csv": write_csv(
+            output_path / "folio_distributor_mappings.csv",
+            FOLIO_DISTRIBUTOR_MAPPING_HEADERS,
+            build_folio_distributor_mapping_rows(),
+        ),
+    }
 
 
 def build_rm_rows():
@@ -304,6 +333,40 @@ def build_investor_sip_rows():
             "Folio Number": sip.folio.folio_number if sip.folio else "",
         })
     return rows
+
+
+def build_investor_relationship_rows():
+    """Build explicit investor-to-distributor and investor-to-RM mappings."""
+    investors = InvestorProfile.objects.select_related(
+        "distributor__rm", "rm"
+    ).order_by("id")
+    rows = []
+    for investor in investors:
+        distributor = investor.distributor
+        rm = investor.rm or (distributor.rm if distributor else None)
+        if not distributor and not rm:
+            continue
+
+        rows.append({
+            "investor_pan": investor.pan,
+            "distributor_pan": distributor.pan if distributor else "",
+            "rm_code": rm.employee_code if rm else "",
+            "distributor_code": distributor.broker_code if distributor else "",
+        })
+    return rows
+
+
+def build_folio_distributor_mapping_rows():
+    queryset = FolioDistributorMapping.objects.select_related("distributor").order_by(
+        "folio_number", "id"
+    )
+    return [
+        {
+            "folio_number": mapping.folio_number,
+            "distributor_code": mapping.distributor.broker_code,
+        }
+        for mapping in queryset
+    ]
 
 
 def write_csv(path, headers, rows):
