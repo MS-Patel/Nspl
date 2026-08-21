@@ -1,6 +1,7 @@
 import pytest
 from apps.users.models import InvestorProfile, User
-from apps.integration.utils import map_investor_to_bse_param_string
+from apps.users.models import Nominee
+from apps.integration.utils import get_rel_code, map_investor_to_bse_param_string
 from datetime import date
 
 @pytest.mark.django_db
@@ -76,3 +77,18 @@ def test_map_investor_with_nominees():
     fields = param_string.split('|')
 
     assert len(fields) == 183
+
+
+def test_nominee_relationship_choices_cover_the_bse_v183_list():
+    expected_relationships = [
+        'Aunt', 'Brother-in-law', 'Brother', 'Daughter', 'Daughter-in-law',
+        'Father', 'Father-in-law', 'Grand Daughter', 'Grand Father',
+        'Grand Mother', 'Grand Son', 'Mother-in-law', 'Mother', 'Nephew',
+        'Niece', 'Sister', 'Sister-in-law', 'Son', 'Son-in-law', 'Spouse',
+        'Uncle', 'Others', 'Court Appointed Legal Guardian',
+    ]
+
+    assert [value for value, _label in Nominee.RELATIONSHIP_CHOICES] == expected_relationships
+    assert [get_rel_code(relationship) for relationship in expected_relationships] == [
+        f'{code:02d}' for code in range(1, 24)
+    ]

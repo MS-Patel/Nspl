@@ -545,12 +545,31 @@ class BankAccount(models.Model):
 
 class Nominee(models.Model):
     RELATIONSHIP_CHOICES = [
-        ('Spouse', 'Spouse'),
-        ('Father', 'Father'),
-        ('Mother', 'Mother'),
-        ('Son', 'Son'),
+        # BSE V183 nominee relationship codes 01-23.  The stored labels are
+        # translated to BSE codes by apps.integration.utils.get_rel_code.
+        ('Aunt', 'Aunt'),
+        ('Brother-in-law', 'Brother-in-law'),
+        ('Brother', 'Brother'),
         ('Daughter', 'Daughter'),
+        ('Daughter-in-law', 'Daughter-in-law'),
+        ('Father', 'Father'),
+        ('Father-in-law', 'Father-in-law'),
+        ('Grand Daughter', 'Grand Daughter'),
+        ('Grand Father', 'Grand Father'),
+        ('Grand Mother', 'Grand Mother'),
+        ('Grand Son', 'Grand Son'),
+        ('Mother-in-law', 'Mother-in-law'),
+        ('Mother', 'Mother'),
+        ('Nephew', 'Nephew'),
+        ('Niece', 'Niece'),
+        ('Sister', 'Sister'),
+        ('Sister-in-law', 'Sister-in-law'),
+        ('Son', 'Son'),
+        ('Son-in-law', 'Son-in-law'),
+        ('Spouse', 'Spouse'),
+        ('Uncle', 'Uncle'),
         ('Others', 'Others'),
+        ('Court Appointed Legal Guardian', 'Court Appointed Legal Guardian'),
     ]
 
     ID_TYPE_CHOICES = [

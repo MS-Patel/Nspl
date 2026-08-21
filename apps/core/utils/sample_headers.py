@@ -1,5 +1,5 @@
 from django.utils.translation import gettext_lazy as _
-from apps.users.models import InvestorProfile, DistributorProfile, RMProfile
+from apps.users.models import DistributorProfile, InvestorProfile, Nominee, RMProfile
 from apps.products.models import Scheme, NAVHistory
 from apps.users.constants import STATE_CHOICES
 
@@ -32,9 +32,9 @@ INVESTOR_CHOICES = {
     'Gender': ['Male', 'Female', 'Other'],
     'Client Type': [c[1] for c in InvestorProfile.CLIENT_TYPE_CHOICES],
     'Depository': [c[1] for c in InvestorProfile.DEPOSITORY_CHOICES],
-    'Nominee 1 Relationship': ['Spouse', 'Father', 'Mother', 'Son', 'Daughter', 'Others'],
-    'Nominee 2 Relationship': ['Spouse', 'Father', 'Mother', 'Son', 'Daughter', 'Others'],
-    'Nominee 3 Relationship': ['Spouse', 'Father', 'Mother', 'Son', 'Daughter', 'Others'],
+    'Nominee 1 Relationship': [label for _value, label in Nominee.RELATIONSHIP_CHOICES],
+    'Nominee 2 Relationship': [label for _value, label in Nominee.RELATIONSHIP_CHOICES],
+    'Nominee 3 Relationship': [label for _value, label in Nominee.RELATIONSHIP_CHOICES],
     'Bank 1 Type': ['Savings', 'Current', 'NRE', 'NRO'],
     'Bank 2 Type': ['Savings', 'Current', 'NRE', 'NRO'],
     'Bank 1 Default (Y/N)': ['Yes', 'No'],
